@@ -15,6 +15,7 @@ class ShortestPathRoutingStrategy(RoutingStrategy):
     def __init__(self, net):
         self.net = net  # sumolib.net.Net
 
+
     def compute_route(self, start_edge, end_edge):
         result = self.net.getShortestPath(
             self.net.getEdge(start_edge),
