@@ -10,8 +10,23 @@ Project Progress: Key Milestones
 
 5. Route Generation: Built a vehicle‑route prototype that leverages edge attractiveness and shortest‑path computation; compatible with SUMO’s randomTrips.py for scalable trip creation. All vehicles starting at time 0.
 
+Installation
+
+```bash
+# 1. Clone this repo
+git clone https://github.com/arielcohenny/sumo-traffic-generator.git
+cd sumo-traffic-generator
+
+# 2. Create & activate a virtualenv
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+
 Usage & Parameters
-python -m src.cli \
+env PYTHONUNBUFFERED=1 python -m src.cli \
 --grid_dimension <int> # Number of rows/columns (default: 5)
 --block_size_m <float> # Block length in meters (default: 200)
 --blocks_to_remove <int> # Internal junctions to delete (default: 0)
@@ -51,3 +66,4 @@ generator.py: Identifies and removes internal junctions, gathers X/Y for zones.
 lanes.py: Applies random lane counts per edge within configured bounds.
 zones.py: Builds zone polygons and applies optional inset buffering.
 sumo_utils.py: Interfaces with SUMO binaries and randomTrips.py for trip file generation.
+```

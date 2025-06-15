@@ -8,9 +8,10 @@ from src.network.generator import generate_grid_network
 from src.network.lanes import set_lane_counts
 from src.network.edge_attrs import assign_edge_attractiveness
 from src.network.zones import extract_zones_from_junctions
-from src.sim.sumo_utils import generate_sumo_conf_file, run_sumo
+from src.sim.sumo_utils import generate_sumo_conf_file
 from src.traffic.builder import generate_vehicle_routes
 from src.config import CONFIG
+from src.traffic_control.decentralized_traffic_bottlenecks.integration import run_tree_method
 
 # --- Global Variables and Constants ---
 # Clear the output directory if it exists
@@ -42,21 +43,29 @@ try:
     extract_zones_from_junctions(CONFIG.network_file, args.block_size_m, CONFIG.output_dir, seed, fill_polygons=True, inset=0.0)
     print(f"Extracted zones")
 
-    # --- Step 2: Set Lane Counts ---
+    # --- Step 3: Set Lane Counts ---
     set_lane_counts(net_file_in=CONFIG.network_file, net_file_out=CONFIG.network_file, seed=seed)
     print(f"Set lane counts for edges")
 
-    # --- Step 3: Set depart/arrive attractiveness for each edge ---
+    # --- Step 4: Set depart/arrive attractiveness for each edge ---
     assign_edge_attractiveness(seed, CONFIG.network_file, lambda_depart=3.5, lambda_arrive=2.0)
     print(f"Assigned edge attractiveness")
 
-    # ---- Step 4: Generate vehicle demand (.rou.xml) ----
+    # ---- Step 5: Generate Vehicle Routes ---
     generate_vehicle_routes(net_file=CONFIG.network_file, output_file=CONFIG.routes_file, num_vehicles=args.num_vehicles, seed=seed)
     print("Generated vehicle routes.")
 
-    # --- Step : Load the Network and Start SUMO ---
-    generate_sumo_conf_file(CONFIG.config_file, CONFIG.network_file, route_file=CONFIG.routes_file)
-    run_sumo(CONFIG.config_file, CONFIG.zones_file)
+    # --- Step 6: Generate SUMO Configuration File ---
+    sumo_cfg_path = generate_sumo_conf_file(CONFIG.config_file, CONFIG.network_file, route_file=CONFIG.routes_file,)
+    print(f"Generated SUMO configuration file: {sumo_cfg_path}")
+
+    # --- Step 7: Run the Simulation ---
+    run_tree_method(
+        net_file=CONFIG.network_file,
+        route_file=CONFIG.routes_file,    # not used by tree_run but good to keep
+        sumo_cfg=sumo_cfg_path,
+    )
+    print("Simulation completed successfully.")
 
 except Exception as e:
     print(f"An error occurred. Error: {e}")
