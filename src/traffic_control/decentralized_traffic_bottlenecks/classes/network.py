@@ -21,6 +21,3 @@ class Network:
         first_key = list(self.junctions_dict.keys())[0]
         phases = self.junctions_dict[first_key]["phases"]
         return sum(phase['duration'] for phase in phases)
-
-
-

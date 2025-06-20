@@ -5,8 +5,8 @@ from .link import Link
 from .node import JunctionNode
 from .head import Head
 from .vehicle import Vehicle
-from config import VEHICLES_MAX_NUM
-from utils import get_vehicle_inx
+from ..config import VEHICLES_MAX_NUM
+from ..utils import get_vehicle_inx
 
 
 class Graph:

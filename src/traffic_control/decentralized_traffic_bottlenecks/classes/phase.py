@@ -1,5 +1,5 @@
 
-from config import IS_DIVIDE_COST
+from ..config import IS_DIVIDE_COST
 
 
 class Phase:
@@ -15,11 +15,11 @@ class Phase:
         for head_name in self.heads:
             if head_name in heads_cost:
                 if IS_DIVIDE_COST:
-                    self.cost += heads_cost[head_name] / all_heads[head_name].phase_count
+                    self.cost += heads_cost[head_name] / \
+                        all_heads[head_name].phase_count
                 else:
                     self.cost += heads_cost[head_name]
 
     def define_duration(self, duration, iteration):
         if duration > 0:
             self.duration = duration
-

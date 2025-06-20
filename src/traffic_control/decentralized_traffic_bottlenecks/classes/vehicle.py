@@ -9,4 +9,3 @@ class Vehicle:
         self.end_step = step
         self.time = self.end_step - self.start_step
         return self.time
-

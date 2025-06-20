@@ -24,6 +24,7 @@ class NetworkData:
         self.edges = {}
         self.heads = {}
         self.read_file()
+        print(f"Network data read from {self.file_path_in}")
         self.print_me()
 
     def read_file(self):
@@ -34,8 +35,10 @@ class NetworkData:
                 junction_id = calc_junction_id(connection['@via'])
                 if '@tl' in connection:
                     if connection['@tl'] not in self.connections_per_tl:
-                        self.connections_per_tl[connection['@tl']] = TrafficLight(junction_id)
-                    self.connections_per_tl[connection['@tl']].add_connection(Connection(connection['@from'], int(connection['@linkIndex'])))
+                        self.connections_per_tl[connection['@tl']
+                                                ] = TrafficLight(junction_id)
+                    self.connections_per_tl[connection['@tl']].add_connection(
+                        Connection(connection['@from'], int(connection['@linkIndex'])))
                 from_edge = connection['@from']
                 if from_edge not in self.all_connections:
                     self.all_connections[from_edge] = set()
@@ -46,17 +49,28 @@ class NetworkData:
             tl.connections.sort(key=lambda x: x.link_index)
 
         for tlLogic in self.file_data['net']['tlLogic']:
-            self.tls[tlLogic['@id']] = TrafficLightLogic(self.connections_per_tl[tlLogic['@id']].junction_id)
+            # Ariel: added a guard to avoid KeyError
+            # Skip traffic lights that are not defined -- The extra TrafficLight instance has no connections (because none were found)
+            if tlLogic['@id'] not in self.connections_per_tl:
+                self.connections_per_tl[tlLogic['@id']
+                                        ] = TrafficLight(tlLogic['@id'])
+            self.tls[tlLogic['@id']] = TrafficLightLogic(
+                self.connections_per_tl[tlLogic['@id']].junction_id)
+            # Ariel: added a guard to avoid KeyError
+            # A lightweight guard: only look up the connection when it exists.
             for phase in tlLogic['phase']:
-                p_data = Phase(phase['@duration'], phase['@state'])
+                p_data = Phase(int(phase['@duration']), phase['@state'])
+                conn_list = self.connections_per_tl[tlLogic['@id']].connections
                 for inx, state in enumerate(phase['@state']):
-                    if state == 'G':
-                        p_data.add_head(self.connections_per_tl[tlLogic['@id']].connections[inx].head)
+                    if state == 'G' and inx < len(conn_list):
+                        p_data.add_head(conn_list[inx].head)
                 self.tls[tlLogic['@id']].add_phase(p_data)
             tl_data = self.tls[tlLogic['@id']]
             if tl_data.junction_id not in self.junctions_dict:
-                self.junctions_dict[tl_data.junction_id] = Junction(tl_data.junction_id)
-            self.junctions_dict[tl_data.junction_id].add_tl_data(tlLogic['@id'], tl_data.phases)
+                self.junctions_dict[tl_data.junction_id] = Junction(
+                    tl_data.junction_id)
+            self.junctions_dict[tl_data.junction_id].add_tl_data(
+                tlLogic['@id'], tl_data.phases)
 
         for edge in self.file_data['net']['edge']:
             if '@function' in edge:
@@ -71,14 +85,16 @@ class NetworkData:
             if edge_id not in self.edges:
                 self.edges[edge_id] = Edge()
             if is_head:
-                self.edges[edge_id].set_head(edge['@id'], edge['@to'], self.all_connections[edge['@id']])
+                self.edges[edge_id].set_head(
+                    edge['@id'], edge['@to'], self.all_connections[edge['@id']])
                 self.heads[edge['@id']] = {'to_junction': edge['@to']}
             else:
                 first_lane = edge['lane'][0] if '@id' not in edge['lane'] else edge['lane']
                 self.edges[edge_id].set_body(edge_id, edge['@from'], edge['@to'], 1 if '@id' in edge['lane'] else len(edge['lane']),
                                              first_lane['@speed'], first_lane['@length'])
                 if edge['@from'] not in self.junctions_dict:
-                    self.junctions_dict[edge['@from']] = Junction(edge['@from'])
+                    self.junctions_dict[edge['@from']
+                                        ] = Junction(edge['@from'])
                 self.junctions_dict[edge['@from']].add_edge(edge['@id'])
 
         for edge in list(self.edges.values()):
@@ -95,7 +111,8 @@ class NetworkData:
         print('],', file=source_file)
 
         print('"junctions_dict": {', file=source_file)
-        junctions_list = list(filter(lambda junction_data: junction_data.tl is not None, list(self.junctions_dict.values())))
+        junctions_list = list(filter(
+            lambda junction_data: junction_data.tl is not None, list(self.junctions_dict.values())))
         for inx, junction_obj in enumerate(junctions_list):
             junction_string = junction_obj.print_junction()
             if inx == len(junctions_list) - 1:
@@ -169,7 +186,8 @@ class Edge:
         edge_string = cleaned_string + '], "heads": ['
         for head in self.heads:
             edge_string += '"%s", ' % head
-        cleaned_string = edge_string[:-2] if len(self.heads) > 0 else edge_string
+        cleaned_string = edge_string[:-
+                                     2] if len(self.heads) > 0 else edge_string
         return cleaned_string + '], "f_speed": %s},' % self.f_speed
 
 
@@ -188,12 +206,18 @@ class Junction:
         self.edges_from_me.append(edge)
 
     def print_junction(self):
-        junction_string = '"%s": {' % self.junction_id + '"tl": "%s",' % self.tl + '"phases": ['
+        junction_string = '"%s": {' % self.junction_id + \
+            '"tl": "%s",' % self.tl + '"phases": ['
         for phase in self.phases:
-            junction_string += '{"duration": %s, ' % phase.duration + '"heads": ['
+            junction_string += '{"duration": %s, ' % phase.duration + \
+                '"heads": ['
             for head in phase.heads:
                 junction_string += '"%s", ' % head
-            junction_string = junction_string[:-2] + ']},'
+            # Ariel: fixed the issue with the last comma
+            # junction_string = junction_string[:-2] + ']},'
+            if len(phase.heads) > 0:                # ✅ new guard
+                junction_string = junction_string[:-2]
+            junction_string += ']},'
         return junction_string[:-1] + ']},'
 
 
@@ -205,6 +229,21 @@ class Phase:
 
     def add_head(self, head):
         self.heads.add(head)
+
+# ----------------------------------------------------------------------
+# Library-friendly entry point
+# ----------------------------------------------------------------------
+
+# This function is intended to be used as a library entry point
+# to convert a SUMO network XML file into a Nimrod-style JSON file.
+
+
+def build_network_json(net_xml_path: str, json_out_path: str) -> None:
+    """
+    Convert *net_xml_path* (.net.xml) into Nimrod-style JSON saved
+    to *json_out_path*.  Thin wrapper around NetworkData.
+    """
+    NetworkData(net_xml_path, json_out_path)
 
 
 if __name__ == "__main__":

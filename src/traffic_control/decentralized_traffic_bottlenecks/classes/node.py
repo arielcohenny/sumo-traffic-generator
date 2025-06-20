@@ -4,7 +4,7 @@ import traci
 import random
 
 from .phase import Phase
-from config import MIN_PHASE_TIME
+from ..config import MIN_PHASE_TIME
 from ..enums import AlgoType
 from .algo_config import CostToStepSize
 
@@ -31,6 +31,10 @@ class JunctionNode:
         for inx, ph in enumerate(junctions_dict[self.name]["phases"]):
             phase_links = set()
             for head_name in ph['heads']:
+                # Ariel: helper link (:A1_5, :B2_1, …) are skipped;
+                # look-ups now occur only for real edges that exist in heads_to_tails and link_names
+                if head_name.startswith(":"):
+                    continue
                 l_name = heads_to_tails[head_name]
                 phase_links.add(link_names[l_name])
                 all_heads[head_name].add_me_to_phase()

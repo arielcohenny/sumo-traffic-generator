@@ -15,7 +15,10 @@ from src.network.zones import extract_zones_from_junctions
 from src.traffic.builder import generate_vehicle_routes
 from src.config import CONFIG
 
-from src.traffic_control.decentralized_traffic_bottlenecks.integration import load_tree, compute_phases
+from src.traffic_control.decentralized_traffic_bottlenecks.integration import load_tree
+from src.traffic_control.decentralized_traffic_bottlenecks.classes.graph import Graph
+from src.traffic_control.decentralized_traffic_bottlenecks.classes.network import Network
+from src.traffic_control.decentralized_traffic_bottlenecks.classes.net_data_builder import build_network_json
 
 
 def main():
@@ -143,7 +146,7 @@ def main():
         )
         print(f"Generated SUMO configuration file: {sumo_cfg_path}")
 
-        # --- Step 8: Dynamic Simulation via TraCI & Tree Method ---
+        # --- Step 8: Dynamic Simulation via TraCI & Nimrod’s Tree Method ---
         # Load network tree structure and runner configuration
         json_file = Path(CONFIG.network_file).with_suffix(".json")
         if json_file.exists():
@@ -155,11 +158,6 @@ def main():
         print("Loaded network tree and run configuration.")
 
         # Initialize the TraCI controller
-        # controller = SumoController(
-        #     sumo_cfg=sumo_cfg_path,
-        #     step_length=args.step_length,
-        #     end_time=args.end_time
-        # )
         controller = SumoController(
             sumo_cfg=sumo_cfg_path,
             step_length=args.step_length,
@@ -168,55 +166,38 @@ def main():
         )
         print("Initialized TraCI controller.")
 
-        # Define per-step control callback
+        # Build Nimrod’s runtime objects once (outside the callback)
+        json_file = Path(CONFIG.network_file).with_suffix(".json")
+        build_network_json(CONFIG.network_file, json_file)
+        print(f"Built network JSON file: {json_file}")
 
-        # ------------------------------------------------------------------
-        # QUICK “even/odd” sanity-check controller
-        # ------------------------------------------------------------------
-        GREEN = 30      # s
-        YELLOW = 3       # s
-        CYCLE = GREEN + YELLOW     # 33 s
-        FULL = 2 * CYCLE          # 66 s  (NS part + EW part)
+        network_data = Network(json_file)
+        print("Loaded network data from JSON.")
+        graph = Graph(args.end_time)
+        print("Initialized Nimrod's Graph object.")
+        graph.build(network_data.edges_list, network_data.junctions_dict)
+        print("Built Nimrod's Graph from network data.")
+        seconds_in_cycle = network_data.calc_cycle_time()
+        print("Built network graph and calculated cycle time.")
 
-        def _build_states(tls_id: str):
-            """
-            Return four strings (ns_G, ns_Y, ew_G, ew_Y) whose length matches
-            len(traci.trafficlight.getControlledLinks(tls_id)).
-            Even linkIndex ⇒ treat as NS; odd ⇒ EW.
-            """
-            n = len(traci.trafficlight.getControlledLinks(tls_id))
-            mask = [(i % 2 == 0) for i in range(n)]          # True → NS
-            def _fmt(on, off): return ''.join(on if m else off for m in mask)
-            return (
-                _fmt('G', 'r'),  # ns green
-                _fmt('y', 'r'),  # ns yellow
-                _fmt('r', 'G'),  # ew green
-                _fmt('r', 'y')   # ew yellow
-            )
-
+        # Per‑step TraCI controller  ✅
         def control_callback(current_time: int):
-            """
-            Two-phase plan just to prove the phase-size error disappears when
-            each TLS gets a correct-length string.
-            """
-            t = int(current_time) % FULL
-            use_ns = t < CYCLE          # first half-cycle = NS
-            in_green = t % CYCLE < GREEN  # first 30 s of each half
+            """Apply Nimrod's Tree‑Method phase decisions each simulation step."""
 
-            for tls_id in traci.trafficlight.getIDList():
-                ns_g, ns_y, ew_g, ew_y = _build_states(tls_id)
-                state = (ns_g if in_green else ns_y) if use_ns else (
-                    ew_g if in_green else ew_y)
+            # 1) Update domain model and compute new Boolean decisions
+            graph.update_traffic_lights(current_time,
+                                        seconds_in_cycle,
+                                        run_config.algo_type)
+
+            # 2) Translate to SUMO colour strings (Graph does this for us)
+            # Ariel: adding a guard here to ensure we have valid phase_map
+            phase_map = graph.get_traffic_lights_phases(int(current_time))
+            if not phase_map:   # guard for None / empty dict
+                return
+
+            # 3) Push every TLS state to TraCI
+            for tls_id, state in phase_map.items():
                 traci.trafficlight.setRedYellowGreenState(tls_id, state)
-
-        # def control_callback(current_time: int):
-        #     phase_map = compute_phases(
-        #         tree_data,
-        #         sim_time=current_time,
-        #         run_config=run_config
-        #     )
-        #     for tls_id, state in phase_map.items():
-        #         traci.trafficlight.setRedYellowGreenState(tls_id, state)
 
         # Run the simulation
         controller.run(control_callback)

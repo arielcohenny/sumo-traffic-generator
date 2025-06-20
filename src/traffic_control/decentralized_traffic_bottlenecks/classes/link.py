@@ -1,4 +1,4 @@
-from config import MAX_DENSITY, ITERATION_TIME_MINUTES, M, L, MIN_VELOCITY
+from ..config import MAX_DENSITY, ITERATION_TIME_MINUTES, M, L, MIN_VELOCITY
 from ..enums import CostType
 
 
