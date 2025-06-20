@@ -1,10 +1,10 @@
 import traci
 
-from classes.iterations_trees import IterationTrees
-from classes.link import Link
-from classes.node import JunctionNode
-from classes.head import Head
-from classes.vehicle import Vehicle
+from .iterations_trees import IterationTrees
+from .link import Link
+from .node import JunctionNode
+from .head import Head
+from .vehicle import Vehicle
 from config import VEHICLES_MAX_NUM
 from utils import get_vehicle_inx
 
@@ -32,7 +32,8 @@ class Graph:
 
     def create_links_connections_and_heads(self, edges_list):
         for inx, e in enumerate(edges_list):
-            this_link = Link(inx, e['id'], e['from_junction'], e['to_junction'], e['distance'], e['lanes'], e['f_speed'], e['heads'])
+            this_link = Link(inx, e['id'], e['from_junction'], e['to_junction'],
+                             e['distance'], e['lanes'], e['f_speed'], e['heads'])
             self.all_links.append(this_link)
             self.link_names[this_link.edge_name] = this_link.link_id
             if e['to_junction'] not in self.node_names:
@@ -57,7 +58,8 @@ class Graph:
                                          is_traffic_light, tl_name, self.steps)
                 if is_traffic_light:
                     self.tl_node_ids.append(this_node.node_id)
-                    this_node.add_my_phases(junctions_dict, self.link_names, self.heads_to_tails, self.all_heads_dict)
+                    this_node.add_my_phases(
+                        junctions_dict, self.link_names, self.heads_to_tails, self.all_heads_dict)
                 self.all_nodes.append(this_node)
                 self.node_names[this_node.name] = this_node
             else:
@@ -80,7 +82,8 @@ class Graph:
             link.join_links_to_me(self.links_connections, self.link_names)
             link.join_links_from_me(self.links_connections, self.link_names)
             link.calc_max_properties()
-            link.calc_is_lead_to_tl(self.node_names[link.to_node_name].is_traffic_light if link.to_node_name in self.node_names else False)
+            link.calc_is_lead_to_tl(
+                self.node_names[link.to_node_name].is_traffic_light if link.to_node_name in self.node_names else False)
 
     def sum_edges_list(self, iteration):
         for link in self.all_links:
@@ -89,8 +92,10 @@ class Graph:
             head.add_count_to_calculation()
 
     def close_prev_vehicle_step(self, step: int):
-        ended: [int] = list(self.last_iter_vehicles.difference(self.this_iter_vehicles))
-        started: [int] = list(self.this_iter_vehicles.difference(self.last_iter_vehicles))
+        ended: [int] = list(
+            self.last_iter_vehicles.difference(self.this_iter_vehicles))
+        started: [int] = list(
+            self.this_iter_vehicles.difference(self.last_iter_vehicles))
         for v_id in ended:
             vehicle: Vehicle = self.all_vehicles[v_id]
             v_time = vehicle.end_drive(step)
@@ -111,7 +116,8 @@ class Graph:
 
     def update_traffic_lights(self, step, seconds_in_cycle, algo_type):
         for node_id in self.tl_node_ids:
-            self.all_nodes[node_id].update_traffic_light(step % seconds_in_cycle, algo_type)
+            self.all_nodes[node_id].update_traffic_light(
+                step % seconds_in_cycle, algo_type)
 
     def add_vehicles_to_step(self):
         vehicle_ids = traci.vehicle.getIDList()
@@ -125,7 +131,8 @@ class Graph:
 
     def calc_nodes_statistics(self, ended_iteration, seconds_in_cycle):
         for node_id in self.tl_node_ids:
-            self.all_nodes[node_id].aggregate_phases_per_iter(ended_iteration, seconds_in_cycle)
+            self.all_nodes[node_id].aggregate_phases_per_iter(
+                ended_iteration, seconds_in_cycle)
 
     def calc_wanted_programs(self, seconds_in_cycle, iteration_trees, iteration, cost_type, algo_type):
         for node_id in self.tl_node_ids:
@@ -139,7 +146,8 @@ class Graph:
             link.calc_my_iteration_data(iteration, self.loaded_per_iter)
         this_iter_trees = IterationTrees(iteration, self.all_links, cost_type)
         iteration_trees.append(this_iter_trees)
-        self.calc_wanted_programs(seconds_in_cycle, iteration_trees, iteration, cost_type, algo_type)
+        self.calc_wanted_programs(
+            seconds_in_cycle, iteration_trees, iteration, cost_type, algo_type)
         return this_iter_trees.all_trees_costs
 
     def fill_head_iteration(self):

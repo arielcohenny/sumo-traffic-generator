@@ -32,6 +32,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 --blocks_to_remove <int> # Internal junctions to delete (default: 0)
 --num_vehicles <int> # Total trips to generate (default: 300)
 --seed <int> # RNG seed (optional)
+--step-length #Simulation step length in seconds (for TraCI loop) default=1.0
+--end-time #Total simulation duration in seconds. (default 3600)
+--gui #Launch SUMO in GUI mode (sumo-gui) instead of headless sumo.
 
 Omit --seed to use a random value each run.
 

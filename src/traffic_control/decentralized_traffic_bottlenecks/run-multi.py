@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+from classes.run_config import RunConfig
+from enums import CostType, AlgoType
 from __future__ import print_function
 
 import os
@@ -8,16 +10,15 @@ from pathlib import Path
 
 import runner
 
-sys.path.append(os.path.join('d:', os.sep, 'Program Files (x86)', 'Eclipse', 'Sumo', 'tools'))
+sys.path.append(os.path.join(
+    'd:', os.sep, 'Program Files (x86)', 'Eclipse', 'Sumo', 'tools'))
 # sys.path.append(os.path.join('c:', os.sep, 'whatever', 'path', 'to', 'sumo', 'tools'))
 
 from sumolib import checkBinary  # noqa
 import traci  # noqa
-from enums import CostType, AlgoType
 
 _nogui = True
 
-from classes.run_config import RunConfig
 
 # config:
 input_network_file = '../input_network_data.json'
@@ -69,17 +70,19 @@ if __name__ == "__main__":
         sumoBinary = checkBinary('sumo-gui')
 
     common_path = '.../ExperimentFolder'
-    paths = [# '1',
-             '5'
+    paths = [  # '1',
+        '5'
         # , '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'
-             # '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40'
-        #'41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53', '54', '55', '56', '57', '58', '59', '60'
-         #'61', '62', '63', '64', '65', '66', '67', '68', '69', '70', '71', '72', '73', '74', '75', '76', '77', '78', '79', '80'
-        #'81', '82', '83', '84', '85'
+        # '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40'
+        # '41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53', '54', '55', '56', '57', '58', '59', '60'
+        # '61', '62', '63', '64', '65', '66', '67', '68', '69', '70', '71', '72', '73', '74', '75', '76', '77', '78', '79', '80'
+        # '81', '82', '83', '84', '85'
     ]
     configurations = [
-        RunConfig(False, 'CurrentTreeDvd', CostType.TREE_CURRENT_DIVIDED, AlgoType.BABY_STEPS),
-        RunConfig(True, 'SUMOActuated', CostType.TREE_CURRENT_DIVIDED, AlgoType.BABY_STEPS),
+        RunConfig(False, 'CurrentTreeDvd',
+                  CostType.TREE_CURRENT_DIVIDED, AlgoType.BABY_STEPS),
+        RunConfig(True, 'SUMOActuated',
+                  CostType.TREE_CURRENT_DIVIDED, AlgoType.BABY_STEPS),
         # RunConfig(False, 'Random', CostType.TREE_CURRENT_DIVIDED, AlgoType.RANDOM),
         # RunConfig(False, 'Uniform', CostType.TREE_CURRENT_DIVIDED, AlgoType.UNIFORM),
     ]
@@ -90,7 +93,8 @@ if __name__ == "__main__":
         for conf in configurations:
             method_dir = common_path + '/' + exp_path + '/' + conf.name
             Path(method_dir).mkdir(parents=True, exist_ok=True)
-            res = runner.run(sumoBinary, common_path + '/' + exp_path, method_dir, input_network_file, conf)
+            res = runner.run(sumoBinary, common_path + '/' +
+                             exp_path, method_dir, input_network_file, conf)
             results[iteration][conf.name] = res
             config_data.append(conf.print_me_to_string())
         print_config_data(config_data, common_path + '/' + exp_path)

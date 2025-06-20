@@ -68,13 +68,15 @@ def closing_step(graph, step, seconds_in_cycle, iteration_stats):
     graph.add_vehicles_to_step()
     graph.close_prev_vehicle_step(step)
     iteration = calc_iteration_from_step(step, seconds_in_cycle)
-    iteration_stats.update_vehicles_inside(traci.vehicle.getIDList(), step, iteration)
+    iteration_stats.update_vehicles_inside(
+        traci.vehicle.getIDList(), step, iteration)
     graph.fill_head_iteration()
     return iteration
 
 
 def closing_simulation(graph, iteration, print_data, iteration_stats):
-    print_data.update_end_data(iteration, graph.vehicle_total_time, graph.ended_vehicles_count, graph.started_vehicles_count)
+    print_data.update_end_data(iteration, graph.vehicle_total_time,
+                               graph.ended_vehicles_count, graph.started_vehicles_count)
     print_data.print_driving_time_distribution(graph.driving_Time_seconds)
     print_data.print_vehicles_stats()
     print_data.print_trees_costs()
@@ -89,31 +91,74 @@ def run(sumo_binary, path, output_path, input_network_file, run_config: RunConfi
     sumocfg_path = path + "/simulation.sumocfg"
     # this is the normal way of using traci. sumo is started as a
     # subprocess and then the python script connects and runs
-    traci.start([sumo_binary, "-c", sumocfg_path,
-                 "--tripinfo-output", "tripinfo.xml",
-                 "--statistic-output", "stats.xml", "--tripinfo-output.write-unfinished", "--duration-log.statistics"  # , "--no-internal-links"
-                 ])
+    # traci.start([sumo_binary, "-c", sumocfg_path,
+    #              "--tripinfo-output", "tripinfo.xml",
+    #              "--statistic-output", "stats.xml", "--tripinfo-output.write-unfinished", "--duration-log.statistics"  # , "--no-internal-links"
+    #              ])
+
+    print("Before 2 traci.start()")
+
+    traci.start([
+        sumo_binary,
+        "-c", sumocfg_path,
+        "--tripinfo-output", "tripinfo.xml",
+        "--statistic-output", "stats.xml",
+        "--tripinfo-output.write-unfinished",
+        "--duration-log.statistics",
+        "--start",            # ← makes sumo-gui begin stepping immediately
+        "--quit-on-end"       # ← closes GUI when the run finishes (optional)
+    ])
+
+    print("After 2 traci.start()")
+
+    target_time = 5          # seconds
+    while traci.simulation.getMinExpectedNumber() == 0 and traci.simulation.getTime() < target_time:
+        traci.simulationStep(traci.simulation.getTime() + 1)
+    print("After warm-up: minExpected =", traci.simulation.getMinExpectedNumber(),
+          " simTime =", traci.simulation.getTime())
+
+    # ── NEW: warm-up so getMinExpectedNumber() becomes > 0 ──────────────
+    warm_up = 120           # at 0.02 s/step that’s ≈ 2 s
+    for _ in range(warm_up):
+        if traci.simulation.getMinExpectedNumber() > 0:
+            break
+        traci.simulationStep(step + 1)
+
+    print("After warm-up: minExpected =",
+          traci.simulation.getMinExpectedNumber(),
+          " simTime =", traci.simulation.getTime())
+
     """
         iteration 0 is 0-89 seconds (steps)
     """
+    print("After warm-up: entering main loop input_network_file =", input_network_file)
     network_data = Network(input_network_file)
+    print("After Network(input_network_file)")
     iteration_trees = []
     """execute the TraCI control loop"""
     step = 0
     iteration = 0
+    print("DEBUG:", "SIMULATION_TIME_SEC =", SIMULATION_TIME_SEC)   # NEW
+    print("DEBUG:", "entering while-loop with step =", step)
     graph = Graph(SIMULATION_TIME_SEC)
     graph.build(network_data.edges_list, network_data.junctions_dict)
     seconds_in_cycle = network_data.calc_cycle_time()
-    iteration_stats = IterationStats(SIMULATION_TIME_SEC // seconds_in_cycle, output_path)
-    print_data = PrintData(graph.all_links, graph.all_nodes, graph.tl_node_ids, output_path)
+    iteration_stats = IterationStats(
+        SIMULATION_TIME_SEC // seconds_in_cycle, output_path)
+    print_data = PrintData(graph.all_links, graph.all_nodes,
+                           graph.tl_node_ids, output_path)
 
     # iteration 0 is 0-89 seconds
-    while traci.simulation.getMinExpectedNumber() > 0 and step < SIMULATION_TIME_SEC:
+    while step < SIMULATION_TIME_SEC:
+        print("DEBUG in loop, step =", step)
         if is_calculation_time(step, seconds_in_cycle):
-            calculation_time(graph, iteration, step, iteration_trees, seconds_in_cycle, run_config, print_data)
+            calculation_time(graph, iteration, step, iteration_trees,
+                             seconds_in_cycle, run_config, print_data)
         if not run_config.is_actuated:
-            graph.update_traffic_lights(step, seconds_in_cycle, run_config.algo_type)
-        iteration = closing_step(graph, step, seconds_in_cycle, iteration_stats)
+            graph.update_traffic_lights(
+                step, seconds_in_cycle, run_config.algo_type)
+        iteration = closing_step(
+            graph, step, seconds_in_cycle, iteration_stats)
         step += 1
     closing_simulation(graph, iteration, print_data, iteration_stats)
     return print_data.vehicles_stats_print_summary()

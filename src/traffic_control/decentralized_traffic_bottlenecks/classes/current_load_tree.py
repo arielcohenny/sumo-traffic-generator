@@ -1,5 +1,5 @@
-from classes.load_tree_branch import LoadTreeBranch
-from enums import CostType
+from .load_tree_branch import LoadTreeBranch
+from ..enums import CostType
 
 
 class CurrentLoadTree:
@@ -21,7 +21,8 @@ class CurrentLoadTree:
             next_branch_to_be_added = this_branch.link_ids_to_be_added[0]
             this_branch.link_ids_to_be_added.pop(0)
             if next_branch_to_be_added not in self.all_my_branches:
-                self.add_link_to_spatial_tree(next_branch_to_be_added, links, link_id)
+                self.add_link_to_spatial_tree(
+                    next_branch_to_be_added, links, link_id)
 
     def get_cost_by_type(self, cost_type):
         if cost_type == CostType.TREE_CURRENT_DIVIDED.name:
@@ -43,6 +44,3 @@ class CurrentLoadTree:
         for link_id in list(self.all_my_branches.keys()):
             self.all_my_branches[link_id].set_current_cost(links[link_id].cost_data_per_iter[iteration].current_cost_for_tree,
                                                            links[link_id].cost_data_per_iter[iteration].current_cost)
-
-
-

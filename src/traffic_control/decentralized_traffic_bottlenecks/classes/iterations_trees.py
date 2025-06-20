@@ -1,5 +1,5 @@
-from classes.current_load_tree import CurrentLoadTree
-from enums import CostType
+from .current_load_tree import CurrentLoadTree
+from ..enums import CostType
 
 
 class IterationTrees:
@@ -53,4 +53,3 @@ class TreeCost:
     def __init__(self, iteration, cost):
         self.iteration = iteration
         self.cost = cost
-

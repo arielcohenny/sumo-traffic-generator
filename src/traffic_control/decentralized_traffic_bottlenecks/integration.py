@@ -1,54 +1,67 @@
-# integration.py  (overwrite the top and wrapper call)
+# src/traffic_control/decentralized_traffic_bottlenecks/integration.py
 
+import shutil
 from pathlib import Path
+import xml.etree.ElementTree as ET
+from types import SimpleNamespace
 
-import sys                                   #  ← NEW
-
-pkg_dir = Path(__file__).resolve().parent    #  ← NEW
-if str(pkg_dir) not in sys.path:             #  ← NEW
-    sys.path.insert(0, str(pkg_dir))         #  ← NEW
-
-from .runner import run as tree_run                   # ← correct path & function
-from .classes.run_config import RunConfig             # ← RunConfig definition lives here
-
-from .enums import AlgoType, CostType
+from .enums import CostType, AlgoType
+from .classes.run_config import RunConfig
 
 
-def run_tree_method(
+def load_tree(
     net_file: str,
-    route_file: str,
-    sumo_cfg: str,
     *,
-    sumo_binary: str = "sumo-gui",
-    extra_sumo_flags: list[str] | None = None,
-) -> None:
+    cost_type: CostType = CostType.TREE_CURRENT,
+    algo_type: AlgoType = AlgoType.PLANNED,
+    sumo_cfg: str | None = None
+) -> tuple[SimpleNamespace, RunConfig]:
     """
-    Launch SUMO-GUI and let the Tree-method logic control every TLS.
+    Instead of Nimrod’s JSON-based loader, we:
+      1. (Optionally) copy the SUMO config to simulation.sumocfg
+      2. Parse net_file for <tlLogic> entries
+      3. Build a trivial tree_data with just the list of TLS IDs
     """
-    extra_sumo_flags = extra_sumo_flags or []
+    # 1) Handle configuration file placement
+    if sumo_cfg:
+        work_dir = Path(sumo_cfg).parent
+        target = work_dir / "simulation.sumocfg"
+        if not target.exists():
+            shutil.copyfile(sumo_cfg, target)
+    else:
+        work_dir = Path(net_file).parent
 
-    # --- build RunConfig with defaults ---
-    # rc = RunConfig()          # upstream class has sensible defaults
+    # 2) Parse the network XML for traffic-light logic
+    xml = ET.parse(net_file)
+    root = xml.getroot()
+    tls_elements = root.findall("tlLogic")
+    tls_ids = [tl.get("id") for tl in tls_elements]
 
-    # --- derive paths expected by tree_run() ---
-    work_dir   = Path(sumo_cfg).parent.as_posix()     # 'path'       arg
-    output_dir = work_dir                             # same folder is fine
+    if not tls_ids:
+        raise RuntimeError(f"No <tlLogic> entries found in {net_file}")
 
+    # 3) Build a minimal tree_data object
+    tree_data = SimpleNamespace(tls_ids=tls_ids)
+
+    # 4) Build the RunConfig exactly as before
     rc = RunConfig(
-        is_actuated=False,           # ← keep the original paper’s open-loop mode
-        output_directory=output_dir,
-        cost_type=CostType.QUEUE,    # ← same default used in the repo
-        algo_type=AlgoType.TREE,     # ← the decentralized tree algorithm
-        # any other **optional** params can be omitted—they already have defaults
+        is_actuated=False,
+        output_directory=str(work_dir),
+        cost_type=cost_type,
+        algo_type=algo_type,
     )
 
+    return tree_data, rc
 
-    # run() will create <work_dir>/simulation.sumocfg internally,
-    # so we just pass the folder, NOT the file.
-    tree_run(
-        sumo_binary,
-        work_dir,
-        output_dir,
-        net_file,
-        rc,
-    )
+
+def compute_phases(
+    tree_data: SimpleNamespace,
+    sim_time: int,
+    run_config: RunConfig
+) -> dict[str, str]:
+    """
+    A trivial 2-phase static policy:
+      - All lights show "GGrr" (green for north-south, red for east-west).
+      - Replace or extend this with your dynamic logic later.
+    """
+    return {tls_id: "GGrr" for tls_id in tree_data.tls_ids}

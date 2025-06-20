@@ -9,6 +9,7 @@ from typing import Set
 from src.sim.sumo_utils import *
 from src.config import CONFIG
 
+
 # --- Global Variables ---
 # temporary files
 network_file_temp = os.path.abspath(
@@ -20,26 +21,70 @@ network_file_prone = os.path.abspath(
 # Generate a full grid network using netgenerate
 
 
+# def generate_full_grid_network(dimension, block_size_m, output_file):
+#     netgenerate_cmd = [
+#         "netgenerate", "--grid",
+#         f"--grid.x-number={dimension}",
+#         f"--grid.y-number={dimension}",
+#         f"--grid.x-length={block_size_m}",
+#         f"--grid.y-length={block_size_m}",
+#         "--tls.guess",
+#         "-o", output_file
+#     ]
+#     try:
+#         subprocess.run(netgenerate_cmd, check=True,
+#                        capture_output=True, text=True)
+#     except subprocess.CalledProcessError as e:
+#         raise Exception(f"Error during netconvert execution:", e.stderr)
+
 def generate_full_grid_network(dimension, block_size_m, output_file):
-    netgenerate_cmd = [
-        "netgenerate", "--grid",
-        f"--grid.x-number={dimension}",
-        f"--grid.y-number={dimension}",
-        f"--grid.x-length={block_size_m}",
-        f"--grid.y-length={block_size_m}",
-        # default.junctions.radius: takes care of the “Intersecting left turns…” warnings.
-        # By default netgenerate uses a radius of 4m; raising it eliminates those conflicts
-        f"--default.junctions.radius={CONFIG.DEFAULT_JUNCTION_RADIUS}",
-        # aggregate-warnings: aggregates warnings of the same type whenever more than 1 occur
-        # warnings can be removed completely by using --no-warnings=true
-        "--aggregate-warnings=1",
-        "-o", output_file
+    """
+    Generate a full orthogonal grid network with traffic lights.
+
+    :param dimension: Number of rows/columns of junctions (e.g., 5 for 5×5)
+    :param block_size_m: Length of each block in meters
+    :param output_file: Path to write the .net.xml file
+    """
+    output = Path(output_file)
+    # Step 1: Generate basic grid without traffic lights
+    basic_net = output.with_name(f"{output.stem}_basic.net.xml")
+    cmd_gen = [
+        "netgenerate",
+        "--grid",
+        f"--grid.number={dimension}",
+        f"--grid.length={block_size_m}",
+        "--grid.attach-length=0",
+        "--output-file",
+        str(basic_net)
     ]
     try:
-        subprocess.run(netgenerate_cmd, check=True,
-                       capture_output=True, text=True)
+        subprocess.run(cmd_gen, check=True, capture_output=True, text=True)
     except subprocess.CalledProcessError as e:
-        raise Exception(f"Error during netgenerate execution:", e.stderr)
+        raise Exception(f"Error during netgenerate execution: {e.stderr}")
+
+    # Step 2: Add static traffic lights
+    cmd_tls = [
+        "netconvert",
+        "--sumo-net-file",
+        str(basic_net),
+        "--tls.guess",
+        "--tls.default-type", "static",
+        "--output-file",
+        str(output)
+    ]
+    try:
+        subprocess.run(cmd_tls, check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as e:
+        raise Exception(f"Error during netconvert TL addition: {e.stderr}")
+
+    # Clean up intermediate file
+    if basic_net.exists():
+        basic_net.unlink()
+
+    # Verify output exists
+    if not output.exists():
+        raise Exception(f"Error: Network file '{output}' was not created.")
+
 
 # Generate a list of random junction IDs to remove from the grid
 
@@ -197,10 +242,7 @@ def generate_grid_network(seed, dimension, block_size_m, network_file, num_junct
             subprocess.run([
                 "netconvert",
                 "--sumo-net-file", str(network_file_prone),
-                "--output-file", str(network_file),
-                # aggregate-warnings: aggregates warnings of the same type whenever more than 1 occur
-                # warnings can be removed completely by using --no-warnings=true
-                "--aggregate-warnings=1",
+                "--output-file", str(network_file)
             ], check=True)
 
             # remove temporary files
@@ -210,181 +252,8 @@ def generate_grid_network(seed, dimension, block_size_m, network_file, num_junct
             generate_full_grid_network(dimension, block_size_m, network_file)
 
     except subprocess.CalledProcessError as e:
-        raise Exception(f"Error during netgenerate execution:", e.stderr)
+        raise Exception(f"Error during netconvert execution:", e.stderr)
 
     if not os.path.exists(network_file):
         raise Exception(
             f"Error: Network file '{network_file}' was not created.")
-
-
-# def inject_traffic_lights(
-#     net_file: str,
-#     program_id: str = '0',
-#     green_duration: int = 30,
-#     yellow_duration: int = 3
-# ) -> None:
-#     """
-#     Inject static traffic-light logic into an existing SUMO network file.
-#     """
-#     path = Path(net_file)
-#     tree = ET.parse(path)
-#     root = tree.getroot()
-
-#     # Remove existing tlLogic entries
-#     for tl in root.findall('tlLogic'):
-#         root.remove(tl)
-
-#     # Add tlLogic for each junction element
-#     # Use .//junction to find all junction tags anywhere in the tree
-#     junctions = root.findall('.//junction')
-#     for junction in junctions:
-#         jid = junction.get('id')
-#         if jid.startswith(':'):
-#             continue
-#         # tell SUMO this junction is signalized
-#         junction.set('type', 'traffic_light')
-#         tl = ET.SubElement(
-#             root,
-#             'tlLogic',
-#             id=jid,
-#             type='static',
-#             programID=program_id,
-#             offset='0'
-#         )
-#         ET.SubElement(tl, 'phase', duration=str(green_duration), state='GGrr')
-#         ET.SubElement(tl, 'phase', duration=str(yellow_duration), state='yyrr')
-#         ET.SubElement(tl, 'phase', duration=str(green_duration), state='rrGG')
-#         ET.SubElement(tl, 'phase', duration=str(yellow_duration), state='rryy')
-
-#     # Write back modified network
-#     tree.write(path, encoding='utf-8', xml_declaration=True)
-
-#     # Verification: parse the modified tree to check tlLogic presence
-#     modified_tree = ET.parse(path)
-#     modified_root = modified_tree.getroot()
-#     if not modified_root.findall('tlLogic'):
-#         raise Exception(
-#             "Injection failed: no <tlLogic> elements found after injection.")
-
-
-def inject_traffic_lights(
-    net_file: str,
-    program_id: str = "0",
-    green_duration: int = 30,
-    yellow_duration: int = 3,
-) -> None:
-    """
-    Inject static traffic-light logic into an existing SUMO network file in place,
-    ensuring proper linkIndex and connection-to-TL mappings to eliminate unused-state warnings.
-
-    Workflow:
-    1) Run netconvert to assign linkIndex attributes, producing a temporary link-indexed file.
-    2) Parse the link-indexed file, remove any existing <tlLogic> blocks.
-    3) For each junction, collect its controlled <connection> elements, assign 'tl' and linkIndex,
-       then inject a new <tlLogic> with phases, using linkIndexByTLS to map indices correctly.
-    4) Restore each connection's original 'state' attribute.
-    5) Overwrite the original net_file with the modified network and clean up.
-
-    Parameters:
-        net_file: Path to the .net.xml file to modify in place.
-        program_id: The programID attribute for each <tlLogic>.
-        green_duration: Duration (seconds) for green phases.
-        yellow_duration: Duration (seconds) for yellow phases.
-    """
-    path = Path(net_file)
-
-    # Backup original connection states
-    orig_tree = ET.parse(path)
-    orig_root = orig_tree.getroot()
-    state_map = {}
-    for c in orig_root.findall("connection"):
-        key = (c.get("from"), c.get("to"), c.get("via"), c.get("dir"))
-        state_map[key] = c.get("state")
-
-    # 1) Run netconvert to assign linkIndex
-    linkindexed = path.with_suffix(".linkindexed.net.xml")
-    subprocess.run([
-        "netconvert",
-        "--sumo-net-file", str(path),
-        "--output-file",    str(linkindexed)
-    ], check=True)
-
-    # 2) Parse link-indexed file and remove old tlLogic
-    tree = ET.parse(linkindexed)
-    root = tree.getroot()
-    for old in root.findall("tlLogic"):
-        root.remove(old)
-
-    all_conns = root.findall("connection")
-
-    # 3) Inject new tlLogic per junction
-    # Keep tlLogic BEFORE any <connection> so SUMO sees the controller first
-    # Determine insertion index: just after the <location> element if present,
-    # otherwise at the very beginning of <net>
-    insert_at = 0
-    for i, elem in enumerate(root):
-        if elem.tag == "location":
-            insert_at = i + 1
-            break
-
-    for j in root.findall("junction"):
-        jid = j.get("id")
-        if jid.startswith(":"):
-            continue  # skip internal junctions
-        j.set("type", "traffic_light")
-
-        # Controlled connections for this junction (all internal ones)
-        conns_here = [
-            c for c in all_conns
-            if c.get("from", "").startswith(f":{jid}_")
-        ]
-        if not conns_here:
-            continue
-
-        # Assign 'tl' and linkIndex to each connection
-        for idx, c in enumerate(conns_here):
-            c.set("tl", jid)
-            c.set("linkIndex", str(idx))
-
-        # Helper to classify NS vs EW
-        def is_ns(conn):
-            return conn.get("dir") in ("s", "t")
-
-        # Build phases, skipping all-red
-        phases = [
-            (green_duration,  "".join("G" if is_ns(c) else "r" for c in conns_here)),
-            (yellow_duration, "".join("y" if is_ns(c) else "r" for c in conns_here)),
-            (green_duration,  "".join("r" if is_ns(c) else "G" for c in conns_here)),
-            (yellow_duration, "".join("r" if is_ns(c) else "y" for c in conns_here)),
-        ]
-
-        tl_attribs = {
-            "id": jid,
-            "type": "static",
-            "programID": program_id,
-            "offset": "0",
-            "linkIndexByTLS": "true",
-        }
-        tl = ET.Element("tlLogic", **tl_attribs)
-        for dur, state in phases:
-            if all(ch == "r" for ch in state):
-                continue
-            ET.SubElement(tl, "phase", duration=str(dur), state=state)
-
-        # Insert the tlLogic before any <connection> elements
-        root.insert(insert_at, tl)
-        insert_at += 1  # keep subsequent tlLogics in order
-
-    # 4) Restore connection states
-    for c in root.findall("connection"):
-        key = (c.get("from"), c.get("to"), c.get("via"), c.get("dir"))
-        orig_state = state_map.get(key)
-        if orig_state is not None:
-            c.set("state", orig_state)
-
-    # 5) Write back to original file and cleanup
-    tree.write(path, encoding="utf-8", xml_declaration=True)
-    try:
-        linkindexed.unlink()
-    except:
-        pass

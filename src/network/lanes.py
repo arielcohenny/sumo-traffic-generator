@@ -3,11 +3,12 @@ import random
 from pathlib import Path
 import subprocess
 
+
 def set_lane_counts(net_file_in: str | Path,
-                          net_file_out: str | Path,
-                          seed: int,
-                          min_lanes: int = 1,
-                          max_lanes: int = 3) -> None:
+                    net_file_out: str | Path,
+                    seed: int,
+                    min_lanes: int = 1,
+                    max_lanes: int = 3) -> None:
     """
     Rewrites every edge in the .net.xml file to have a random number of lanes (1–3).
 
@@ -57,9 +58,9 @@ def set_lane_counts(net_file_in: str | Path,
         #     })
 
         # keep the shape of the first lane
-        shape = old_lanes[0].get("shape") or "0.00,0.00 1.00,0.00"  # fallback shape if missing
+        # fallback shape if missing
+        shape = old_lanes[0].get("shape") or "0.00,0.00 1.00,0.00"
 
-        print(f"Setting {num_lanes} lanes for edge {edge.get('id')}")
         for i in range(num_lanes):
             lane_attrs = {
                 "id": f"{edge.get('id')}_{i}",
@@ -76,5 +77,8 @@ def set_lane_counts(net_file_in: str | Path,
     subprocess.run([
         "netconvert",
         "--sumo-net-file", str(net_file_out),
-        "--output-file", str(net_file_out)
+        "--output-file", str(net_file_out),
+        # aggregate-warnings: aggregates warnings of the same type whenever more than 1 occur
+        # warnings can be removed completely by using --no-warnings=true
+        "--aggregate-warnings=1",
     ], check=True)
