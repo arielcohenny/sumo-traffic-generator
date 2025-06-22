@@ -11,6 +11,8 @@ from collections import deque
 # -----------------------------
 #  Interface for pluggable θᵢ
 # -----------------------------
+
+
 class ThetaGenerator(Protocol):
     def sample(self, cell_id: str, land_use: str, zone_id: str) -> float: ...
 
@@ -23,12 +25,13 @@ def assign_land_use_to_zones(features, seed):
         {**lu, "target": round(total_cells * lu["percentage"] / 100)} for lu in CONFIG.land_uses
     ]
 
-    grid = {(feat['properties']['i'], feat['properties']['j']): feat for feat in features}
+    grid = {(feat['properties']['i'], feat['properties']['j'])
+             : feat for feat in features}
     available = set(grid.keys())
 
     def get_neighbors(cell):
         x, y = cell
-        return [(x + dx, y + dy) for dx, dy in [(-1,0), (1,0), (0,-1), (0,1)] if (x + dx, y + dy) in available]
+        return [(x + dx, y + dy) for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)] if (x + dx, y + dy) in available]
 
     for lu in land_use_targets:
         remaining = lu["target"]
@@ -57,6 +60,8 @@ def assign_land_use_to_zones(features, seed):
 #  Main helper: build zone outline polygons from junction grid
 # ------------------------------------------------------------
 # insert - shrink each square on all sides
+
+
 def extract_zones_from_junctions(
     net_file: str,
     cell_size: float,
@@ -85,7 +90,8 @@ def extract_zones_from_junctions(
     xs = sorted(xs)
     ys = sorted(ys)
     if len(xs) < 2 or len(ys) < 2:
-        raise ValueError("Need at least two distinct x and y coordinates to form zones.")
+        raise ValueError(
+            "Need at least two distinct x and y coordinates to form zones.")
 
     # ------------------------------------------------------
     # 2. Infer cell size if caller didn’t supply one explicitly
@@ -105,8 +111,10 @@ def extract_zones_from_junctions(
             ymin, ymax = ys[j], ys[j + 1]
 
             if inset > 0.0:
-                xmin += inset; xmax -= inset
-                ymin += inset; ymax -= inset
+                xmin += inset
+                xmax -= inset
+                ymin += inset
+                ymax -= inset
 
             geom = box(xmin, ymin, xmax, ymax)
             zone_id = f"Z_{i}_{j}"
@@ -147,8 +155,3 @@ def extract_zones_from_junctions(
                 f"shape=\"{shape_str}\"/>\n"
             )
         f.write("</additional>\n")
-
-    print(
-        f"✔ {(len(xs)-1)*(len(ys)-1)} zones written "
-        f"| grid={(len(xs)-1)}×{(len(ys)-1)} | cell={cell_size} m | fill={fill_polygons}"
-    )

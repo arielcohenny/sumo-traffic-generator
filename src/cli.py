@@ -20,6 +20,8 @@ from src.traffic_control.decentralized_traffic_bottlenecks.classes.graph import 
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.network import Network
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.net_data_builder import build_network_json
 
+from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_set_lane_counts, ValidationError
+
 
 def main():
     # --- Global Variables and Constants ---
@@ -95,7 +97,18 @@ def main():
             CONFIG.network_file,
             int(args.blocks_to_remove)
         )
-        print(f"Generated network file: {CONFIG.network_file}")
+        try:
+            verify_generate_grid_network(
+                seed,
+                int(args.grid_dimension),
+                int(args.block_size_m),
+                CONFIG.network_file,
+                int(args.blocks_to_remove),
+            )
+        except ValidationError as ve:
+            print(f"Failed generating network file: {ve}")
+            exit(1)
+        print(f"Generated network file: {CONFIG.network_file} successfully.")
 
         # --- Step 2: Extract Zones - --
         extract_zones_from_junctions(
@@ -106,15 +119,34 @@ def main():
             fill_polygons=True,
             inset=0.0
         )
-        print("Extracted zones")
+        try:
+            verify_extract_zones_from_junctions(
+                CONFIG.network_file,
+                CONFIG.output_dir,
+            )
+        except ValidationError as ve:
+            print(f"Zone extraction failed: {ve}")
+            exit(1)
+        print("Extracted zones from junctions successfully.")
 
         # --- Step 3: Set Lane Counts ---
         set_lane_counts(
             net_file_in=CONFIG.network_file,
             net_file_out=CONFIG.network_file,
-            seed=seed
+            seed=seed,
+            min_lanes=CONFIG.MIN_LANES,
+            max_lanes=CONFIG.MAX_LANES
         )
-        print("Set lane counts for edges")
+        try:
+            verify_set_lane_counts(
+                CONFIG.network_file,
+                min_lanes=CONFIG.MIN_LANES,
+                max_lanes=CONFIG.MAX_LANES,
+            )
+        except ValidationError as ve:
+            print(f"Lane-count validation failed: {ve}")
+            exit(1)
+        print("Successfully set lane counts for edges.")
 
         # --- Step 4: Assign Edge Attractiveness ---
         assign_edge_attractiveness(

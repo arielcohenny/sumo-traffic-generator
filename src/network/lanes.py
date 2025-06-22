@@ -4,11 +4,47 @@ from pathlib import Path
 import subprocess
 
 
+def repair_connectivity_in_place(net_path: str | Path) -> None:
+    """
+    For every <connection …> that goes from lane 0→0, clone it so that
+    lane i of the *from* edge connects to lane i of the *to* edge for all
+    i = 1 … min(n_from, n_to)-1.  Overwrites the .net.xml in place.
+    """
+    net_path = Path(net_path)
+    tree = ET.parse(net_path)
+    root = tree.getroot()
+
+    # cache number-of-lanes per edge
+    lanes_per_edge: dict[str, int] = {
+        e.get("id"): len(e.findall("lane"))
+        for e in root.findall("edge")
+        if e.get("function") != "internal"
+    }
+
+    new_conns: list[ET.Element] = []
+    for conn in root.findall("connection"):
+        # consider only templates that currently connect lane 0→0
+        if conn.get("fromLane") != "0" or conn.get("toLane") != "0":
+            continue
+        frm, to = conn.get("from"), conn.get("to")
+        n_from = lanes_per_edge.get(frm, 1)
+        n_to = lanes_per_edge.get(to,   1)
+        for i in range(1, min(n_from, n_to)):
+            dup = ET.Element("connection", attrib=conn.attrib)
+            dup.set("fromLane", str(i))
+            dup.set("toLane",   str(i))
+            new_conns.append(dup)
+
+    # append the clones and write back
+    root.extend(new_conns)
+    tree.write(net_path, encoding="utf-8")
+
+
 def set_lane_counts(net_file_in: str | Path,
                     net_file_out: str | Path,
                     seed: int,
-                    min_lanes: int = 1,
-                    max_lanes: int = 3) -> None:
+                    min_lanes: int,
+                    max_lanes: int) -> None:
     """
     Rewrites every edge in the .net.xml file to have a random number of lanes (1–3).
 
@@ -73,6 +109,8 @@ def set_lane_counts(net_file_in: str | Path,
 
     Path(net_file_out).parent.mkdir(parents=True, exist_ok=True)
     tree.write(net_file_out, encoding="UTF-8", xml_declaration=True)
+
+    repair_connectivity_in_place(net_file_out)
 
     subprocess.run([
         "netconvert",
