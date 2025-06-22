@@ -123,6 +123,9 @@ def verify_generate_grid_network(
     return
 
 
+# ---------------------------------------------------------------------------
+#  Zone extraction verification (inline after extract_zones_from_junctions)
+# ---------------------------------------------------------------------------
 def verify_extract_zones_from_junctions(
     net_file: str | Path,
     out_dir: str | Path,
@@ -295,4 +298,103 @@ def verify_set_lane_counts(
             )
 
     # all good
+    return
+
+# ---------------------------------------------------------------------------
+#  Edge attractiveness verification (inline after assign_edge_attractiveness)
+# ---------------------------------------------------------------------------
+
+    """Validate *assign_edge_attractiveness* output.
+
+Checks performed
+----------------
+1. **Presence**   Every non‑internal `<edge>` carries *both* XML attributes
+   `depart_attractiveness` and `arrive_attractiveness`.
+2. **Type & Range**   Values are non‑negative integers (netconvert often wraps a
+   single‑lane value as `[3]`; brackets are stripped first).
+3. **Distribution sanity**   The sample mean of each attribute must sit within
+   ±50 % (default *tolerance*) of the corresponding Poisson λ used when the
+   helper was called (`lambda_depart`, `lambda_arrive`).  This weeds out cases
+   where the attribute was written but the random draw silently failed.
+4. **Variability**   Rejects the degenerate case where every edge got the same
+   value, indicating the random generator wasn’t invoked.
+"""
+
+
+def _mean(vals: list[int]) -> float:
+    return sum(vals) / len(vals) if vals else float("nan")
+
+
+def _to_float(val):
+    """Coerce CLI values that sometimes arrive as tuple / str → float."""
+    if isinstance(val, (list, tuple)):
+        val = val[0]
+    return float(val)
+
+
+def verify_assign_edge_attractiveness(
+    seed: int,
+    net_file: str | Path,
+    *,
+    lambda_depart: float | str | tuple,
+    lambda_arrive: float | str | tuple,
+    tolerance: float = 0.5,  # ±50 % of λ is acceptable
+) -> None:
+    """Validate that attractiveness attributes exist and are plausible."""
+
+    lambda_depart_f = _to_float(lambda_depart)
+    lambda_arrive_f = _to_float(lambda_arrive)
+
+    path = Path(net_file)
+    if not path.exists():
+        raise ValidationError(
+            f"Attractiveness check: network file not found: {path}")
+
+    tree = ET.parse(path)
+    root = tree.getroot()
+
+    dep_vals: list[int] = []
+    arr_vals: list[int] = []
+
+    for edge in root.findall("edge"):
+        if edge.get("function") == "internal":
+            continue
+
+        dep = edge.get("depart_attractiveness")
+        arr = edge.get("arrive_attractiveness")
+        if dep is None or arr is None:
+            raise ValidationError(
+                f"Edge {edge.get('id')} missing attractiveness attributes")
+
+        dep = dep.strip("[]")
+        arr = arr.strip("[]")
+        try:
+            dep_i = int(dep)
+            arr_i = int(arr)
+        except ValueError:
+            raise ValidationError(
+                f"Edge {edge.get('id')} has non‑integer attractiveness value")
+        if dep_i < 0 or arr_i < 0:
+            raise ValidationError(
+                f"Edge {edge.get('id')} has negative attractiveness value")
+
+        dep_vals.append(dep_i)
+        arr_vals.append(arr_i)
+
+    # sample‑mean sanity ------------------------------------------------------
+    dep_mean = _mean(dep_vals)
+    arr_mean = _mean(arr_vals)
+
+    if not (lambda_depart_f * (1 - tolerance) <= dep_mean <= lambda_depart_f * (1 + tolerance)):
+        raise ValidationError(
+            f"Depart attractiveness mean {dep_mean:.2f} outside ±{tolerance*100:.0f}% of λ={lambda_depart_f}")
+    if not (lambda_arrive_f * (1 - tolerance) <= arr_mean <= lambda_arrive_f * (1 + tolerance)):
+        raise ValidationError(
+            f"Arrive attractiveness mean {arr_mean:.2f} outside ±{tolerance*100:.0f}% of λ={lambda_arrive_f}")
+
+    # variability check -------------------------------------------------------
+    if len(set(dep_vals)) <= 1 and len(set(arr_vals)) <= 1:
+        raise ValidationError(
+            "Attractiveness values appear constant; distribution sampling may have failed")
+
     return

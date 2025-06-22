@@ -20,7 +20,7 @@ from src.traffic_control.decentralized_traffic_bottlenecks.classes.graph import 
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.network import Network
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.net_data_builder import build_network_json
 
-from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_set_lane_counts, ValidationError
+from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_set_lane_counts, verify_assign_edge_attractiveness, ValidationError
 
 
 def main():
@@ -152,14 +152,24 @@ def main():
         assign_edge_attractiveness(
             seed,
             CONFIG.network_file,
-            lambda_depart=3.5,
-            lambda_arrive=2.0
+            lambda_depart=CONFIG.LAMBDA_DEPART,
+            lambda_arrive=CONFIG.LAMBDA_ARRIVE,
         )
-        print("Assigned edge attractiveness")
+        try:
+            verify_assign_edge_attractiveness(
+                seed,
+                CONFIG.network_file,
+                lambda_depart=CONFIG.LAMBDA_DEPART,
+                lambda_arrive=CONFIG.LAMBDA_ARRIVE,
+            )
+        except ValidationError as ve:
+            print(f"Edge-attractiveness validation failed: {ve}")
+            exit(1)
+        print("Successfully assigned edge attractiveness")
 
         # --- Step 5: Inject Static Traffic Lights ---
         inject_traffic_lights(CONFIG.network_file)
-        print("Injected static traffic lights into network")
+        print("Successfully injected static traffic lights into network")
 
         # --- Step 6: Generate Vehicle Routes ---
         generate_vehicle_routes(

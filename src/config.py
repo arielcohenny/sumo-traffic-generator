@@ -47,6 +47,9 @@ class _Config:
     # ---------- default number of lanes ---------
     MIN_LANES: int = 1
     MAX_LANES: int = 3
+    # ---------- edge attractiveness ----------
+    LAMBDA_DEPART = 3.5,
+    LAMBDA_ARRIVE = 2.0
 
 
 CONFIG = _Config()
