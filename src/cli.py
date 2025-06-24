@@ -20,7 +20,7 @@ from src.traffic_control.decentralized_traffic_bottlenecks.classes.graph import 
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.network import Network
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.net_data_builder import build_network_json
 
-from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_set_lane_counts, verify_assign_edge_attractiveness, ValidationError
+from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_set_lane_counts, verify_assign_edge_attractiveness, verify_inject_traffic_lights, ValidationError
 
 
 def main():
@@ -169,6 +169,11 @@ def main():
 
         # --- Step 5: Inject Static Traffic Lights ---
         inject_traffic_lights(CONFIG.network_file)
+        try:
+            verify_inject_traffic_lights(CONFIG.network_file)
+        except ValidationError as ve:
+            print(f"Traffic-light validation failed: {ve}")
+            exit(1)
         print("Successfully injected static traffic lights into network")
 
         # --- Step 6: Generate Vehicle Routes ---

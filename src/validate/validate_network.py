@@ -398,3 +398,65 @@ def verify_assign_edge_attractiveness(
             "Attractiveness values appear constant; distribution sampling may have failed")
 
     return
+
+
+def verify_inject_traffic_lights(net_file: str | Path) -> None:
+    path = Path(net_file)
+    if not path.exists():
+        raise ValidationError(f"TL validation: network file not found: {path}")
+
+    tree = ET.parse(path)
+    root = tree.getroot()
+
+    # --- collect traffic-light objects ---------------------------------------
+    tl_elems = {tl.get("id"): tl for tl in root.findall("tlLogic")}
+    if not tl_elems:
+        raise ValidationError(
+            "No <tlLogic> elements found after inject_traffic_lights")
+
+    # 1) each junction that *should* have a traffic light actually has one
+    junction_tls = [j.get("id") for j in root.findall("junction")
+                    if j.get("type") == "traffic_light"]
+    missing = [jid for jid in junction_tls if jid not in tl_elems]
+    if missing:
+        raise ValidationError(
+            f"Junction(s) missing tlLogic: {', '.join(missing)}")
+
+    # 2) every connection’s tl attribute refers to a real tlLogic
+    conn_bad: list[str] = []
+    conn_map: dict[str, list[ET.Element]] = {}      # tlID -> connections
+    for conn in root.findall("connection"):
+        tl = conn.get("tl")
+        if tl is None:
+            continue
+        if tl not in tl_elems:
+            conn_bad.append(tl)
+        conn_map.setdefault(tl, []).append(conn)
+
+    if conn_bad:
+        uniq = sorted(set(conn_bad))
+        raise ValidationError(
+            f"Connections reference non-existent tlLogic: {', '.join(uniq)}")
+
+    # 3) phase length must equal controlled connections
+    for tl_id, tl_elem in tl_elems.items():
+        phases = tl_elem.findall("phase")
+        if not phases:
+            raise ValidationError(f"tlLogic '{tl_id}' has no <phase> elements")
+
+        conn_count = len(conn_map.get(tl_id, []))
+        # Some SUMO builds include internal lanes in <phase state> – that is fine
+        for ph in phases:
+            state = ph.get("state", "")
+            if len(state) != conn_count:
+                raise ValidationError(
+                    f"tlLogic '{tl_id}' phase length {len(state)} "
+                    f"≠ number of controlled connections {conn_count}"
+                )
+
+    # 4) duplicate IDs already impossible in XML; still, sanity:
+    if len(tl_elems) != len(set(tl_elems)):
+        raise ValidationError("Duplicate <tlLogic> IDs detected")
+
+    # all good
+    return

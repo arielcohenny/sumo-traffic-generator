@@ -217,56 +217,6 @@ def generate_grid_network(seed, dimension, block_size_m, network_file, num_junct
             f"Error: Network file '{network_file}' was not created.")
 
 
-# def inject_traffic_lights(
-#     net_file: str,
-#     program_id: str = '0',
-#     green_duration: int = 30,
-#     yellow_duration: int = 3
-# ) -> None:
-#     """
-#     Inject static traffic-light logic into an existing SUMO network file.
-#     """
-#     path = Path(net_file)
-#     tree = ET.parse(path)
-#     root = tree.getroot()
-
-#     # Remove existing tlLogic entries
-#     for tl in root.findall('tlLogic'):
-#         root.remove(tl)
-
-#     # Add tlLogic for each junction element
-#     # Use .//junction to find all junction tags anywhere in the tree
-#     junctions = root.findall('.//junction')
-#     for junction in junctions:
-#         jid = junction.get('id')
-#         if jid.startswith(':'):
-#             continue
-#         # tell SUMO this junction is signalized
-#         junction.set('type', 'traffic_light')
-#         tl = ET.SubElement(
-#             root,
-#             'tlLogic',
-#             id=jid,
-#             type='static',
-#             programID=program_id,
-#             offset='0'
-#         )
-#         ET.SubElement(tl, 'phase', duration=str(green_duration), state='GGrr')
-#         ET.SubElement(tl, 'phase', duration=str(yellow_duration), state='yyrr')
-#         ET.SubElement(tl, 'phase', duration=str(green_duration), state='rrGG')
-#         ET.SubElement(tl, 'phase', duration=str(yellow_duration), state='rryy')
-
-#     # Write back modified network
-#     tree.write(path, encoding='utf-8', xml_declaration=True)
-
-#     # Verification: parse the modified tree to check tlLogic presence
-#     modified_tree = ET.parse(path)
-#     modified_root = modified_tree.getroot()
-#     if not modified_root.findall('tlLogic'):
-#         raise Exception(
-#             "Injection failed: no <tlLogic> elements found after injection.")
-
-
 def inject_traffic_lights(
     net_file: str,
     program_id: str = "0",
@@ -306,7 +256,8 @@ def inject_traffic_lights(
     subprocess.run([
         "netconvert",
         "--sumo-net-file", str(path),
-        "--output-file",    str(linkindexed)
+        "--output-file",    str(linkindexed),
+        "--aggregate-warnings=1",
     ], check=True)
 
     # 2) Parse link-indexed file and remove old tlLogic
