@@ -50,7 +50,8 @@ def run_sumo(
 def generate_sumo_conf_file(
     config_file,
     network_file,
-    route_file: str | None = None
+    route_file: str | None = None,
+    zones_file: str | None = None,
 ) -> str:
     """
     Create a SUMO configuration file (.sumocfg).
@@ -63,12 +64,14 @@ def generate_sumo_conf_file(
     try:
         net_name = Path(network_file).name
         route_name = Path(route_file).name if route_file else None
+        zones_name = Path(zones_file).name if zones_file else None
         with open(config_file, "w") as f:
             f.write(f"""<configuration>
     <input>
         <net-file value=\"{net_name}\"/>
 #IFROUTE#
 {f'        <route-files value=\"{route_name}\"/>' if route_name else ''}
+{f'        <additional-files value="{zones_name}"/>' if zones_name else ''}
     </input>
     <time>
         <begin value=\"0\"/>

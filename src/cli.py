@@ -201,7 +201,8 @@ def main():
         sumo_cfg_path = generate_sumo_conf_file(
             CONFIG.config_file,
             CONFIG.network_file,
-            route_file=CONFIG.routes_file
+            route_file=CONFIG.routes_file,
+            zones_file=CONFIG.zones_file,
         )
         print(f"Generated SUMO configuration file: {sumo_cfg_path}")
 
