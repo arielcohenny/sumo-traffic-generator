@@ -24,16 +24,22 @@ from xml.etree import ElementTree as ET
 __all__ = [
     "ValidationError",
     "verify_generate_grid_network",
+    "verify_extract_zones_from_junctions",
+    "verify_set_lane_counts",
+    "verify_assign_edge_attractiveness",
+    "verify_inject_traffic_lights",
 ]
 
-
-class ValidationError(RuntimeError):
-    """Raised when an inline runtime check discovers a violation."""
-
+try:
+    from .errors import ValidationError
+except ImportError:
+    class ValidationError(RuntimeError):
+        pass
 
 # ---------------------------------------------------------------------------
 #  Grid‑network verification (inline after generate_grid_network)
 # ---------------------------------------------------------------------------
+
 
 def _theoretical_max_edges(grid_dim: int) -> int:
     """Return the maximum *directed* edge count for a full grid with no removals.

@@ -3,8 +3,8 @@ import argparse
 import random
 import shutil
 from alive_progress import *
-
 import traci
+
 from src.sim.sumo_controller import SumoController
 from src.sim.sumo_utils import generate_sumo_conf_file
 
@@ -20,7 +20,9 @@ from src.traffic_control.decentralized_traffic_bottlenecks.classes.graph import 
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.network import Network
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.net_data_builder import build_network_json
 
-from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_set_lane_counts, verify_assign_edge_attractiveness, verify_inject_traffic_lights, ValidationError
+from src.validate.errors import ValidationError
+from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_set_lane_counts, verify_assign_edge_attractiveness, verify_inject_traffic_lights
+from src.validate.validate_traffic import verify_generate_vehicle_routes
 
 
 def main():
@@ -183,6 +185,16 @@ def main():
             num_vehicles=args.num_vehicles,
             seed=seed
         )
+        try:
+            verify_generate_vehicle_routes(
+                net_file=CONFIG.network_file,
+                output_file=CONFIG.routes_file,
+                num_vehicles=args.num_vehicles,
+                seed=seed,
+            )
+        except ValidationError as ve:
+            print(f"Route validation failed: {ve}")
+            exit(1)
         print("Generated vehicle routes.")
 
         # --- Step 7: Generate SUMO Configuration File ---
