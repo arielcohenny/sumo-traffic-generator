@@ -37,7 +37,7 @@ Usage & Parameters
 env PYTHONUNBUFFERED=1 python -m src.cli \
 --grid_dimension <int> # Number of rows/columns (default: 5)
 --block_size_m <float> # Block length in meters (default: 200)
---blocks_to_remove <int> # Internal junctions to delete (default: 0)
+--junctions_to_remove <int> # Internal junctions to delete (default: 0)
 --num_vehicles <int> # Total trips to generate (default: 300)
 --seed <int> # RNG seed (optional)
 --step-length #Simulation step length in seconds (for TraCI loop) default=1.0

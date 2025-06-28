@@ -7,7 +7,12 @@ from pathlib import Path
 class _Config:
     # ---------- paths ----------
     output_dir: Path = Path("data")
-    network_file: Path = output_dir / "grid.net.xml"
+    network_prefix = output_dir / "grid"
+    network_file: Path = f"{network_prefix}.net.xml"
+    network_nod_file: Path = f"{network_prefix}.nod.xml"
+    network_edg_file: Path = f"{network_prefix}.edg.xml"
+    network_con_file: Path = f"{network_prefix}.con.xml"
+    network_tll_file: Path = f"{network_prefix}.tll.xml"
     config_file: Path = output_dir / "grid.sumocfg"
     zones_file: Path = output_dir / "zones.poly.xml"
     routes_file: Path = output_dir / "vehicles.rou.xml"
