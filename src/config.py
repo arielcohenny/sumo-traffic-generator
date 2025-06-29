@@ -49,6 +49,8 @@ class _Config:
 
     # ---------- simulation parameters ----------
     DEFAULT_JUNCTION_RADIUS: float = 10.0  # meters
+    # ---------- head distance from the downstream end when splitting edges ----------
+    HEAD_DISTANCE = 30
     # ---------- default number of lanes ---------
     MIN_LANES: int = 1
     MAX_LANES: int = 3

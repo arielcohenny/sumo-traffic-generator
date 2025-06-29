@@ -4,6 +4,8 @@ import random
 import shutil
 from alive_progress import *
 import traci
+import subprocess
+
 
 from src.sim.sumo_controller import SumoController
 from src.sim.sumo_utils import generate_sumo_conf_file, start_sumo_gui
@@ -101,25 +103,45 @@ def main():
             int(args.block_size_m),
             int(args.junctions_to_remove)
         )
-        try:
-            verify_generate_grid_network(
-                seed,
-                int(args.grid_dimension),
-                int(args.block_size_m),
-                CONFIG.network_file,
-                int(args.junctions_to_remove),
-            )
-        except ValidationError as ve:
-            print(f"Failed generating network file: {ve}")
-            exit(1)
-        print(f"Generated network file: {CONFIG.network_file} successfully.")
+        # try:
+        #     verify_generate_grid_network(
+        #         seed,
+        #         int(args.grid_dimension),
+        #         int(args.block_size_m),
+        #         CONFIG.network_file,
+        #         int(args.junctions_to_remove),
+        #     )
+        # except ValidationError as ve:
+        #     print(f"Failed generating network file: {ve}")
+        #     exit(1)
+        print(f"Generated grid successfully.")
+
+        # --- Step 1.5: Insert Split Edges ---
+        insert_split_edges(
+            CONFIG.network_nod_file,
+            CONFIG.network_edg_file,
+            CONFIG.network_con_file,
+            CONFIG.network_tll_file,
+            split_distance=CONFIG.HEAD_DISTANCE
+        )
+
+        # Now convert the generated network files to the final .net.xml format
+        # Rebuild with fresh internals + connections
+        netconvert_cmd = [
+            "netconvert",
+            "--node-files",       str(CONFIG.network_nod_file),
+            "--edge-files",       str(CONFIG.network_edg_file),
+            "--connection-files", str(CONFIG.network_con_file),
+            "--tllogic-files",    str(CONFIG.network_tll_file),
+            "--junctions.join=true",
+            "--output-file",      str(CONFIG.network_file)
+        ]
+        subprocess.run(netconvert_cmd, check=True)
+
         start_sumo_gui(
             net_file=CONFIG.network_file,
         )
         exit(1)
-
-        # --- Step 1.5: Insert Split Edges ---
-        insert_split_edges(network_file, dist=30)
 
         # --- Step 2: Extract Zones - --
         extract_zones_from_junctions(

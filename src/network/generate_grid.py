@@ -243,18 +243,6 @@ def generate_grid_network(seed, dimension, block_size_m, num_junction_to_remove)
         else:
             generate_full_grid_network(dimension, block_size_m)
 
-        # Now convert the generated network files to the final .net.xml format
-        # Rebuild with fresh internals + connections
-        netconvert_cmd = [
-            "netconvert",
-            "--node-files",       str(CONFIG.network_nod_file),
-            "--edge-files",       str(CONFIG.network_edg_file),
-            "--connection-files", str(CONFIG.network_con_file),
-            "--tllogic-files",    str(CONFIG.network_tll_file),
-            "--output-file",      str(CONFIG.network_file)
-        ]
-        subprocess.run(netconvert_cmd, check=True)
-
     except subprocess.CalledProcessError as e:
         raise Exception(f"Error during netgenerate execution:", e.stderr)
 
