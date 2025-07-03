@@ -24,6 +24,7 @@ from src.traffic_control.decentralized_traffic_bottlenecks.classes.net_data_buil
 from src.validate.errors import ValidationError
 from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_insert_split_edges, verify_rebuild_network, verify_set_lane_counts, verify_assign_edge_attractiveness, verify_generate_sumo_conf_file
 from src.validate.validate_traffic import verify_generate_vehicle_routes
+from src.validate.validate_simulation import verify_nimrod_integration_setup, verify_algorithm_runtime_behavior
 
 from src.traffic.builder import generate_vehicle_routes
 from src.config import CONFIG
@@ -159,7 +160,6 @@ def main():
             )
             try:
                 verify_set_lane_counts(
-                    CONFIG.network_file,
                     min_lanes=CONFIG.MIN_LANES,
                     max_lanes=CONFIG.MAX_LANES,
                 )
@@ -214,12 +214,7 @@ def main():
             zones_file=CONFIG.zones_file,
         )
         try:
-            verify_generate_sumo_conf_file(
-                CONFIG.config_file,
-                CONFIG.network_file,
-                route_file=CONFIG.routes_file,
-                zones_file=CONFIG.zones_file,
-            )
+            verify_generate_sumo_conf_file()
         except ValidationError as ve:
             print(f"SUMO configuration validation failed: {ve}")
             exit(1)
@@ -258,6 +253,14 @@ def main():
         print("Built Nimrod's Graph from network data.")
         seconds_in_cycle = network_data.calc_cycle_time()
         print("Built network graph and calculated cycle time.")
+        
+        # Verify Nimrod integration setup
+        try:
+            verify_nimrod_integration_setup(tree_data, run_config, network_data, graph, seconds_in_cycle)
+        except ValidationError as ve:
+            print(f"Nimrod integration setup validation failed: {ve}")
+            exit(1)
+        print("Nimrod integration setup verified successfully.")
 
         # Per‑step TraCI controller  ✅
         def control_callback(current_time: int):
@@ -273,6 +276,19 @@ def main():
             phase_map = graph.get_traffic_lights_phases(int(current_time))
             if not phase_map:   # guard for None / empty dict
                 return
+
+            # Runtime verification of algorithm behavior
+            try:
+                verify_algorithm_runtime_behavior(
+                    current_time, 
+                    phase_map, 
+                    graph, 
+                    CONFIG.SIMULATION_VERIFICATION_FREQUENCY
+                )
+            except ValidationError as ve:
+                print(f"Algorithm runtime validation failed at step {current_time}: {ve}")
+                traci.close()
+                exit(1)
 
             # 3) Push every TLS state to TraCI
             for tls_id, state in phase_map.items():

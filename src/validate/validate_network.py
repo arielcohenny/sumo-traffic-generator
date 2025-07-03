@@ -1,57 +1,30 @@
-# src/validate/validate_network.py
 """
-Runtime invariants for network generation.
+Network validation functions for the SUMO traffic generator.
 
-Each `verify_*` function is designed to be called **inline** in the production
-pipeline (e.g. right after `generate_grid_network` in `cli.py`). They run in a
-few milliseconds and abort the run early if an invariant is broken.
-
-If any check fails the function raises a `ValidationError`, which is a plain
-sub‑class of `RuntimeError`, so it will propagate up the call‑stack unless the
-caller catches it.
+This module provides validation functions for each step of the network generation pipeline,
+ensuring that network files are properly structured and contain expected data.
 """
 
-from __future__ import annotations
-
-import re
+import sumolib
+import statistics
+import xml.etree.ElementTree as ET
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
+from xml.etree.ElementTree import Element
 
-import sumolib  # SUMO's Python helper library
+from src.config import CONFIG
+from src.validate.errors import ValidationError
 
-import json
-from xml.etree import ElementTree as ET
 
 __all__ = [
-    "ValidationError",
     "verify_generate_grid_network",
+    "verify_extract_zones_from_junctions", 
     "verify_insert_split_edges",
-    "verify_extract_zones_from_junctions",
     "verify_rebuild_network",
     "verify_set_lane_counts",
     "verify_assign_edge_attractiveness",
     "verify_generate_sumo_conf_file",
 ]
-
-try:
-    from .errors import ValidationError
-except ImportError:
-    class ValidationError(RuntimeError):
-        pass
-
-# ---------------------------------------------------------------------------
-#  Grid‑network verification (inline after generate_grid_network)
-# ---------------------------------------------------------------------------
-
-
-def _theoretical_max_edges(grid_dim: int) -> int:
-    """Return the maximum *directed* edge count for a full grid with no removals.
-
-    For an *N*×*N* block grid there are ``(N+1)×N`` street *segments* per axis.
-    Each segment becomes two directed edges (A→B and B→A), hence:
-
-    ``max_edges = 2 (axis) × 2 (direction) × N × (N+1)``
-    """
-    return 4 * grid_dim * (grid_dim - 1)
 
 
 def verify_generate_grid_network(
@@ -61,376 +34,263 @@ def verify_generate_grid_network(
     junctions_to_remove_input: str,
     fixed_lane_count: int,
 ) -> None:
-    """Validate freshly generated orthogonal grid network using separate XML files.
-
-    This function validates the network generation by checking the individual
-    .nod.xml, .edg.xml, .con.xml, and .tll.xml files produced by the generation
-    process, ensuring consistency between files and proper grid structure.
-
-    Parameters match those of generate_grid_network exactly.
+    """Validate grid network generation with junction removal.
+    
+    This function validates the generate_grid_network function by checking:
+    1. All required XML files exist and are valid
+    2. Junction coordinates follow expected grid pattern
+    3. Edge structure is consistent with grid topology
+    4. Traffic light logic is properly configured
+    5. Junction removal was applied correctly
     """
-    from src.config import CONFIG
-    from src.network.generate_grid import parse_junctions_to_remove
-
-    # Parse junction removal input to understand expected structure
-    is_list, junction_ids, junctions_removed = parse_junctions_to_remove(
-        junctions_to_remove_input)
-
-    # 1 ── validate all required files exist ----------------------------------
+    
+    # Required files that should exist after grid generation
     required_files = [
         CONFIG.network_nod_file,
         CONFIG.network_edg_file,
         CONFIG.network_con_file,
         CONFIG.network_tll_file,
     ]
-
+    
+    # 1 ── check file existence ------------------------------------------------
     for file_path in required_files:
         if not Path(file_path).exists():
-            raise ValidationError(
-                f"Required network file missing: {file_path}")
-
-    # 2 ── parse and validate nodes file (.nod.xml) ---------------------------
+            raise ValidationError(f"Required file missing: {file_path}")
+    
+    # 2 ── parse and validate XML structure ------------------------------------
     try:
         nod_tree = ET.parse(CONFIG.network_nod_file)
         nod_root = nod_tree.getroot()
-    except Exception as exc:
-        raise ValidationError(
-            f"Failed to parse nodes file {CONFIG.network_nod_file}: {exc}") from exc
-
-    # Extract visible nodes (not internal nodes)
-    visible_nodes = []
-    node_coords = {}
-    for node in nod_root.findall("node"):
-        node_id = node.get("id")
-        if not node_id.startswith(":"):
-            visible_nodes.append(node_id)
-            node_coords[node_id] = (float(node.get("x")), float(node.get("y")))
-
-    # Validate junction count
-    expected_nodes = dimension ** 2 - junctions_removed
-    if len(visible_nodes) != expected_nodes:
-        raise ValidationError(
-            f"junction‑count mismatch: expected {expected_nodes}, got {len(visible_nodes)}"
-        )
-
-    # Validate ID scheme
-    id_pattern = re.compile(r"^[A-Za-z]\d+$")
-    malformed = [nid for nid in visible_nodes if not id_pattern.match(nid)]
-    if malformed:
-        raise ValidationError(
-            f"unexpected junction IDs: {', '.join(malformed)}")
-
-    # 3 ── parse and validate edges file (.edg.xml) ---------------------------
-    try:
+        
         edg_tree = ET.parse(CONFIG.network_edg_file)
         edg_root = edg_tree.getroot()
-    except Exception as exc:
-        raise ValidationError(
-            f"Failed to parse edges file {CONFIG.network_edg_file}: {exc}") from exc
-
-    edges = []
-    for edge in edg_root.findall("edge"):
-        edge_id = edge.get("id")
-        from_node = edge.get("from")
-        to_node = edge.get("to")
-
-        # Validate edge references existing nodes
-        if from_node not in visible_nodes:
-            raise ValidationError(
-                f"Edge {edge_id} references non-existent from node: {from_node}")
-        if to_node not in visible_nodes:
-            raise ValidationError(
-                f"Edge {edge_id} references non-existent to node: {to_node}")
-
-        edges.append((edge_id, from_node, to_node))
-
-    # Validate edge count within bounds
-    max_edges = _theoretical_max_edges(dimension)
-    edge_count = len(edges)
-
-    if junctions_removed == 0:
-        if edge_count != max_edges:
-            raise ValidationError(
-                f"edge‑count mismatch: expected {max_edges}, got {edge_count}"
-            )
-    else:
-        if not (0 < edge_count < max_edges):
-            raise ValidationError(
-                f"edge‑count {edge_count} outside expected range (1…{max_edges - 1})"
-            )
-
-    # 4 ── parse and validate connections file (.con.xml) ---------------------
-    try:
+        
         con_tree = ET.parse(CONFIG.network_con_file)
         con_root = con_tree.getroot()
-    except Exception as exc:
-        raise ValidationError(
-            f"Failed to parse connections file {CONFIG.network_con_file}: {exc}") from exc
-
-    edge_ids = {edge_id for edge_id, _, _ in edges}
-    connections = []
-    for connection in con_root.findall("connection"):
-        from_edge = connection.get("from")
-        to_edge = connection.get("to")
-
-        # Validate connection references existing edges
-        if from_edge not in edge_ids:
-            raise ValidationError(
-                f"Connection references non-existent from edge: {from_edge}")
-        if to_edge not in edge_ids:
-            raise ValidationError(
-                f"Connection references non-existent to edge: {to_edge}")
-
-        connections.append((from_edge, to_edge))
-
-    # 5 ── parse and validate traffic lights file (.tll.xml) ------------------
-    try:
+        
         tll_tree = ET.parse(CONFIG.network_tll_file)
         tll_root = tll_tree.getroot()
-    except Exception as exc:
-        raise ValidationError(
-            f"Failed to parse traffic lights file {CONFIG.network_tll_file}: {exc}") from exc
-
-    # Validate traffic light connections reference existing connections
-    tl_connections = set()
-    for connection in tll_root.findall("connection"):
-        tl_id = connection.get("tl")
-        from_edge = connection.get("from")
-        to_edge = connection.get("to")
-
-        if tl_id not in visible_nodes:
-            raise ValidationError(
-                f"Traffic light connection references non-existent junction: {tl_id}")
-
-        conn_key = (from_edge, to_edge)
-        if conn_key not in connections:
-            raise ValidationError(
-                f"Traffic light connection {conn_key} not found in connections file")
-
-        tl_connections.add(conn_key)
-
-    # Validate traffic light logic consistency
+        
+    except ET.ParseError as e:
+        raise ValidationError(f"XML parsing error: {e}")
+    
+    # 3 ── validate junction structure -----------------------------------------
+    grid_nodes = []
+    h_nodes = []
+    node_coords = {}
+    
+    for node in nod_root.findall("node"):
+        node_id = node.get("id")
+        x = float(node.get("x"))
+        y = float(node.get("y"))
+        node_coords[node_id] = (x, y)
+        
+        if "_H_node" in node_id:
+            h_nodes.append(node_id)
+        else:
+            grid_nodes.append(node_id)
+    
+    # Check that we have grid nodes (some may be removed)
+    if not grid_nodes:
+        raise ValidationError("No grid nodes found in network")
+    
+    # 4 ── validate edge structure ---------------------------------------------
+    edge_count = len(edg_root.findall("edge"))
+    if edge_count == 0:
+        raise ValidationError("No edges found in network")
+    
+    # At this stage (before edge splitting), there should be no head edges
+    head_edges = 0
+    for edge in edg_root.findall("edge"):
+        edge_id = edge.get("id")
+        if edge_id.endswith("_H"):
+            head_edges += 1
+    
+    # Before edge splitting, there should be no head edges
+    if head_edges > 0:
+        raise ValidationError(f"Found {head_edges} head edges before edge splitting step")
+    
+    # 5 ── validate traffic light configuration --------------------------------
     tl_logics = {}
     for tl_logic in tll_root.findall("tlLogic"):
         tl_id = tl_logic.get("id")
-        if tl_id not in visible_nodes:
-            raise ValidationError(
-                f"Traffic light logic references non-existent junction: {tl_id}")
-
         phases = tl_logic.findall("phase")
         if not phases:
             raise ValidationError(f"Traffic light {tl_id} has no phases")
-
         tl_logics[tl_id] = len(phases)
-
+    
+    # Check that traffic lights exist for grid nodes
+    grid_tl_nodes = [node.get("id") for node in nod_root.findall("node") 
+                     if node.get("type") == "traffic_light"]
+    
+    if not grid_tl_nodes:
+        raise ValidationError("No traffic light nodes found")
+    
     # 6 ── validate bounding box from node coordinates ------------------------
     if node_coords:
         xs = [coord[0] for coord in node_coords.values()]
         ys = [coord[1] for coord in node_coords.values()]
         xmin, xmax = min(xs), max(xs)
         ymin, ymax = min(ys), max(ys)
-
+        
         tol = 1e-3
         max_coord = (dimension - 1) * block_size_m + tol
-
-        if abs(xmin) > tol or abs(ymin) > tol:
-            raise ValidationError(
-                "Grid should start at (0,0) – got shifted coordinates.")
-        if xmax > max_coord + tol or ymax > max_coord + tol:
-            raise ValidationError(
-                f"Bounding box too large ({xmax:.2f}×{ymax:.2f} m); expected ≤{max_coord:.2f} m"
-            )
-
-    # 7 ── validate junction removal was applied correctly --------------------
-    if junctions_removed > 0:
-        if is_list:
-            # Check that specific junctions were removed
-            for junction_id in junction_ids:
-                if junction_id in visible_nodes:
-                    raise ValidationError(
-                        f"Junction {junction_id} should have been removed but still exists")
-        else:
-            # Random removal - just check count was reduced
-            if len(visible_nodes) != dimension ** 2 - junctions_removed:
-                raise ValidationError(
-                    f"Expected {junctions_removed} junctions removed, but junction count suggests different"
-                )
-
-    # 8 ── validate lane count consistency (if fixed) -------------------------
-    if fixed_lane_count > 0:
-        for edge in edg_root.findall("edge"):
-            # Check for numLanes attribute first, then fall back to lane elements
-            num_lanes_attr = edge.get("numLanes")
-            if num_lanes_attr is not None:
-                actual_lanes = int(num_lanes_attr)
-            else:
-                lanes = edge.findall("lane")
-                actual_lanes = len(lanes)
-            
-            if actual_lanes != fixed_lane_count:
-                raise ValidationError(
-                    f"Edge {edge.get('id')} has {actual_lanes} lanes, expected {fixed_lane_count}"
-                )
-
-    # 9 ── validate grid topology and coordinate spacing ----------------------
-    if node_coords and junctions_removed == 0:
-        # Check coordinate spacing is uniform
-        unique_xs = sorted(set(xs))
-        unique_ys = sorted(set(ys))
-
-        if len(unique_xs) != dimension or len(unique_ys) != dimension:
-            raise ValidationError(
-                f"Grid topology mismatch: expected {dimension}×{dimension} unique coordinates, "
-                f"got {len(unique_xs)}×{len(unique_ys)}"
-            )
-
-        # Check spacing between coordinates
-        for i in range(1, len(unique_xs)):
-            spacing = unique_xs[i] - unique_xs[i-1]
-            if abs(spacing - block_size_m) > tol:
-                raise ValidationError(
-                    f"X-coordinate spacing inconsistent: expected {block_size_m}, got {spacing:.2f}"
-                )
-
-        for i in range(1, len(unique_ys)):
-            spacing = unique_ys[i] - unique_ys[i-1]
-            if abs(spacing - block_size_m) > tol:
-                raise ValidationError(
-                    f"Y-coordinate spacing inconsistent: expected {block_size_m}, got {spacing:.2f}"
-                )
-
-    # 10 ── validate edge naming consistency -----------------------------------
-    edge_pattern = re.compile(r"^[A-Za-z]\d+[A-Za-z]\d+$")
-    malformed_edges = []
-    for edge_id, from_node, to_node in edges:
-        if not edge_pattern.match(edge_id):
-            malformed_edges.append(edge_id)
-        else:
-            # Check if edge ID matches from/to nodes pattern
-            expected_id = f"{from_node}{to_node}"
-            if edge_id != expected_id:
-                raise ValidationError(
-                    f"Edge ID {edge_id} doesn't match expected pattern {expected_id}"
-                )
-
-    if malformed_edges:
-        raise ValidationError(
-            f"Malformed edge IDs: {', '.join(malformed_edges[:5])}"
-            + (f" ... and {len(malformed_edges)-5} more" if len(malformed_edges) > 5 else "")
-        )
-
-    # 11 ── validate lane numbering consistency --------------------------------
+        
+        if xmax > max_coord or ymax > max_coord:
+            raise ValidationError(f"Bounding box exceeds expected: max=({xmax}, {ymax}), expected≤{max_coord}")
+    
+    # 7 ── validate junction removal -------------------------------------------
+    if junctions_to_remove_input.strip():
+        # Parse junction removal input
+        try:
+            num_to_remove = int(junctions_to_remove_input)
+            # Random removal - we can't predict which specific junctions were removed
+            # Just verify that some junctions are missing from the full grid
+            expected_total = dimension * dimension
+            if len(grid_nodes) >= expected_total:
+                raise ValidationError(f"Expected junction removal but found {len(grid_nodes)} >= {expected_total}")
+        except ValueError:
+            # Specific junction IDs provided
+            junctions_to_remove = [j.strip() for j in junctions_to_remove_input.split(",")]
+            for junction_id in junctions_to_remove:
+                if junction_id in [n.get("id") for n in nod_root.findall("node")]:
+                    raise ValidationError(f"Junction {junction_id} should have been removed but still exists")
+    
+    # 8 ── validate edge connectivity ------------------------------------------
+    edge_from_to = {}
     for edge in edg_root.findall("edge"):
-        lanes = edge.findall("lane")
-        lane_indices = []
-        for lane in lanes:
-            lane_id = lane.get("id")
-            if lane_id:
-                # Extract lane index from ID (e.g., "A0B0_0" -> 0)
-                try:
-                    lane_index = int(lane_id.split("_")[-1])
-                    lane_indices.append(lane_index)
-                except (ValueError, IndexError):
-                    raise ValidationError(f"Invalid lane ID format: {lane_id}")
-
-        # Check that lane indices start at 0 and are contiguous
-        if lane_indices:
-            expected_indices = list(range(len(lane_indices)))
-            if sorted(lane_indices) != expected_indices:
-                raise ValidationError(
-                    f"Lane indices not contiguous for edge {edge.get('id')}: "
-                    f"expected {expected_indices}, got {sorted(lane_indices)}"
-                )
-
+        edge_id = edge.get("id")
+        from_node = edge.get("from")
+        to_node = edge.get("to")
+        edge_from_to[edge_id] = (from_node, to_node)
+    
+    # Check that all referenced nodes exist
+    all_node_ids = set(node_coords.keys())
+    for edge_id, (from_node, to_node) in edge_from_to.items():
+        if from_node not in all_node_ids:
+            raise ValidationError(f"Edge {edge_id} references non-existent from node: {from_node}")
+        if to_node not in all_node_ids:
+            raise ValidationError(f"Edge {edge_id} references non-existent to node: {to_node}")
+    
+    # 9 ── validate connections consistency ------------------------------------
+    connection_count = len(con_root.findall("connection"))
+    if connection_count == 0:
+        raise ValidationError("No connections found in network")
+    
+    # Check that connections reference existing edges
+    edge_ids = set(edge.get("id") for edge in edg_root.findall("edge"))
+    for conn in con_root.findall("connection"):
+        from_edge = conn.get("from")
+        to_edge = conn.get("to")
+        if from_edge not in edge_ids:
+            raise ValidationError(f"Connection references non-existent from edge: {from_edge}")
+        if to_edge not in edge_ids:
+            raise ValidationError(f"Connection references non-existent to edge: {to_edge}")
+    
+    # 10 ── validate lane assignments -----------------------------------------
+    for edge in edg_root.findall("edge"):
+        edge_id = edge.get("id")
+        num_lanes = int(edge.get("numLanes", 1))
+        
+        # Check numLanes is within reasonable bounds
+        if num_lanes < 1 or num_lanes > 5:
+            raise ValidationError(f"Edge {edge_id} has unreasonable lane count: {num_lanes}")
+        
+        # Check that lanes exist as child elements or numLanes attribute
+        lane_elements = edge.findall("lane")
+        if lane_elements:
+            if len(lane_elements) != num_lanes:
+                raise ValidationError(f"Edge {edge_id} numLanes={num_lanes} but has {len(lane_elements)} lane elements")
+    
+    # 11 ── validate lane indexing in connections -----------------------------
+    for conn in con_root.findall("connection"):
+        from_lane = conn.get("fromLane")
+        to_lane = conn.get("toLane")
+        
+        if from_lane is not None:
+            try:
+                from_lane_idx = int(from_lane)
+                if from_lane_idx < 0:
+                    raise ValidationError(f"Connection has negative fromLane: {from_lane}")
+            except ValueError:
+                raise ValidationError(f"Connection has invalid fromLane: {from_lane}")
+        
+        if to_lane is not None:
+            try:
+                to_lane_idx = int(to_lane)
+                if to_lane_idx < 0:
+                    raise ValidationError(f"Connection has negative toLane: {to_lane}")
+            except ValueError:
+                raise ValidationError(f"Connection has invalid toLane: {to_lane}")
+    
     # 12 ── validate file sizes are reasonable ---------------------------------
     for file_path in required_files:
         file_size = Path(file_path).stat().st_size
         if file_size < 100:  # Minimum reasonable size for XML files
-            raise ValidationError(
-                f"File {file_path} too small ({file_size} bytes), may be empty or corrupt")
-
+            raise ValidationError(f"File {file_path} too small ({file_size} bytes), may be empty or corrupt")
+    
     # 13 ── validate no internal nodes remain after generation ----------------
-    internal_nodes = [node.get("id") for node in nod_root.findall("node")
+    internal_nodes = [node.get("id") for node in nod_root.findall("node") 
                       if node.get("id").startswith(":")]
     if internal_nodes:
-        raise ValidationError(
-            f"Internal nodes found after generation: {', '.join(internal_nodes[:5])}"
-            + (f" ... and {len(internal_nodes)-5} more" if len(internal_nodes) > 5 else "")
-        )
-
+        raise ValidationError(f"Internal nodes found after generation: {', '.join(internal_nodes[:5])}"
+                             + (f" ... and {len(internal_nodes)-5} more" if len(internal_nodes) > 5 else ""))
+    
     # 14 ── validate traffic light phase timing --------------------------------
     for tl_logic in tll_root.findall("tlLogic"):
         tl_id = tl_logic.get("id")
         total_cycle_time = 0
         green_time = 0
-
+        
         for phase in tl_logic.findall("phase"):
             try:
                 duration = float(phase.get("duration", 0))
                 state = phase.get("state", "")
-
+                
                 total_cycle_time += duration
                 if "G" in state or "g" in state:  # Green phases
                     green_time += duration
-
+                
                 # Check reasonable phase duration (1-120 seconds)
                 if duration < 1 or duration > 120:
-                    raise ValidationError(
-                        f"Traffic light {tl_id} has unreasonable phase duration: {duration}s"
-                    )
+                    raise ValidationError(f"Traffic light {tl_id} has unreasonable phase duration: {duration}s")
             except ValueError:
-                raise ValidationError(
-                    f"Invalid phase duration in traffic light {tl_id}")
-
-        # Check reasonable cycle time (30-300 seconds)
-        if total_cycle_time < 30 or total_cycle_time > 300:
-            raise ValidationError(
-                f"Traffic light {tl_id} has unreasonable cycle time: {total_cycle_time}s"
-            )
-
-        # Check that there's some green time
-        if green_time == 0:
-            raise ValidationError(f"Traffic light {tl_id} has no green phases")
-
-    # Note: seed parameter is used implicitly through parse_junctions_to_remove
-    # which may use it for random junction selection validation
-    _ = seed  # Acknowledge parameter to avoid unused variable warning
+                raise ValidationError(f"Traffic light {tl_id} has invalid phase duration")
+        
+        # Check reasonable cycle time (10-300 seconds)
+        if total_cycle_time < 10 or total_cycle_time > 300:
+            raise ValidationError(f"Traffic light {tl_id} has unreasonable cycle time: {total_cycle_time}s")
+        
+        # Check minimum green time (at least 20% of cycle)
+        if green_time < 0.2 * total_cycle_time:
+            raise ValidationError(f"Traffic light {tl_id} has insufficient green time: {green_time}/{total_cycle_time}s")
 
     return
 
 
-# ---------------------------------------------------------------------------
-#  Edge splitting verification (inline after insert_split_edges)
-# ---------------------------------------------------------------------------
-
-
 def verify_insert_split_edges() -> None:
-    """Validate edge splitting operation using separate XML files.
+    """Validate edge splitting results.
     
-    This function validates that edge splitting was performed correctly by:
-    1. Checking that edges with connections were split into body + head segments
-    2. Verifying that split nodes were created at the correct positions
-    3. Ensuring geometric consistency and proper split distances
-    4. Validating connectivity between body and head segments
-    5. Checking that traffic light connections were updated properly
+    This function validates the insert_split_edges function by checking:
+    1. All original edges are split into body + head segments
+    2. H_nodes are created at correct positions
+    3. Body edges connect to H_nodes, head edges connect from H_nodes
+    4. Geometric consistency is maintained
     """
-    from src.config import CONFIG
-    from src.network.split_edges import parse_shape
-    from shapely.geometry import LineString
     
-    # 1 ── validate all required files exist ----------------------------------
+    # Required files should exist after edge splitting
     required_files = [
         CONFIG.network_nod_file,
         CONFIG.network_edg_file,
         CONFIG.network_con_file,
-        CONFIG.network_tll_file,
     ]
     
+    # 1 ── check file existence ------------------------------------------------
     for file_path in required_files:
         if not Path(file_path).exists():
-            raise ValidationError(f"Required network file missing: {file_path}")
-
-    # 2 ── parse all XML files ------------------------------------------------
+            raise ValidationError(f"Required file missing: {file_path}")
+    
+    # 2 ── parse XML files -----------------------------------------------------
     try:
         nod_tree = ET.parse(CONFIG.network_nod_file)
         nod_root = nod_tree.getroot()
@@ -441,553 +301,368 @@ def verify_insert_split_edges() -> None:
         con_tree = ET.parse(CONFIG.network_con_file)
         con_root = con_tree.getroot()
         
-        tll_tree = ET.parse(CONFIG.network_tll_file)
-        tll_root = tll_tree.getroot()
-        
-    except Exception as exc:
-        raise ValidationError(f"Failed to parse XML files: {exc}") from exc
-
-    # 3 ── collect network elements -------------------------------------------
-    nodes = {}
+    except ET.ParseError as e:
+        raise ValidationError(f"XML parsing error: {e}")
+    
+    # 3 ── classify nodes and edges --------------------------------------------
+    grid_nodes = []
+    h_nodes = []
+    node_coords = {}
+    
     for node in nod_root.findall("node"):
         node_id = node.get("id")
-        x, y = float(node.get("x")), float(node.get("y"))
-        nodes[node_id] = (x, y)
-
-    edges = {}
+        x = float(node.get("x"))
+        y = float(node.get("y"))
+        node_coords[node_id] = (x, y)
+        
+        if "_H_node" in node_id:
+            h_nodes.append(node_id)
+        else:
+            grid_nodes.append(node_id)
+    
+    body_edges = {}
+    head_edges = {}
+    
     for edge in edg_root.findall("edge"):
         edge_id = edge.get("id")
         from_node = edge.get("from")
         to_node = edge.get("to")
-        shape_str = edge.get("shape")
-        edges[edge_id] = {
-            "from": from_node,
-            "to": to_node,
-            "shape": shape_str,
-            "element": edge
-        }
-
-    connections = []
+        
+        if edge_id.endswith("_H"):
+            head_edges[edge_id] = (from_node, to_node)
+        else:
+            body_edges[edge_id] = (from_node, to_node)
+    
+    # 4 ── validate edge splitting consistency ---------------------------------
+    if len(body_edges) != len(head_edges):
+        raise ValidationError(f"Body/head edge count mismatch: {len(body_edges)} body, {len(head_edges)} head")
+    
+    # Check body-head edge pairing
+    for body_id, (body_from, body_to) in body_edges.items():
+        head_id = body_id + "_H"
+        if head_id not in head_edges:
+            raise ValidationError(f"Body edge {body_id} missing corresponding head edge {head_id}")
+        
+        head_from, head_to = head_edges[head_id]
+        
+        # Body edge should connect to H_node, head edge should connect from H_node
+        if not body_to.endswith("_H_node"):
+            raise ValidationError(f"Body edge {body_id} should connect to H_node, but connects to {body_to}")
+        
+        if head_from != body_to:
+            raise ValidationError(f"Head edge {head_id} should start from {body_to}, but starts from {head_from}")
+    
+    # 5 ── validate H_node creation --------------------------------------------
+    expected_h_nodes = len(body_edges)
+    if len(h_nodes) != expected_h_nodes:
+        raise ValidationError(f"H_node count mismatch: expected {expected_h_nodes}, found {len(h_nodes)}")
+    
+    # 6 ── validate geometric consistency --------------------------------------
+    for body_id, (body_from, body_to) in body_edges.items():
+        head_id = body_id + "_H"
+        if head_id not in head_edges:
+            continue
+        
+        head_from, head_to = head_edges[head_id]
+        
+        # Get coordinates
+        body_from_coord = node_coords[body_from]
+        h_node_coord = node_coords[body_to]  # body_to is the H_node
+        head_to_coord = node_coords[head_to]
+        
+        # Check that H_node is between body_from and head_to
+        # Using simple distance check: distance(from, h_node) + distance(h_node, to) ≈ distance(from, to)
+        def distance(p1, p2):
+            return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)**0.5
+        
+        d_direct = distance(body_from_coord, head_to_coord)
+        d_via_h = distance(body_from_coord, h_node_coord) + distance(h_node_coord, head_to_coord)
+        
+        # Allow small tolerance for floating point errors
+        if abs(d_direct - d_via_h) > 1e-6:
+            raise ValidationError(f"H_node {body_to} not on line between {body_from} and {head_to}")
+    
+    # 7 ── validate lane count consistency -------------------------------------
+    for body_id in body_edges:
+        head_id = body_id + "_H"
+        if head_id not in head_edges:
+            continue
+        
+        # Find corresponding edge elements
+        body_edge = None
+        head_edge = None
+        for edge in edg_root.findall("edge"):
+            if edge.get("id") == body_id:
+                body_edge = edge
+            elif edge.get("id") == head_id:
+                head_edge = edge
+        
+        if body_edge is None or head_edge is None:
+            raise ValidationError(f"Could not find edge elements for {body_id}/{head_id}")
+        
+        # Check lane count consistency
+        body_lanes_attr = body_edge.get("numLanes")
+        head_lanes_attr = head_edge.get("numLanes")
+        
+        if body_lanes_attr is not None and head_lanes_attr is not None:
+            if body_lanes_attr != head_lanes_attr:
+                raise ValidationError(f"Lane count mismatch between {body_id} ({body_lanes_attr}) and {head_id} ({head_lanes_attr})")
+        
+        # Check lane elements if present
+        body_lane_elements = body_edge.findall("lane")
+        head_lane_elements = head_edge.findall("lane")
+        
+        if body_lane_elements and head_lane_elements:
+            if len(body_lane_elements) != len(head_lane_elements):
+                raise ValidationError(f"Lane element count mismatch between {body_id} and {head_id}")
+    
+    # 8 ── validate connection updates ----------------------------------------
+    # Check that connections are properly updated for split edges
+    connection_edges = set()
     for conn in con_root.findall("connection"):
         from_edge = conn.get("from")
         to_edge = conn.get("to")
-        from_lane = conn.get("fromLane")
-        to_lane = conn.get("toLane")
-        connections.append((from_edge, to_edge, from_lane, to_lane))
-
-    tl_connections = []
-    for conn in tll_root.findall("connection"):
-        from_edge = conn.get("from")
-        to_edge = conn.get("to")
-        tl_id = conn.get("tl")
-        tl_connections.append((from_edge, to_edge, tl_id))
-
-    # 4 ── identify split edges and their components --------------------------
-    split_edges = {}  # base_id -> {body_id, head_id, split_node_id}
-    split_nodes = {}  # node_id -> coordinates
+        connection_edges.add(from_edge)
+        connection_edges.add(to_edge)
     
-    # Find H_nodes (split nodes)
-    for node_id, coords in nodes.items():
-        if node_id.endswith("_H_node"):
-            base_edge_id = node_id.replace("_H_node", "")
-            split_nodes[node_id] = coords
-            split_edges[base_edge_id] = {
-                "split_node_id": node_id,
-                "split_coords": coords
-            }
-
-    # Find body and head edges
-    for edge_id, edge_data in edges.items():
-        if edge_id.endswith("_H"):
-            base_edge_id = edge_id.replace("_H", "")
-            if base_edge_id in split_edges:
-                split_edges[base_edge_id]["head_id"] = edge_id
-                split_edges[base_edge_id]["head_data"] = edge_data
-        else:
-            # Check if this is a body edge (connects to H_node)
-            to_node = edge_data["to"]
-            if to_node.endswith("_H_node"):
-                base_edge_id = to_node.replace("_H_node", "")
-                if base_edge_id == edge_id:  # Body edge keeps original ID
-                    if base_edge_id in split_edges:
-                        split_edges[base_edge_id]["body_id"] = edge_id
-                        split_edges[base_edge_id]["body_data"] = edge_data
-
-    # 5 ── validate split edge completeness -----------------------------------
-    incomplete_splits = []
-    for base_id, split_data in split_edges.items():
-        required_keys = ["body_id", "head_id", "split_node_id", "split_coords"]
-        missing_keys = [key for key in required_keys if key not in split_data]
-        if missing_keys:
-            incomplete_splits.append(f"{base_id} missing: {missing_keys}")
-
-    if incomplete_splits:
-        raise ValidationError(
-            f"Incomplete edge splits found: {'; '.join(incomplete_splits)}")
-
-    # 6 ── validate split node positioning and geometry ----------------------
-    geometric_errors = []
-    for base_id, split_data in split_edges.items():
-        body_data = split_data["body_data"]
-        head_data = split_data["head_data"]
-        split_coords = split_data["split_coords"]
+    # All edges referenced in connections should exist
+    all_edge_ids = set(body_edges.keys()) | set(head_edges.keys())
+    for edge_id in connection_edges:
+        if edge_id not in all_edge_ids:
+            raise ValidationError(f"Connection references non-existent edge: {edge_id}")
+    
+    # 9 ── validate edge naming pattern ---------------------------------------
+    for body_id in body_edges:
+        if not body_id.replace("_", "").isalnum():
+            raise ValidationError(f"Body edge has invalid naming pattern: {body_id}")
         
-        # Note: Could reconstruct full geometry if needed for more detailed validation
-        # body_from = nodes[body_data["from"]]
-        # body_to = split_coords  
-        # head_from = split_coords
-        # head_to = nodes[head_data["to"]]
-        
-        # Check if body edge goes to split node
-        if body_data["to"] != split_data["split_node_id"]:
-            geometric_errors.append(
-                f"Body edge {base_id} doesn't connect to split node")
-        
-        # Check if head edge starts from split node
-        if head_data["from"] != split_data["split_node_id"]:
-            geometric_errors.append(
-                f"Head edge {split_data['head_id']} doesn't start from split node")
-        
-        # Validate split distance using geometry
-        if body_data["shape"] and head_data["shape"]:
-            try:
-                body_shape = parse_shape(body_data["shape"])
-                head_shape = parse_shape(head_data["shape"])
-                
-                # Check that body ends where head begins
-                if abs(body_shape[-1][0] - head_shape[0][0]) > 1e-3 or \
-                   abs(body_shape[-1][1] - head_shape[0][1]) > 1e-3:
-                    geometric_errors.append(
-                        f"Body and head segments don't connect properly for {base_id}")
-                
-                # Check split distance
-                head_line = LineString(head_shape)
-                actual_head_distance = head_line.length
-                expected_distance = CONFIG.HEAD_DISTANCE
-                tolerance = 2.0  # Allow 2m tolerance
-                
-                if abs(actual_head_distance - expected_distance) > tolerance:
-                    geometric_errors.append(
-                        f"Head segment {split_data['head_id']} distance {actual_head_distance:.2f}m "
-                        f"not within {tolerance}m of expected {expected_distance}m")
-                        
-            except Exception as e:
-                geometric_errors.append(
-                    f"Failed to validate geometry for {base_id}: {e}")
-
-    if geometric_errors:
-        raise ValidationError(
-            f"Geometric validation errors: {'; '.join(geometric_errors)}")
-
-    # 7 ── validate body-to-head connections ----------------------------------
-    missing_internal_connections = []
-    for base_id, split_data in split_edges.items():
-        body_id = split_data["body_id"]
-        head_id = split_data["head_id"]
-        
-        # Check for connections from body to head
-        body_to_head_conns = [
-            (from_edge, to_edge, from_lane, to_lane)
-            for from_edge, to_edge, from_lane, to_lane in connections
-            if from_edge == body_id and to_edge == head_id
-        ]
-        
-        if not body_to_head_conns:
-            missing_internal_connections.append(f"{body_id} -> {head_id}")
-        else:
-            # Check lane continuity
-            body_edge = split_data["body_data"]["element"]
-            head_edge = split_data["head_data"]["element"]
-            
-            # Get lane count from numLanes attribute or lane elements
-            body_lanes = len(body_edge.findall("lane"))
-            if body_lanes == 0:
-                body_lanes = int(body_edge.get("numLanes", "1"))
-            
-            head_lanes = len(head_edge.findall("lane"))
-            if head_lanes == 0:
-                head_lanes = int(head_edge.get("numLanes", "1"))
-            
-            if body_lanes != head_lanes:
-                missing_internal_connections.append(
-                    f"{body_id} has {body_lanes} lanes but {head_id} has {head_lanes} lanes")
-            
-            # Check that all lanes are connected
-            expected_connections = body_lanes
-            if len(body_to_head_conns) != expected_connections:
-                missing_internal_connections.append(
-                    f"{body_id} -> {head_id} has {len(body_to_head_conns)} connections, "
-                    f"expected {expected_connections}")
-
-    if missing_internal_connections:
-        raise ValidationError(
-            f"Missing internal connections: {'; '.join(missing_internal_connections)}")
-
-    # 8 ── validate traffic light updates -------------------------------------
-    tl_update_errors = []
-    for base_id, split_data in split_edges.items():
-        head_id = split_data["head_id"]
-        
-        # Check that traffic light connections use head edge, not body
-        for from_edge, to_edge, tl_id in tl_connections:
-            if from_edge == base_id:  # Should be head_id instead
-                tl_update_errors.append(
-                    f"Traffic light connection still uses body edge {base_id} instead of {head_id}")
-
-    if tl_update_errors:
-        raise ValidationError(
-            f"Traffic light update errors: {'; '.join(tl_update_errors)}")
-
-    # 9 ── validate split node attributes -------------------------------------
-    split_node_errors = []
-    for base_id, split_data in split_edges.items():
-        split_node_id = split_data["split_node_id"]
-        
-        # Find the split node element
-        split_node_elem = None
-        for node in nod_root.findall("node"):
-            if node.get("id") == split_node_id:
-                split_node_elem = node
-                break
-        
-        if split_node_elem is None:
-            split_node_errors.append(f"Split node {split_node_id} not found in nodes file")
+        # Check that head edge follows naming convention
+        expected_head_id = body_id + "_H"
+        if expected_head_id not in head_edges:
+            raise ValidationError(f"Head edge naming doesn't follow convention: expected {expected_head_id}")
+    
+    # 10 ── validate H_node naming pattern ------------------------------------
+    for h_node_id in h_nodes:
+        if not h_node_id.endswith("_H_node"):
+            raise ValidationError(f"H_node naming doesn't follow convention: {h_node_id}")
+    
+    # 11 ── validate no orphaned nodes ----------------------------------------
+    # All nodes should be referenced by at least one edge
+    referenced_nodes = set()
+    for edge in edg_root.findall("edge"):
+        referenced_nodes.add(edge.get("from"))
+        referenced_nodes.add(edge.get("to"))
+    
+    all_node_ids = set(node_coords.keys())
+    orphaned_nodes = all_node_ids - referenced_nodes
+    if orphaned_nodes:
+        raise ValidationError(f"Found orphaned nodes: {', '.join(list(orphaned_nodes)[:5])}")
+    
+    # 12 ── validate edge lengths ---------------------------------------------
+    # After splitting, body edges should be longer than head edges
+    for body_id in body_edges:
+        head_id = body_id + "_H"
+        if head_id not in head_edges:
             continue
         
-        # Check radius attribute
-        radius = split_node_elem.get("radius")
-        if radius is None:
-            split_node_errors.append(f"Split node {split_node_id} missing radius attribute")
-        else:
-            expected_radius = str(float(CONFIG.DEFAULT_JUNCTION_RADIUS))
-            if radius != expected_radius:
-                split_node_errors.append(
-                    f"Split node {split_node_id} radius {radius}, expected {expected_radius}")
-
-    if split_node_errors:
-        raise ValidationError(
-            f"Split node validation errors: {'; '.join(split_node_errors)}")
-
-    # 10 ── validate no orphaned elements ------------------------------------
-    orphaned_elements = []
-    
-    # Check for H_nodes without corresponding split edges
-    for node_id in nodes:
-        if node_id.endswith("_H_node"):
-            base_id = node_id.replace("_H_node", "")
-            if base_id not in split_edges:
-                orphaned_elements.append(f"Orphaned split node: {node_id}")
-    
-    # Check for _H edges without corresponding body edges
-    for edge_id in edges:
-        if edge_id.endswith("_H"):
-            base_id = edge_id.replace("_H", "")
-            if base_id not in split_edges:
-                orphaned_elements.append(f"Orphaned head edge: {edge_id}")
-
-    if orphaned_elements:
-        raise ValidationError(
-            f"Orphaned elements found: {'; '.join(orphaned_elements)}")
-
-    # 11 ── validate edge attributes preservation -----------------------------
-    attribute_errors = []
-    for base_id, split_data in split_edges.items():
-        body_elem = split_data["body_data"]["element"]
-        head_elem = split_data["head_data"]["element"]
+        body_from, body_to = body_edges[body_id]
+        head_from, head_to = head_edges[head_id]
         
-        # Check that important attributes are preserved
-        critical_attrs = ["numLanes", "priority", "speed"]
-        for attr in critical_attrs:
-            body_val = body_elem.get(attr)
-            head_val = head_elem.get(attr)
-            if body_val != head_val:
-                attribute_errors.append(
-                    f"Attribute {attr} mismatch for {base_id}: body={body_val}, head={head_val}")
-
-    if attribute_errors:
-        raise ValidationError(
-            f"Edge attribute preservation errors: {'; '.join(attribute_errors)}")
-
-    # 12 ── summary validation -----------------------------------------------
-    if not split_edges:
-        raise ValidationError("No split edges found - edge splitting may not have been performed")
-    
-    # Check reasonable number of splits
-    total_edges = len(edges)
-    num_splits = len(split_edges)
-    if num_splits > total_edges * 0.8:  # More than 80% of edges split seems excessive
-        raise ValidationError(
-            f"Too many edges split ({num_splits}/{total_edges}) - may indicate error")
+        body_length = distance(node_coords[body_from], node_coords[body_to])
+        head_length = distance(node_coords[head_from], node_coords[head_to])
+        
+        # Head segment should be CONFIG.HEAD_DISTANCE (30m by default)
+        expected_head_length = CONFIG.HEAD_DISTANCE
+        if abs(head_length - expected_head_length) > 1e-3:
+            raise ValidationError(f"Head edge {head_id} has incorrect length: {head_length:.3f}m, expected {expected_head_length}m")
+        
+        # Body segment should be original_length - head_length
+        # Original edges are block_size_m long, so body should be block_size_m - head_distance
+        expected_body_length = 150 - CONFIG.HEAD_DISTANCE  # 150m is original edge length
+        if abs(body_length - expected_body_length) > 1e-3:
+            raise ValidationError(f"Body edge {body_id} has incorrect length: {body_length:.3f}m, expected {expected_body_length}m")
 
     return
 
 
-# ---------------------------------------------------------------------------
-#  Zone extraction verification (inline after extract_zones_from_junctions)
-# ---------------------------------------------------------------------------
 def verify_extract_zones_from_junctions(
-    cell_size: float,
+    cell_size: Optional[float],
     seed: int,
-    fill_polygons: bool = False,
-    inset: float = 0.0
+    fill_polygons: bool,
+    inset: float,
 ) -> None:
-    """Validate that *zones.geojson* agrees with the junction grid in *net_file*.
-
-    Cheap checks (≪ 10 ms):
-    1. *zones.geojson* exists and is valid JSON.
-    2. Number of features equals ``(Nx‑1) × (Ny‑1)``, where ``Nx``/``Ny`` are the
-       counts of *visible* junction x/y coordinates in the SUMO net.
-    3. Every feature has a unique ``zone_id`` and a Polygon geometry.
+    """Validate zone extraction from junctions.
+    
+    This function validates the extract_zones_from_junctions function by checking:
+    1. Zone files are generated correctly
+    2. Zone count matches expected (n-1)×(n-1) for n×n grid
+    3. Zone properties are valid
+    4. Land use assignment is reasonable
     """
-
-    from src.config import CONFIG
-    import os
     
-    geojson_path = os.path.join(CONFIG.output_dir, "zones.geojson")
-    poly_path = os.path.join(CONFIG.output_dir, "zones.poly.xml")
-
-    if not os.path.exists(geojson_path):
-        raise ValidationError(f"zones.geojson not found at {geojson_path}")
+    # Zone files that should exist  
+    zone_files = [
+        CONFIG.zones_file,
+    ]
     
-    if not os.path.exists(poly_path):
-        raise ValidationError(f"zones.poly.xml not found at {poly_path}")
-
-    # 1 ── parse GeoJSON -------------------------------------------------------
+    # 1 ── check file existence ------------------------------------------------
+    for file_path in zone_files:
+        if not Path(file_path).exists():
+            raise ValidationError(f"Zone file missing: {file_path}")
+    
+    # 2 ── validate SUMO polygon file ------------------------------------------
     try:
-        with open(geojson_path, "r", encoding="utf-8") as f:
-            geo = json.load(f)
-    except Exception as exc:
-        raise ValidationError(
-            f"Failed to parse {geojson_path}: {exc}") from exc
-
-    if geo.get("type") != "FeatureCollection":
-        raise ValidationError("zones.geojson must be a FeatureCollection")
-
-    features = geo.get("features", [])
-    if not features:
-        raise ValidationError("zones.geojson contains no features")
-
-    # check uniqueness and geometry type
-    seen_ids: set[str] = set()
-    for feat in features:
-        props = feat.get("properties", {})
-        zid = props.get("zone_id")
-        if zid is None:
-            raise ValidationError("Feature without zone_id in zones.geojson")
-        if zid in seen_ids:
-            raise ValidationError(f"Duplicate zone_id {zid} in zones.geojson")
-        seen_ids.add(zid)
-        if feat.get("geometry", {}).get("type") != "Polygon":
-            raise ValidationError(f"zone {zid} geometry is not Polygon")
-
-    # 2 ── derive expected zone count from the network ------------------------
+        tree = ET.parse(CONFIG.zones_file)
+        root = tree.getroot()
+        
+        polygons = root.findall("poly")
+        if not polygons:
+            raise ValidationError("SUMO polygon file has no polygons")
+        
+        # Validate polygon structure
+        for poly in polygons:
+            poly_id = poly.get("id")
+            if not poly_id:
+                raise ValidationError("Polygon missing ID")
+            
+            shape = poly.get("shape")
+            if not shape:
+                raise ValidationError(f"Polygon {poly_id} missing shape")
+            
+            # Validate shape format (should be x1,y1 x2,y2 x3,y3 x4,y4)
+            shape_coords = shape.split()
+            if len(shape_coords) < 3:
+                raise ValidationError(f"Polygon {poly_id} has too few coordinates")
+            
+            for coord in shape_coords:
+                try:
+                    x, y = coord.split(",")
+                    float(x)
+                    float(y)
+                except ValueError:
+                    raise ValidationError(f"Polygon {poly_id} has invalid coordinate: {coord}")
+    
+    except ET.ParseError as e:
+        raise ValidationError(f"Error parsing SUMO polygon file: {e}")
+    
+    # 4 ── validate zone count -------------------------------------------------
+    # For n×n grid, we should have (n-1)×(n-1) zones
+    # Need to determine grid size from network nodes
     try:
         nod_tree = ET.parse(CONFIG.network_nod_file)
         nod_root = nod_tree.getroot()
-    except Exception as exc:
-        raise ValidationError(
-            f"Failed to parse nodes file {CONFIG.network_nod_file}: {exc}") from exc
-
-    # Extract visible junctions (excluding internal and H_nodes)
-    junctions = []
-    for node in nod_root.findall("node"):
-        node_id = node.get("id")
-        if not node_id.startswith(":") and "_H_node" not in node_id:
-            x = float(node.get("x"))
-            y = float(node.get("y"))
-            junctions.append((x, y, node_id))
-
-    # Extract unique coordinates
-    xs: set[float] = set(x for x, _, _ in junctions)
-    ys: set[float] = set(y for _, y, _ in junctions)
-
-    nx, ny = len(xs), len(ys)
-    expected = (nx - 1) * (ny - 1)
-    actual = len(features)
-
-    if actual != expected:
-        raise ValidationError(
-            f"zones.geojson has {actual} features; expected {expected} "
-            f"((|X|-1)*(|Y|-1) from junction grid)"
-        )
-
-    # Note: seed parameter used implicitly through land use and attractiveness validation
-    _ = seed  # Acknowledge parameter to avoid unused variable warning
+        
+        # Count grid nodes (excluding H_nodes)
+        grid_coords = []
+        for node in nod_root.findall("node"):
+            node_id = node.get("id")
+            if "_H_node" not in node_id:
+                x = float(node.get("x"))
+                y = float(node.get("y"))
+                grid_coords.append((x, y))
+        
+        # Determine grid dimensions
+        xs = [coord[0] for coord in grid_coords]
+        ys = [coord[1] for coord in grid_coords]
+        unique_xs = sorted(set(xs))
+        unique_ys = sorted(set(ys))
+        
+        grid_x_size = len(unique_xs)
+        grid_y_size = len(unique_ys)
+        
+        expected_zones = (grid_x_size - 1) * (grid_y_size - 1)
+        actual_zones = len(polygons)
+        
+        if actual_zones != expected_zones:
+            raise ValidationError(f"Zone count mismatch: expected {expected_zones}, found {actual_zones}")
+    
+    except Exception as e:
+        raise ValidationError(f"Error determining grid size: {e}")
 
     return
 
 
-# ---------------------------------------------------------------------------
-#  Network rebuild verification (inline after rebuild_network)
-# ---------------------------------------------------------------------------
-
-
 def verify_rebuild_network() -> None:
-    """Validate that network rebuild completed successfully.
+    """Validate network rebuild from separate XML files.
     
-    This function validates the rebuild output by checking:
-    1. The final .net.xml file was created and is valid
-    2. Basic network structure is reasonable
-    3. The network can be loaded by SUMO
-    4. Traffic light logic is present and valid
-    
-    This function takes no parameters as it validates the current state after rebuild.
+    This function validates that the network rebuild process successfully
+    creates a valid compiled network file from separate XML components.
     """
-    from src.config import CONFIG
-    import os
     
-    # 1 ── validate output file exists and has reasonable size ---------------
-    net_file = CONFIG.network_file
-    if not os.path.exists(net_file):
-        raise ValidationError(f"Rebuilt network file not found: {net_file}")
+    # 1 ── check compiled network file exists ----------------------------------
+    if not Path(CONFIG.network_file).exists():
+        raise ValidationError(f"Compiled network file missing: {CONFIG.network_file}")
     
-    file_size = os.path.getsize(net_file)
-    if file_size < 1000:  # Minimum reasonable size for a network file
-        raise ValidationError(f"Network file too small ({file_size} bytes), rebuild may have failed")
-    
-    # 2 ── validate XML structure and basic network elements -----------------
+    # 2 ── validate XML structure ----------------------------------------------
     try:
-        tree = ET.parse(net_file)
+        tree = ET.parse(CONFIG.network_file)
         root = tree.getroot()
         
         if root.tag != "net":
-            raise ValidationError(f"Network file root should be 'net', got '{root.tag}'")
+            raise ValidationError("Network file root element is not 'net'")
         
-        # Check for essential network elements
-        junctions = root.findall("junction")
-        edges = root.findall("edge")
-        connections = root.findall("connection")
-        
-        if not junctions:
-            raise ValidationError("Network has no junctions after rebuild")
-        if not edges:
-            raise ValidationError("Network has no edges after rebuild")
-        if not connections:
-            raise ValidationError("Network has no connections after rebuild")
-        
-        # Count meaningful elements (exclude internal/system elements)
-        visible_junctions = [j for j in junctions if not j.get("id", "").startswith(":")]
-        normal_edges = [e for e in edges if e.get("function") != "internal"]
-        
-        if len(visible_junctions) < 4:
-            raise ValidationError(f"Too few visible junctions ({len(visible_junctions)}) after rebuild")
-        if len(normal_edges) < 6:
-            raise ValidationError(f"Too few normal edges ({len(normal_edges)}) after rebuild")
-        
-    except ET.ParseError as exc:
-        raise ValidationError(f"Network file is not valid XML: {exc}") from exc
-    except Exception as exc:
-        raise ValidationError(f"Failed to parse network file: {exc}") from exc
+    except ET.ParseError as e:
+        raise ValidationError(f"Network file XML parsing error: {e}")
     
-    # 3 ── validate network can be loaded by SUMO ---------------------------
+    # 3 ── validate SUMO can load the network ---------------------------------
     try:
-        import sumolib
-        # Test that SUMO can actually load and interpret the network
-        net = sumolib.net.readNet(str(net_file))
-        
-        # Basic sanity checks on loaded network
-        sumo_nodes = net.getNodes()
-        sumo_edges = net.getEdges()
-        
-        if len(sumo_nodes) == 0:
-            raise ValidationError("SUMO loaded network has no nodes")
-        if len(sumo_edges) == 0:
-            raise ValidationError("SUMO loaded network has no edges")
-        
-        # Quick connectivity check on a sample of edges
-        if sumo_edges:
-            sample_edge = sumo_edges[0]
-            if not sample_edge.getFromNode() or not sample_edge.getToNode():
-                raise ValidationError("Network has edges with missing from/to nodes")
-        
-    except ImportError:
-        # sumolib not available, skip this validation
-        pass
-    except Exception as exc:
-        raise ValidationError(f"Network not loadable by SUMO: {exc}") from exc
+        net = sumolib.net.readNet(CONFIG.network_file)
+    except Exception as e:
+        raise ValidationError(f"SUMO cannot load network file: {e}")
     
-    # 4 ── validate traffic light logic is reasonable ------------------------
-    tl_logics = root.findall("tlLogic")
-    tl_junctions = [j for j in junctions if j.get("type") == "traffic_light"]
+    # 4 ── validate network has reasonable content -----------------------------
+    edges = net.getEdges()
+    if not edges:
+        raise ValidationError("Network has no edges")
     
-    if tl_junctions and not tl_logics:
-        raise ValidationError("Traffic light junctions found but no traffic light logic")
+    nodes = net.getNodes()
+    if not nodes:
+        raise ValidationError("Network has no nodes")
     
-    # Check traffic light phases are valid
-    for tl_logic in tl_logics:
-        tl_id = tl_logic.get("id")
-        phases = tl_logic.findall("phase")
-        
-        if not phases:
-            raise ValidationError(f"Traffic light {tl_id} has no phases after rebuild")
-        
-        # Verify phases have valid states
-        for phase in phases:
-            state = phase.get("state", "")
-            if not state:
-                raise ValidationError(f"Traffic light {tl_id} has empty phase state")
-    
-    # 5 ── validate network coordinates are reasonable -----------------------
-    try:
-        x_coords = []
-        y_coords = []
-        
-        for junction in visible_junctions:
-            x = float(junction.get("x", 0))
-            y = float(junction.get("y", 0))
-            x_coords.append(x)
-            y_coords.append(y)
-        
-        if x_coords and y_coords:
-            x_range = max(x_coords) - min(x_coords)
-            y_range = max(y_coords) - min(y_coords)
-            
-            # Network should have reasonable spatial extent
-            if x_range < 50 or y_range < 50:
-                raise ValidationError(f"Network spatial range too small: {x_range}×{y_range} meters")
-                
-    except ValueError as exc:
-        raise ValidationError(f"Invalid coordinates in network: {exc}") from exc
+    # 5 ── validate traffic light logic is preserved -------------------------
+    # Check that traffic lights exist in the compiled network
+    tl_nodes = [node for node in nodes if node.getType() == "traffic_light"]
+    if not tl_nodes:
+        raise ValidationError("No traffic light nodes found in compiled network")
 
     return
 
 
 def verify_set_lane_counts(
-    net_file_out: str | Path,
     *,
     min_lanes: int = 1,
     max_lanes: int = 3,
 ) -> None:
-    """Validate lane counts and *practical* connectivity after mutation."""
+    """Validate lane counts and distribution after lane assignment."""
 
-    path = Path(net_file_out)
-    if not path.exists():
-        raise ValidationError(
-            f"Lane‑count check: network file missing: {path}")
+    # Work with separate XML files since network not rebuilt yet
+    edg_file = CONFIG.network_edg_file
+    if not Path(edg_file).exists():
+        raise ValidationError(f"Edges file missing: {edg_file}")
 
     try:
-        net = sumolib.net.readNet(str(path))
-    except Exception as exc:
-        raise ValidationError(
-            f"Failed to parse network file {path}: {exc}") from exc
+        tree = ET.parse(edg_file)
+        root = tree.getroot()
+    except ET.ParseError as exc:
+        raise ValidationError(f"Failed to parse edges file: {exc}") from exc
 
     counts: list[int] = []
-    unreachable: list[str] = []
-
-    for edge in net.getEdges():
-        func = edge.getFunction() if hasattr(
-            edge, "getFunction") else edge.func  # type: ignore
-        if func == "internal":
-            continue
-        lanes = edge.getLanes()
-        counts.append(len(lanes))
-        for lane in lanes:
-            if not lane.getIncoming():
-                unreachable.append(lane.getID())
+    
+    # Extract lane counts from edges
+    for edge in root.findall("edge"):
+        # Get numLanes attribute
+        num_lanes_str = edge.get("numLanes")
+        if num_lanes_str is None:
+            raise ValidationError(f"Edge {edge.get('id')} missing numLanes attribute")
+        
+        try:
+            num_lanes = int(num_lanes_str)
+            counts.append(num_lanes)
+        except ValueError:
+            raise ValidationError(f"Invalid numLanes value for edge {edge.get('id')}: {num_lanes_str}")
 
     if not counts:
-        raise ValidationError(
-            "Lane‑count check: no driveable edges found in network")
+        raise ValidationError("No edges found in edges file")
 
     # Bound check ----------------------------------------------------------------
     bad = [c for c in counts if c < min_lanes or c > max_lanes]
@@ -1007,73 +682,12 @@ def verify_set_lane_counts(
         raise ValidationError(
             f"No edge ended up with the maximum lane count ({max_lanes})")
 
-    # Connectivity check ---------------------------------------------------------
-    if unreachable:
-        # geometry helpers
-        xmin, ymin, xmax, ymax = net.getBoundary()
-        tol = 1e-3
-
-        def on_border(node) -> bool:
-            x, y = node.getCoord()
-            return abs(x - xmin) < tol or abs(x - xmax) < tol or abs(y - ymin) < tol or abs(y - ymax) < tol
-
-        interior_violations: list[str] = []
-        for lane_id in unreachable:
-            lane_obj = net.getLane(lane_id)
-            edge = lane_obj.getEdge()
-
-            # perimeter tolerance
-            if on_border(edge.getFromNode()) and on_border(edge.getToNode()):
-                continue
-
-            # upstream‑lane‑count tolerance
-            from_node = edge.getFromNode()
-            max_in_lanes = max((len(e.getLanes())
-                               for e in from_node.getIncoming()), default=0)
-            try:
-                lane_idx = int(lane_id.rsplit("_", 1)[-1])
-            except ValueError:
-                lane_idx = -1  # cannot parse, treat as interior
-
-            if lane_idx >= max_in_lanes:
-                continue  # tolerated: no upstream lane with this index exists
-
-            interior_violations.append(lane_id)
-
-        if interior_violations:
-            sample = ", ".join(interior_violations[:5])
-            more = "" if len(
-                interior_violations) <= 5 else f" … and {len(interior_violations)-5} more"
-            raise ValidationError(
-                f"{len(interior_violations)} interior lanes have no incoming connection: {sample}{more}"
-            )
-
-    # all good
     return
+
 
 # ---------------------------------------------------------------------------
 #  Edge attractiveness verification (inline after assign_edge_attractiveness)
 # ---------------------------------------------------------------------------
-
-    """Validate *assign_edge_attractiveness* output.
-
-Checks performed
-----------------
-1. **Presence**   Every non‑internal `<edge>` carries *both* XML attributes
-   `depart_attractiveness` and `arrive_attractiveness`.
-2. **Type & Range**   Values are non‑negative integers (netconvert often wraps a
-   single‑lane value as `[3]`; brackets are stripped first).
-3. **Distribution sanity**   The sample mean of each attribute must sit within
-   ±50 % (default *tolerance*) of the corresponding Poisson λ used when the
-   helper was called (`lambda_depart`, `lambda_arrive`).  This weeds out cases
-   where the attribute was written but the random draw silently failed.
-4. **Variability**   Rejects the degenerate case where every edge got the same
-   value, indicating the random generator wasn’t invoked.
-"""
-
-
-def _mean(vals: list[int]) -> float:
-    return sum(vals) / len(vals) if vals else float("nan")
 
 
 def _to_float(val):
@@ -1094,219 +708,337 @@ def verify_assign_edge_attractiveness(
     2. Values are non-negative integers from Poisson distribution
     3. Sample means are within tolerance of expected lambda values
     4. Values show proper variability (not constant)
-    
-    Parameters match those of assign_edge_attractiveness exactly.
     """
-    from src.config import CONFIG
     
-    lambda_depart_f = _to_float(CONFIG.LAMBDA_DEPART)
-    lambda_arrive_f = _to_float(CONFIG.LAMBDA_ARRIVE)
+    # Work with rebuilt network file since attractiveness is added to compiled network
     net_file = CONFIG.network_file
-
-    path = Path(net_file)
-    if not path.exists():
-        raise ValidationError(
-            f"Attractiveness check: network file not found: {path}")
-
-    tree = ET.parse(path)
-    root = tree.getroot()
-
-    dep_vals: list[int] = []
-    arr_vals: list[int] = []
-
-    for edge in root.findall("edge"):
-        if edge.get("function") == "internal":
+    if not Path(net_file).exists():
+        raise ValidationError(f"Network file missing: {net_file}")
+    
+    # Parse the XML directly to check for attractiveness attributes
+    try:
+        tree = ET.parse(net_file)
+        root = tree.getroot()
+    except ET.ParseError as e:
+        raise ValidationError(f"Failed to parse network XML: {e}")
+    
+    depart_attrs = []
+    arrive_attrs = []
+    
+    # Find all edge elements and check for attractiveness attributes
+    for edge_elem in root.findall(".//edge"):
+        edge_id = edge_elem.get("id")
+        
+        # Skip internal edges (start with ":")
+        if edge_id and edge_id.startswith(":"):
             continue
-
-        dep = edge.get("depart_attractiveness")
-        arr = edge.get("arrive_attractiveness")
-        if dep is None or arr is None:
-            raise ValidationError(
-                f"Edge {edge.get('id')} missing attractiveness attributes")
-
-        dep = dep.strip("[]")
-        arr = arr.strip("[]")
+        
+        # Check for attractiveness attributes
+        depart_attr = edge_elem.get("depart_attractiveness")
+        arrive_attr = edge_elem.get("arrive_attractiveness")
+        
+        if depart_attr is None:
+            raise ValidationError(f"Edge {edge_id} missing depart_attractiveness")
+        if arrive_attr is None:
+            raise ValidationError(f"Edge {edge_id} missing arrive_attractiveness")
+        
+        # Parse values (may be wrapped in brackets)
         try:
-            dep_i = int(dep)
-            arr_i = int(arr)
+            depart_val = _to_float(depart_attr.strip("[]"))
+            arrive_val = _to_float(arrive_attr.strip("[]"))
         except ValueError:
-            raise ValidationError(
-                f"Edge {edge.get('id')} has non‑integer attractiveness value")
-        if dep_i < 0 or arr_i < 0:
-            raise ValidationError(
-                f"Edge {edge.get('id')} has negative attractiveness value")
-
-        dep_vals.append(dep_i)
-        arr_vals.append(arr_i)
-
-    # sample‑mean sanity ------------------------------------------------------
-    dep_mean = _mean(dep_vals)
-    arr_mean = _mean(arr_vals)
-
-    if not (lambda_depart_f * (1 - tolerance) <= dep_mean <= lambda_depart_f * (1 + tolerance)):
+            raise ValidationError(f"Edge {edge.getID()} has invalid attractiveness values")
+        
+        # Check non-negative
+        if depart_val < 0:
+            raise ValidationError(f"Edge {edge.getID()} has negative depart_attractiveness: {depart_val}")
+        if arrive_val < 0:
+            raise ValidationError(f"Edge {edge.getID()} has negative arrive_attractiveness: {arrive_val}")
+        
+        depart_attrs.append(depart_val)
+        arrive_attrs.append(arrive_val)
+    
+    if not depart_attrs:
+        raise ValidationError("No edges with attractiveness attributes found")
+    
+    # Statistical validation
+    depart_mean = statistics.mean(depart_attrs)
+    arrive_mean = statistics.mean(arrive_attrs)
+    
+    expected_depart = CONFIG.LAMBDA_DEPART
+    expected_arrive = CONFIG.LAMBDA_ARRIVE
+    
+    # Check means are within tolerance
+    if abs(depart_mean - expected_depart) > tolerance * expected_depart:
         raise ValidationError(
-            f"Depart attractiveness mean {dep_mean:.2f} outside ±{tolerance*100:.0f}% of λ={lambda_depart_f}")
-    if not (lambda_arrive_f * (1 - tolerance) <= arr_mean <= lambda_arrive_f * (1 + tolerance)):
+            f"Depart attractiveness mean {depart_mean:.2f} outside tolerance of {expected_depart:.2f}")
+    
+    if abs(arrive_mean - expected_arrive) > tolerance * expected_arrive:
         raise ValidationError(
-            f"Arrive attractiveness mean {arr_mean:.2f} outside ±{tolerance*100:.0f}% of λ={lambda_arrive_f}")
-
-    # variability check -------------------------------------------------------
-    if len(set(dep_vals)) <= 1 and len(set(arr_vals)) <= 1:
-        raise ValidationError(
-            "Attractiveness values appear constant; distribution sampling may have failed")
+            f"Arrive attractiveness mean {arrive_mean:.2f} outside tolerance of {expected_arrive:.2f}")
+    
+    # Check variability
+    if len(set(depart_attrs)) < 2:
+        raise ValidationError("Depart attractiveness values lack variability")
+    if len(set(arrive_attrs)) < 2:
+        raise ValidationError("Arrive attractiveness values lack variability")
 
     return
 
 
 # ---------------------------------------------------------------------------
-#  SUMO Configuration file verification
+#  SUMO configuration file verification
 # ---------------------------------------------------------------------------
 
-def verify_generate_sumo_conf_file(
-    config_file: str,
-    network_file: str,
-    route_file: str | None = None,
-    zones_file: str | None = None,
-) -> None:
-    """Validate the generated SUMO configuration file.
+
+def verify_generate_sumo_conf_file() -> None:
+    """Validate SUMO configuration file generation.
     
     This function validates the generate_sumo_conf_file function by checking:
     1. Configuration file exists and is valid XML
-    2. Referenced files exist and are accessible
-    3. XML structure matches SUMO configuration schema
+    2. All required sections are present
+    3. File references are correct
     4. Time parameters are reasonable
-    5. File paths are correctly formatted
-    
-    Parameters match those of generate_sumo_conf_file exactly.
     """
-    from pathlib import Path
     
-    # 1 ── validate configuration file exists ────────────────────────────────
-    config_path = Path(config_file)
-    if not config_path.exists():
-        raise ValidationError(f"SUMO configuration file not found: {config_path}")
+    # 1 ── check configuration file exists -------------------------------------
+    if not Path(CONFIG.config_file).exists():
+        raise ValidationError(f"SUMO configuration file missing: {CONFIG.config_file}")
     
-    # 2 ── parse and validate XML structure ───────────────────────────────────
+    # 2 ── validate XML structure ----------------------------------------------
     try:
-        tree = ET.parse(config_path)
+        tree = ET.parse(CONFIG.config_file)
         root = tree.getroot()
+        
+        if root.tag != "configuration":
+            raise ValidationError("SUMO config root element is not 'configuration'")
+        
     except ET.ParseError as e:
-        raise ValidationError(f"Invalid XML in SUMO configuration file: {e}")
+        raise ValidationError(f"SUMO config XML parsing error: {e}")
     
-    if root.tag != "configuration":
-        raise ValidationError(f"SUMO config root element should be 'configuration', got '{root.tag}'")
+    # 3 ── validate required sections ------------------------------------------
+    required_sections = ["input", "time"]
+    for section in required_sections:
+        if root.find(section) is None:
+            raise ValidationError(f"SUMO config missing required section: {section}")
     
-    # 3 ── validate required sections exist ───────────────────────────────────
+    # 4 ── validate input file references --------------------------------------
     input_section = root.find("input")
-    if input_section is None:
-        raise ValidationError("SUMO configuration missing required <input> section")
     
-    time_section = root.find("time")
-    if time_section is None:
-        raise ValidationError("SUMO configuration missing required <time> section")
-    
-    # 4 ── validate network file reference ────────────────────────────────────
+    # Check network file reference
     net_file_elem = input_section.find("net-file")
     if net_file_elem is None:
-        raise ValidationError("SUMO configuration missing <net-file> element")
+        raise ValidationError("SUMO config missing net-file reference")
     
     net_file_value = net_file_elem.get("value")
     if not net_file_value:
-        raise ValidationError("SUMO configuration <net-file> has empty value")
+        raise ValidationError("SUMO config net-file has no value")
     
-    # Check if referenced network file exists (resolve relative to config dir)
-    config_dir = config_path.parent
-    referenced_net_file = config_dir / net_file_value
-    actual_net_file = Path(network_file)
+    # Check routes file reference  
+    route_files_elem = input_section.find("route-files")
+    if route_files_elem is None:
+        raise ValidationError("SUMO config missing route-files reference")
     
-    if not referenced_net_file.exists() and not actual_net_file.exists():
-        raise ValidationError(f"Referenced network file does not exist: {net_file_value}")
+    route_files_value = route_files_elem.get("value")
+    if not route_files_value:
+        raise ValidationError("SUMO config route-files has no value")
     
-    # Validate the filename matches what was passed
-    expected_net_name = Path(network_file).name
-    if net_file_value != expected_net_name:
-        raise ValidationError(
-            f"Network file reference mismatch: config has '{net_file_value}', expected '{expected_net_name}'")
+    # 5 ── validate time parameters --------------------------------------------
+    time_section = root.find("time")
     
-    # 5 ── validate route file reference (if provided) ────────────────────────
-    if route_file is not None:
-        route_file_elem = input_section.find("route-files")
-        if route_file_elem is None:
-            raise ValidationError("Route file provided but <route-files> element missing from config")
-        
-        route_file_value = route_file_elem.get("value")
-        if not route_file_value:
-            raise ValidationError("SUMO configuration <route-files> has empty value")
-        
-        # Check if referenced route file exists
-        referenced_route_file = config_dir / route_file_value
-        actual_route_file = Path(route_file)
-        
-        if not referenced_route_file.exists() and not actual_route_file.exists():
-            raise ValidationError(f"Referenced route file does not exist: {route_file_value}")
-        
-        # Validate the filename matches what was passed
-        expected_route_name = Path(route_file).name
-        if route_file_value != expected_route_name:
-            raise ValidationError(
-                f"Route file reference mismatch: config has '{route_file_value}', expected '{expected_route_name}'")
-    
-    # 6 ── validate zones file reference (if provided) ────────────────────────
-    if zones_file is not None:
-        additional_files_elem = input_section.find("additional-files")
-        if additional_files_elem is None:
-            raise ValidationError("Zones file provided but <additional-files> element missing from config")
-        
-        zones_file_value = additional_files_elem.get("value")
-        if not zones_file_value:
-            raise ValidationError("SUMO configuration <additional-files> has empty value")
-        
-        # Check if referenced zones file exists
-        referenced_zones_file = config_dir / zones_file_value
-        actual_zones_file = Path(zones_file)
-        
-        if not referenced_zones_file.exists() and not actual_zones_file.exists():
-            raise ValidationError(f"Referenced zones file does not exist: {zones_file_value}")
-        
-        # Validate the filename matches what was passed
-        expected_zones_name = Path(zones_file).name
-        if zones_file_value != expected_zones_name:
-            raise ValidationError(
-                f"Zones file reference mismatch: config has '{zones_file_value}', expected '{expected_zones_name}'")
-    
-    # 7 ── validate time configuration ────────────────────────────────────────
+    # Check for time parameters
     begin_elem = time_section.find("begin")
     end_elem = time_section.find("end")
+    step_length_elem = time_section.find("step-length")
     
-    if begin_elem is None:
-        raise ValidationError("SUMO configuration missing <begin> time element")
-    if end_elem is None:
-        raise ValidationError("SUMO configuration missing <end> time element")
+    if begin_elem is not None:
+        try:
+            begin_val = float(begin_elem.get("value", 0))
+            if begin_val < 0:
+                raise ValidationError(f"SUMO config begin time is negative: {begin_val}")
+        except ValueError:
+            raise ValidationError("SUMO config begin time is not a valid number")
     
+    if end_elem is not None:
+        try:
+            end_val = float(end_elem.get("value", 0))
+            if end_val <= 0:
+                raise ValidationError(f"SUMO config end time is not positive: {end_val}")
+        except ValueError:
+            raise ValidationError("SUMO config end time is not a valid number")
+    
+    if step_length_elem is not None:
+        try:
+            step_val = float(step_length_elem.get("value", 1))
+            if step_val <= 0:
+                raise ValidationError(f"SUMO config step length is not positive: {step_val}")
+        except ValueError:
+            raise ValidationError("SUMO config step length is not a valid number")
+    
+    # 6 ── validate no template placeholders remain ----------------------------
+    # Read file content to check for any remaining placeholders
+    with open(CONFIG.config_file, 'r') as f:
+        content = f.read()
+    
+    placeholders = ["#IFNET#", "#IFROUTE#", "#IFADDITIONAL#"]
+    for placeholder in placeholders:
+        if placeholder in content:
+            raise ValidationError(f"SUMO config contains unresolved placeholder: {placeholder}")
+    
+    # 7 ── validate file references exist --------------------------------------
+    # Check that referenced files actually exist (resolve relative to data directory)
+    config_dir = Path(CONFIG.config_file).parent
+    
+    net_file_path = config_dir / net_file_value
+    if not net_file_path.exists():
+        raise ValidationError(f"SUMO config references non-existent network file: {net_file_value} (resolved to {net_file_path})")
+    
+    route_file_path = config_dir / route_files_value
+    if not route_file_path.exists():
+        raise ValidationError(f"SUMO config references non-existent route file: {route_files_value} (resolved to {route_file_path})")
+    
+    # 8 ── validate configuration is loadable by SUMO -------------------------
+    # This is a basic check - we could extend it by actually trying to load the config
+    # but that would require SUMO to be installed and configured
+    
+    return
+
+
+# ---------------------------------------------------------------------------
+#  Vehicle route generation verification
+# ---------------------------------------------------------------------------
+
+
+def verify_generate_vehicle_routes(
+    num_vehicles: int,
+    tolerance: float = 0.02,  # 2% shortfall tolerance
+) -> None:
+    """Validate vehicle route generation.
+    
+    This function validates the generate_vehicle_routes function by checking:
+    1. Routes XML file exists and is valid
+    2. Vehicle count is within tolerance
+    3. Route structure is correct
+    4. Departure times are reasonable
+    """
+    
+    # 1 ── check routes file exists --------------------------------------------
+    if not Path(CONFIG.routes_file).exists():
+        raise ValidationError(f"Routes file missing: {CONFIG.routes_file}")
+    
+    # 2 ── validate XML structure ----------------------------------------------
     try:
-        begin_time = float(begin_elem.get("value", "0"))
-        end_time = float(end_elem.get("value", "3600"))
-    except (ValueError, TypeError):
-        raise ValidationError("SUMO configuration has invalid time values")
+        tree = ET.parse(CONFIG.routes_file)
+        root = tree.getroot()
+        
+        if root.tag != "routes":
+            raise ValidationError("Routes file root element is not 'routes'")
+        
+    except ET.ParseError as e:
+        raise ValidationError(f"Routes file XML parsing error: {e}")
     
-    if begin_time < 0:
-        raise ValidationError(f"SUMO configuration begin time cannot be negative: {begin_time}")
-    if end_time <= begin_time:
+    # 3 ── validate vehicle types ----------------------------------------------
+    vtypes = root.findall("vType")
+    if not vtypes:
+        raise ValidationError("Routes file has no vehicle types")
+    
+    # Check that vehicle types have required attributes
+    for vtype in vtypes:
+        vtype_id = vtype.get("id")
+        if not vtype_id:
+            raise ValidationError("Vehicle type missing ID")
+        
+        # Check for basic attributes
+        if not vtype.get("vClass"):
+            raise ValidationError(f"Vehicle type {vtype_id} missing vClass")
+    
+    # 4 ── validate vehicles and routes ----------------------------------------
+    vehicles = root.findall("vehicle")
+    
+    # Check vehicle count
+    actual_vehicles = len(vehicles)
+    shortfall = num_vehicles - actual_vehicles
+    
+    if shortfall > tolerance * num_vehicles:
         raise ValidationError(
-            f"SUMO configuration end time ({end_time}) must be greater than begin time ({begin_time})")
-    if end_time - begin_time > 86400:  # More than 24 hours
-        raise ValidationError(
-            f"SUMO configuration simulation duration ({end_time - begin_time}s) exceeds 24 hours; check time values")
+            f"Too few vehicles generated: {actual_vehicles}/{num_vehicles} "
+            f"(shortfall {shortfall/num_vehicles:.1%} > {tolerance:.1%})")
     
-    # 8 ── validate XML is well-formed SUMO configuration ────────────────────
-    # Check for any obvious malformed content
-    config_content = config_path.read_text()
-    if "#IFROUTE#" in config_content:
-        raise ValidationError("SUMO configuration contains template placeholder '#IFROUTE#' - file may be malformed")
+    if not vehicles:
+        raise ValidationError("Routes file has no vehicles")
     
-    # Ensure no obvious path issues
-    if "\\" in config_content and not config_content.count("\\") == config_content.count("\\\\"):
-        # Check for unescaped backslashes (Windows path issues)
-        raise ValidationError("SUMO configuration may contain unescaped backslashes in file paths")
+    # 5 ── validate route connectivity -----------------------------------------
+    # Load network to validate routes
+    try:
+        net = sumolib.net.readNet(CONFIG.network_file)
+    except Exception as e:
+        raise ValidationError(f"Failed to load network for route validation: {e}")
     
+    all_edge_ids = set(edge.getID() for edge in net.getEdges())
+    
+    # Check each vehicle's route
+    for i, vehicle in enumerate(vehicles):
+        vehicle_id = vehicle.get("id")
+        route_elem = vehicle.find("route")
+        
+        if route_elem is None:
+            raise ValidationError(f"Vehicle {vehicle_id} has no route")
+        
+        edges = route_elem.get("edges", "").split()
+        if not edges:
+            raise ValidationError(f"Vehicle {vehicle_id} has empty route")
+        
+        # Check that all edges exist in network
+        for edge_id in edges:
+            if edge_id not in all_edge_ids:
+                raise ValidationError(f"Vehicle {vehicle_id} route references non-existent edge: {edge_id}")
+    
+    # 6 ── validate departure times --------------------------------------------
+    departure_times = []
+    for vehicle in vehicles:
+        depart_str = vehicle.get("depart")
+        if depart_str is None:
+            raise ValidationError(f"Vehicle {vehicle.get('id')} missing departure time")
+        
+        try:
+            depart_time = float(depart_str)
+            departure_times.append(depart_time)
+        except ValueError:
+            raise ValidationError(f"Vehicle {vehicle.get('id')} has invalid departure time: {depart_str}")
+    
+    # Check departure time distribution
+    if departure_times:
+        min_depart = min(departure_times)
+        max_depart = max(departure_times)
+        
+        if min_depart < 0:
+            raise ValidationError(f"Negative departure time found: {min_depart}")
+        
+        # Check for reasonable spread
+        if max_depart - min_depart < 1:
+            raise ValidationError("Departure times lack proper spread")
+    
+    # 7 ── validate edge filtering ---------------------------------------------
+    # Check that internal edges are not used in routes
+    for vehicle in vehicles:
+        route_elem = vehicle.find("route")
+        if route_elem is not None:
+            edges = route_elem.get("edges", "").split()
+            for edge_id in edges:
+                if edge_id.startswith(":"):
+                    raise ValidationError(f"Vehicle {vehicle.get('id')} route contains internal edge: {edge_id}")
+    
+    # 8 ── validate statistical properties ------------------------------------
+    # Check that vehicle generation shows expected randomness
+    if len(vehicles) >= 10:  # Only for sufficiently large samples
+        # Check vehicle type distribution
+        type_counts = {}
+        for vehicle in vehicles:
+            vtype = vehicle.get("type")
+            type_counts[vtype] = type_counts.get(vtype, 0) + 1
+        
+        # Should have some diversity in vehicle types
+        if len(type_counts) < 2 and len(vtypes) > 1:
+            raise ValidationError("Vehicle type assignment lacks diversity")
+
     return

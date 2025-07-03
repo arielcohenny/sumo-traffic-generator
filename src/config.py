@@ -57,6 +57,9 @@ class _Config:
     # ---------- edge attractiveness ----------
     LAMBDA_DEPART = 3.5
     LAMBDA_ARRIVE = 2.0
+    
+    # ---------- simulation verification ----------
+    SIMULATION_VERIFICATION_FREQUENCY: int = 30  # Verify algorithm every N simulation steps
 
 
 CONFIG = _Config()
