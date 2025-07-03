@@ -139,13 +139,15 @@ def insert_split_edges() -> None:
             'shape': shape_to_str(info['head_coords'])
         })
         ET.SubElement(edg_root, 'edge', head_attrib)
-        # insert connection from body to head
-        ET.SubElement(con_root, 'connection', {
-            'from': E,
-            'to':   f"{E}_H",
-            'fromLane': '0',
-            'toLane':   '0'
-        })
+        # insert connection from body to head for all lanes
+        num_lanes = int(edge_elems[E].get('numLanes', '1'))
+        for lane in range(num_lanes):
+            ET.SubElement(con_root, 'connection', {
+                'from': E,
+                'to':   f"{E}_H",
+                'fromLane': str(lane),
+                'toLane':   str(lane)
+            })
 
     # 3. .con – rewrite connections
     for c in list(con_root.findall('connection')):
