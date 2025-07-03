@@ -14,7 +14,7 @@ from src.config import CONFIG
 # --- Function Definitions ---
 # Generate a full grid network using netgenerate
 
-def generate_full_grid_network(dimension, block_size_m):
+def generate_full_grid_network(dimension, block_size_m, fixed_lane_count):
     # Run netgenerate to create the grid network
     netgenerate_cmd = [
         "netgenerate", "--grid",
@@ -33,6 +33,9 @@ def generate_full_grid_network(dimension, block_size_m):
         # "--aggregate-warnings=1",
         "-o", CONFIG.network_file
     ]
+    if fixed_lane_count > 0:
+        netgenerate_cmd.append(f"--default.lanenumber={fixed_lane_count}")
+
     try:
         subprocess.run(netgenerate_cmd, check=True,
                        capture_output=True, text=True)
@@ -104,6 +107,7 @@ def wipe_crossing_from_con(node_ids: list[str]) -> None:
         if key in cons_to_remove:
             root.remove(j)
 
+    ET.indent(root)
     tree.write(Path(str(CONFIG.network_con_file)),
                encoding="UTF-8", xml_declaration=True)
 
@@ -227,12 +231,12 @@ def wipe_crossing(node_ids: list[str]) -> None:
     wipe_crossing_from_tll(node_ids)
 
 
-def generate_grid_network(seed, dimension, block_size_m, num_junction_to_remove):
+def generate_grid_network(seed, dimension, block_size_m, num_junction_to_remove, fixed_lane_count):
     try:
         if (num_junction_to_remove > 0):
             # generate the full grid network first
             generate_full_grid_network(
-                dimension, block_size_m)
+                dimension, block_size_m, fixed_lane_count)
 
             # then pick random junctions to remove
             junctions_to_remove = pick_random_junction_ids(
@@ -241,7 +245,8 @@ def generate_grid_network(seed, dimension, block_size_m, num_junction_to_remove)
             # remove the selected junctions
             wipe_crossing(junctions_to_remove)
         else:
-            generate_full_grid_network(dimension, block_size_m)
+            generate_full_grid_network(
+                dimension, block_size_m, fixed_lane_count)
 
     except subprocess.CalledProcessError as e:
         raise Exception(f"Error during netgenerate execution:", e.stderr)

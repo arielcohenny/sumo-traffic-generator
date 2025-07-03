@@ -1,6 +1,49 @@
 import subprocess
 from pathlib import Path
 from typing import List
+from src.config import CONFIG
+
+# Convert the generated network files to the final .net.xml format
+# Rebuild with fresh internals + connections
+
+
+def rebuild_network() -> None:
+    netconvert_cmd = [
+        "netconvert",
+        "--node-files",       str(CONFIG.network_nod_file),
+        "--edge-files",       str(CONFIG.network_edg_file),
+        "--connection-files", str(CONFIG.network_con_file),
+        "--tllogic-files",    str(CONFIG.network_tll_file),
+        "--junctions.join=true",
+        "--output-file",      str(CONFIG.network_file)
+    ]
+
+    # netconvert_cmd = [
+    #     "netconvert",
+    #     "--node-files",       str(CONFIG.network_nod_file),
+    #     "--edge-files",       str(CONFIG.network_edg_file),
+    #     "--connection-files", str(CONFIG.network_con_file),
+    #     "--tllogic-files",    str(CONFIG.network_tll_file),
+    #     "--junctions.join=true",
+    #     "--junctions.endpoint-shape=true",
+    #     "--offset.disable-normalization=true",
+    #     "--lefthand=0",
+    #     "--no-turnarounds=false",
+    #     "--junctions.corner-detail=5",
+    #     "--junctions.limit-turn-speed=5.50",
+    #     "--rectangular-lane-cut=0",
+    #     "--output-file",      str(CONFIG.network_file)
+    # ]
+    subprocess.run(netconvert_cmd, check=True)
+
+    #     "--tllogic-files",    str(CONFIG.network_tll_file),
+    # "--junctions.join",
+    # "--offset.disable-normalization", "true",
+    # "--lefthand",                "0",
+    # "--no-turnarounds",          "true",
+    # "--junctions.corner-detail",  "5",
+    # "--junctions.limit-turn-speed", "5.50",
+    # "--rectangular-lane-cut",     "0",
 
 
 def build_sumo_command(

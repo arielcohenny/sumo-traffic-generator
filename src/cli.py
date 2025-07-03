@@ -11,7 +11,7 @@ from src.sim.sumo_controller import SumoController
 from src.sim.sumo_utils import generate_sumo_conf_file, start_sumo_gui
 
 from src.network.generate_grid import *
-from src.network.lanes import set_lane_counts
+from src.network.lane_counts import set_lane_counts
 from src.network.traffic_lights import inject_traffic_lights
 from src.network.edge_attrs import assign_edge_attractiveness
 from src.network.zones import extract_zones_from_junctions
@@ -59,6 +59,12 @@ def main():
         help="Number of junctions to remove from the grid. Default is 0."
     )
     parser.add_argument(
+        "--fixed_lane_count",
+        type=int,
+        default=0,
+        help=" If provided, sets a fixed number of lane counts for all edges."
+    )
+    parser.add_argument(
         "--num_vehicles",
         type=int,
         default=CONFIG.DEFAULT_NUM_VEHICLES,
@@ -101,7 +107,8 @@ def main():
             seed,
             int(args.grid_dimension),
             int(args.block_size_m),
-            int(args.junctions_to_remove)
+            int(args.junctions_to_remove),
+            int(args.fixed_lane_count)
         )
         # try:
         #     verify_generate_grid_network(
@@ -117,41 +124,18 @@ def main():
         print(f"Generated grid successfully.")
 
         # --- Step 1.5: Insert Split Edges ---
-        insert_split_edges(
-            CONFIG.network_nod_file,
-            CONFIG.network_edg_file,
-            CONFIG.network_con_file,
-            CONFIG.network_tll_file,
-            split_distance=CONFIG.HEAD_DISTANCE
-        )
-
-        # Now convert the generated network files to the final .net.xml format
-        # Rebuild with fresh internals + connections
-        netconvert_cmd = [
-            "netconvert",
-            "--node-files",       str(CONFIG.network_nod_file),
-            "--edge-files",       str(CONFIG.network_edg_file),
-            "--connection-files", str(CONFIG.network_con_file),
-            "--tllogic-files",    str(CONFIG.network_tll_file),
-            "--junctions.join=true",
-            "--output-file",      str(CONFIG.network_file)
-        ]
-        subprocess.run(netconvert_cmd, check=True)
-
-        start_sumo_gui(
-            net_file=CONFIG.network_file,
-        )
-        exit(1)
+        insert_split_edges()
+        print("Inserted split edges successfully.")
 
         # --- Step 2: Extract Zones - --
-        extract_zones_from_junctions(
-            CONFIG.network_file,
-            args.block_size_m,
-            CONFIG.output_dir,
-            seed=seed,
-            fill_polygons=True,
-            inset=0.0
-        )
+        # extract_zones_from_junctions(
+        #     CONFIG.network_file,
+        #     args.block_size_m,
+        #     CONFIG.output_dir,
+        #     seed=seed,
+        #     fill_polygons=True,
+        #     inset=0.0
+        # )
         # try:
         #     verify_extract_zones_from_junctions(
         #         CONFIG.network_file,
@@ -160,16 +144,17 @@ def main():
         # except ValidationError as ve:
         #     print(f"Zone extraction failed: {ve}")
         #     exit(1)
-        print("Extracted zones from junctions successfully.")
+        # print("Extracted zones from junctions successfully.")
 
         # --- Step 3: Set Lane Counts ---
-        set_lane_counts(
-            net_file_in=CONFIG.network_file,
-            net_file_out=CONFIG.network_file,
-            seed=seed,
-            min_lanes=CONFIG.MIN_LANES,
-            max_lanes=CONFIG.MAX_LANES
-        )
+        # exit(1)
+        if int(args.fixed_lane_count) == 0:
+            set_lane_counts(
+                seed=seed,
+                min_lanes=CONFIG.MIN_LANES,
+                max_lanes=CONFIG.MAX_LANES
+            )
+
         # try:
         #     verify_set_lane_counts(
         #         CONFIG.network_file,
@@ -180,6 +165,14 @@ def main():
         #     print(f"Lane-count validation failed: {ve}")
         #     exit(1)
         print("Successfully set lane counts for edges.")
+
+        rebuild_network()
+        print("Successfully rebuild network.")
+
+        start_sumo_gui(
+            net_file=CONFIG.network_file,
+        )
+        exit(1)
 
         # --- Step 4: Assign Edge Attractiveness ---
         assign_edge_attractiveness(
