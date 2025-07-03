@@ -747,13 +747,13 @@ def verify_assign_edge_attractiveness(
             depart_val = _to_float(depart_attr.strip("[]"))
             arrive_val = _to_float(arrive_attr.strip("[]"))
         except ValueError:
-            raise ValidationError(f"Edge {edge.getID()} has invalid attractiveness values")
+            raise ValidationError(f"Edge {edge_id} has invalid attractiveness values")
         
         # Check non-negative
         if depart_val < 0:
-            raise ValidationError(f"Edge {edge.getID()} has negative depart_attractiveness: {depart_val}")
+            raise ValidationError(f"Edge {edge_id} has negative depart_attractiveness: {depart_val}")
         if arrive_val < 0:
-            raise ValidationError(f"Edge {edge.getID()} has negative arrive_attractiveness: {arrive_val}")
+            raise ValidationError(f"Edge {edge_id} has negative arrive_attractiveness: {arrive_val}")
         
         depart_attrs.append(depart_val)
         arrive_attrs.append(arrive_val)
