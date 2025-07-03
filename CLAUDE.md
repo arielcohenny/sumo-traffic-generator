@@ -238,21 +238,54 @@ All generated files are placed in `data/` directory:
 - Automatic junction detection for controllable intersections
 
 #### `zones.py`
-**Purpose**: Extracts zone polygons from junction grids and assigns land use classifications.
+**Purpose**: Extracts zone polygons from junction grids and assigns land use classifications following the methodology from "A Simulation Model for Intra-Urban Movements" paper.
 
 **Key Functions**:
-- `extract_zones_from_junctions()`: Main function implementing 4-step process: grid parsing, cell size inference, zone creation, file output
-- `assign_land_use_to_zones()`: Uses BFS clustering algorithm for realistic spatial distribution
+- `extract_zones_from_junctions(cell_size, seed, fill_polygons, inset)`: Main function implementing cellular grid methodology
+  - Parses junction coordinates from raw .nod.xml file
+  - Creates (n-1)×(n-1) zones for n×n junctions
+  - Assigns land use types and attractiveness values
+  - Outputs both GeoJSON and SUMO polygon files
+- `assign_land_use_to_zones(features, seed)`: Uses BFS clustering algorithm for realistic spatial land use distribution
+  - Implements contiguous clustering based on CONFIG.land_uses percentages
+  - Creates realistic spatial patterns rather than random assignment
 
 **Key Algorithms**:
-- Uses breadth-first search to create contiguous land use clusters
-- Calculates target counts for each land use type
-- Implements 4-connected neighbor finding (cardinal directions)
+- **Cellular Grid Creation**: Creates zones as rectangles between adjacent junctions (not covering entire coordinate space)
+- **BFS Clustering**: Uses breadth-first search to create contiguous land use clusters
+  - Calculates target counts for each land use type based on percentages
+  - Implements 4-connected neighbor finding (cardinal directions)
+  - Ensures realistic spatial distribution with contiguous areas
+- **Attractiveness Assignment**: Assigns random attractiveness values (θᵢ) following normal distribution
+  - Uses mean=0.5, std=0.2 to keep values mostly in [0,1] range
+  - Clips values to [0,1] bounds for consistency
+
+**Zone Extraction Process**:
+1. **Junction Parsing**: Extracts coordinates from .nod.xml, filtering out internal nodes and split edge nodes
+2. **Grid Analysis**: Determines unique x,y coordinates and infers cell size if not provided
+3. **Zone Creation**: Creates rectangular zones between adjacent junctions with optional inset
+4. **Land Use Assignment**: Applies clustering algorithm to assign realistic land use patterns
+5. **Attractiveness Values**: Assigns normally distributed attractiveness values for each zone
+6. **File Output**: Generates both GeoJSON (for analysis) and SUMO .poly.xml (for simulation)
+
+**Zone Properties**:
+- `zone_id`: Unique identifier (format: "Z_i_j")
+- `i`, `j`: Grid coordinates
+- `cell_size`: Size of cell in meters
+- `center_x`, `center_y`: Zone center coordinates
+- `area`: Zone area (cell_size²)
+- `land_use`: Assigned land use type from CONFIG.land_uses
+- `color`: Visualization color for land use type
+- `attractiveness`: Attractiveness value (θᵢ) for traffic generation
 
 **Design Decisions**:
-- Zones defined as intervals between junctions, not centered on them
-- Dual output format: GeoJSON for analysis, SUMO polygons for simulation
-- Extensible design through ThetaGenerator protocol
+- **Academic Methodology**: Based on established urban simulation research
+- **Zones as Intervals**: Defined as rectangular areas between junctions, not centered on them
+- **Realistic Clustering**: Uses BFS to create contiguous land use areas rather than random assignment
+- **Dual Output**: GeoJSON for analysis/visualization, SUMO polygons for simulation integration
+- **Configurable Parameters**: Supports customizable cell size, fill options, and boundary insets
+- **Extensible Design**: ThetaGenerator protocol allows custom attractiveness functions
+- **Statistical Distributions**: Uses normal distribution for attractiveness values following academic standards
 
 ### Traffic Generation (`src/traffic/`)
 

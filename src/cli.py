@@ -167,26 +167,8 @@ def main():
         rebuild_network()
         print("Successfully rebuild network.")
 
-        # Generate SUMO configuration file with zones
-        sumo_cfg_path = generate_sumo_conf_file(
-            CONFIG.config_file,
-            CONFIG.network_file,
-            zones_file=CONFIG.zones_file,
-        )
-        print(f"Generated SUMO configuration file: {sumo_cfg_path}")
-        start_sumo_gui(
-            net_file=CONFIG.network_file,
-            additional_args=["--configuration-file", sumo_cfg_path]
-        )
-        exit(1)
-
         # --- Step 4: Assign Edge Attractiveness ---
-        assign_edge_attractiveness(
-            seed,
-            CONFIG.network_file,
-            lambda_depart=CONFIG.LAMBDA_DEPART,
-            lambda_arrive=CONFIG.LAMBDA_ARRIVE,
-        )
+        assign_edge_attractiveness(seed)
         # try:
         #     verify_assign_edge_attractiveness(
         #         seed,
@@ -227,6 +209,19 @@ def main():
         #     print(f"Route validation failed: {ve}")
         #     exit(1)
         print("Generated vehicle routes.")
+
+        # Generate SUMO configuration file with zones
+        # sumo_cfg_path = generate_sumo_conf_file(
+        #     CONFIG.config_file,
+        #     CONFIG.network_file,
+        #     zones_file=CONFIG.zones_file,
+        # )
+        # print(f"Generated SUMO configuration file: {sumo_cfg_path}")
+        # start_sumo_gui(
+        #     net_file=CONFIG.network_file,
+        #     additional_args=["--configuration-file", sumo_cfg_path]
+        # )
+        # exit(1)
 
         # --- Step 7: Generate SUMO Configuration File ---
         sumo_cfg_path = generate_sumo_conf_file(
