@@ -128,14 +128,12 @@ def main():
         print("Inserted split edges successfully.")
 
         # --- Step 2: Extract Zones - --
-        # extract_zones_from_junctions(
-        #     CONFIG.network_file,
-        #     args.block_size_m,
-        #     CONFIG.output_dir,
-        #     seed=seed,
-        #     fill_polygons=True,
-        #     inset=0.0
-        # )
+        extract_zones_from_junctions(
+            args.block_size_m,
+            seed=seed,
+            fill_polygons=True,
+            inset=0.0
+        )
         # try:
         #     verify_extract_zones_from_junctions(
         #         CONFIG.network_file,
@@ -169,8 +167,16 @@ def main():
         rebuild_network()
         print("Successfully rebuild network.")
 
+        # Generate SUMO configuration file with zones
+        sumo_cfg_path = generate_sumo_conf_file(
+            CONFIG.config_file,
+            CONFIG.network_file,
+            zones_file=CONFIG.zones_file,
+        )
+        print(f"Generated SUMO configuration file: {sumo_cfg_path}")
         start_sumo_gui(
             net_file=CONFIG.network_file,
+            additional_args=["--configuration-file", sumo_cfg_path]
         )
         exit(1)
 
@@ -194,14 +200,14 @@ def main():
         print("Successfully assigned edge attractiveness")
 
         # --- Step 5: Inject Static Traffic Lights ---
-        inject_traffic_lights(CONFIG.network_file)
-        # try:
-        #     verify_inject_traffic_lights(CONFIG.network_file)
-        # except ValidationError as ve:
-        #     print(f"Traffic-light validation failed: {ve}")
-        #     exit(1)
-        print("Successfully injected static traffic lights into network")
-        exit(1)
+        # inject_traffic_lights(CONFIG.network_file)
+        # # try:
+        # #     verify_inject_traffic_lights(CONFIG.network_file)
+        # # except ValidationError as ve:
+        # #     print(f"Traffic-light validation failed: {ve}")
+        # #     exit(1)
+        # print("Successfully injected static traffic lights into network")
+        # exit(1)
 
         # --- Step 6: Generate Vehicle Routes ---
         generate_vehicle_routes(

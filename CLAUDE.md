@@ -143,3 +143,291 @@ All generated files are placed in `data/` directory:
 3. Check generated files in `data/` directory
 4. Use `--gui` flag for visual debugging
 5. Validate results using the validation functions (when enabled)
+
+## Detailed Module Documentation
+
+### Network Generation (`src/network/`)
+
+#### `generate_grid.py`
+**Purpose**: Creates orthogonal grid networks using SUMO's netgenerate tool and manages junction removal.
+
+**Key Functions**:
+- `generate_full_grid_network(dimension, block_size_m, fixed_lane_count)`: Creates complete grid using netgenerate
+- `pick_random_junction_ids(seed, num_junctions_to_remove, dimension)`: Randomly selects junctions for removal
+- `wipe_crossing_from_*()`: Suite of functions to remove junctions from all network files (.nod, .edg, .con, .tll)
+- `generate_grid_network()`: Main orchestrator that generates grid and optionally removes junctions
+
+**Key Algorithms**:
+- Uses regex `r"^([A-Z]+\d*)([A-Z]+\d*)$"` for edge ID matching
+- Implements proper connection reindexing to maintain traffic light logic consistency
+- Applies junction joining for cleaner network topology
+
+**Design Decisions**:
+- Separates full grid generation from junction removal for modularity
+- Maintains data integrity across multiple XML files when removing junctions
+- Uses SUMO's built-in tools rather than manual network construction
+
+#### `split_edges.py`
+**Purpose**: Implements edge splitting to create more complex network topology by dividing edges into body and head segments.
+
+**Key Functions**:
+- `parse_shape(shape_str)`: Converts SUMO shape format to coordinate tuples
+- `split_shape(coords, split_dist)`: Splits polyline at specific distance from end using Shapely geometry
+- `insert_split_edges()`: Main function performing 4-step process: parse network, compute splits, update nodes/edges, redirect connections
+
+**Key Algorithms**:
+- Uses Shapely LineString for robust geometric operations
+- Calculates split position as (total_length - split_dist) from downstream end
+- Handles both simple and complex multi-point geometries
+
+**Design Decisions**:
+- Fixed split distance from downstream end (CONFIG.HEAD_DISTANCE)
+- Leverages Shapely for geometric operations rather than manual calculations
+- Maintains consistency across multiple XML files
+
+#### `lane_counts.py`
+**Purpose**: Sophisticated lane count assignment system that randomizes lane counts while maintaining proper traffic flow and signal logic.
+
+**Key Functions**:
+- `set_lane_counts(seed, min_lanes, max_lanes)`: Main function implementing complex multi-step process
+- `infer_direction(from_edge_id, to_edge_id)`: Determines turn direction using edge geometry and cross products
+- `map_to_lanes(R, to_edge_id)`: Intelligent lane-to-lane mapping with overflow distribution
+- `classify_connection_direction(conn)`: Classifies connections for traffic light phasing
+
+**Key Algorithms**:
+- Groups base edges with their _H variants for coordinated lane assignment
+- Uses right-to-left mapping convention with overflow distribution
+- Calculates vectors and cross products for turn direction classification
+- Updates traffic light states to match new lane configurations
+
+**Design Decisions**:
+- Logical movement assignments (left lanes for left turns, etc.)
+- Conflict prevention through proper lane assignment
+- Bidirectional mapping handling both sparse and dense configurations
+
+#### `edge_attrs.py`
+**Purpose**: Assigns random attractiveness attributes to edges using Poisson distribution for realistic traffic modeling.
+
+**Key Functions**:
+- `assign_edge_attractiveness(seed, net_file_in, net_file_out, lambda_depart, lambda_arrive)`: Adds depart/arrive attractiveness using Poisson sampling
+
+**Key Algorithms**:
+- Uses NumPy's Poisson distribution for sampling
+- Applies consistent random seed for reproducibility
+- Supports in-place modification when no output file specified
+
+**Design Decisions**:
+- Poisson distribution chosen for realistic traffic flow modeling
+- Separate lambda parameters for departure and arrival attractiveness
+
+#### `traffic_lights.py`
+**Purpose**: Injects static traffic light control logic with proper connection indexing and phase timing.
+
+**Key Functions**:
+- `inject_traffic_lights(net_file, program_id, green_duration, yellow_duration)`: Implements 5-step process for comprehensive traffic light control
+- `is_ns(conn)`: Classifies connection as North-South movement
+
+**Key Algorithms**:
+- Four-phase control: NS-green, NS-yellow, EW-green, EW-yellow
+- Uses netconvert for proper linkIndex assignment
+- Maintains proper connection states while adding control logic
+
+**Design Decisions**:
+- Conflict-free phasing ensures NS and EW movements don't conflict
+- Preserves original connection states while adding control logic
+- Automatic junction detection for controllable intersections
+
+#### `zones.py`
+**Purpose**: Extracts zone polygons from junction grids and assigns land use classifications.
+
+**Key Functions**:
+- `extract_zones_from_junctions()`: Main function implementing 4-step process: grid parsing, cell size inference, zone creation, file output
+- `assign_land_use_to_zones()`: Uses BFS clustering algorithm for realistic spatial distribution
+
+**Key Algorithms**:
+- Uses breadth-first search to create contiguous land use clusters
+- Calculates target counts for each land use type
+- Implements 4-connected neighbor finding (cardinal directions)
+
+**Design Decisions**:
+- Zones defined as intervals between junctions, not centered on them
+- Dual output format: GeoJSON for analysis, SUMO polygons for simulation
+- Extensible design through ThetaGenerator protocol
+
+### Traffic Generation (`src/traffic/`)
+
+#### `builder.py`
+**Purpose**: Main orchestrator for vehicle creation and route generation, coordinating sampling, routing, and XML writing.
+
+**Key Functions**:
+- `generate_vehicle_routes(net_file, output_file, num_vehicles, seed)`: Main orchestration function with retry logic
+
+**Key Algorithms**:
+- Uses weighted random sampling for vehicle types based on CONFIG.vehicle_weights
+- Implements retry logic (up to 20 attempts) for finding valid routes
+- Assigns incremental departure times (vehicle ID as departure time)
+
+**Design Decisions**:
+- Strategy pattern with pluggable sampler and router
+- Robust error handling with retry mechanism
+- Filters out internal edges from network
+- Skips vehicles that can't find valid routes rather than failing
+
+#### `edge_sampler.py`
+**Purpose**: Implements edge sampling strategies for selecting start/end edges using attractiveness-based weighted sampling.
+
+**Key Functions**:
+- `AttractivenessBasedEdgeSampler`: Concrete implementation using edge attributes
+- `_weights(edges, attr)`: Extracts weight values with fallback to uniform distribution
+- `_choose(edges, weights, k)`: Performs weighted random sampling
+
+**Key Algorithms**:
+- Uses `random.choices` for weighted sampling
+- Graceful fallback to uniform weights when all weights are zero
+- Separate sampling for start (`depart_attractiveness`) and end (`arrive_attractiveness`) edges
+
+**Design Decisions**:
+- Strategy pattern with abstract EdgeSampler interface
+- Fallback pattern for graceful degradation
+- Dependency injection of RNG for testability
+
+#### `routing.py`
+**Purpose**: Implements routing strategies for computing paths between edges using shortest path algorithms.
+
+**Key Functions**:
+- `ShortestPathRoutingStrategy`: Concrete implementation using SUMO's Dijkstra
+- `compute_route(start_edge, end_edge)`: Computes shortest path between edges
+
+**Key Algorithms**:
+- Leverages SUMO's built-in `getShortestPath` method
+- Handles edge ID to edge object conversion
+- Returns empty list for invalid/unreachable routes
+
+**Design Decisions**:
+- Strategy pattern with abstract RoutingStrategy interface
+- Adapter pattern wrapping SUMO's pathfinding API
+- Null object pattern (empty list) instead of None for failed routes
+
+#### `xml_writer.py`
+**Purpose**: Handles XML serialization for SUMO route files with proper formatting.
+
+**Key Functions**:
+- `write_routes(outfile, vehicles, vehicle_types)`: Generates SUMO-compatible routes XML
+
+**Key Algorithms**:
+- Uses ElementTree for XML generation
+- Serializes route edges as space-separated strings
+- Converts all attribute values to strings for XML compatibility
+
+**Design Decisions**:
+- Builder pattern for incremental XML construction
+- Separates vehicle types from vehicle instances
+- UTF-8 encoding with XML declaration
+
+### Validation (`src/validate/`)
+
+#### `errors.py`
+**Purpose**: Defines custom exception types for validation errors.
+
+**Key Classes**:
+- `ValidationError(RuntimeError)`: Custom exception for validation failures
+
+**Design Decisions**:
+- Inherits from RuntimeError for compatibility
+- Provides specific exception type for validation failures
+
+#### `validate_network.py`
+**Purpose**: Contains runtime invariant validators for network generation steps.
+
+**Key Functions**:
+- `verify_generate_grid_network()`: Validates grid network structure, junction count, edge count, bounding box
+- `verify_extract_zones_from_junctions()`: Cross-validates network structure against generated zones
+- `verify_set_lane_counts()`: Validates lane assignments and connectivity with sophisticated tolerance handling
+- `verify_assign_edge_attractiveness()`: Statistical validation of Poisson distribution parameters
+- `verify_inject_traffic_lights()`: Validates traffic light consistency across junctions and connections
+
+**Key Algorithms**:
+- Uses `4 * grid_dim * (grid_dim - 1)` formula for theoretical maximum edges
+- Complex connectivity analysis with border/interior lane tolerance
+- Statistical validation with configurable tolerance for Poisson parameters
+- Cross-references junctions, connections, and traffic light logic
+
+**Design Decisions**:
+- Fail-fast validation with immediate exception raising
+- Comprehensive checking with multiple validation aspects per function
+- Configurable tolerance for statistical validations
+
+#### `validate_traffic.py`
+**Purpose**: Contains inline validator for vehicle route generation.
+
+**Key Functions**:
+- `verify_generate_vehicle_routes()`: Validates routes XML against network topology
+
+**Key Algorithms**:
+- Cross-validates routes against network topology
+- Statistical check for departure time distribution
+- Allows configurable shortfall tolerance (default 2%)
+
+**Design Decisions**:
+- Tolerance-based validation for realistic shortfall handling
+- Comprehensive route validation checking every edge
+- Statistical validation with warnings for suspicious patterns
+
+### Simulation Control (`src/sim/`)
+
+#### `sumo_controller.py`
+**Purpose**: TraCI wrapper providing simplified interface for SUMO simulation control.
+
+**Key Functions**:
+- `SumoController.__init__()`: Initializes controller with simulation parameters
+- `start()`: Starts SUMO with TraCI connection
+- `run(control_callback)`: Runs complete simulation loop with per-step callback
+- `step()`: Advances simulation by one time step
+- `close()`: Closes TraCI connection
+
+**Key Algorithms**:
+- Selects appropriate SUMO binary (sumo-gui vs sumo) based on GUI flag
+- Implements complete simulation lifecycle management
+- Uses callback pattern for extensible control logic
+
+**Design Decisions**:
+- Adapter pattern simplifying TraCI interface
+- Callback pattern for pluggable control logic
+- Supports both GUI and batch modes through single interface
+
+#### `sumo_utils.py`
+**Purpose**: Utility functions for SUMO operations including network rebuilding and configuration management.
+
+**Key Functions**:
+- `rebuild_network()`: Rebuilds SUMO network using netconvert with all components
+- `build_sumo_command()`: Builds standardized SUMO command-line arguments
+- `run_sumo()`: Runs single SUMO simulation using subprocess
+- `generate_sumo_conf_file()`: Creates SUMO configuration XML file
+- `start_sumo_gui()`: Starts SUMO GUI process
+
+**Key Algorithms**:
+- Uses subprocess for external SUMO tool integration
+- Template-based XML configuration generation
+- Comprehensive error handling with informative messages
+
+**Design Decisions**:
+- Utility/helper pattern for related functions
+- Command builder pattern for centralized command construction
+- Template pattern for XML configuration generation
+- Extensive optional parameters for flexibility
+
+## Key Architectural Patterns
+
+### Overall System Architecture:
+1. **Pipeline Pattern**: Sequential processing with clear step boundaries
+2. **Strategy Pattern**: Pluggable algorithms for sampling, routing, and validation
+3. **Adapter Pattern**: Wraps SUMO APIs with consistent interfaces
+4. **Validation-First**: Each pipeline step has corresponding validation functions
+5. **Configuration-Driven**: Central configuration system using dataclasses
+
+### Design Principles:
+- **Separation of Concerns**: Clear module boundaries and responsibilities
+- **Extensibility**: Abstract interfaces allow for different implementations
+- **Robustness**: Comprehensive error handling and validation
+- **Reproducibility**: Seeded random number generation throughout
+- **SUMO Integration**: Leverages SUMO's native tools and data structures
