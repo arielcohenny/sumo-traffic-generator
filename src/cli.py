@@ -54,9 +54,9 @@ def main():
     )
     parser.add_argument(
         "--junctions_to_remove",
-        type=int,
-        default=0,
-        help="Number of junctions to remove from the grid. Default is 0."
+        type=str,
+        default="0",
+        help="Number of junctions to remove from the grid (e.g., '5') or comma-separated list of specific junction IDs (e.g., 'A0,B1,C2'). Default is 0."
     )
     parser.add_argument(
         "--fixed_lane_count",
@@ -107,7 +107,7 @@ def main():
             seed,
             int(args.grid_dimension),
             int(args.block_size_m),
-            int(args.junctions_to_remove),
+            args.junctions_to_remove,
             int(args.fixed_lane_count)
         )
         # try:

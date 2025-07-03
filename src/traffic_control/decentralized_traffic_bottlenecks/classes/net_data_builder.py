@@ -77,10 +77,10 @@ class NetworkData:
                 continue
             if '_T' in edge['@id']:
                 continue
-            is_head = True if '_H_' in edge['@id'] else False
+            is_head = True if '_H' in edge['@id'] and not edge['@id'].startswith(':') else False
             first_part = None
             if is_head:
-                first_part = edge['@id'].split('_H_')[0]
+                first_part = edge['@id'].split('_H')[0]
             edge_id = first_part if is_head else edge['@id']
             if edge_id not in self.edges:
                 self.edges[edge_id] = Edge()

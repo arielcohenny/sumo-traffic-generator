@@ -206,6 +206,10 @@ def wipe_crossing_from_tll(node_ids: list[str]) -> None:
                 if 0 <= idx < len(state):
                     state = state[:idx] + state[idx+1:]
             phase.set("state", state)
+        
+        # If all connections were removed, remove the entire traffic light logic
+        if all(phase.get("state", "") == "" for phase in tl.findall("phase")):
+            root.remove(tl)
 
     # 4. Reindex remaining connections so linkIndex starts at 0 and is contiguous per TL
     tl_ids = {conn.get("tl") for conn in root.findall("connection")}
@@ -231,16 +235,37 @@ def wipe_crossing(node_ids: list[str]) -> None:
     wipe_crossing_from_tll(node_ids)
 
 
-def generate_grid_network(seed, dimension, block_size_m, num_junction_to_remove, fixed_lane_count):
+def parse_junctions_to_remove(junctions_input: str) -> tuple[bool, list[str], int]:
+    """Parse junctions_to_remove input and return (is_list, junction_ids, count)"""
+    if not junctions_input or junctions_input == "0":
+        return False, [], 0
+    
+    # Try to parse as integer first
     try:
-        if (num_junction_to_remove > 0):
+        count = int(junctions_input)
+        return False, [], count
+    except ValueError:
+        # Parse as comma-separated list
+        junction_ids = [j.strip() for j in junctions_input.split(',') if j.strip()]
+        return True, junction_ids, len(junction_ids)
+
+
+def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_input, fixed_lane_count):
+    try:
+        is_list, junction_ids, count = parse_junctions_to_remove(junctions_to_remove_input)
+        
+        if count > 0:
             # generate the full grid network first
             generate_full_grid_network(
                 dimension, block_size_m, fixed_lane_count)
 
-            # then pick random junctions to remove
-            junctions_to_remove = pick_random_junction_ids(
-                seed, num_junction_to_remove, dimension)
+            if is_list:
+                # use the provided list of junction IDs
+                junctions_to_remove = junction_ids
+            else:
+                # pick random junctions to remove
+                junctions_to_remove = pick_random_junction_ids(
+                    seed, count, dimension)
 
             # remove the selected junctions
             wipe_crossing(junctions_to_remove)
