@@ -1,22 +1,20 @@
 Project Progress: Key Milestones
 
-1. Grid Generation: Created an n×n junction network (grid.net.xml), enabling random removal of specified internal nodes for dynamic topology.
+1. Grid Generation: Created an n×n junction network (grid.net.xml), enabling flexible removal of internal nodes - supports both random selection by count and explicit junction ID specification for dynamic topology.
 
 2. Zone Extraction: Derived polygonal zones from adjacent junctions per Table 1 in A Simulation Model for Intra‑Urban Movements.
 
 3. Lane Configuration: Applied configurable lane assignment to each edge (randomized within defined bounds).
 
-4. Edge Attractiveness Modeling: Computed departure/arrival weights per edge using a Poisson distribution, guiding vehicle origin and destination selection.
+4. Edge Attractiveness Modeling: Computed departure/arrival weights per edge using a Poisson distribution (λ_depart=3.5, λ_arrive=2.0), guiding vehicle origin and destination selection.
 
 5. Route Generation: Built a vehicle‑route prototype that leverages edge attractiveness and shortest‑path computation; compatible with SUMO’s randomTrips.py for scalable trip creation. All vehicles starting at time 0.
 
-6. Static Traffic‑Light Injection – Added a first‑pass signal plan (inject_traffic_lights) that inserts default four‑phase logic for every controlled junction, ensuring valid TLS state strings for subsequent TraCI control.
+6. SUMO Configuration Authoring – Automatically generates a .sumocfg that wires together the network, route, additional files, and simulation parameters in a single ready‑to‑run configuration.
 
-7. SUMO Configuration Authoring – Automatically generates a .sumocfg that wires together the network, route, additional files, and simulation parameters in a single ready‑to‑run configuration.
+7. TraCI Runtime Integration – Introduced sim/sumo_controller.py, a thin wrapper around TraCI that launches SUMO (GUI or headless), advances the simulation, and exposes a per‑step callback API for custom control logic.
 
-8. TraCI Runtime Integration – Introduced sim/sumo_controller.py, a thin wrapper around TraCI that launches SUMO (GUI or headless), advances the simulation, and exposes a per‑step callback API for custom control logic.
-
-9. Nimrod’s Tree‑Method Control – Integrated the decentralized‑traffic‑bottlenecks library: the pipeline now converts the network to a JSON tree, builds Nimrod’s Graph, computes an optimal phase map each step, and applies it via TraCI—enabling fully dynamic, decentralized signal control during the simulation.
+8. Nimrod’s Tree‑Method Control – Integrated the decentralized‑traffic‑bottlenecks library: the pipeline now converts the network to a JSON tree, builds Nimrod’s Graph, computes an optimal phase map each step, and applies it via TraCI—enabling fully dynamic, decentralized signal control during the simulation.
 
 Installation
 
@@ -37,7 +35,7 @@ Usage & Parameters
 env PYTHONUNBUFFERED=1 python -m src.cli \
 --grid_dimension <int> # Number of rows/columns (default: 5)
 --block_size_m <float> # Block length in meters (default: 200)
---junctions_to_remove <int> # Internal junctions to delete (default: 0)
+--junctions_to_remove <int|string> # Internal junctions to delete: integer count or comma-separated IDs (default: 0)
 --fixed_lane_count <int> #  If provided, sets a fixed number of lane counts for all edges.
 --num_vehicles <int> # Total trips to generate (default: 300)
 --seed <int> # RNG seed (optional)

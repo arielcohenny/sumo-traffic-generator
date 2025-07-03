@@ -29,7 +29,6 @@ __all__ = [
     "verify_rebuild_network",
     "verify_set_lane_counts",
     "verify_assign_edge_attractiveness",
-    "verify_generate_sumo_conf_file",
 ]
 
 try:
@@ -1085,23 +1084,16 @@ def _to_float(val):
 
 def verify_assign_edge_attractiveness(
     seed: int,
-    tolerance: float = 0.5,  # ±50 % of λ is acceptable
+    net_file: str | Path,
+    *,
+    lambda_depart: float | str | tuple,
+    lambda_arrive: float | str | tuple,
+    tolerance: float = 0.5,  # ±50 % of λ is acceptable
 ) -> None:
-    """Validate that attractiveness attributes exist and are plausible.
-    
-    This function validates the assign_edge_attractiveness function by checking:
-    1. All edges have depart_attractiveness and arrive_attractiveness attributes
-    2. Values are non-negative integers from Poisson distribution
-    3. Sample means are within tolerance of expected lambda values
-    4. Values show proper variability (not constant)
-    
-    Parameters match those of assign_edge_attractiveness exactly.
-    """
-    from src.config import CONFIG
-    
-    lambda_depart_f = _to_float(CONFIG.LAMBDA_DEPART)
-    lambda_arrive_f = _to_float(CONFIG.LAMBDA_ARRIVE)
-    net_file = CONFIG.network_file
+    """Validate that attractiveness attributes exist and are plausible."""
+
+    lambda_depart_f = _to_float(lambda_depart)
+    lambda_arrive_f = _to_float(lambda_arrive)
 
     path = Path(net_file)
     if not path.exists():
@@ -1155,158 +1147,4 @@ def verify_assign_edge_attractiveness(
         raise ValidationError(
             "Attractiveness values appear constant; distribution sampling may have failed")
 
-    return
-
-
-# ---------------------------------------------------------------------------
-#  SUMO Configuration file verification
-# ---------------------------------------------------------------------------
-
-def verify_generate_sumo_conf_file(
-    config_file: str,
-    network_file: str,
-    route_file: str | None = None,
-    zones_file: str | None = None,
-) -> None:
-    """Validate the generated SUMO configuration file.
-    
-    This function validates the generate_sumo_conf_file function by checking:
-    1. Configuration file exists and is valid XML
-    2. Referenced files exist and are accessible
-    3. XML structure matches SUMO configuration schema
-    4. Time parameters are reasonable
-    5. File paths are correctly formatted
-    
-    Parameters match those of generate_sumo_conf_file exactly.
-    """
-    from pathlib import Path
-    
-    # 1 ── validate configuration file exists ────────────────────────────────
-    config_path = Path(config_file)
-    if not config_path.exists():
-        raise ValidationError(f"SUMO configuration file not found: {config_path}")
-    
-    # 2 ── parse and validate XML structure ───────────────────────────────────
-    try:
-        tree = ET.parse(config_path)
-        root = tree.getroot()
-    except ET.ParseError as e:
-        raise ValidationError(f"Invalid XML in SUMO configuration file: {e}")
-    
-    if root.tag != "configuration":
-        raise ValidationError(f"SUMO config root element should be 'configuration', got '{root.tag}'")
-    
-    # 3 ── validate required sections exist ───────────────────────────────────
-    input_section = root.find("input")
-    if input_section is None:
-        raise ValidationError("SUMO configuration missing required <input> section")
-    
-    time_section = root.find("time")
-    if time_section is None:
-        raise ValidationError("SUMO configuration missing required <time> section")
-    
-    # 4 ── validate network file reference ────────────────────────────────────
-    net_file_elem = input_section.find("net-file")
-    if net_file_elem is None:
-        raise ValidationError("SUMO configuration missing <net-file> element")
-    
-    net_file_value = net_file_elem.get("value")
-    if not net_file_value:
-        raise ValidationError("SUMO configuration <net-file> has empty value")
-    
-    # Check if referenced network file exists (resolve relative to config dir)
-    config_dir = config_path.parent
-    referenced_net_file = config_dir / net_file_value
-    actual_net_file = Path(network_file)
-    
-    if not referenced_net_file.exists() and not actual_net_file.exists():
-        raise ValidationError(f"Referenced network file does not exist: {net_file_value}")
-    
-    # Validate the filename matches what was passed
-    expected_net_name = Path(network_file).name
-    if net_file_value != expected_net_name:
-        raise ValidationError(
-            f"Network file reference mismatch: config has '{net_file_value}', expected '{expected_net_name}'")
-    
-    # 5 ── validate route file reference (if provided) ────────────────────────
-    if route_file is not None:
-        route_file_elem = input_section.find("route-files")
-        if route_file_elem is None:
-            raise ValidationError("Route file provided but <route-files> element missing from config")
-        
-        route_file_value = route_file_elem.get("value")
-        if not route_file_value:
-            raise ValidationError("SUMO configuration <route-files> has empty value")
-        
-        # Check if referenced route file exists
-        referenced_route_file = config_dir / route_file_value
-        actual_route_file = Path(route_file)
-        
-        if not referenced_route_file.exists() and not actual_route_file.exists():
-            raise ValidationError(f"Referenced route file does not exist: {route_file_value}")
-        
-        # Validate the filename matches what was passed
-        expected_route_name = Path(route_file).name
-        if route_file_value != expected_route_name:
-            raise ValidationError(
-                f"Route file reference mismatch: config has '{route_file_value}', expected '{expected_route_name}'")
-    
-    # 6 ── validate zones file reference (if provided) ────────────────────────
-    if zones_file is not None:
-        additional_files_elem = input_section.find("additional-files")
-        if additional_files_elem is None:
-            raise ValidationError("Zones file provided but <additional-files> element missing from config")
-        
-        zones_file_value = additional_files_elem.get("value")
-        if not zones_file_value:
-            raise ValidationError("SUMO configuration <additional-files> has empty value")
-        
-        # Check if referenced zones file exists
-        referenced_zones_file = config_dir / zones_file_value
-        actual_zones_file = Path(zones_file)
-        
-        if not referenced_zones_file.exists() and not actual_zones_file.exists():
-            raise ValidationError(f"Referenced zones file does not exist: {zones_file_value}")
-        
-        # Validate the filename matches what was passed
-        expected_zones_name = Path(zones_file).name
-        if zones_file_value != expected_zones_name:
-            raise ValidationError(
-                f"Zones file reference mismatch: config has '{zones_file_value}', expected '{expected_zones_name}'")
-    
-    # 7 ── validate time configuration ────────────────────────────────────────
-    begin_elem = time_section.find("begin")
-    end_elem = time_section.find("end")
-    
-    if begin_elem is None:
-        raise ValidationError("SUMO configuration missing <begin> time element")
-    if end_elem is None:
-        raise ValidationError("SUMO configuration missing <end> time element")
-    
-    try:
-        begin_time = float(begin_elem.get("value", "0"))
-        end_time = float(end_elem.get("value", "3600"))
-    except (ValueError, TypeError):
-        raise ValidationError("SUMO configuration has invalid time values")
-    
-    if begin_time < 0:
-        raise ValidationError(f"SUMO configuration begin time cannot be negative: {begin_time}")
-    if end_time <= begin_time:
-        raise ValidationError(
-            f"SUMO configuration end time ({end_time}) must be greater than begin time ({begin_time})")
-    if end_time - begin_time > 86400:  # More than 24 hours
-        raise ValidationError(
-            f"SUMO configuration simulation duration ({end_time - begin_time}s) exceeds 24 hours; check time values")
-    
-    # 8 ── validate XML is well-formed SUMO configuration ────────────────────
-    # Check for any obvious malformed content
-    config_content = config_path.read_text()
-    if "#IFROUTE#" in config_content:
-        raise ValidationError("SUMO configuration contains template placeholder '#IFROUTE#' - file may be malformed")
-    
-    # Ensure no obvious path issues
-    if "\\" in config_content and not config_content.count("\\") == config_content.count("\\\\"):
-        # Check for unescaped backslashes (Windows path issues)
-        raise ValidationError("SUMO configuration may contain unescaped backslashes in file paths")
-    
     return

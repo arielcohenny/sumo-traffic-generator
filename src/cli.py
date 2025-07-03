@@ -12,7 +12,6 @@ from src.sim.sumo_utils import generate_sumo_conf_file, start_sumo_gui
 
 from src.network.generate_grid import *
 from src.network.lane_counts import set_lane_counts
-from src.network.traffic_lights import inject_traffic_lights
 from src.network.edge_attrs import assign_edge_attractiveness
 from src.network.zones import extract_zones_from_junctions
 from src.network.split_edges import insert_split_edges
@@ -23,7 +22,7 @@ from src.traffic_control.decentralized_traffic_bottlenecks.classes.network impor
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.net_data_builder import build_network_json
 
 from src.validate.errors import ValidationError
-from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_set_lane_counts, verify_assign_edge_attractiveness, verify_inject_traffic_lights
+from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_insert_split_edges, verify_rebuild_network, verify_set_lane_counts, verify_assign_edge_attractiveness, verify_generate_sumo_conf_file
 from src.validate.validate_traffic import verify_generate_vehicle_routes
 
 from src.traffic.builder import generate_vehicle_routes
@@ -110,129 +109,123 @@ def main():
             args.junctions_to_remove,
             int(args.fixed_lane_count)
         )
-        # try:
-        #     verify_generate_grid_network(
-        #         seed,
-        #         int(args.grid_dimension),
-        #         int(args.block_size_m),
-        #         CONFIG.network_file,
-        #         int(args.junctions_to_remove),
-        #     )
-        # except ValidationError as ve:
-        #     print(f"Failed generating network file: {ve}")
-        #     exit(1)
+        try:
+            verify_generate_grid_network(
+                seed,
+                int(args.grid_dimension),
+                int(args.block_size_m),
+                args.junctions_to_remove,
+                int(args.fixed_lane_count)
+            )
+        except ValidationError as ve:
+            print(f"Failed generating network file: {ve}")
+            exit(1)
         print(f"Generated grid successfully.")
 
-        # --- Step 1.5: Insert Split Edges ---
+        # --- Step 2: Insert Split Edges ---
         insert_split_edges()
+        try:
+            verify_insert_split_edges()
+        except ValidationError as ve:
+            print(f"Failed to insert split edges: {ve}")
+            exit(1)
         print("Inserted split edges successfully.")
 
-        # --- Step 2: Extract Zones - --
+        # --- Step 3: Extract Zones - --
         extract_zones_from_junctions(
             args.block_size_m,
             seed=seed,
             fill_polygons=True,
             inset=0.0
         )
-        # try:
-        #     verify_extract_zones_from_junctions(
-        #         CONFIG.network_file,
-        #         CONFIG.output_dir,
-        #     )
-        # except ValidationError as ve:
-        #     print(f"Zone extraction failed: {ve}")
-        #     exit(1)
-        # print("Extracted zones from junctions successfully.")
+        try:
+            verify_extract_zones_from_junctions(
+                args.block_size_m,
+                seed=seed,
+                fill_polygons=True,
+                inset=0.0
+            )
+        except ValidationError as ve:
+            print(f"Failed to extract land use zones: {ve}")
+            exit(1)
+        print("Extracted land use zones successfully.")
 
-        # --- Step 3: Set Lane Counts ---
-        # exit(1)
+        # --- Step 4: Set Lane Counts ---
         if int(args.fixed_lane_count) == 0:
             set_lane_counts(
                 seed=seed,
                 min_lanes=CONFIG.MIN_LANES,
                 max_lanes=CONFIG.MAX_LANES
             )
+            try:
+                verify_set_lane_counts(
+                    CONFIG.network_file,
+                    min_lanes=CONFIG.MIN_LANES,
+                    max_lanes=CONFIG.MAX_LANES,
+                )
+            except ValidationError as ve:
+                print(f"Lane-count validation failed: {ve}")
+                exit(1)
 
-        # try:
-        #     verify_set_lane_counts(
-        #         CONFIG.network_file,
-        #         min_lanes=CONFIG.MIN_LANES,
-        #         max_lanes=CONFIG.MAX_LANES,
-        #     )
-        # except ValidationError as ve:
-        #     print(f"Lane-count validation failed: {ve}")
-        #     exit(1)
         print("Successfully set lane counts for edges.")
 
+        # --- Step 5: Rebuild Network ---
         rebuild_network()
-        print("Successfully rebuild network.")
+        try:
+            verify_rebuild_network()
+        except ValidationError as ve:
+            print(f"Failed to rebuild the network: {ve}")
+            exit(1)
+        print("Rebuilt the network successfully.")
 
-        # --- Step 4: Assign Edge Attractiveness ---
+        # --- Step 6: Assign Edge Attractiveness ---
         assign_edge_attractiveness(seed)
-        # try:
-        #     verify_assign_edge_attractiveness(
-        #         seed,
-        #         CONFIG.network_file,
-        #         lambda_depart=CONFIG.LAMBDA_DEPART,
-        #         lambda_arrive=CONFIG.LAMBDA_ARRIVE,
-        #     )
-        # except ValidationError as ve:
-        #     print(f"Edge-attractiveness validation failed: {ve}")
-        #     exit(1)
-        print("Successfully assigned edge attractiveness")
+        try:
+            verify_assign_edge_attractiveness(seed)
+        except ValidationError as ve:
+            print(f"Failed to assign edge attractiveness: {ve}")
+            exit(1)
+        print("Assigned edge attractiveness successfully.")
 
-        # --- Step 5: Inject Static Traffic Lights ---
-        # inject_traffic_lights(CONFIG.network_file)
-        # # try:
-        # #     verify_inject_traffic_lights(CONFIG.network_file)
-        # # except ValidationError as ve:
-        # #     print(f"Traffic-light validation failed: {ve}")
-        # #     exit(1)
-        # print("Successfully injected static traffic lights into network")
-        # exit(1)
-
-        # --- Step 6: Generate Vehicle Routes ---
+        # --- Step 7: Generate Vehicle Routes ---
         generate_vehicle_routes(
             net_file=CONFIG.network_file,
             output_file=CONFIG.routes_file,
             num_vehicles=args.num_vehicles,
             seed=seed
         )
-        # try:
-        #     verify_generate_vehicle_routes(
-        #         net_file=CONFIG.network_file,
-        #         output_file=CONFIG.routes_file,
-        #         num_vehicles=args.num_vehicles,
-        #         seed=seed,
-        #     )
-        # except ValidationError as ve:
-        #     print(f"Route validation failed: {ve}")
-        #     exit(1)
-        print("Generated vehicle routes.")
+        try:
+            verify_generate_vehicle_routes(
+                net_file=CONFIG.network_file,
+                output_file=CONFIG.routes_file,
+                num_vehicles=args.num_vehicles,
+                seed=seed,
+            )
+        except ValidationError as ve:
+            print(f"Failed to generate vehicle routes: {ve}")
+            exit(1)
+        print("Generated vehicle routes successfully.")
 
-        # Generate SUMO configuration file with zones
-        # sumo_cfg_path = generate_sumo_conf_file(
-        #     CONFIG.config_file,
-        #     CONFIG.network_file,
-        #     zones_file=CONFIG.zones_file,
-        # )
-        # print(f"Generated SUMO configuration file: {sumo_cfg_path}")
-        # start_sumo_gui(
-        #     net_file=CONFIG.network_file,
-        #     additional_args=["--configuration-file", sumo_cfg_path]
-        # )
-        # exit(1)
-
-        # --- Step 7: Generate SUMO Configuration File ---
+        # --- Step 8: Generate SUMO Configuration File ---
         sumo_cfg_path = generate_sumo_conf_file(
             CONFIG.config_file,
             CONFIG.network_file,
             route_file=CONFIG.routes_file,
             zones_file=CONFIG.zones_file,
         )
-        print(f"Generated SUMO configuration file: {sumo_cfg_path}")
+        try:
+            verify_generate_sumo_conf_file(
+                CONFIG.config_file,
+                CONFIG.network_file,
+                route_file=CONFIG.routes_file,
+                zones_file=CONFIG.zones_file,
+            )
+        except ValidationError as ve:
+            print(f"SUMO configuration validation failed: {ve}")
+            exit(1)
+        print(f"Generated SUMO configuration file successfully.")
 
-        # --- Step 8: Dynamic Simulation via TraCI & Nimrod’s Tree Method ---
+        # --- Step 9: Dynamic Simulation via TraCI & Nimrod’s Tree Method ---
         # Load network tree structure and runner configuration
         json_file = Path(CONFIG.network_file).with_suffix(".json")
         if json_file.exists():
@@ -241,7 +234,7 @@ def main():
             net_file=CONFIG.network_file,
             sumo_cfg=sumo_cfg_path
         )
-        print("Loaded network tree and run configuration.")
+        print("Loaded network tree and run configuration successfully.")
 
         # Initialize the TraCI controller
         controller = SumoController(
@@ -250,7 +243,7 @@ def main():
             end_time=args.end_time,
             gui=args.gui
         )
-        print("Initialized TraCI controller.")
+        print("Initialized TraCI controller successfully.")
 
         # Build Nimrod’s runtime objects once (outside the callback)
         json_file = Path(CONFIG.network_file).with_suffix(".json")

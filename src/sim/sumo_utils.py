@@ -112,7 +112,6 @@ def generate_sumo_conf_file(
             f.write(f"""<configuration>
     <input>
         <net-file value=\"{net_name}\"/>
-#IFROUTE#
 {f'        <route-files value=\"{route_name}\"/>' if route_name else ''}
 {f'        <additional-files value="{zones_name}"/>' if zones_name else ''}
     </input>
