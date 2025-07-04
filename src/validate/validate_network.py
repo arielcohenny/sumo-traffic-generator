@@ -32,7 +32,7 @@ def verify_generate_grid_network(
     dimension: int,
     block_size_m: int,
     junctions_to_remove_input: str,
-    fixed_lane_count: int,
+    lane_count_arg: str,
 ) -> None:
     """Validate grid network generation with junction removal.
     
@@ -632,6 +632,7 @@ def verify_set_lane_counts(
     *,
     min_lanes: int = 1,
     max_lanes: int = 3,
+    algorithm: str = 'realistic',
 ) -> None:
     """Validate lane counts and distribution after lane assignment."""
 
@@ -673,14 +674,26 @@ def verify_set_lane_counts(
 
     # Distribution check ---------------------------------------------------------
     if all(c == counts[0] for c in counts):
-        raise ValidationError(
-            "All edges share the same lane number; randomisation may have failed")
-    if min_lanes not in counts:
-        raise ValidationError(
-            f"No edge ended up with the minimum lane count ({min_lanes})")
-    if max_lanes not in counts:
-        raise ValidationError(
-            f"No edge ended up with the maximum lane count ({max_lanes})")
+        # Only raise error for random algorithm - fixed counts and realistic are allowed to be uniform
+        if algorithm == 'random':
+            raise ValidationError(
+                "All edges share the same lane number; randomisation may have failed")
+        elif algorithm.isdigit():
+            # Fixed count algorithm - uniform distribution is expected
+            expected_count = int(algorithm)
+            if counts[0] != expected_count:
+                raise ValidationError(
+                    f"Fixed algorithm expected {expected_count} lanes but found {counts[0]}")
+        # For 'realistic' algorithm, uniform distribution is acceptable (though unusual)
+    
+    # Only check min/max distribution for random algorithm
+    if algorithm == 'random':
+        if min_lanes not in counts:
+            raise ValidationError(
+                f"No edge ended up with the minimum lane count ({min_lanes})")
+        if max_lanes not in counts:
+            raise ValidationError(
+                f"No edge ended up with the maximum lane count ({max_lanes})")
 
     return
 

@@ -563,3 +563,11 @@ All generated files are placed in `data/` directory:
 - **Robustness**: Comprehensive error handling and validation
 - **Reproducibility**: Seeded random number generation throughout
 - **SUMO Integration**: Leverages SUMO's native tools and data structures
+
+## Memory
+
+- This project is a sophisticated SUMO traffic simulation framework with intelligent grid network generation and dynamic traffic control
+- Uses a comprehensive 8-step pipeline for network and traffic generation
+- Implements advanced algorithms for zone extraction, land use assignment, and traffic routing
+- Designed with multiple architectural patterns including Strategy, Adapter, and Pipeline patterns
+- Supports reproducible simulations through seeded random generation

@@ -59,10 +59,10 @@ def main():
         help="Number of junctions to remove from the grid (e.g., '5') or comma-separated list of specific junction IDs (e.g., 'A0,B1,C2'). Default is 0."
     )
     parser.add_argument(
-        "--fixed_lane_count",
-        type=int,
-        default=0,
-        help=" If provided, sets a fixed number of lane counts for all edges."
+        "--lane_count",
+        type=str,
+        default="realistic",
+        help="Lane count algorithm: 'realistic' (default, zone-based), 'random', or integer (fixed count for all edges)."
     )
     parser.add_argument(
         "--num_vehicles",
@@ -108,7 +108,7 @@ def main():
             int(args.grid_dimension),
             int(args.block_size_m),
             args.junctions_to_remove,
-            int(args.fixed_lane_count)
+            args.lane_count
         )
         try:
             verify_generate_grid_network(
@@ -116,7 +116,7 @@ def main():
                 int(args.grid_dimension),
                 int(args.block_size_m),
                 args.junctions_to_remove,
-                int(args.fixed_lane_count)
+                args.lane_count
             )
         except ValidationError as ve:
             print(f"Failed generating network file: {ve}")
@@ -152,16 +152,18 @@ def main():
         print("Extracted land use zones successfully.")
 
         # --- Step 4: Set Lane Counts ---
-        if int(args.fixed_lane_count) == 0:
+        if args.lane_count != "0" and not (args.lane_count.isdigit() and args.lane_count == "0"):
             set_lane_counts(
                 seed=seed,
                 min_lanes=CONFIG.MIN_LANES,
-                max_lanes=CONFIG.MAX_LANES
+                max_lanes=CONFIG.MAX_LANES,
+                algorithm=args.lane_count
             )
             try:
                 verify_set_lane_counts(
                     min_lanes=CONFIG.MIN_LANES,
                     max_lanes=CONFIG.MAX_LANES,
+                    algorithm=args.lane_count,
                 )
             except ValidationError as ve:
                 print(f"Lane-count validation failed: {ve}")
