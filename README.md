@@ -171,6 +171,49 @@ The system supports two traffic light phasing strategies:
 
 Both strategies work with any lane configuration and are compatible with the Tree Method optimization algorithm.
 
+### Vehicle Departure Patterns
+
+The system supports multiple temporal distribution patterns for vehicle departure times, replacing the original sequential departure (0, 1, 2, 3...) with realistic temporal patterns based on research:
+
+- **`six_periods`** (default): Research-based 6-period system from mobility papers
+  - **Morning** (6am-12pm): 20% of vehicles - Gradual traffic buildup
+  - **Morning Rush** (7:30am-9:30am): 30% of vehicles - Peak commuter traffic
+  - **Noon** (12pm-5pm): 25% of vehicles - Steady daytime activity  
+  - **Evening Rush** (5pm-7pm): 20% of vehicles - Evening commute home
+  - **Evening** (7pm-10pm): 4% of vehicles - Social/entertainment trips
+  - **Night** (10pm-6am): 1% of vehicles - Minimal overnight activity
+
+- **`uniform`**: Even distribution across simulation time with small buffer at end
+
+- **`rush_hours:7-9:40,17-19:30,rest:10`**: Custom rush hour definition
+  - Define specific rush periods with intensity weights
+  - `rest` parameter controls non-rush hour baseline traffic
+
+- **`hourly:7:25,8:35,9:20,17:30,18:25,19:15,rest:5`**: Hour-by-hour control
+  - Specify weight for each hour (0-23)
+  - Very granular control over temporal patterns
+
+**Usage Examples:**
+```bash
+# Default research-based 6-period system
+--departure_pattern six_periods
+
+# Simple uniform distribution
+--departure_pattern uniform
+
+# Custom rush hours (7-9am: 40%, 5-7pm: 30%, rest: 10%)
+--departure_pattern "rush_hours:7-9:40,17-19:30,rest:10"
+
+# Detailed hourly control
+--departure_pattern "hourly:7:25,8:35,9:20,17:30,18:25,19:15,rest:5"
+```
+
+**Key Features:**
+- Scales automatically to simulation `--end-time` (default 24 hours)
+- Rush hour peaks align with real-world commuter patterns
+- Compatible with all routing strategies and vehicle types
+- Generates realistic traffic density variations throughout simulation
+
 Omit --seed to use a random value each run.
 
 File Structure & Descriptions

@@ -16,7 +16,9 @@ def generate_vehicle_routes(net_file: str | Path,
                             num_vehicles: int,
                             seed: int = CONFIG.RNG_SEED,
                             routing_strategy: str = "shortest 100",
-                            vehicle_types: str = CONFIG.DEFAULT_VEHICLE_TYPES) -> None:
+                            vehicle_types: str = CONFIG.DEFAULT_VEHICLE_TYPES,
+                            end_time: int = 86400,
+                            departure_pattern: str = "six_periods") -> None:
     """
     Orchestrates vehicle creation and writes a .rou.xml.
     
@@ -27,6 +29,8 @@ def generate_vehicle_routes(net_file: str | Path,
         seed: Random seed for reproducibility
         routing_strategy: Routing strategy specification (e.g., "shortest 70 realtime 30")
         vehicle_types: Vehicle types specification (e.g., "passenger 70 commercial 20 public 10")
+        end_time: Total simulation duration in seconds for temporal distribution
+        departure_pattern: Departure pattern ("six_periods", "uniform", "rush_hours:7-9:40,17-19:30", "hourly:...")
     """
     rng = random.Random(seed)
     net = readNet(str(net_file))
@@ -74,15 +78,172 @@ def generate_vehicle_routes(net_file: str | Path,
         if not route_edges:
             print(f"⚠️  Empty route for vehicle {vid}; skipping.")
             continue
+        # Generate departure time based on specified pattern
+        departure_time = _generate_departure_time(rng, departure_pattern, end_time)
+        
         vehicles.append({
             "id":              f"veh{vid}",
             "type":            vtype,
-            "depart":          vid,
+            "depart":          int(departure_time),
             "from_edge":       start_edge,
             "to_edge":         end_edge,
             "route_edges":     route_edges,
             "routing_strategy": assigned_strategy,
         })
 
+    # Sort vehicles by departure time (SUMO requirement)
+    vehicles.sort(key=lambda v: v["depart"])
+    
     write_routes(output_file, vehicles, CONFIG.vehicle_types)
     print(f"Wrote {len(vehicles)} vehicles → {output_file}")
+
+
+def _generate_departure_time(rng, departure_pattern: str, end_time: int) -> int:
+    """
+    Generate departure time based on the specified pattern.
+    
+    Args:
+        rng: Random number generator
+        departure_pattern: Pattern specification
+        end_time: Total simulation duration in seconds
+        
+    Returns:
+        Departure time in seconds
+    """
+    if departure_pattern == "uniform":
+        return int(rng.uniform(0, end_time * 0.9))
+    
+    elif departure_pattern == "six_periods":
+        return _generate_six_periods_departure(rng, end_time)
+    
+    elif departure_pattern.startswith("rush_hours:"):
+        return _generate_rush_hours_departure(rng, departure_pattern, end_time)
+    
+    elif departure_pattern.startswith("hourly:"):
+        return _generate_hourly_departure(rng, departure_pattern, end_time)
+    
+    else:
+        # Default to six_periods if unknown pattern
+        return _generate_six_periods_departure(rng, end_time)
+
+
+def _generate_six_periods_departure(rng, end_time: int) -> int:
+    """
+    Generate departure time using the 6-period system from research paper.
+    
+    Time periods (assuming 24-hour simulation):
+    - Morning (6am-12pm): 20%
+    - Morning Rush (7:30am-9:30am): 30% 
+    - Noon (12pm-5pm): 25%
+    - Evening Rush (5pm-7pm): 20%
+    - Evening (7pm-10pm): 4%
+    - Night (10pm-6am): 1%
+    """
+    # Scale to simulation time (24 hours = 86400 seconds)
+    scale_factor = end_time / 86400
+    
+    # Define periods in seconds (24-hour format)
+    periods = [
+        {"name": "morning", "start": 6*3600, "end": 12*3600, "weight": 20},      # 6am-12pm
+        {"name": "morning_rush", "start": 7.5*3600, "end": 9.5*3600, "weight": 30},  # 7:30am-9:30am
+        {"name": "noon", "start": 12*3600, "end": 17*3600, "weight": 25},       # 12pm-5pm
+        {"name": "evening_rush", "start": 17*3600, "end": 19*3600, "weight": 20},    # 5pm-7pm
+        {"name": "evening", "start": 19*3600, "end": 22*3600, "weight": 4},     # 7pm-10pm
+        {"name": "night", "start": 22*3600, "end": 30*3600, "weight": 1},       # 10pm-6am (next day)
+    ]
+    
+    # Choose period based on weights
+    weights = [p["weight"] for p in periods]
+    chosen_period = rng.choices(periods, weights=weights)[0]
+    
+    # Generate time within chosen period
+    start_time = chosen_period["start"] * scale_factor
+    end_time_period = chosen_period["end"] * scale_factor
+    
+    # Handle night period wrapping to next day
+    if chosen_period["name"] == "night":
+        if rng.random() < 0.25:  # 25% in evening part (10pm-12am)
+            departure_time = rng.uniform(22*3600*scale_factor, 24*3600*scale_factor)
+        else:  # 75% in early morning part (12am-6am)
+            departure_time = rng.uniform(0, 6*3600*scale_factor)
+    else:
+        departure_time = rng.uniform(start_time, end_time_period)
+    
+    return int(min(departure_time, end_time * 0.95))
+
+
+def _generate_rush_hours_departure(rng, pattern: str, end_time: int) -> int:
+    """
+    Generate departure time using rush hours pattern.
+    Format: "rush_hours:7-9:40,17-19:30,rest:10"
+    """
+    # Parse pattern
+    parts = pattern.split(":", 1)[1].split(",")
+    rush_periods = []
+    rest_weight = 10
+    
+    for part in parts:
+        if part.startswith("rest:"):
+            rest_weight = int(part.split(":")[1])
+        else:
+            time_range, weight = part.split(":")
+            start_hour, end_hour = map(float, time_range.split("-"))
+            rush_periods.append({
+                "start": start_hour * 3600,
+                "end": end_hour * 3600, 
+                "weight": int(weight)
+            })
+    
+    # Calculate total weight
+    total_rush_weight = sum(p["weight"] for p in rush_periods)
+    total_weight = total_rush_weight + rest_weight
+    
+    # Choose rush hour or rest time
+    if rng.random() < total_rush_weight / total_weight:
+        # Choose rush period
+        weights = [p["weight"] for p in rush_periods]
+        chosen_period = rng.choices(rush_periods, weights=weights)[0]
+        
+        scale_factor = end_time / 86400
+        start_time = chosen_period["start"] * scale_factor
+        end_time_period = chosen_period["end"] * scale_factor
+        departure_time = rng.uniform(start_time, end_time_period)
+    else:
+        # Rest time (uniform distribution outside rush hours)
+        departure_time = rng.uniform(0, end_time * 0.9)
+    
+    return int(departure_time)
+
+
+def _generate_hourly_departure(rng, pattern: str, end_time: int) -> int:
+    """
+    Generate departure time using hourly weights.
+    Format: "hourly:7:25,8:35,9:20,17:30,18:25,19:15,rest:5"
+    """
+    # Parse pattern
+    parts = pattern.split(":", 1)[1].split(",")
+    hourly_weights = {}
+    rest_weight = 5
+    
+    for part in parts:
+        if part.startswith("rest:"):
+            rest_weight = int(part.split(":")[1])
+        else:
+            hour, weight = part.split(":")
+            hourly_weights[int(hour)] = int(weight)
+    
+    # Create 24-hour weight array
+    weights = [rest_weight] * 24
+    for hour, weight in hourly_weights.items():
+        weights[hour] = weight
+    
+    # Choose hour
+    chosen_hour = rng.choices(range(24), weights=weights)[0]
+    
+    # Generate time within chosen hour
+    scale_factor = end_time / 86400
+    hour_start = chosen_hour * 3600 * scale_factor
+    hour_end = (chosen_hour + 1) * 3600 * scale_factor
+    departure_time = rng.uniform(hour_start, min(hour_end, end_time * 0.95))
+    
+    return int(departure_time)

@@ -106,6 +106,12 @@ def main():
         help="Real-world hour when simulation starts (0-24, default: 0.0 for midnight)"
     )
     parser.add_argument(
+        "--departure_pattern",
+        type=str,
+        default="six_periods",
+        help="Vehicle departure pattern: 'six_periods' (default, research-based), 'uniform', 'rush_hours:7-9:40,17-19:30,rest:10', or 'hourly:7:25,8:35,rest:5'"
+    )
+    parser.add_argument(
         "--routing_strategy",
         type=str,
         default="shortest 100",
@@ -235,7 +241,9 @@ def main():
             num_vehicles=args.num_vehicles,
             seed=seed,
             routing_strategy=args.routing_strategy,
-            vehicle_types=args.vehicle_types
+            vehicle_types=args.vehicle_types,
+            end_time=args.end_time,
+            departure_pattern=args.departure_pattern
         )
         try:
             verify_generate_vehicle_routes(

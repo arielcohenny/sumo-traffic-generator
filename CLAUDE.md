@@ -44,15 +44,17 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --routing_strategy "shortest 70 realtime 30" \
   --vehicle_types "passenger 70 commercial 20 public 10" \
   --traffic_light_strategy opposites \
+  --departure_pattern six_periods \
   --gui
 
-# Commercial traffic scenario with incoming strategy
+# Commercial traffic scenario with incoming strategy and rush hour patterns
 env PYTHONUNBUFFERED=1 python -m src.cli \
   --grid_dimension 7 \
   --num_vehicles 500 \
   --vehicle_types "passenger 40 commercial 55 public 5" \
   --routing_strategy "shortest 50 fastest 50" \
   --traffic_light_strategy incoming \
+  --departure_pattern "rush_hours:6-10:35,16-20:40,rest:8" \
   --gui
 
 # Public transport focused scenario
@@ -225,6 +227,12 @@ All generated files are placed in `data/` directory:
   - Seamless integration with routing strategies and temporal systems
 - **Traffic Light Strategies**:
   - Two phasing strategies: opposites (default, opposing directions together) and incoming (each edge separate)
+- **Vehicle Departure Patterns**:
+  - Replaced sequential departure (0, 1, 2, 3...) with realistic temporal distribution based on research papers
+  - Default: six_periods system with research-based 6-period daily structure (Morning 20%, Morning Rush 30%, Noon 25%, Evening Rush 20%, Evening 4%, Night 1%)
+  - Alternative patterns: uniform distribution, custom rush_hours, granular hourly control
+  - Automatically scales to simulation end_time (default 24 hours)
+  - Compatible with all routing strategies and vehicle types
   - CLI support via --traffic_light_strategy parameter
   - Built on netgenerate's --tls.layout functionality for proven traffic signal logic
   - Compatible with any lane configuration (1+ lanes) and Tree Method optimization
