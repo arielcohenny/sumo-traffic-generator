@@ -54,6 +54,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --attractiveness <str>        # Edge attractiveness method: 'poisson' (default), 'land_use', 'gravity', 'iac', or 'hybrid'
   --time_dependent              # Apply 4-phase time-of-day variations to the selected attractiveness method
   --start_time_hour <float>     # Real-world hour when simulation starts (0-24, default: 0.0 for midnight)
+  --routing_strategy <str>      # Routing strategy with percentages (default: 'shortest 100')
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
 ```
 
@@ -81,6 +82,36 @@ When `--time_dependent` is used, applies research-based 4-phase time-of-day mult
 
 The system generates pre-calculated attractiveness profiles for all 4 phases and switches between them in real-time during simulation based on the `--start_time_hour` parameter. This enables both full-day simulations (24 hours) and rush hour analysis with 1:1 time mapping (1 simulation second = 1 real-world second).
 
+### 4-Strategy Routing System
+
+The system supports 4 routing strategies with percentage-based mixing:
+
+- **`shortest`**: Static shortest path routing (default)
+- **`realtime`**: Dynamic Waze/Google Maps-style navigation (reroutes every 30 seconds)
+- **`fastest`**: Dynamic fastest route based on current travel times (reroutes every 45 seconds)
+- **`attractiveness`**: Multi-criteria routing considering destination attractiveness
+
+**Usage Examples:**
+```bash
+# Default (100% shortest path)
+--routing_strategy "shortest 100"
+
+# Mixed strategies
+--routing_strategy "shortest 70 realtime 30"
+
+# All 4 strategies
+--routing_strategy "shortest 25 realtime 25 fastest 25 attractiveness 25"
+
+# Heavy dynamic routing
+--routing_strategy "realtime 80 fastest 20"
+```
+
+**Key Features:**
+- Percentages must sum to 100 (validated automatically)
+- Dynamic strategies use TraCI for real-time rerouting
+- Strategies are assigned per-vehicle during route generation
+- Integration with existing 4-phase temporal system
+
 Omit --seed to use a random value each run.
 
 File Structure & Descriptions
@@ -102,7 +133,7 @@ src/
 │ ├── traffic_lights.py # Traffic light injection and signal plans
 │ └── **init**.py
 ├── sim/ # Simulation utilities
-│ ├── sumo_controller.py # Thin TraCI wrapper with per‑step callback support
+│ ├── sumo_controller.py # TraCI wrapper with per‑step callback and dynamic rerouting support
 │ ├── sumo_utils.py # Wrapper functions for invoking SUMO and randomTrips.py
 │ └── **init**.py
 ├── traffic_control/ # Signal‑control logic (third‑party & glue code)

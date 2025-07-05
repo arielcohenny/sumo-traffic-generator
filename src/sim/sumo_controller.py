@@ -15,11 +15,13 @@ class SumoController:
                  end_time: float,
                  gui: bool = False,
                  time_dependent: bool = False,
-                 start_time_hour: float = 0.0):
+                 start_time_hour: float = 0.0,
+                 routing_strategy: str = "shortest 100"):
         """
         :param gui: if True, launch sumo-gui; otherwise, batch sumo.
         :param time_dependent: if True, enables 4-phase attractiveness switching
         :param start_time_hour: real-world hour when simulation starts (0-24)
+        :param routing_strategy: routing strategy specification for dynamic rerouting
         """
         self.sumo_cfg = sumo_cfg
         self.step_length = step_length
@@ -29,6 +31,15 @@ class SumoController:
         self.start_time_hour = start_time_hour
         self.current_phase = None
         self.phase_profiles = {}
+        
+        # Dynamic routing support
+        self.routing_strategy = routing_strategy
+        self.vehicle_strategies = {}  # vehicle_id -> strategy_name
+        self.vehicle_rerouting_times = {}  # vehicle_id -> next_rerouting_time
+        self.strategy_intervals = {
+            'realtime': 30,  # reroute every 30 seconds
+            'fastest': 45    # reroute every 45 seconds
+        }
 
     # def start(self):
     #     """
@@ -136,9 +147,100 @@ class SumoController:
         if self.current_phase != new_phase:
             self.update_edge_attractiveness(new_phase)
 
+    def load_vehicle_strategies(self):
+        """Load vehicle routing strategies from route file."""
+        try:
+            tree = ET.parse(self.sumo_cfg)
+            root = tree.getroot()
+            
+            # Find route file in config
+            route_file = None
+            for route_files in root.findall(".//route-files"):
+                route_file = route_files.get('value')
+                break
+            
+            if not route_file:
+                return
+            
+            # Handle relative path - route file is relative to config file directory
+            from pathlib import Path
+            config_dir = Path(self.sumo_cfg).parent
+            route_path = config_dir / route_file
+            
+            # Parse route file to get vehicle strategies
+            route_tree = ET.parse(route_path)
+            route_root = route_tree.getroot()
+            
+            for vehicle in route_root.findall('vehicle'):
+                veh_id = vehicle.get('id')
+                strategy = vehicle.get('routing_strategy', 'shortest')
+                self.vehicle_strategies[veh_id] = strategy
+                
+                # Set initial rerouting time for dynamic strategies
+                if strategy in self.strategy_intervals:
+                    interval = self.strategy_intervals[strategy]
+                    self.vehicle_rerouting_times[veh_id] = interval
+                    
+        except Exception as e:
+            print(f"Warning: Could not load vehicle strategies: {e}")
+    
+    def handle_dynamic_rerouting(self, current_time: float):
+        """Handle dynamic rerouting for vehicles with real-time strategies."""
+        try:
+            # Get all vehicles currently in simulation
+            vehicle_ids = traci.vehicle.getIDList()
+            
+            for veh_id in vehicle_ids:
+                strategy = self.vehicle_strategies.get(veh_id, 'shortest')
+                
+                # Only reroute vehicles with dynamic strategies
+                if strategy not in self.strategy_intervals:
+                    continue
+                
+                # Check if it's time to reroute this vehicle
+                next_reroute_time = self.vehicle_rerouting_times.get(veh_id, 0)
+                if current_time >= next_reroute_time:
+                    try:
+                        # Get current route and destination
+                        current_route = traci.vehicle.getRoute(veh_id)
+                        if not current_route:
+                            continue
+                        
+                        current_edge = traci.vehicle.getRoadID(veh_id)
+                        destination = current_route[-1]
+                        
+                        # Skip if vehicle is on internal edge or already at destination
+                        if current_edge.startswith(':') or current_edge == destination:
+                            continue
+                        
+                        # Compute new route based on strategy
+                        if strategy == 'realtime':
+                            # Use fastest path based on current conditions
+                            new_route = traci.simulation.findRoute(current_edge, destination)
+                            if new_route and new_route.edges:
+                                traci.vehicle.setRoute(veh_id, new_route.edges)
+                        
+                        elif strategy == 'fastest':
+                            # Use fastest path based on current travel times
+                            new_route = traci.simulation.findRoute(current_edge, destination)
+                            if new_route and new_route.edges:
+                                traci.vehicle.setRoute(veh_id, new_route.edges)
+                        
+                        # Schedule next rerouting
+                        interval = self.strategy_intervals[strategy]
+                        self.vehicle_rerouting_times[veh_id] = current_time + interval
+                        
+                    except Exception as e:
+                        # Don't let rerouting errors stop the simulation
+                        continue
+                        
+        except Exception as e:
+            # Don't let rerouting errors stop the simulation
+            pass
+    
     def run(self, control_callback):
         """
-        Run the simulation loop with optional phase switching.
+        Run the simulation loop with optional phase switching and dynamic rerouting.
 
         :param control_callback: A function that takes the current simulation time (int)
                                  and applies control actions.
@@ -154,6 +256,12 @@ class SumoController:
             self.current_phase = initial_phase
             print(f"Starting simulation at {self.start_time_hour:.1f}h in phase: {initial_phase}")
         
+        # Load vehicle routing strategies for dynamic rerouting
+        self.load_vehicle_strategies()
+        dynamic_strategies = [s for s in self.vehicle_strategies.values() if s in self.strategy_intervals]
+        if dynamic_strategies:
+            print(f"Dynamic rerouting enabled for strategies: {set(dynamic_strategies)}")
+        
         current_time = 0
         while current_time < self.end_time:
             self.step()
@@ -161,6 +269,9 @@ class SumoController:
             # Check for phase transitions
             if self.time_dependent:
                 self.check_phase_transition(current_time)
+            
+            # Handle dynamic rerouting
+            self.handle_dynamic_rerouting(current_time)
             
             # Apply control callback (Nimrod's algorithm, etc.)
             control_callback(current_time)

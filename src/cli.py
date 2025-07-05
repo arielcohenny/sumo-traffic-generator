@@ -106,6 +106,12 @@ def main():
         help="Real-world hour when simulation starts (0-24, default: 0.0 for midnight)"
     )
     parser.add_argument(
+        "--routing_strategy",
+        type=str,
+        default="shortest 100",
+        help="Routing strategy with percentages (e.g., 'shortest 70 realtime 30' or 'shortest 20 realtime 30 fastest 45 attractiveness 5'). Default: 'shortest 100'"
+    )
+    parser.add_argument(
         "--gui",
         action="store_true",
         help="Launch SUMO in GUI mode (sumo-gui) instead of headless sumo"
@@ -212,7 +218,8 @@ def main():
             net_file=CONFIG.network_file,
             output_file=CONFIG.routes_file,
             num_vehicles=args.num_vehicles,
-            seed=seed
+            seed=seed,
+            routing_strategy=args.routing_strategy
         )
         try:
             verify_generate_vehicle_routes(
@@ -258,7 +265,8 @@ def main():
             end_time=args.end_time,
             gui=args.gui,
             time_dependent=args.time_dependent,
-            start_time_hour=args.start_time_hour
+            start_time_hour=args.start_time_hour,
+            routing_strategy=args.routing_strategy
         )
         print("Initialized TraCI controller successfully.")
 

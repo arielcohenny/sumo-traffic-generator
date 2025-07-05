@@ -19,8 +19,16 @@ def write_routes(outfile: str | Path,
 
     # vehicle entries
     for v in vehicles:
-        veh = SubElement(root, "vehicle",
-                         id=v["id"], type=v["type"], depart=str(v["depart"]))
+        # Add routing_strategy as a vehicle attribute if present
+        veh_attrs = {
+            "id": v["id"], 
+            "type": v["type"], 
+            "depart": str(v["depart"])
+        }
+        if "routing_strategy" in v:
+            veh_attrs["routing_strategy"] = v["routing_strategy"]
+        
+        veh = SubElement(root, "vehicle", **veh_attrs)
         SubElement(veh, "route", edges=" ".join(v["route_edges"]))
 
     ElementTree(root).write(outfile, encoding="utf-8", xml_declaration=True)
