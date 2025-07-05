@@ -43,14 +43,16 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --start_time_hour 7.0 \
   --routing_strategy "shortest 70 realtime 30" \
   --vehicle_types "passenger 70 commercial 20 public 10" \
+  --traffic_light_strategy opposites \
   --gui
 
-# Commercial traffic scenario
+# Commercial traffic scenario with incoming strategy
 env PYTHONUNBUFFERED=1 python -m src.cli \
   --grid_dimension 7 \
   --num_vehicles 500 \
   --vehicle_types "passenger 40 commercial 55 public 5" \
   --routing_strategy "shortest 50 fastest 50" \
+  --traffic_light_strategy incoming \
   --gui
 
 # Public transport focused scenario
@@ -221,6 +223,12 @@ All generated files are placed in `data/` directory:
   - Default distribution: 60% passenger, 30% commercial, 10% public
   - Each type has distinct characteristics: length, maxSpeed, acceleration, deceleration, sigma
   - Seamless integration with routing strategies and temporal systems
+- **Traffic Light Strategies**:
+  - Two phasing strategies: opposites (default, opposing directions together) and incoming (each edge separate)
+  - CLI support via --traffic_light_strategy parameter
+  - Built on netgenerate's --tls.layout functionality for proven traffic signal logic
+  - Compatible with any lane configuration (1+ lanes) and Tree Method optimization
+  - Opposites strategy for efficient green time usage, incoming strategy for unbalanced traffic scenarios
 - **Advanced Features**:
   - Zone-based traffic demand calculation using land use types and attractiveness values
   - Spatial analysis for edge-zone adjacency detection

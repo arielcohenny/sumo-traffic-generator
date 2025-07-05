@@ -33,6 +33,7 @@ def verify_generate_grid_network(
     block_size_m: int,
     junctions_to_remove_input: str,
     lane_count_arg: str,
+    traffic_light_strategy: str = "opposites",
 ) -> None:
     """Validate grid network generation with junction removal.
     

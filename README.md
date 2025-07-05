@@ -56,6 +56,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --start_time_hour <float>     # Real-world hour when simulation starts (0-24, default: 0.0 for midnight)
   --routing_strategy <str>      # Routing strategy with percentages (default: 'shortest 100')
   --vehicle_types <str>         # Vehicle types with percentages (default: 'passenger 60 commercial 30 public 10')
+  --traffic_light_strategy <str> # Traffic light phasing strategy: 'opposites' (default) or 'incoming'
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
 ```
 
@@ -144,6 +145,31 @@ The system supports 3 vehicle types with percentage-based mixing:
   - **Acceleration**: passenger (2.6 m/s²), commercial (1.8 m/s²), public (1.2 m/s²)
 - Vehicle types are assigned per-vehicle during route generation
 - Integration with routing strategies and temporal systems
+
+### Traffic Light Strategies
+
+The system supports two traffic light phasing strategies:
+
+- **`opposites`** (default): Opposing directions move together (North-South concurrent, then East-West concurrent)
+  - More efficient green time usage for balanced traffic
+  - Standard 2-phase operation: concurrent movements reduce conflicts
+  - Best for grid networks with similar traffic volumes in opposing directions
+
+- **`incoming`**: Each incoming edge gets its own phase sequence
+  - Each approach direction gets individual green time
+  - More phases but eliminates all conflicts between directions
+  - Better for unbalanced traffic or safety-critical intersections
+
+**Usage Examples:**
+```bash
+# Default opposites strategy (North-South together, then East-West together)
+--traffic_light_strategy opposites
+
+# Individual edge strategy (each direction separate)
+--traffic_light_strategy incoming
+```
+
+Both strategies work with any lane configuration and are compatible with the Tree Method optimization algorithm.
 
 Omit --seed to use a random value each run.
 

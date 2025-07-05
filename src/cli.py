@@ -118,6 +118,13 @@ def main():
         help="Vehicle types with percentages (e.g., 'passenger 70 commercial 20 public 10'). Default: 'passenger 60 commercial 30 public 10'"
     )
     parser.add_argument(
+        "--traffic_light_strategy",
+        type=str,
+        default="opposites",
+        choices=["opposites", "incoming"],
+        help="Traffic light phasing strategy: 'opposites' (default, opposing directions together) or 'incoming' (each edge gets own phase)"
+    )
+    parser.add_argument(
         "--gui",
         action="store_true",
         help="Launch SUMO in GUI mode (sumo-gui) instead of headless sumo"
@@ -138,7 +145,8 @@ def main():
             int(args.grid_dimension),
             int(args.block_size_m),
             args.junctions_to_remove,
-            args.lane_count
+            args.lane_count,
+            args.traffic_light_strategy
         )
         try:
             verify_generate_grid_network(
@@ -146,7 +154,8 @@ def main():
                 int(args.grid_dimension),
                 int(args.block_size_m),
                 args.junctions_to_remove,
-                args.lane_count
+                args.lane_count,
+                args.traffic_light_strategy
             )
         except ValidationError as ve:
             print(f"Failed generating network file: {ve}")

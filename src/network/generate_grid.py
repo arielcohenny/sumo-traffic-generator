@@ -14,7 +14,7 @@ from src.config import CONFIG
 # --- Function Definitions ---
 # Generate a full grid network using netgenerate
 
-def generate_full_grid_network(dimension, block_size_m, lane_count_arg):
+def generate_full_grid_network(dimension, block_size_m, lane_count_arg, traffic_light_strategy="opposites"):
     # Run netgenerate to create the grid network
     netgenerate_cmd = [
         "netgenerate", "--grid",
@@ -28,6 +28,8 @@ def generate_full_grid_network(dimension, block_size_m, lane_count_arg):
         # default.junctions.radius: takes care of the “Intersecting left turns…” warnings.
         # By default netgenerate uses a radius of 4m; raising it eliminates those conflicts
         f"--default.junctions.radius={CONFIG.DEFAULT_JUNCTION_RADIUS}",
+        # Always use opposites for netgenerate (incoming will be post-processed)
+        "--tls.layout=opposites",
         # aggregate-warnings: aggregates warnings of the same type whenever more than 1 occur
         # warnings can be removed completely by using --no-warnings=true
         # "--aggregate-warnings=1",
@@ -251,14 +253,94 @@ def parse_junctions_to_remove(junctions_input: str) -> tuple[bool, list[str], in
         return True, junction_ids, len(junction_ids)
 
 
-def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_input, lane_count_arg):
+def convert_to_incoming_strategy():
+    """Convert traffic light layout from opposites to incoming strategy"""
+    import xml.etree.ElementTree as ET
+    from pathlib import Path
+    
+    # Parse the TLS definition file
+    tree = ET.parse(Path(str(CONFIG.network_tll_file)))
+    root = tree.getroot()
+    
+    # For each traffic light logic
+    for tl in root.findall("tlLogic"):
+        tl_id = tl.get("id")
+        
+        # Get all connections for this traffic light, sorted by linkIndex
+        connections = [c for c in root.findall("connection") if c.get("tl") == tl_id]
+        if not connections:
+            continue
+            
+        # Sort connections by linkIndex to ensure correct ordering
+        connections.sort(key=lambda c: int(c.get("linkIndex")))
+        total_links = len(connections)
+        
+        # Group connections by incoming edge (from)
+        incoming_edges = {}
+        for conn in connections:
+            from_edge = conn.get("from")
+            link_idx = int(conn.get("linkIndex"))
+            if from_edge not in incoming_edges:
+                incoming_edges[from_edge] = []
+            incoming_edges[from_edge].append(link_idx)
+        
+        # Sort link indices for each incoming edge
+        for edge in incoming_edges:
+            incoming_edges[edge].sort()
+        
+        # Create new phases - one for each incoming edge
+        new_phases = []
+        seen_states = set()
+        
+        for edge, link_indices in incoming_edges.items():
+            # Create green phase for this incoming edge
+            state = ['r'] * total_links
+            for idx in link_indices:
+                if idx < total_links:  # Safety check
+                    state[idx] = 'G'
+            green_state = ''.join(state)
+            
+            # Create yellow phase for this incoming edge
+            state = ['r'] * total_links
+            for idx in link_indices:
+                if idx < total_links:  # Safety check
+                    state[idx] = 'y'
+            yellow_state = ''.join(state)
+            
+            # Add phases only if not already seen (avoid duplicates)
+            if green_state not in seen_states:
+                new_phases.append(("30", green_state))  # 30 second green
+                new_phases.append(("3", yellow_state))   # 3 second yellow
+                seen_states.add(green_state)
+                seen_states.add(yellow_state)
+        
+        # Remove old phases
+        for phase in list(tl.findall("phase")):
+            tl.remove(phase)
+        
+        # Add new phases
+        for duration, state in new_phases:
+            phase_elem = ET.SubElement(tl, "phase")
+            phase_elem.set("duration", duration)
+            phase_elem.set("state", state)
+    
+    # Write changes back to file
+    ET.indent(root)
+    tree.write(
+        Path(str(CONFIG.network_tll_file)),
+        encoding="UTF-8",
+        xml_declaration=True
+    )
+
+
+def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_input, lane_count_arg, traffic_light_strategy="opposites"):
     try:
         is_list, junction_ids, count = parse_junctions_to_remove(junctions_to_remove_input)
         
         if count > 0:
             # generate the full grid network first
             generate_full_grid_network(
-                dimension, block_size_m, lane_count_arg)
+                dimension, block_size_m, lane_count_arg, "opposites")
 
             if is_list:
                 # use the provided list of junction IDs
@@ -272,7 +354,11 @@ def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_inp
             wipe_crossing(junctions_to_remove)
         else:
             generate_full_grid_network(
-                dimension, block_size_m, lane_count_arg)
+                dimension, block_size_m, lane_count_arg, "opposites")
+        
+        # Post-process traffic lights for incoming strategy
+        if traffic_light_strategy == "incoming":
+            convert_to_incoming_strategy()
 
     except subprocess.CalledProcessError as e:
         raise Exception(f"Error during netgenerate execution:", e.stderr)
