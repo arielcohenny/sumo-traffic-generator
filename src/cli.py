@@ -88,6 +88,24 @@ def main():
         help="Total simulation duration in seconds."
     )
     parser.add_argument(
+        "--attractiveness",
+        type=str,
+        default="poisson",
+        choices=["poisson", "land_use", "gravity", "iac", "hybrid"],
+        help="Edge attractiveness method: 'poisson' (default), 'land_use', 'gravity', 'iac', or 'hybrid'."
+    )
+    parser.add_argument(
+        "--time_dependent",
+        action="store_true",
+        help="Apply 4-phase time-of-day variations to the selected attractiveness method"
+    )
+    parser.add_argument(
+        "--start_time_hour",
+        type=float,
+        default=0.0,
+        help="Real-world hour when simulation starts (0-24, default: 0.0 for midnight)"
+    )
+    parser.add_argument(
         "--gui",
         action="store_true",
         help="Launch SUMO in GUI mode (sumo-gui) instead of headless sumo"
@@ -126,7 +144,7 @@ def main():
         # --- Step 2: Insert Split Edges ---
         insert_split_edges()
         try:
-            verify_insert_split_edges()
+            verify_insert_split_edges(int(args.block_size_m))
         except ValidationError as ve:
             print(f"Failed to insert split edges: {ve}")
             exit(1)
@@ -181,9 +199,9 @@ def main():
         print("Rebuilt the network successfully.")
 
         # --- Step 6: Assign Edge Attractiveness ---
-        assign_edge_attractiveness(seed)
+        assign_edge_attractiveness(seed, args.attractiveness, args.time_dependent, args.start_time_hour)
         try:
-            verify_assign_edge_attractiveness(seed)
+            verify_assign_edge_attractiveness(seed, args.attractiveness, args.time_dependent)
         except ValidationError as ve:
             print(f"Failed to assign edge attractiveness: {ve}")
             exit(1)
@@ -238,7 +256,9 @@ def main():
             sumo_cfg=sumo_cfg_path,
             step_length=args.step_length,
             end_time=args.end_time,
-            gui=args.gui
+            gui=args.gui,
+            time_dependent=args.time_dependent,
+            start_time_hour=args.start_time_hour
         )
         print("Initialized TraCI controller successfully.")
 

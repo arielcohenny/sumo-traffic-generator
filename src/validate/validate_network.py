@@ -140,15 +140,16 @@ def verify_generate_grid_network(
             raise ValidationError(f"Bounding box exceeds expected: max=({xmax}, {ymax}), expected≤{max_coord}")
     
     # 7 ── validate junction removal -------------------------------------------
-    if junctions_to_remove_input.strip():
+    if junctions_to_remove_input.strip() and junctions_to_remove_input.strip() != "0":
         # Parse junction removal input
         try:
             num_to_remove = int(junctions_to_remove_input)
-            # Random removal - we can't predict which specific junctions were removed
-            # Just verify that some junctions are missing from the full grid
-            expected_total = dimension * dimension
-            if len(grid_nodes) >= expected_total:
-                raise ValidationError(f"Expected junction removal but found {len(grid_nodes)} >= {expected_total}")
+            if num_to_remove > 0:
+                # Random removal - we can't predict which specific junctions were removed
+                # Just verify that some junctions are missing from the full grid
+                expected_total = dimension * dimension
+                if len(grid_nodes) >= expected_total:
+                    raise ValidationError(f"Expected junction removal but found {len(grid_nodes)} >= {expected_total}")
         except ValueError:
             # Specific junction IDs provided
             junctions_to_remove = [j.strip() for j in junctions_to_remove_input.split(",")]
@@ -268,7 +269,7 @@ def verify_generate_grid_network(
     return
 
 
-def verify_insert_split_edges() -> None:
+def verify_insert_split_edges(block_size_m: int) -> None:
     """Validate edge splitting results.
     
     This function validates the insert_split_edges function by checking:
@@ -478,7 +479,7 @@ def verify_insert_split_edges() -> None:
         
         # Body segment should be original_length - head_length
         # Original edges are block_size_m long, so body should be block_size_m - head_distance
-        expected_body_length = 150 - CONFIG.HEAD_DISTANCE  # 150m is original edge length
+        expected_body_length = block_size_m - CONFIG.HEAD_DISTANCE
         if abs(body_length - expected_body_length) > 1e-3:
             raise ValidationError(f"Body edge {body_id} has incorrect length: {body_length:.3f}m, expected {expected_body_length}m")
 
@@ -712,15 +713,24 @@ def _to_float(val):
 
 def verify_assign_edge_attractiveness(
     seed: int,
+    method: str = "poisson",
+    time_dependent: bool = False,
     tolerance: float = 0.5,  # ±50 % of λ is acceptable
 ) -> None:
     """Validate that attractiveness attributes exist and are plausible.
     
     This function validates the assign_edge_attractiveness function by checking:
     1. All edges have depart_attractiveness and arrive_attractiveness attributes
-    2. Values are non-negative integers from Poisson distribution
-    3. Sample means are within tolerance of expected lambda values
-    4. Values show proper variability (not constant)
+    2. Values are non-negative integers
+    3. For Poisson method: sample means are within tolerance of expected lambda values
+    4. Values show proper variability (not constant for most methods)
+    
+    Parameters
+    ----------
+    seed : random seed used for generation
+    method : attractiveness method used ('poisson', 'land_use', 'gravity', 'iac', 'hybrid')
+    time_dependent : whether time dependency was applied
+    tolerance : acceptable deviation from expected values for Poisson method
     """
     
     # Work with rebuilt network file since attractiveness is added to compiled network
@@ -778,23 +788,57 @@ def verify_assign_edge_attractiveness(
     depart_mean = statistics.mean(depart_attrs)
     arrive_mean = statistics.mean(arrive_attrs)
     
-    expected_depart = CONFIG.LAMBDA_DEPART
-    expected_arrive = CONFIG.LAMBDA_ARRIVE
+    # Method-specific validation
+    if method == "poisson":
+        # For Poisson method, validate against expected lambda values
+        expected_depart = CONFIG.LAMBDA_DEPART
+        expected_arrive = CONFIG.LAMBDA_ARRIVE
+        
+        # Adjust expectations for time dependency
+        if time_dependent:
+            # Use broader tolerance for time-dependent methods as they modify base values
+            tolerance = tolerance * 1.5
+        
+        # Check means are within tolerance
+        if abs(depart_mean - expected_depart) > tolerance * expected_depart:
+            raise ValidationError(
+                f"Depart attractiveness mean {depart_mean:.2f} outside tolerance of {expected_depart:.2f} for {method} method")
+        
+        if abs(arrive_mean - expected_arrive) > tolerance * expected_arrive:
+            raise ValidationError(
+                f"Arrive attractiveness mean {arrive_mean:.2f} outside tolerance of {expected_arrive:.2f} for {method} method")
     
-    # Check means are within tolerance
-    if abs(depart_mean - expected_depart) > tolerance * expected_depart:
-        raise ValidationError(
-            f"Depart attractiveness mean {depart_mean:.2f} outside tolerance of {expected_depart:.2f}")
+    else:
+        # For other methods, just validate reasonableness
+        # Values should be positive and not too extreme
+        if depart_mean < 0.5 or depart_mean > 20:
+            raise ValidationError(f"Depart attractiveness mean {depart_mean:.2f} seems unreasonable for {method} method")
+        
+        if arrive_mean < 0.5 or arrive_mean > 20:
+            raise ValidationError(f"Arrive attractiveness mean {arrive_mean:.2f} seems unreasonable for {method} method")
     
-    if abs(arrive_mean - expected_arrive) > tolerance * expected_arrive:
-        raise ValidationError(
-            f"Arrive attractiveness mean {arrive_mean:.2f} outside tolerance of {expected_arrive:.2f}")
+    # Check variability (allow some methods to have less variability)
+    if method not in ["land_use"] and len(set(depart_attrs)) < 2:
+        raise ValidationError(f"Depart attractiveness values lack variability for {method} method")
+    if method not in ["land_use"] and len(set(arrive_attrs)) < 2:
+        raise ValidationError(f"Arrive attractiveness values lack variability for {method} method")
     
-    # Check variability
-    if len(set(depart_attrs)) < 2:
-        raise ValidationError("Depart attractiveness values lack variability")
-    if len(set(arrive_attrs)) < 2:
-        raise ValidationError("Arrive attractiveness values lack variability")
+    # Additional validation for specific methods
+    if method == "land_use":
+        # For land use method, values should show some correlation with zone types
+        # This is a basic check - in reality we'd validate against actual zone data
+        if len(set(depart_attrs)) < max(2, len(depart_attrs) // 10):
+            raise ValidationError("Land use method should produce more varied attractiveness values")
+    
+    elif method in ["gravity", "iac", "hybrid"]:
+        # These methods should produce varied results due to spatial factors
+        depart_std = statistics.stdev(depart_attrs) if len(depart_attrs) > 1 else 0
+        arrive_std = statistics.stdev(arrive_attrs) if len(arrive_attrs) > 1 else 0
+        
+        if depart_std < 0.5:
+            raise ValidationError(f"{method} method should produce more spatial variation in depart attractiveness")
+        if arrive_std < 0.5:
+            raise ValidationError(f"{method} method should produce more spatial variation in arrive attractiveness")
 
     return
 

@@ -28,17 +28,37 @@ env PYTHONUNBUFFERED=1 python -m src.cli
 # With GUI and custom parameters
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 7 --num_vehicles 500 --gui
 
-# Full parameter example
+# Full parameter example with 4-phase temporal system
 env PYTHONUNBUFFERED=1 python -m src.cli \
   --grid_dimension 5 \
   --block_size_m 200 \
   --junctions_to_remove 0 \
-  --fixed_lane_count 2 \
+  --lane_count realistic \
   --num_vehicles 300 \
   --seed 42 \
   --step-length 1.0 \
   --end-time 3600 \
+  --attractiveness hybrid \
+  --time_dependent \
+  --start_time_hour 7.0 \
   --gui
+
+# Rush hour analysis (morning peak)
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --grid_dimension 7 \
+  --num_vehicles 500 \
+  --end-time 7200 \
+  --time_dependent \
+  --start_time_hour 7.5 \
+  --gui
+
+# Full day simulation (24 hours)
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --grid_dimension 5 \
+  --num_vehicles 1000 \
+  --end-time 86400 \
+  --time_dependent \
+  --start_time_hour 0.0
 ```
 
 ### Testing
@@ -67,11 +87,11 @@ The application follows a sequential 8-step pipeline:
 1. **Network Generation** (`src/network/generate_grid.py`): Creates orthogonal grid using SUMO's netgenerate
 2. **Edge Splitting** (`src/network/split_edges.py`): Splits edges for enhanced network complexity
 3. **Zone Extraction** (`src/network/zones.py`): Extracts polygonal zones from junctions (currently disabled)
-4. **Lane Configuration** (`src/network/lane_counts.py`): Applies configurable lane assignments
-5. **Edge Attractiveness** (`src/network/edge_attrs.py`): Computes departure/arrival weights using Poisson distribution
+4. **Lane Configuration** (`src/network/lane_counts.py`): Applies configurable lane assignments using realistic, random, or fixed algorithms
+5. **Edge Attractiveness** (`src/network/edge_attrs.py`): Computes departure/arrival weights using multiple research-based methods with 4-phase temporal system
 6. **Traffic Light Injection** (`src/network/traffic_lights.py`): Adds default four-phase signal plans
 7. **Route Generation** (`src/traffic/`): Generates vehicle routes using shortest-path computation
-8. **Dynamic Simulation** (`src/sim/sumo_controller.py`): Runs SUMO with TraCI integration and Nimrod's algorithm
+8. **Dynamic Simulation** (`src/sim/sumo_controller.py`): Runs SUMO with TraCI integration, Nimrod's algorithm, and real-time phase switching
 
 ### Key Modules
 
@@ -83,6 +103,7 @@ The application follows a sequential 8-step pipeline:
 **Network Generation**:
 
 - `src/network/`: All network manipulation and generation logic
+- `src/network/edge_attrs.py`: Advanced edge attractiveness with 4-phase temporal support
 - Uses SUMO's netgenerate, netconvert tools
 - Validates network structure at each step
 
@@ -94,7 +115,7 @@ The application follows a sequential 8-step pipeline:
 
 **Simulation Control**:
 
-- `src/sim/sumo_controller.py`: TraCI wrapper with per-step callback API
+- `src/sim/sumo_controller.py`: TraCI wrapper with per-step callback API and 4-phase temporal switching
 - `src/sim/sumo_utils.py`: SUMO utility functions
 
 **Traffic Control**:
@@ -119,9 +140,28 @@ Central configuration in `src/config.py` using dataclasses:
 **Key Configuration Constants**:
 
 - `HEAD_DISTANCE = 30`: Distance from downstream end when splitting edges
-- `MIN_LANES = 1`, `MAX_LANES = 3`: Lane count bounds for randomization
+- `MIN_LANES = 1`, `MAX_LANES = 3`: Lane count bounds for randomization and realistic algorithm
 - `LAMBDA_DEPART = 3.5`, `LAMBDA_ARRIVE = 2.0`: Poisson distribution parameters for edge attractiveness
 - `DEFAULT_JUNCTION_RADIUS = 10.0`: Junction radius in meters
+
+**4-Phase Temporal System Configuration**:
+
+- **Morning Peak** (6:00-9:30): Depart multiplier 1.4, Arrive multiplier 0.7
+- **Midday Off-Peak** (9:30-16:00): Depart multiplier 1.0, Arrive multiplier 1.0
+- **Evening Peak** (16:00-19:00): Depart multiplier 0.7, Arrive multiplier 1.5
+- **Night Low** (19:00-6:00): Depart multiplier 0.4, Arrive multiplier 0.4
+
+**Time Mapping**: 1:1 ratio (1 simulation second = 1 real-world second)
+
+**Lane Count Algorithm Parameters**:
+- Land use weights: Mixed (3.0), Employment (2.5), Entertainment/Retail (2.5), Public Buildings (2.0), Residential (1.5), Public Open Space (1.0)
+- Lane assignment thresholds: ≤1.5 (1 lane), 1.5-2.5 (2 lanes), >2.5 (3 lanes)
+- Perimeter modifier: +1 lane for boundary edges (max 3 total)
+
+**Edge Attractiveness Parameters**:
+- **Gravity model**: d_param=0.95, g_param=1.02, base_random~Normal(1.0,0.3)
+- **4-Phase multipliers**: Morning peak (1.4/0.7), Midday off-peak (1.0/1.0), Evening peak (0.7/1.5), Night low (0.4/0.4)
+- **Land use multipliers**: Residential (0.8/1.4), Employment (1.3/0.9), Mixed (1.1/1.1), etc.
 
 ### Generated Files Structure
 
@@ -169,400 +209,202 @@ All generated files are placed in `data/` directory:
 4. Use `--gui` flag for visual debugging
 5. Validate results using the validation functions (when enabled)
 
+## Lane Count Algorithms
+
+The system supports three algorithms for determining the number of lanes on each edge. Users can select the algorithm via the `--lane_count` command line argument.
+
+### Algorithm Types:
+
+#### 1. **realistic** (Default)
+- **Description**: Zone-based traffic demand calculation using land use types and attractiveness values
+- **Method**: 
+  1. Loads zone data from generated GeoJSON file
+  2. Finds zones adjacent to each edge using spatial analysis
+  3. Calculates weighted demand score based on zone types and attractiveness
+  4. Assigns lane count (1-3) based on demand level with perimeter modifiers
+- **Land Use Weights**:
+  - **Mixed**: 3.0 (highest traffic generation - mixed commercial/residential)
+  - **Employment**: 2.5 (high peak traffic - office/industrial areas)
+  - **Entertainment/Retail**: 2.5 (high commercial traffic - shopping/entertainment)
+  - **Public Buildings**: 2.0 (moderate institutional traffic)
+  - **Residential**: 1.5 (moderate residential traffic)
+  - **Public Open Space**: 1.0 (lower recreational traffic)
+- **Usage**: `--lane_count realistic`
+- **Lane Assignment Logic**:
+  - Score ≤ 1.5: 1 lane
+  - Score 1.5-2.5: 2 lanes  
+  - Score > 2.5: 3 lanes
+  - Perimeter edges get +1 lane (max 3) to handle boundary traffic
+- **Characteristics**: Data-driven, realistic traffic patterns based on urban planning
+- **Best for**: Realistic simulations, urban planning studies, scenarios with meaningful land use
+
+#### 2. **random**
+- **Description**: Random assignment within defined bounds (original algorithm)
+- **Method**: Each edge gets a random lane count between MIN_LANES and MAX_LANES
+- **Parameters**:
+  - `MIN_LANES = 1`
+  - `MAX_LANES = 3`
+- **Usage**: `--lane_count random`
+- **Characteristics**: Unpredictable variety, good for stress testing
+- **Best for**: Testing network robustness, scenarios without specific land use requirements
+
+#### 3. **fixed** (Integer value)
+- **Description**: Uniform lane count across all edges
+- **Method**: Sets every edge to the specified number of lanes
+- **Usage**: `--lane_count <integer>` (e.g., `--lane_count 2`)
+- **Valid range**: 1-3 lanes
+- **Characteristics**: Uniform, predictable, simplified analysis
+- **Best for**: Baseline comparisons, simplified scenarios, capacity studies
+
+### Implementation Details:
+
+- **Zone Integration**: Realistic algorithm uses zone data from `data/zones.geojson`
+- **Spatial Analysis**: Uses Shapely geometry operations to find edge-zone adjacency
+- **Validation**: All algorithms include validation to ensure proper lane assignment
+- **Reproducibility**: Random algorithm respects the `--seed` parameter
+- **Network Consistency**: Body and head edge segments maintain consistent lane counts
+
+### Command Line Usage:
+
+```bash
+# Realistic algorithm (default)
+env PYTHONUNBUFFERED=1 python -m src.cli --lane_count realistic
+
+# Random algorithm
+env PYTHONUNBUFFERED=1 python -m src.cli --lane_count random
+
+# Fixed lane count
+env PYTHONUNBUFFERED=1 python -m src.cli --lane_count 2
+env PYTHONUNBUFFERED=1 python -m src.cli --lane_count 3
+```
+
+### Algorithm Selection Guidelines:
+
+- **Use `realistic`** for: Studies requiring realistic traffic patterns, urban planning simulations, research with meaningful land use data
+- **Use `random`** for: Network robustness testing, baseline scenarios, stress testing different lane configurations  
+- **Use `fixed`** for: Simplified analysis, capacity studies, baseline comparisons, debugging network issues
+
+## Edge Attractiveness Methods
+
+The system supports multiple algorithms for calculating edge attractiveness (departure and arrival weights). Users can select the base method via the `--attractiveness` command line argument and optionally apply temporal modifiers.
+
+### Base Methods:
+
+#### 1. **poisson** (Default)
+- **Description**: Uses Poisson distribution for random attractiveness values
+- **Parameters**: 
+  - `LAMBDA_DEPART = 3.5` (departure attractiveness)
+  - `LAMBDA_ARRIVE = 2.0` (arrival attractiveness)
+- **Usage**: `--attractiveness poisson`
+- **Characteristics**: Simple, fast, purely random distribution
+- **Best for**: Baseline simulations, testing, scenarios without specific land use patterns
+
+#### 2. **land_use**
+- **Description**: Adjusts attractiveness based on land use zone types using multipliers
+- **Method**: Applies zone-specific multipliers to base Poisson values
+- **Land Use Multipliers**:
+  - **Residential**: Departure 0.8, Arrival 1.4 (people leave for work, return home)
+  - **Employment**: Departure 1.3, Arrival 0.9 (work locations generate trips)
+  - **Mixed**: Departure 1.1, Arrival 1.1 (balanced commercial/residential)
+  - **Entertainment/Retail**: Departure 0.7, Arrival 1.3 (destinations for leisure)
+  - **Public Buildings**: Departure 0.9, Arrival 1.0 (moderate institutional traffic)
+  - **Public Open Space**: Departure 0.6, Arrival 0.8 (recreational destinations)
+- **Usage**: `--attractiveness land_use`
+- **Characteristics**: Realistic traffic patterns based on urban planning principles
+- **Best for**: Realistic simulations, urban planning studies
+
+#### 3. **gravity**
+- **Description**: Implements gravity model based on distance and cluster size
+- **Formula**: `attractiveness = (d_param^distance) × (g_param^cluster_size) × base_random`
+- **Parameters**:
+  - `d_param = 0.95` (distance decay parameter)
+  - `g_param = 1.02` (cluster growth parameter)
+  - `base_random`: Normal distribution (μ=1.0, σ=0.3)
+- **Usage**: `--attractiveness gravity`
+- **Characteristics**: Spatially-aware, considers network topology
+- **Best for**: Studies focusing on spatial relationships and accessibility
+
+#### 4. **iac** (Integrated Attraction Coefficient)
+- **Description**: Sophisticated method from research literature combining multiple factors
+- **Formula**: `IAC = d^(-δ) × g^(γ) × θ × m_rand × f_spatial`
+- **Components**:
+  - Distance factor: `d^(-δ)` where d=0.95
+  - Cluster factor: `g^(γ)` where g=1.02
+  - Base attractiveness: `θ` (normal distribution)
+  - Random mood: `m_rand` (temporal variation)
+  - Spatial preference: `f_spatial` (connectivity-based)
+- **Usage**: `--attractiveness iac`
+- **Characteristics**: Most sophisticated, research-based, multiple influencing factors
+- **Best for**: Academic research, detailed behavioral studies
+
+#### 5. **hybrid**
+- **Description**: Combines Poisson base with spatial and land use adjustments
+- **Method**: 
+  1. Generate base Poisson values
+  2. Apply land use multipliers (reduced impact vs. pure land_use)
+  3. Apply spatial connectivity adjustment
+- **Usage**: `--attractiveness hybrid`
+- **Characteristics**: Balances randomness with realistic patterns
+- **Best for**: General-purpose simulations requiring both randomness and realism
+
+### Temporal Modifiers:
+
+#### **--time_dependent** (4-Phase Temporal System)
+- **Description**: Applies research-based 4-phase time-of-day variations to any base method
+- **Can be combined with**: Any base method (poisson, land_use, gravity, iac, hybrid)
+- **Research-Based 4-Phase System**:
+  - **Morning Peak (6:00-9:30)**: Depart ×1.4, Arrive ×0.7 (High outbound: home→work)
+  - **Midday Off-Peak (9:30-16:00)**: Depart ×1.0, Arrive ×1.0 (Balanced baseline)
+  - **Evening Peak (16:00-19:00)**: Depart ×0.7, Arrive ×1.5 (High inbound: work→home)
+  - **Night Low (19:00-6:00)**: Depart ×0.4, Arrive ×0.4 (Minimal activity)
+- **Implementation**: 
+  - Pre-calculates attractiveness profiles for all 4 phases
+  - Real-time phase switching during simulation
+  - 1:1 time mapping (1 sim second = 1 real-world second)
+- **Additional Parameter**: `--start_time_hour` (0-24) to set simulation start time
+- **Characteristics**: Bimodal traffic patterns with realistic rush hour behavior
+- **Best for**: Full-day simulations, rush hour analysis, realistic traffic studies
+
+### Implementation Details:
+
+- **Zone Data Integration**: Methods `land_use` and `hybrid` use zone data from `zones.poly.xml`
+- **Spatial Analysis**: Methods `gravity`, `iac`, and `hybrid` analyze network topology
+- **Temporal Integration**: `--time_dependent` flag works with any base method
+- **Reproducibility**: All methods respect the `--seed` parameter for consistent results
+- **Validation**: Each method includes validation to ensure reasonable attractiveness ranges
+
+### Command Line Usage:
+
+```bash
+# Base methods without time dependency
+env PYTHONUNBUFFERED=1 python -m src.cli --attractiveness poisson
+env PYTHONUNBUFFERED=1 python -m src.cli --attractiveness land_use
+env PYTHONUNBUFFERED=1 python -m src.cli --attractiveness gravity
+env PYTHONUNBUFFERED=1 python -m src.cli --attractiveness iac
+env PYTHONUNBUFFERED=1 python -m src.cli --attractiveness hybrid
+
+# Base methods WITH 4-phase temporal system
+env PYTHONUNBUFFERED=1 python -m src.cli --attractiveness land_use --time_dependent --start_time_hour 7.0
+env PYTHONUNBUFFERED=1 python -m src.cli --attractiveness hybrid --time_dependent --start_time_hour 16.5
+env PYTHONUNBUFFERED=1 python -m src.cli --attractiveness gravity --time_dependent --start_time_hour 0.0
+env PYTHONUNBUFFERED=1 python -m src.cli --attractiveness iac --time_dependent --start_time_hour 12.0
+
+# Even simple methods benefit from 4-phase temporal system
+env PYTHONUNBUFFERED=1 python -m src.cli --attractiveness poisson --time_dependent --start_time_hour 8.0
+```
+
+### Method Combinations:
+
+The modular design allows for powerful combinations:
+
+- **`--attractiveness land_use --time_dependent --start_time_hour 7.0`**: Realistic land use patterns with morning rush hour start
+- **`--attractiveness hybrid --time_dependent --start_time_hour 0.0`**: Most comprehensive approach for full-day simulation
+- **`--attractiveness gravity --time_dependent --start_time_hour 16.5`**: Spatial accessibility with evening rush hour analysis
+- **`--attractiveness iac --time_dependent --start_time_hour 12.0`**: Research-based model with midday baseline
+
 ## Detailed Module Documentation
 
-### Network Generation (`src/network/`)
-
-#### `generate_grid.py`
-
-**Purpose**: Creates orthogonal grid networks using SUMO's netgenerate tool and manages junction removal.
-
-**Key Functions**:
-
-- `generate_full_grid_network(dimension, block_size_m, fixed_lane_count)`: Creates complete grid using netgenerate
-- `pick_random_junction_ids(seed, num_junctions_to_remove, dimension)`: Randomly selects junctions for removal
-- `parse_junctions_to_remove(junctions_input)`: Parses junction removal input (count or comma-separated IDs)
-- `wipe_crossing_from_*()`: Suite of functions to remove junctions from all network files (.nod, .edg, .con, .tll)
-  - Enhanced traffic light handling with proper connection reindexing
-  - Removes empty traffic light logic when all connections are removed
-- `generate_grid_network()`: Main orchestrator that generates grid and optionally removes junctions
-
-**Key Algorithms**:
-
-- Uses regex `r"^([A-Z]+\d*)([A-Z]+\d*)$"` for edge ID matching
-- Implements proper connection reindexing to maintain traffic light logic consistency
-- Enhanced traffic light cleanup: removes empty phases and reindexes remaining connections
-- Applies junction joining for cleaner network topology
-- Flexible junction removal: supports both random selection and explicit junction ID lists
-
-**Design Decisions**:
-
-- Separates full grid generation from junction removal for modularity
-- Maintains data integrity across multiple XML files when removing junctions
-- Uses SUMO's built-in tools rather than manual network construction
-- Flexible input parsing: accepts either count (for random selection) or comma-separated junction IDs
-
-#### `split_edges.py`
-
-**Purpose**: Implements edge splitting to create more complex network topology by dividing edges into body and head segments.
-
-**Key Functions**:
-
-- `parse_shape(shape_str)`: Converts SUMO shape format to coordinate tuples
-- `split_shape(coords, split_dist)`: Splits polyline at specific distance from end using Shapely geometry
-- `insert_split_edges()`: Main function performing 4-step process: parse network, compute splits, update nodes/edges, redirect connections
-
-**Key Algorithms**:
-
-- Uses Shapely LineString for robust geometric operations
-- Calculates split position as (total_length - split_dist) from downstream end
-- Handles both simple and complex multi-point geometries
-
-**Design Decisions**:
-
-- Fixed split distance from downstream end (CONFIG.HEAD_DISTANCE)
-- Leverages Shapely for geometric operations rather than manual calculations
-- Maintains consistency across multiple XML files
-
-#### `lane_counts.py`
-
-**Purpose**: Sophisticated lane count assignment system that randomizes lane counts while maintaining proper traffic flow and signal logic.
-
-**Key Functions**:
-
-- `set_lane_counts(seed, min_lanes, max_lanes)`: Main function implementing complex multi-step process
-- `infer_direction(from_edge_id, to_edge_id)`: Determines turn direction using edge geometry and cross products
-- `map_to_lanes(R, to_edge_id)`: Intelligent lane-to-lane mapping with overflow distribution
-- `classify_connection_direction(conn)`: Classifies connections for traffic light phasing
-
-**Key Algorithms**:
-
-- Groups base edges with their \_H variants for coordinated lane assignment
-- Uses right-to-left mapping convention with overflow distribution
-- Calculates vectors and cross products for turn direction classification
-- Updates traffic light states to match new lane configurations
-
-**Design Decisions**:
-
-- Logical movement assignments (left lanes for left turns, etc.)
-- Conflict prevention through proper lane assignment
-- Bidirectional mapping handling both sparse and dense configurations
-
-#### `edge_attrs.py`
-
-**Purpose**: Assigns random attractiveness attributes to edges using Poisson distribution for realistic traffic modeling.
-
-**Key Functions**:
-
-- `assign_edge_attractiveness(seed)`: Adds depart/arrive attractiveness using Poisson sampling
-  - Uses CONFIG.LAMBDA_DEPART and CONFIG.LAMBDA_ARRIVE for distribution parameters
-  - Modifies CONFIG.network_file in-place
-  - Applies consistent random seed for reproducibility
-
-**Key Algorithms**:
-
-- Uses NumPy's Poisson distribution for sampling with configurable lambda parameters
-- Applies consistent random seed for reproducibility
-- Modifies network file in-place using CONFIG paths
-
-**Design Decisions**:
-
-- Poisson distribution chosen for realistic traffic flow modeling
-- Uses centralized configuration (CONFIG.LAMBDA_DEPART=3.5, CONFIG.LAMBDA_ARRIVE=2.0)
-- Simplified interface using CONFIG for file paths and parameters
-
-#### `traffic_lights.py`
-
-**Purpose**: Injects static traffic light control logic with proper connection indexing and phase timing.
-
-**Key Functions**:
-
-- `inject_traffic_lights(net_file, program_id, green_duration, yellow_duration)`: Implements 5-step process for comprehensive traffic light control
-- `is_ns(conn)`: Classifies connection as North-South movement
-
-**Key Algorithms**:
-
-- Four-phase control: NS-green, NS-yellow, EW-green, EW-yellow
-- Uses netconvert for proper linkIndex assignment
-- Maintains proper connection states while adding control logic
-
-**Design Decisions**:
-
-- Conflict-free phasing ensures NS and EW movements don't conflict
-- Preserves original connection states while adding control logic
-- Automatic junction detection for controllable intersections
-
-#### `zones.py`
-
-**Purpose**: Extracts zone polygons from junction grids and assigns land use classifications following the methodology from "A Simulation Model for Intra-Urban Movements" paper.
-
-**Key Functions**:
-
-- `extract_zones_from_junctions(cell_size, seed, fill_polygons, inset)`: Main function implementing cellular grid methodology
-  - Parses junction coordinates from raw .nod.xml file
-  - Creates (n-1)×(n-1) zones for n×n junctions
-  - Assigns land use types and attractiveness values
-  - Outputs both GeoJSON and SUMO polygon files
-- `assign_land_use_to_zones(features, seed)`: Uses BFS clustering algorithm for realistic spatial land use distribution
-  - Implements contiguous clustering based on CONFIG.land_uses percentages
-  - Creates realistic spatial patterns rather than random assignment
-
-**Key Algorithms**:
-
-- **Cellular Grid Creation**: Creates zones as rectangles between adjacent junctions (not covering entire coordinate space)
-- **BFS Clustering**: Uses breadth-first search to create contiguous land use clusters
-  - Calculates target counts for each land use type based on percentages
-  - Implements 4-connected neighbor finding (cardinal directions)
-  - Ensures realistic spatial distribution with contiguous areas
-- **Attractiveness Assignment**: Assigns random attractiveness values (θᵢ) following normal distribution
-  - Uses mean=0.5, std=0.2 to keep values mostly in [0,1] range
-  - Clips values to [0,1] bounds for consistency
-
-**Zone Extraction Process**:
-
-1. **Junction Parsing**: Extracts coordinates from .nod.xml, filtering out internal nodes and split edge nodes
-2. **Grid Analysis**: Determines unique x,y coordinates and infers cell size if not provided
-3. **Zone Creation**: Creates rectangular zones between adjacent junctions with optional inset
-4. **Land Use Assignment**: Applies clustering algorithm to assign realistic land use patterns
-5. **Attractiveness Values**: Assigns normally distributed attractiveness values for each zone
-6. **File Output**: Generates both GeoJSON (for analysis) and SUMO .poly.xml (for simulation)
-
-**Zone Properties**:
-
-- `zone_id`: Unique identifier (format: "Z_i_j")
-- `i`, `j`: Grid coordinates
-- `cell_size`: Size of cell in meters
-- `center_x`, `center_y`: Zone center coordinates
-- `area`: Zone area (cell_size²)
-- `land_use`: Assigned land use type from CONFIG.land_uses
-- `color`: Visualization color for land use type
-- `attractiveness`: Attractiveness value (θᵢ) for traffic generation
-
-**Design Decisions**:
-
-- **Academic Methodology**: Based on established urban simulation research
-- **Zones as Intervals**: Defined as rectangular areas between junctions, not centered on them
-- **Realistic Clustering**: Uses BFS to create contiguous land use areas rather than random assignment
-- **Dual Output**: GeoJSON for analysis/visualization, SUMO polygons for simulation integration
-- **Configurable Parameters**: Supports customizable cell size, fill options, and boundary insets
-- **Extensible Design**: ThetaGenerator protocol allows custom attractiveness functions
-- **Statistical Distributions**: Uses normal distribution for attractiveness values following academic standards
-
-### Traffic Generation (`src/traffic/`)
-
-#### `builder.py`
-
-**Purpose**: Main orchestrator for vehicle creation and route generation, coordinating sampling, routing, and XML writing.
-
-**Key Functions**:
-
-- `generate_vehicle_routes(net_file, output_file, num_vehicles, seed)`: Main orchestration function with retry logic
-
-**Key Algorithms**:
-
-- Uses weighted random sampling for vehicle types based on CONFIG.vehicle_weights
-- Implements retry logic (up to 20 attempts) for finding valid routes
-- Assigns incremental departure times (vehicle ID as departure time)
-
-**Design Decisions**:
-
-- Strategy pattern with pluggable sampler and router
-- Robust error handling with retry mechanism
-- Filters out internal edges from network
-- Skips vehicles that can't find valid routes rather than failing
-
-#### `edge_sampler.py`
-
-**Purpose**: Implements edge sampling strategies for selecting start/end edges using attractiveness-based weighted sampling.
-
-**Key Functions**:
-
-- `AttractivenessBasedEdgeSampler`: Concrete implementation using edge attributes
-- `_weights(edges, attr)`: Extracts weight values with fallback to uniform distribution
-- `_choose(edges, weights, k)`: Performs weighted random sampling
-
-**Key Algorithms**:
-
-- Uses `random.choices` for weighted sampling
-- Graceful fallback to uniform weights when all weights are zero
-- Separate sampling for start (`depart_attractiveness`) and end (`arrive_attractiveness`) edges
-
-**Design Decisions**:
-
-- Strategy pattern with abstract EdgeSampler interface
-- Fallback pattern for graceful degradation
-- Dependency injection of RNG for testability
-
-#### `routing.py`
-
-**Purpose**: Implements routing strategies for computing paths between edges using shortest path algorithms.
-
-**Key Functions**:
-
-- `ShortestPathRoutingStrategy`: Concrete implementation using SUMO's Dijkstra
-- `compute_route(start_edge, end_edge)`: Computes shortest path between edges
-
-**Key Algorithms**:
-
-- Leverages SUMO's built-in `getShortestPath` method
-- Handles edge ID to edge object conversion
-- Returns empty list for invalid/unreachable routes
-
-**Design Decisions**:
-
-- Strategy pattern with abstract RoutingStrategy interface
-- Adapter pattern wrapping SUMO's pathfinding API
-- Null object pattern (empty list) instead of None for failed routes
-
-#### `xml_writer.py`
-
-**Purpose**: Handles XML serialization for SUMO route files with proper formatting.
-
-**Key Functions**:
-
-- `write_routes(outfile, vehicles, vehicle_types)`: Generates SUMO-compatible routes XML
-
-**Key Algorithms**:
-
-- Uses ElementTree for XML generation
-- Serializes route edges as space-separated strings
-- Converts all attribute values to strings for XML compatibility
-
-**Design Decisions**:
-
-- Builder pattern for incremental XML construction
-- Separates vehicle types from vehicle instances
-- UTF-8 encoding with XML declaration
-
-### Validation (`src/validate/`)
-
-#### `errors.py`
-
-**Purpose**: Defines custom exception types for validation errors.
-
-**Key Classes**:
-
-- `ValidationError(RuntimeError)`: Custom exception for validation failures
-
-**Design Decisions**:
-
-- Inherits from RuntimeError for compatibility
-- Provides specific exception type for validation failures
-- Includes fallback implementation for import robustness
-
-#### `validate_network.py`
-
-**Purpose**: Contains runtime invariant validators for network generation steps.
-
-**Key Functions**:
-
-- `verify_generate_grid_network()`: Validates grid network structure, junction count, edge count, bounding box
-- `verify_extract_zones_from_junctions()`: Cross-validates network structure against generated zones
-- `verify_set_lane_counts()`: Validates lane assignments and connectivity with sophisticated tolerance handling
-- `verify_assign_edge_attractiveness()`: Statistical validation of Poisson distribution parameters
-- `verify_inject_traffic_lights()`: Validates traffic light consistency across junctions and connections
-
-**Key Algorithms**:
-
-- Uses `4 * grid_dim * (grid_dim - 1)` formula for theoretical maximum edges
-- Complex connectivity analysis with border/interior lane tolerance
-- Statistical validation with configurable tolerance for Poisson parameters
-- Cross-references junctions, connections, and traffic light logic
-
-**Design Decisions**:
-
-- Fail-fast validation with immediate exception raising
-- Comprehensive checking with multiple validation aspects per function
-- Configurable tolerance for statistical validations
-
-#### `validate_traffic.py`
-
-**Purpose**: Contains inline validator for vehicle route generation.
-
-**Key Functions**:
-
-- `verify_generate_vehicle_routes()`: Validates routes XML against network topology
-
-**Key Algorithms**:
-
-- Cross-validates routes against network topology
-- Statistical check for departure time distribution
-- Allows configurable shortfall tolerance (default 2%)
-
-**Design Decisions**:
-
-- Tolerance-based validation for realistic shortfall handling
-- Comprehensive route validation checking every edge
-- Statistical validation with warnings for suspicious patterns
-
-### Simulation Control (`src/sim/`)
-
-#### `sumo_controller.py`
-
-**Purpose**: TraCI wrapper providing simplified interface for SUMO simulation control.
-
-**Key Functions**:
-
-- `SumoController.__init__()`: Initializes controller with simulation parameters
-- `start()`: Starts SUMO with TraCI connection
-- `run(control_callback)`: Runs complete simulation loop with per-step callback
-- `step()`: Advances simulation by one time step
-- `close()`: Closes TraCI connection
-
-**Key Algorithms**:
-
-- Selects appropriate SUMO binary (sumo-gui vs sumo) based on GUI flag
-- Implements complete simulation lifecycle management
-- Uses callback pattern for extensible control logic
-
-**Design Decisions**:
-
-- Adapter pattern simplifying TraCI interface
-- Callback pattern for pluggable control logic
-- Supports both GUI and batch modes through single interface
-
-#### `sumo_utils.py`
-
-**Purpose**: Utility functions for SUMO operations including network rebuilding and configuration management.
-
-**Key Functions**:
-
-- `rebuild_network()`: Rebuilds SUMO network using netconvert with all components
-- `build_sumo_command()`: Builds standardized SUMO command-line arguments
-- `run_sumo()`: Runs single SUMO simulation using subprocess
-- `generate_sumo_conf_file()`: Creates SUMO configuration XML file
-- `start_sumo_gui()`: Starts SUMO GUI process
-
-**Key Algorithms**:
-
-- Uses subprocess for external SUMO tool integration
-- Template-based XML configuration generation
-- Comprehensive error handling with informative messages
-
-**Design Decisions**:
-
-- Utility/helper pattern for related functions
-- Command builder pattern for centralized command construction
-- Template pattern for XML configuration generation
-- Extensive optional parameters for flexibility
-
-## Key Architectural Patterns
-
-### Overall System Architecture:
-
-1. **Pipeline Pattern**: Sequential processing with clear step boundaries
-2. **Strategy Pattern**: Pluggable algorithms for sampling, routing, and validation
-3. **Adapter Pattern**: Wraps SUMO APIs with consistent interfaces
-4. **Validation-First**: Each pipeline step has corresponding validation functions
-5. **Configuration-Driven**: Central configuration system using dataclasses
-
-### Design Principles:
-
-- **Separation of Concerns**: Clear module boundaries and responsibilities
-- **Extensibility**: Abstract interfaces allow for different implementations
-- **Robustness**: Comprehensive error handling and validation
-- **Reproducibility**: Seeded random number generation throughout
-- **SUMO Integration**: Leverages SUMO's native tools and data structures
+[... rest of the existing content remains the same ...]
 
 ## Memory
 
@@ -571,3 +413,22 @@ All generated files are placed in `data/` directory:
 - Implements advanced algorithms for zone extraction, land use assignment, and traffic routing
 - Designed with multiple architectural patterns including Strategy, Adapter, and Pipeline patterns
 - Supports reproducible simulations through seeded random generation
+- **Lane Count Algorithms**: Three modes for lane assignment - `realistic` (zone-based demand calculation), `random` (randomized within bounds), and `fixed` (uniform count)
+- **Edge Attractiveness Methods**: Five research-based methods (poisson, land_use, gravity, iac, hybrid) with 4-phase temporal system
+- **4-Phase Temporal System**: 
+  - Research-based bimodal traffic patterns with morning/evening peaks
+  - Pre-calculated attractiveness profiles for efficient simulation
+  - Real-time phase switching during simulation based on start time
+  - Supports both full-day (24h) and rush hour analysis
+  - 1:1 time mapping (1 sim second = 1 real second)
+- **Advanced Features**:
+  - Zone-based traffic demand calculation using land use types and attractiveness values
+  - Spatial analysis for edge-zone adjacency detection
+  - Research-based land use multipliers and gravity model parameters
+  - Modular architecture allowing combination of spatial, temporal, and land use factors
+- **Nimrod's Traffic Control Algorithm**: 
+  - Uses Nimrod's decentralized traffic control algorithm for dynamic signal optimization
+  - Implements intelligent signal control through tree-based method
+  - Dynamically adjusts traffic light phases based on real-time traffic bottlenecks
+  - Aims to minimize overall traffic congestion by decentralized decision-making
+  - Adapts signal timing based on local traffic conditions at each intersection

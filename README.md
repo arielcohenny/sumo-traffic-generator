@@ -4,9 +4,18 @@ Project Progress: Key Milestones
 
 2. Zone Extraction: Derived polygonal zones from adjacent junctions per Table 1 in A Simulation Model for Intra‑Urban Movements.
 
-3. Lane Configuration: Applied configurable lane assignment to each edge (randomized within defined bounds).
+3. Lane Configuration: Applied configurable lane assignment to each edge with three algorithms:
+   - **Realistic**: Zone-based traffic demand calculation using land use types
+   - **Random**: Randomized assignment within defined bounds (1-3 lanes)
+   - **Fixed**: Uniform lane count across all edges
 
-4. Edge Attractiveness Modeling: Computed departure/arrival weights per edge using a Poisson distribution (λ_depart=3.5, λ_arrive=2.0), guiding vehicle origin and destination selection.
+4. Edge Attractiveness Modeling: Multiple research-based methods for computing departure/arrival weights:
+   - **Poisson**: Original distribution approach (λ_depart=3.5, λ_arrive=2.0)
+   - **Land Use**: Zone-type multipliers (Residential, Employment, Mixed, etc.)
+   - **Gravity**: Network centrality and spatial distance factors
+   - **IAC**: Integrated Attraction Coefficient combining multiple factors
+   - **Hybrid**: Weighted combination of spatial and land use approaches
+   - **4-Phase Temporal**: Research-based time-of-day variations with bimodal traffic patterns
 
 5. Route Generation: Built a vehicle‑route prototype that leverages edge attractiveness and shortest‑path computation; compatible with SUMO’s randomTrips.py for scalable trip creation. All vehicles starting at time 0.
 
@@ -32,16 +41,45 @@ pip install -r requirements.txt
 
 
 Usage & Parameters
+```bash
 env PYTHONUNBUFFERED=1 python -m src.cli \
---grid_dimension <int> # Number of rows/columns (default: 5)
---block_size_m <float> # Block length in meters (default: 200)
---junctions_to_remove <int|string> # Internal junctions to delete: integer count or comma-separated IDs (default: 0)
---fixed_lane_count <int> #  If provided, sets a fixed number of lane counts for all edges.
---num_vehicles <int> # Total trips to generate (default: 300)
---seed <int> # RNG seed (optional)
---step-length #Simulation step length in seconds (for TraCI loop) default=1.0
---end-time #Total simulation duration in seconds. (default 3600)
---gui #Launch SUMO in GUI mode (sumo-gui) instead of headless sumo.
+  --grid_dimension <int>        # Number of rows/columns (default: 5)
+  --block_size_m <float>        # Block length in meters (default: 200)
+  --junctions_to_remove <int|string>  # Internal junctions to delete: integer count or comma-separated IDs (default: 0)
+  --lane_count <str|int>        # Lane assignment algorithm: 'realistic' (default, zone-based), 'random', or integer (fixed count for all edges)
+  --num_vehicles <int>          # Total trips to generate (default: 300)
+  --seed <int>                  # RNG seed (optional)
+  --step-length <float>         # Simulation step length in seconds (default: 1.0)
+  --end-time <int>              # Total simulation duration in seconds (default: 3600)
+  --attractiveness <str>        # Edge attractiveness method: 'poisson' (default), 'land_use', 'gravity', 'iac', or 'hybrid'
+  --time_dependent              # Apply 4-phase time-of-day variations to the selected attractiveness method
+  --start_time_hour <float>     # Real-world hour when simulation starts (0-24, default: 0.0 for midnight)
+  --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
+```
+
+### Lane Count Algorithms
+
+- **`realistic`** (default): Uses land use zones to calculate traffic demand scores and assign 1-3 lanes based on zone types and attractiveness values
+- **`random`**: Original random assignment between MIN_LANES (1) and MAX_LANES (3)
+- **`<integer>`**: Fixed lane count for all edges (e.g., `--lane_count 2`)
+
+### Attractiveness Methods
+
+- **`poisson`** (default): Poisson distribution with λ_depart=3.5, λ_arrive=2.0
+- **`land_use`**: Land use type multipliers (Residential: depart 0.8/arrive 1.4, Employment: 1.3/0.9, Mixed: 1.1/1.1, etc.)
+- **`gravity`**: Network centrality-based using gravity model with distance and cluster size factors
+- **`iac`**: Integrated Attraction Coefficient combining gravity, land use, and spatial preference factors
+- **`hybrid`**: Weighted combination (50% land use + 30% spatial + 20% base Poisson)
+
+### 4-Phase Temporal System
+
+When `--time_dependent` is used, applies research-based 4-phase time-of-day multipliers to any base method:
+- **Morning Peak** (6:00-9:30): Depart ×1.4, Arrive ×0.7 (High outbound: home→work)
+- **Midday Off-Peak** (9:30-16:00): Depart ×1.0, Arrive ×1.0 (Balanced baseline)
+- **Evening Peak** (16:00-19:00): Depart ×0.7, Arrive ×1.5 (High inbound: work→home)
+- **Night Low** (19:00-6:00): Depart ×0.4, Arrive ×0.4 (Minimal activity)
+
+The system generates pre-calculated attractiveness profiles for all 4 phases and switches between them in real-time during simulation based on the `--start_time_hour` parameter. This enables both full-day simulations (24 hours) and rush hour analysis with 1:1 time mapping (1 simulation second = 1 real-world second).
 
 Omit --seed to use a random value each run.
 
@@ -56,10 +94,12 @@ src/
 │ ├── xml_writer.py # Generates route and configuration XML for SUMO
 │ └── **init**.py
 ├── network/ # Network utilities and zone extraction
-│ ├── generator.py # Parses junctions, removes internal nodes, and builds zones
-│ ├── lanes.py # Lane count configuration logic
-│ ├── zones.py # Polygon extraction and buffering for zones
-│ ├── edge_attrs.py # Computes edge attractiveness (λ_depart / λ_arrive)
+│ ├── generate_grid.py # Creates orthogonal grid using SUMO's netgenerate
+│ ├── split_edges.py # Splits edges for enhanced network complexity  
+│ ├── zones.py # Polygon extraction and zone generation from junctions
+│ ├── lane_counts.py # Lane assignment algorithms (realistic, random, fixed)
+│ ├── edge_attrs.py # Multiple edge attractiveness methods with time dependency
+│ ├── traffic_lights.py # Traffic light injection and signal plans
 │ └── **init**.py
 ├── sim/ # Simulation utilities
 │ ├── sumo_controller.py # Thin TraCI wrapper with per‑step callback support
