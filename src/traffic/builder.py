@@ -7,6 +7,7 @@ from sumolib.net import readNet
 from ..config import CONFIG
 from .edge_sampler import AttractivenessBasedEdgeSampler
 from .routing import RoutingMixStrategy, parse_routing_strategy
+from .vehicle_types import parse_vehicle_types, get_vehicle_weights
 from .xml_writer import write_routes
 
 
@@ -14,7 +15,8 @@ def generate_vehicle_routes(net_file: str | Path,
                             output_file: str | Path,
                             num_vehicles: int,
                             seed: int = CONFIG.RNG_SEED,
-                            routing_strategy: str = "shortest 100") -> None:
+                            routing_strategy: str = "shortest 100",
+                            vehicle_types: str = CONFIG.DEFAULT_VEHICLE_TYPES) -> None:
     """
     Orchestrates vehicle creation and writes a .rou.xml.
     
@@ -24,6 +26,7 @@ def generate_vehicle_routes(net_file: str | Path,
         num_vehicles: Number of vehicles to generate
         seed: Random seed for reproducibility
         routing_strategy: Routing strategy specification (e.g., "shortest 70 realtime 30")
+        vehicle_types: Vehicle types specification (e.g., "passenger 70 commercial 20 public 10")
     """
     rng = random.Random(seed)
     net = readNet(str(net_file))
@@ -36,13 +39,18 @@ def generate_vehicle_routes(net_file: str | Path,
     strategy_percentages = parse_routing_strategy(routing_strategy)
     routing_mix = RoutingMixStrategy(net, strategy_percentages)
     
+    # Parse and initialize vehicle types
+    vehicle_distribution = parse_vehicle_types(vehicle_types)
+    vehicle_names, vehicle_weights = get_vehicle_weights(vehicle_distribution)
+    
     print(f"Using routing strategies: {strategy_percentages}")
+    print(f"Using vehicle types: {vehicle_distribution}")
 
     vehicles = []
     for vid in range(num_vehicles):
         vtype = rng.choices(
-            population=list(CONFIG.vehicle_types.keys()),
-            weights=CONFIG.vehicle_weights,
+            population=vehicle_names,
+            weights=vehicle_weights,
             k=1
         )[0]
 

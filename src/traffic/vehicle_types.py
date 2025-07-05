@@ -1,0 +1,105 @@
+# src/traffic/vehicle_types.py
+from typing import Dict
+
+
+def parse_vehicle_types(vehicle_types_arg: str) -> Dict[str, float]:
+    """
+    Parse vehicle types argument into percentages dictionary.
+    
+    Examples:
+    - "passenger 60 commercial 30 public 10" -> {"passenger": 60.0, "commercial": 30.0, "public": 10.0}
+    - "passenger 70 commercial 20 public 10" -> {"passenger": 70.0, "commercial": 20.0, "public": 10.0}
+    - "passenger 100" -> {"passenger": 100.0}
+    
+    Args:
+        vehicle_types_arg: Space-separated vehicle type names and percentages
+        
+    Returns:
+        Dictionary mapping vehicle type names to percentages
+        
+    Raises:
+        ValueError: If percentages don't sum to 100 or invalid format
+    """
+    if not vehicle_types_arg.strip():
+        from src.config import CONFIG
+        return CONFIG.default_vehicle_distribution.copy()
+    
+    tokens = vehicle_types_arg.strip().split()
+    if len(tokens) % 2 != 0:
+        raise ValueError("Vehicle types format: 'type1 percentage1 type2 percentage2 ...'")
+    
+    valid_types = {"passenger", "commercial", "public"}
+    percentages = {}
+    
+    for i in range(0, len(tokens), 2):
+        vehicle_type = tokens[i]
+        try:
+            percentage = float(tokens[i + 1])
+        except ValueError:
+            raise ValueError(f"Invalid percentage value: {tokens[i + 1]}")
+        
+        if vehicle_type not in valid_types:
+            raise ValueError(f"Unknown vehicle type: {vehicle_type}. Valid options: {valid_types}")
+        
+        if percentage < 0 or percentage > 100:
+            raise ValueError(f"Percentage must be between 0 and 100, got {percentage}")
+        
+        percentages[vehicle_type] = percentage
+    
+    # Validate sum
+    total = sum(percentages.values())
+    if abs(total - 100.0) > 0.01:
+        raise ValueError(f"Vehicle type percentages must sum to 100, got {total}")
+    
+    return percentages
+
+
+def get_vehicle_weights(vehicle_distribution: Dict[str, float]) -> tuple:
+    """
+    Convert vehicle type percentages to weights list in consistent order.
+    
+    Args:
+        vehicle_distribution: Dictionary with vehicle type percentages
+        
+    Returns:
+        Tuple of (vehicle_type_names, weights) in consistent order
+    """
+    # Ensure consistent ordering
+    ordered_types = ["passenger", "commercial", "public"]
+    
+    vehicle_names = []
+    weights = []
+    
+    for vehicle_type in ordered_types:
+        if vehicle_type in vehicle_distribution:
+            vehicle_names.append(vehicle_type)
+            weights.append(vehicle_distribution[vehicle_type] / 100.0)  # Convert percentage to weight
+    
+    return vehicle_names, weights
+
+
+def validate_vehicle_types_config(vehicle_types_dict: Dict[str, dict]) -> None:
+    """
+    Validate that all required vehicle types are defined in configuration.
+    
+    Args:
+        vehicle_types_dict: Vehicle types configuration dictionary
+        
+    Raises:
+        ValueError: If required vehicle types are missing or invalid
+    """
+    required_types = {"passenger", "commercial", "public"}
+    available_types = set(vehicle_types_dict.keys())
+    
+    missing_types = required_types - available_types
+    if missing_types:
+        raise ValueError(f"Missing vehicle type definitions: {missing_types}")
+    
+    # Validate each vehicle type has required attributes
+    required_attrs = {"length", "maxSpeed", "accel", "decel", "sigma"}
+    
+    for vehicle_type, attrs in vehicle_types_dict.items():
+        if vehicle_type in required_types:
+            missing_attrs = required_attrs - set(attrs.keys())
+            if missing_attrs:
+                raise ValueError(f"Vehicle type '{vehicle_type}' missing attributes: {missing_attrs}")

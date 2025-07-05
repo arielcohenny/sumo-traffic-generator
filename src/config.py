@@ -35,17 +35,20 @@ class _Config:
 
     # ---------- vehicle generation ----------
     vehicle_types: dict = field(default_factory=lambda: {
-        "car":   {"length": 5.0,  "maxSpeed": 13.9},
-        "truck": {"length": 12.0, "maxSpeed": 10.0},
-        "bus":   {"length": 10.0, "maxSpeed": 11.1},
+        "passenger":   {"length": 5.0,  "maxSpeed": 13.9, "accel": 2.6, "decel": 4.5, "sigma": 0.5},
+        "commercial": {"length": 12.0, "maxSpeed": 10.0, "accel": 1.3, "decel": 3.5, "sigma": 0.5},
+        "public":     {"length": 10.0, "maxSpeed": 11.1, "accel": 1.8, "decel": 4.0, "sigma": 0.5},
     })
 
-    # weights must align with keys order above
-    vehicle_weights: list[float] = field(
-        default_factory=lambda: [0.6, 0.3, 0.1])   # car, truck, bus
+    # Default vehicle type distribution (must sum to 100)
+    default_vehicle_distribution: dict = field(
+        default_factory=lambda: {"passenger": 60.0, "commercial": 30.0, "public": 10.0})
 
     DEFAULT_NUM_VEHICLES: int = 300
     RNG_SEED: int = 42
+    
+    # Default vehicle types string for CLI
+    DEFAULT_VEHICLE_TYPES: str = "passenger 60 commercial 30 public 10"
 
     # ---------- simulation parameters ----------
     DEFAULT_JUNCTION_RADIUS: float = 10.0  # meters

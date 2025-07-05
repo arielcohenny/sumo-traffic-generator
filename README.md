@@ -50,11 +50,12 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --num_vehicles <int>          # Total trips to generate (default: 300)
   --seed <int>                  # RNG seed (optional)
   --step-length <float>         # Simulation step length in seconds (default: 1.0)
-  --end-time <int>              # Total simulation duration in seconds (default: 3600)
+  --end-time <int>              # Total simulation duration in seconds (default: 86400 - 24 hours/full day)
   --attractiveness <str>        # Edge attractiveness method: 'poisson' (default), 'land_use', 'gravity', 'iac', or 'hybrid'
   --time_dependent              # Apply 4-phase time-of-day variations to the selected attractiveness method
   --start_time_hour <float>     # Real-world hour when simulation starts (0-24, default: 0.0 for midnight)
   --routing_strategy <str>      # Routing strategy with percentages (default: 'shortest 100')
+  --vehicle_types <str>         # Vehicle types with percentages (default: 'passenger 60 commercial 30 public 10')
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
 ```
 
@@ -111,6 +112,38 @@ The system supports 4 routing strategies with percentage-based mixing:
 - Dynamic strategies use TraCI for real-time rerouting
 - Strategies are assigned per-vehicle during route generation
 - Integration with existing 4-phase temporal system
+
+### 3-Type Vehicle System
+
+The system supports 3 vehicle types with percentage-based mixing:
+
+- **`passenger`**: Standard passenger cars (default characteristics)
+- **`commercial`**: Commercial trucks and delivery vehicles (longer, slower acceleration)
+- **`public`**: Public transit buses (largest, specific route behavior)
+
+**Usage Examples:**
+```bash
+# Default distribution
+--vehicle_types "passenger 60 commercial 30 public 10"
+
+# Car-heavy scenario
+--vehicle_types "passenger 90 commercial 8 public 2"
+
+# Commercial-heavy scenario (industrial area)
+--vehicle_types "passenger 40 commercial 55 public 5"
+
+# Transit-focused scenario
+--vehicle_types "passenger 50 commercial 20 public 30"
+```
+
+**Key Features:**
+- Percentages must sum to 100 (validated automatically)
+- Each vehicle type has distinct physical characteristics:
+  - **Length**: passenger (5m), commercial (8m), public (12m)
+  - **Max Speed**: passenger (50 m/s), commercial (40 m/s), public (35 m/s)
+  - **Acceleration**: passenger (2.6 m/s²), commercial (1.8 m/s²), public (1.2 m/s²)
+- Vehicle types are assigned per-vehicle during route generation
+- Integration with routing strategies and temporal systems
 
 Omit --seed to use a random value each run.
 

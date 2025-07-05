@@ -84,8 +84,8 @@ def main():
     parser.add_argument(
         "--end-time",
         type=int,
-        default=3600,
-        help="Total simulation duration in seconds."
+        default=86400,
+        help="Total simulation duration in seconds. Default is 86400 (24 hours/full day)."
     )
     parser.add_argument(
         "--attractiveness",
@@ -110,6 +110,12 @@ def main():
         type=str,
         default="shortest 100",
         help="Routing strategy with percentages (e.g., 'shortest 70 realtime 30' or 'shortest 20 realtime 30 fastest 45 attractiveness 5'). Default: 'shortest 100'"
+    )
+    parser.add_argument(
+        "--vehicle_types",
+        type=str,
+        default=CONFIG.DEFAULT_VEHICLE_TYPES,
+        help="Vehicle types with percentages (e.g., 'passenger 70 commercial 20 public 10'). Default: 'passenger 60 commercial 30 public 10'"
     )
     parser.add_argument(
         "--gui",
@@ -219,7 +225,8 @@ def main():
             output_file=CONFIG.routes_file,
             num_vehicles=args.num_vehicles,
             seed=seed,
-            routing_strategy=args.routing_strategy
+            routing_strategy=args.routing_strategy,
+            vehicle_types=args.vehicle_types
         )
         try:
             verify_generate_vehicle_routes(
