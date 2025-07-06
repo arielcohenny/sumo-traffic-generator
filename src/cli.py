@@ -6,9 +6,9 @@ import traci
 
 
 from src.sim.sumo_controller import SumoController
-from src.sim.sumo_utils import generate_sumo_conf_file
+from src.sim.sumo_utils import generate_sumo_conf_file, rebuild_network
 
-from src.network.generate_grid import generate_grid_network, rebuild_network
+from src.network.generate_grid import generate_grid_network
 from src.network.lane_counts import set_lane_counts
 from src.network.edge_attrs import assign_edge_attractiveness
 from src.network.zones import extract_zones_from_junctions
