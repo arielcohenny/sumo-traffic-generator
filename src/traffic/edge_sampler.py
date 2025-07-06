@@ -1,13 +1,21 @@
 # src/traffic/edge_sampler.py
 from __future__ import annotations
 import random
+from abc import ABC, abstractmethod
 from typing import List
 
-class EdgeSampler:
-    """Abstract interface."""
+class EdgeSampler(ABC):
+    """Abstract interface for edge sampling strategies."""
 
-    def sample_start_edges(self, edges: List, n: int) -> List[str]: ...
-    def sample_end_edges(self, edges: List, n: int) -> List[str]: ...
+    @abstractmethod
+    def sample_start_edges(self, edges: List, n: int) -> List[str]:
+        """Sample n start edges from the given edge list."""
+        pass
+    
+    @abstractmethod
+    def sample_end_edges(self, edges: List, n: int) -> List[str]:
+        """Sample n end edges from the given edge list."""
+        pass
 
 
 class AttractivenessBasedEdgeSampler(EdgeSampler):

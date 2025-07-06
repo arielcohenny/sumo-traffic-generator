@@ -17,33 +17,7 @@ def rebuild_network() -> None:
         "--junctions.join=true",
         "--output-file",      str(CONFIG.network_file)
     ]
-
-    # netconvert_cmd = [
-    #     "netconvert",
-    #     "--node-files",       str(CONFIG.network_nod_file),
-    #     "--edge-files",       str(CONFIG.network_edg_file),
-    #     "--connection-files", str(CONFIG.network_con_file),
-    #     "--tllogic-files",    str(CONFIG.network_tll_file),
-    #     "--junctions.join=true",
-    #     "--junctions.endpoint-shape=true",
-    #     "--offset.disable-normalization=true",
-    #     "--lefthand=0",
-    #     "--no-turnarounds=false",
-    #     "--junctions.corner-detail=5",
-    #     "--junctions.limit-turn-speed=5.50",
-    #     "--rectangular-lane-cut=0",
-    #     "--output-file",      str(CONFIG.network_file)
-    # ]
     subprocess.run(netconvert_cmd, check=True)
-
-    #     "--tllogic-files",    str(CONFIG.network_tll_file),
-    # "--junctions.join",
-    # "--offset.disable-normalization", "true",
-    # "--lefthand",                "0",
-    # "--no-turnarounds",          "true",
-    # "--junctions.corner-detail",  "5",
-    # "--junctions.limit-turn-speed", "5.50",
-    # "--rectangular-lane-cut",     "0",
 
 
 def build_sumo_command(
@@ -125,41 +99,3 @@ def generate_sumo_conf_file(
     except Exception as e:
         print(f"Error creating SUMO configuration file: {e}")
         exit(1)
-
-
-def start_sumo_gui(
-    net_file: str = "grid.net.xml",
-    sumo_gui_binary: str = "sumo-gui",
-    additional_args: list[str] | None = None
-) -> subprocess.Popen:
-    """
-    Start the SUMO GUI with the specified network file.
-
-    Parameters
-    ----------
-    net_file : str
-        Path to the .net.xml file to load (default: 'grid.net.xml').
-    sumo_gui_binary : str
-        Name or path of the SUMO GUI executable (default: 'sumo-gui').
-    additional_args : list[str] | None
-        Any additional command-line arguments to pass to SUMO GUI.
-
-    Returns
-    -------
-    subprocess.Popen
-        The process handle for the running SUMO GUI.
-    """
-    # Build the command
-    cmd = [sumo_gui_binary, "--net-file", net_file]
-    if additional_args:
-        cmd.extend(additional_args)
-
-    # Launch SUMO GUI
-    try:
-        process = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    except FileNotFoundError as e:
-        raise RuntimeError(
-            f"Could not start SUMO GUI. Ensure '{sumo_gui_binary}' is in your PATH and SUMO_HOME is set correctly.") from e
-
-    return process

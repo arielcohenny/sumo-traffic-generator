@@ -46,7 +46,7 @@ class _Config:
 
     DEFAULT_NUM_VEHICLES: int = 300
     RNG_SEED: int = 42
-    
+
     # Default vehicle types string for CLI
     DEFAULT_VEHICLE_TYPES: str = "passenger 60 commercial 30 public 10"
 
@@ -60,9 +60,10 @@ class _Config:
     # ---------- edge attractiveness ----------
     LAMBDA_DEPART = 3.5
     LAMBDA_ARRIVE = 2.0
-    
+
     # ---------- simulation verification ----------
-    SIMULATION_VERIFICATION_FREQUENCY: int = 30  # Verify algorithm every N simulation steps
+    # Verify algorithm every N simulation steps
+    SIMULATION_VERIFICATION_FREQUENCY: int = 30
 
 
 CONFIG = _Config()

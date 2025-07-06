@@ -7,7 +7,6 @@ import json
 from collections import defaultdict
 from pathlib import Path
 from shapely.geometry import Point, Polygon
-from shapely.ops import unary_union
 
 
 def load_zones_data():
@@ -15,7 +14,7 @@ def load_zones_data():
     zones_geojson_path = Path(CONFIG.output_dir) / "zones.geojson"
     if not zones_geojson_path.exists():
         return []
-    
+
     try:
         with open(zones_geojson_path, 'r') as f:
             geojson_data = json.load(f)
@@ -28,34 +27,36 @@ def find_adjacent_zones(edge_id: str, zones_data: list, edg_root) -> list:
     """Find zones adjacent to a given edge"""
     if not zones_data:
         return []
-    
+
     # Get edge geometry
     edge = edg_root.find(f"edge[@id='{edge_id}']")
     if edge is None or 'shape' not in edge.attrib:
         return []
-    
+
     try:
         # Parse edge shape coordinates
-        coords = [tuple(map(float, p.split(','))) for p in edge.get('shape').split()]
+        coords = [tuple(map(float, p.split(',')))
+                  for p in edge.get('shape').split()]
         if len(coords) < 2:
             return []
-        
+
         # Create a buffer around the edge line to find intersecting zones
-        edge_line = Point(coords[0]).buffer(50).union(Point(coords[-1]).buffer(50))
-        
+        edge_line = Point(coords[0]).buffer(
+            50).union(Point(coords[-1]).buffer(50))
+
         adjacent_zones = []
         for zone_feature in zones_data:
             try:
                 # Create polygon from zone coordinates
                 zone_coords = zone_feature['geometry']['coordinates'][0]
                 zone_polygon = Polygon(zone_coords)
-                
+
                 # Check if edge intersects or is near the zone
                 if edge_line.intersects(zone_polygon) or edge_line.distance(zone_polygon) < 10:
                     adjacent_zones.append(zone_feature['properties'])
             except (KeyError, ValueError, TypeError):
                 continue
-                
+
         return adjacent_zones
     except (ValueError, TypeError):
         return []
@@ -67,10 +68,10 @@ def is_perimeter_edge(edge_id: str, edg_root) -> bool:
     edge = edg_root.find(f"edge[@id='{edge_id}']")
     if edge is None:
         return False
-    
+
     from_node = edge.get('from')
     to_node = edge.get('to')
-    
+
     # Simple heuristic: if either node contains A, C, 0, or 2 (grid boundaries)
     # This assumes a 3x3 grid with junctions A0, A1, A2, B0, B1, B2, C0, C1, C2
     boundary_markers = ['A', 'C', '0', '2']
@@ -81,14 +82,14 @@ def calculate_lane_count_realistic(edge_id: str, edg_root) -> int:
     """Calculate lane count based on land use zones and edge characteristics"""
     zones_data = load_zones_data()
     adjacent_zones = find_adjacent_zones(edge_id, zones_data, edg_root)
-    
+
     if not adjacent_zones:
         # Fallback: return moderate lane count if no zone data
         return 2
-    
+
     # Calculate traffic demand score based on adjacent zones
     demand_score = 0.0
-    
+
     # Traffic generation weights by land use type
     land_use_weights = {
         'Mixed': 3.0,                    # Highest traffic generation
@@ -98,19 +99,19 @@ def calculate_lane_count_realistic(edge_id: str, edg_root) -> int:
         'Residential': 1.5,              # Moderate residential traffic
         'Public Open Space': 1.0         # Lower recreational traffic
     }
-    
+
     for zone in adjacent_zones:
         land_use = zone.get('land_use', 'Residential')
         attractiveness = zone.get('attractiveness', 0.5)
-        
+
         # Weight by land use and attractiveness
         weight = land_use_weights.get(land_use, 1.5)
         demand_score += weight * attractiveness
-    
+
     # Apply edge position modifier
     if is_perimeter_edge(edge_id, edg_root):
         demand_score *= 0.8  # Perimeter edges typically have less internal traffic
-    
+
     # Convert demand score to lane count (1-3 lanes)
     if demand_score < 1.5:
         return 1
@@ -164,7 +165,8 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
     lane_counts = {}
     for base in sorted(edge_groups):
         edges = edge_groups[base]
-        lanes = calculate_lane_count(base, algorithm, rng, min_lanes, max_lanes)
+        lanes = calculate_lane_count(
+            base, algorithm, rng, min_lanes, max_lanes)
         lane_counts[base] = lanes
         for e in edges:
             e.set('numLanes', str(lanes))  # update edge element
@@ -276,7 +278,8 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
         #     new_conns.append(ET.Element('connection', a))
         for c in groups['uturn']:
             fl = lanes - 1
-            for tl in map_to_lanes(1, c.get('to'))[0]:  # Original connection was from 1 lane (index 0)
+            # Original connection was from 1 lane (index 0)
+            for tl in map_to_lanes(1, c.get('to'))[0]:
                 a = c.attrib.copy()
                 a['fromLane'] = str(fl)
                 a['toLane'] = str(tl)
@@ -284,11 +287,11 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
         # determine non-u movements
         moves = [d for d in ['left', 'straight', 'right'] if groups[d]]
         assign = {}
-        
+
         # CORRECT APPROACH: Assign movements left-to-right in logical order
         # Left lanes get left turns, middle lanes get straight, right lanes get right turns
         # This prevents crossing conflicts while preserving all movement options
-        
+
         if not moves:
             # no movements available, assign straight as fallback
             for i in range(lanes):
@@ -300,22 +303,26 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
         elif set(moves) == {'left', 'right'}:
             # Left and right only (no straight) - CORRECTED: lane 0 = rightmost, higher = leftmost
             if lanes == 1:
-                assign[0] = ['right']  # prefer right for single lane (lane 0 = rightmost)
+                # prefer right for single lane (lane 0 = rightmost)
+                assign[0] = ['right']
             elif lanes == 2:
                 assign[0] = ['right']  # lane 0 = rightmost lane: right turn
                 assign[1] = ['left']   # lane 1 = leftmost lane: left turn
             else:  # 3+ lanes
                 mid = lanes // 2
                 for i in range(mid):
-                    assign[i] = ['right']   # right half (lower numbers): right turns
+                    # right half (lower numbers): right turns
+                    assign[i] = ['right']
                 for i in range(mid, lanes):
-                    assign[i] = ['left']    # left half (higher numbers): left turns
+                    # left half (higher numbers): left turns
+                    assign[i] = ['left']
         elif set(moves) == {'left', 'straight'}:
             # Left and straight - CORRECTED: assign left to highest lanes, straight to others
             if lanes == 1:
                 assign[0] = ['straight']  # prefer straight for single lane
             else:
-                assign[lanes-1] = ['left']      # highest lane = leftmost: left turn
+                # highest lane = leftmost: left turn
+                assign[lanes-1] = ['left']
                 for i in range(lanes-1):
                     assign[i] = ['straight']  # other lanes: straight
         elif set(moves) == {'straight', 'right'}:
@@ -325,7 +332,7 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
             else:
                 assign[0] = ['right']       # lane 0 = rightmost: right turn
                 for i in range(1, lanes):
-                    assign[i] = ['straight'] # higher lanes: straight
+                    assign[i] = ['straight']  # higher lanes: straight
         elif set(moves) == {'left', 'straight', 'right'}:
             # All three movements - CORRECTED assignment
             if lanes == 1:
@@ -334,10 +341,12 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
                 assign[0] = ['right']     # lane 0 = rightmost: right turn
                 assign[1] = ['left']      # lane 1 = leftmost: left turn
             else:  # 3+ lanes - CORRECTED perfect assignment
-                assign[0] = ['right']           # lane 0 = rightmost: right turn
+                # lane 0 = rightmost: right turn
+                assign[0] = ['right']
                 for i in range(1, lanes-1):
                     assign[i] = ['straight']    # middle lanes: straight
-                assign[lanes-1] = ['left']      # highest lane = leftmost: left turn
+                # highest lane = leftmost: left turn
+                assign[lanes-1] = ['left']
         else:
             # fallback: straight for all
             for i in range(lanes):
@@ -358,34 +367,35 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
         #     con_root.append(nc)
         # create connections per lane and direction - PRESERVE ALL MOVEMENTS
         # Ensure every lane gets a connection and all original movements are preserved
-        
+
         # Track which destinations have been used for each direction to avoid duplicates
-        used_by_direction = {direction: set() for direction in ['left', 'straight', 'right']}
-        
+        used_by_direction = {direction: set()
+                             for direction in ['left', 'straight', 'right']}
+
         for fl, dirs in assign.items():
             if not dirs:
                 continue
-                
+
             # Each lane should have exactly ONE direction assigned
             direction = dirs[0]
             if direction not in groups or not groups[direction]:
                 continue
-                
+
             # Find an unused connection for this direction
-            available_connections = [c for c in groups[direction] 
-                                   if c.get('to') not in used_by_direction[direction]]
-            
+            available_connections = [c for c in groups[direction]
+                                     if c.get('to') not in used_by_direction[direction]]
+
             # If no unused connections, use any connection for this direction (preserve movements)
             if not available_connections:
                 available_connections = groups[direction]
-                
+
             if not available_connections:
                 continue
-                
+
             # Use the first available connection
             c = available_connections[0]
             used_by_direction[direction].add(c.get('to'))
-            
+
             # Get target edge lane count and map to exactly ONE target lane
             lane_mapping = map_to_lanes(lanes, c.get('to'))
             if fl in lane_mapping and lane_mapping[fl]:
@@ -395,13 +405,14 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
                 a['fromLane'] = str(fl)
                 a['toLane'] = str(tl)
                 new_conns.append(ET.Element('connection', a))
-        
+
         # ENSURE ALL MOVEMENTS ARE PRESERVED: Add missing movements to available lanes
         for direction in ['left', 'straight', 'right']:
             if direction in groups and groups[direction]:
                 # Check if this direction is covered by any lane
-                direction_covered = any(direction in assign.get(fl, []) for fl in range(lanes))
-                
+                direction_covered = any(direction in assign.get(
+                    fl, []) for fl in range(lanes))
+
                 if not direction_covered:
                     # Find a lane that could accommodate this direction
                     # Prefer appropriate lanes: left->high lanes, right->lane 0, straight->middle
@@ -411,12 +422,12 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
                         target_lane = 0  # rightmost lane
                     else:  # straight
                         target_lane = lanes // 2  # middle lane
-                    
+
                     # Add this direction to the target lane
                     if target_lane not in assign:
                         assign[target_lane] = []
                     assign[target_lane].append(direction)
-                    
+
                     # Create connection for the missing movement
                     c = groups[direction][0]
                     lane_mapping = map_to_lanes(lanes, c.get('to'))
@@ -466,51 +477,57 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
         """Classify connection as NS (North-South) or EW (East-West) based on edge names"""
         from_edge = conn.get('from')
         to_edge = conn.get('to')
-        
+
         # Extract junction names from edge IDs (e.g., "A0B0_H" -> from A0 to B0)
-        from_parts = from_edge.replace('_H', '').split('_')[0] if '_H' in from_edge else from_edge
+        from_parts = from_edge.replace('_H', '').split(
+            '_')[0] if '_H' in from_edge else from_edge
         to_parts = to_edge.split('_')[0] if '_' in to_edge else to_edge
-        
+
         # Determine direction based on junction coordinate pattern
         # Grid uses pattern: A0, A1, B0, B1 where letter = row, number = column
         if len(from_parts) >= 2 and len(to_parts) >= 2:
             from_row, from_col = from_parts[0], from_parts[1]
             to_row, to_col = to_parts[0], to_parts[1]
-            
+
             # NS movement: same column, different row
             if from_col == to_col and from_row != to_row:
                 return 'ns'
-            # EW movement: same row, different column  
+            # EW movement: same row, different column
             elif from_row == to_row and from_col != to_col:
                 return 'ew'
-        
+
         # Default to straight/turn based on edge direction pattern
         return 'ns'  # Default assumption
 
     # Update each traffic light's state strings
     for tl_logic in tll_root.findall('tlLogic'):
         tl_id = tl_logic.get('id')
-        
+
         # Get all connections for this traffic light
-        tl_connections = [c for c in tll_root.findall('connection') if c.get('tl') == tl_id]
+        tl_connections = [c for c in tll_root.findall(
+            'connection') if c.get('tl') == tl_id]
         tl_connections.sort(key=lambda x: int(x.get('linkIndex', '0')))
-        
+
         if not tl_connections:
             continue
-            
+
         # Build new state strings based on connection directions
         green_duration = 42
         yellow_duration = 3
-        
+
         # Phase 1: NS green, EW red
-        state1 = "".join("G" if classify_connection_direction(c) == 'ns' else "r" for c in tl_connections)
+        state1 = "".join("G" if classify_connection_direction(
+            c) == 'ns' else "r" for c in tl_connections)
         # Phase 2: NS yellow, EW red
-        state2 = "".join("y" if classify_connection_direction(c) == 'ns' else "r" for c in tl_connections)
+        state2 = "".join("y" if classify_connection_direction(
+            c) == 'ns' else "r" for c in tl_connections)
         # Phase 3: NS red, EW green
-        state3 = "".join("r" if classify_connection_direction(c) == 'ns' else "G" for c in tl_connections)
+        state3 = "".join("r" if classify_connection_direction(
+            c) == 'ns' else "G" for c in tl_connections)
         # Phase 4: NS red, EW yellow
-        state4 = "".join("r" if classify_connection_direction(c) == 'ns' else "y" for c in tl_connections)
-        
+        state4 = "".join("r" if classify_connection_direction(
+            c) == 'ns' else "y" for c in tl_connections)
+
         # Update the phase elements
         phases = tl_logic.findall('phase')
         if len(phases) >= 4:
@@ -525,11 +542,12 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
         if c.get('to', '').endswith('_H') and not c.get('to', '').endswith('_H_node'):
             # This is a base→_H connection, remove it so we can recreate with all lanes
             con_root.remove(c)
-    
+
     # Create new base→_H connections for all lanes
     for base, lanes in lane_counts.items():
         # Find if this base edge exists in the connections
-        base_edge_exists = any(c.get('from') == base for c in con_root.findall('connection'))
+        base_edge_exists = any(
+            c.get('from') == base for c in con_root.findall('connection'))
         if base_edge_exists or base in [edge.get('id') for edge in edg_root.findall('edge')]:
             # Create connections from base edge to its _H variant for all lanes
             for lane in range(lanes):
@@ -539,7 +557,8 @@ def set_lane_counts(seed: int, min_lanes: int, max_lanes: int, algorithm: str = 
                     'fromLane': str(lane),
                     'toLane': str(lane)
                 })
-                con_root.insert(0, new_conn)  # Insert at beginning to keep them organized
+                # Insert at beginning to keep them organized
+                con_root.insert(0, new_conn)
 
     # Step 5: Write changes back
     ET.indent(edg_root)

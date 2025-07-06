@@ -1,14 +1,23 @@
 import traci
-import xml.etree.ElementTree as ET
 from src.config import CONFIG
+
+# Constants for traffic control
+DEFAULT_REALTIME_REROUTING_INTERVAL = 30  # seconds
+DEFAULT_FASTEST_REROUTING_INTERVAL = 45   # seconds
+
+# Traffic phase time boundaries (hours)
+MORNING_PEAK_START = 6.0
+MORNING_PEAK_END = 9.5
+MIDDAY_OFFPEAK_START = 9.5
+MIDDAY_OFFPEAK_END = 16.0
+EVENING_PEAK_START = 16.0
+EVENING_PEAK_END = 19.0
+
+# Conversion constants
+SECONDS_PER_HOUR = 3600
 
 
 class SumoController:
-    # def __init__(self, sumo_cfg: str, step_length: float, end_time: float):
-    #     self.sumo_cfg = sumo_cfg
-    #     self.step_length = step_length
-    #     self.end_time = end_time
-
     def __init__(self,
                  sumo_cfg: str,
                  step_length: float,
@@ -37,17 +46,9 @@ class SumoController:
         self.vehicle_strategies = {}  # vehicle_id -> strategy_name
         self.vehicle_rerouting_times = {}  # vehicle_id -> next_rerouting_time
         self.strategy_intervals = {
-            'realtime': 30,  # reroute every 30 seconds
-            'fastest': 45    # reroute every 45 seconds
+            'realtime': DEFAULT_REALTIME_REROUTING_INTERVAL,
+            'fastest': DEFAULT_FASTEST_REROUTING_INTERVAL
         }
-
-    # def start(self):
-    #     """
-    #     Start SUMO with TraCI.
-    #     """
-    #     sumo_cmd = ["sumo", "-c", self.sumo_cfg,
-    #                 "--step-length", str(self.step_length)]
-    #     traci.start(sumo_cmd)
 
     def start(self):
         """
@@ -59,9 +60,6 @@ class SumoController:
             binary,
             "-c", self.sumo_cfg,
             "--step-length", str(self.step_length),
-            # "--aggregate-warnings=1", # aggregates warnings of the same type whenever more than 1 occur
-            # "--no-warnings",  # carry over “no warnings” preference
-            # "--start"  # Start stepping immediately
         ]
         traci.start(sumo_cmd)
         print("SUMO TraCI started")
@@ -80,11 +78,11 @@ class SumoController:
 
     def get_current_phase(self, current_hour: float) -> str:
         """Get current traffic phase based on hour of day (0-24)"""
-        if 6.0 <= current_hour < 9.5:
+        if MORNING_PEAK_START <= current_hour < MORNING_PEAK_END:
             return "morning_peak"
-        elif 9.5 <= current_hour < 16.0:  
+        elif MIDDAY_OFFPEAK_START <= current_hour < MIDDAY_OFFPEAK_END:  
             return "midday_offpeak"
-        elif 16.0 <= current_hour < 19.0:
+        elif EVENING_PEAK_START <= current_hour < EVENING_PEAK_END:
             return "evening_peak"
         else:
             return "night_low"
@@ -127,7 +125,7 @@ class SumoController:
                 # This would require modifying the route generation logic or using additional files
                 # For now, we'll track the phase change for logging/debugging
                 pass
-            except:
+            except Exception:
                 # Edge might not exist in current simulation
                 continue
         
@@ -139,7 +137,7 @@ class SumoController:
             return
         
         # Convert simulation time to real-world hours
-        hours_elapsed = current_time_seconds / 3600.0  # Convert seconds to hours
+        hours_elapsed = current_time_seconds / SECONDS_PER_HOUR
         current_hour = (self.start_time_hour + hours_elapsed) % 24.0
         
         new_phase = self.get_current_phase(current_hour)

@@ -3,8 +3,7 @@ import numpy as np
 import json
 import math
 from pathlib import Path
-from shapely.geometry import Point, Polygon, LineString
-from collections import defaultdict
+from shapely.geometry import Polygon, LineString
 from src.config import CONFIG
 
 
@@ -13,7 +12,7 @@ def load_zones_data():
     zones_geojson_path = Path(CONFIG.output_dir) / "zones.geojson"
     if not zones_geojson_path.exists():
         return []
-    
+
     try:
         with open(zones_geojson_path, 'r') as f:
             geojson_data = json.load(f)
@@ -26,53 +25,53 @@ def find_adjacent_zones(edge_id: str, zones_data: list, edg_root) -> list:
     """Find zones adjacent to a given edge"""
     if not zones_data:
         return []
-    
+
     # Find the edge in the edg_root
     edge_elem = None
     for edge in edg_root.findall('edge'):
         if edge.get('id') == edge_id:
             edge_elem = edge
             break
-    
+
     if edge_elem is None:
         return []
-    
+
     # Parse edge shape to create LineString
     shape_str = edge_elem.get('shape', '')
     if not shape_str:
         return []
-    
+
     try:
         # Parse shape coordinates
         coords = []
         for coord_pair in shape_str.split():
             x, y = map(float, coord_pair.split(','))
             coords.append((x, y))
-        
+
         if len(coords) < 2:
             return []
-        
+
         edge_line = LineString(coords)
-        
+
         # Find adjacent zones
         adjacent_zones = []
         for zone_feature in zones_data:
             zone_coords = zone_feature['geometry']['coordinates'][0]
             zone_polygon = Polygon(zone_coords)
-            
+
             # Check if edge intersects or is very close to zone
             if edge_line.intersects(zone_polygon) or edge_line.distance(zone_polygon) < 10:
                 adjacent_zones.append(zone_feature)
-        
+
         return adjacent_zones
-    
+
     except (ValueError, KeyError):
         return []
 
 
 def get_current_phase(current_hour: float) -> str:
     """Get current traffic phase based on hour of day (0-24)
-    
+
     Research-based 4-phase system:
     - morning_peak: 6:00-9:30 (Extended morning rush, commuter-heavy)
     - midday_offpeak: 9:30-16:00 (Lower baseline traffic)  
@@ -81,7 +80,7 @@ def get_current_phase(current_hour: float) -> str:
     """
     if 6.0 <= current_hour < 9.5:
         return "morning_peak"
-    elif 9.5 <= current_hour < 16.0:  
+    elif 9.5 <= current_hour < 16.0:
         return "midday_offpeak"
     elif 16.0 <= current_hour < 19.0:
         return "evening_peak"
@@ -91,15 +90,17 @@ def get_current_phase(current_hour: float) -> str:
 
 def get_phase_multipliers(phase: str) -> dict:
     """Get phase-specific multipliers for attractiveness
-    
+
     Based on research showing bimodal traffic patterns with:
     - High outbound traffic during morning (home→work)
     - High inbound traffic during evening (work→home)
     """
     PHASE_MULTIPLIERS = {
-        "morning_peak": {"depart": 1.4, "arrive": 0.7},    # High outbound (home→work)
+        # High outbound (home→work)
+        "morning_peak": {"depart": 1.4, "arrive": 0.7},
         "midday_offpeak": {"depart": 1.0, "arrive": 1.0},  # Balanced baseline
-        "evening_peak": {"depart": 0.7, "arrive": 1.5},    # High inbound (work→home)  
+        # High inbound (work→home)
+        "evening_peak": {"depart": 0.7, "arrive": 1.5},
         "night_low": {"depart": 0.4, "arrive": 0.4}        # Minimal activity
     }
     return PHASE_MULTIPLIERS.get(phase, {"depart": 1.0, "arrive": 1.0})
@@ -109,7 +110,7 @@ def get_time_multipliers(time_dependent: bool, hour_of_day: float = 12.0) -> dic
     """Get time-dependent multipliers for attractiveness (legacy function)"""
     if not time_dependent:
         return {'depart': 1.0, 'arrive': 1.0}
-    
+
     # Use new phase-based system
     phase = get_current_phase(hour_of_day)
     return get_phase_multipliers(phase)
@@ -119,13 +120,13 @@ def calculate_attractiveness_poisson(seed: int, time_dependent: bool = False) ->
     """Calculate attractiveness using Poisson distribution"""
     depart_base = np.random.poisson(lam=CONFIG.LAMBDA_DEPART)
     arrive_base = np.random.poisson(lam=CONFIG.LAMBDA_ARRIVE)
-    
+
     if time_dependent:
         # Use midday as default for base calculation
         time_mult = get_time_multipliers(True, 12)
         depart_base = max(1, int(depart_base * time_mult['depart']))
         arrive_base = max(1, int(arrive_base * time_mult['arrive']))
-    
+
     return depart_base, arrive_base
 
 
@@ -140,30 +141,32 @@ def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root, 
         'Public Buildings': {'depart': 0.9, 'arrive': 1.0},
         'Public Open Space': {'depart': 0.6, 'arrive': 0.8}
     }
-    
+
     # Get base Poisson values
     depart_base = np.random.poisson(lam=CONFIG.LAMBDA_DEPART)
     arrive_base = np.random.poisson(lam=CONFIG.LAMBDA_ARRIVE)
-    
+
     # Find adjacent zones
     adjacent_zones = find_adjacent_zones(edge_id, zones_data, edg_root)
-    
+
     if adjacent_zones:
         # Calculate weighted average based on zone attractiveness
         total_weight = 0
         weighted_depart = 0
         weighted_arrive = 0
-        
+
         for zone in adjacent_zones:
             zone_type = zone['properties'].get('type', 'Mixed')
-            attractiveness = float(zone['properties'].get('attractiveness', 0.5))
-            
-            multipliers = land_use_multipliers.get(zone_type, {'depart': 1.0, 'arrive': 1.0})
-            
+            attractiveness = float(
+                zone['properties'].get('attractiveness', 0.5))
+
+            multipliers = land_use_multipliers.get(
+                zone_type, {'depart': 1.0, 'arrive': 1.0})
+
             weighted_depart += multipliers['depart'] * attractiveness
             weighted_arrive += multipliers['arrive'] * attractiveness
             total_weight += attractiveness
-        
+
         if total_weight > 0:
             avg_depart_mult = weighted_depart / total_weight
             avg_arrive_mult = weighted_arrive / total_weight
@@ -174,17 +177,17 @@ def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root, 
         # Default multipliers if no zones found
         avg_depart_mult = 1.0
         avg_arrive_mult = 1.0
-    
+
     # Apply multipliers
     depart_attr = max(1, int(depart_base * avg_depart_mult))
     arrive_attr = max(1, int(arrive_base * avg_arrive_mult))
-    
+
     # Apply time dependency if enabled
     if time_dependent:
         time_mult = get_time_multipliers(True, 12)
         depart_attr = max(1, int(depart_attr * time_mult['depart']))
         arrive_attr = max(1, int(arrive_attr * time_mult['arrive']))
-    
+
     return depart_attr, arrive_attr
 
 
@@ -193,46 +196,49 @@ def calculate_attractiveness_gravity(edge_id: str, network_tree, time_dependent:
     # Gravity model parameters from research
     d_param = 0.95
     g_param = 1.02
-    
+
     # Calculate edge centrality (simplified as number of connections)
     edge_elem = None
     root = network_tree.getroot()
-    
+
     for edge in root.findall('edge'):
         if edge.get('id') == edge_id:
             edge_elem = edge
             break
-    
+
     if edge_elem is None:
         return calculate_attractiveness_poisson(0, time_dependent)
-    
+
     # Get from/to nodes
     from_node = edge_elem.get('from')
     to_node = edge_elem.get('to')
-    
+
     # Count connections (simplified cluster size)
-    from_connections = len([e for e in root.findall('edge') if e.get('from') == from_node or e.get('to') == from_node])
-    to_connections = len([e for e in root.findall('edge') if e.get('from') == to_node or e.get('to') == to_node])
+    from_connections = len([e for e in root.findall('edge') if e.get(
+        'from') == from_node or e.get('to') == from_node])
+    to_connections = len([e for e in root.findall('edge') if e.get(
+        'from') == to_node or e.get('to') == to_node])
     cluster_size = (from_connections + to_connections) / 2
-    
+
     # Simplified distance (could be enhanced with actual coordinates)
     distance = 1.0  # Normalized distance
-    
+
     # Base random attractiveness
     base_random = max(0.1, np.random.normal(1.0, 0.3))
-    
+
     # Calculate gravity-based attractiveness
-    gravity_factor = (d_param ** distance) * (g_param ** cluster_size) * base_random
-    
+    gravity_factor = (d_param ** distance) * \
+        (g_param ** cluster_size) * base_random
+
     depart_attr = max(1, int(CONFIG.LAMBDA_DEPART * gravity_factor))
     arrive_attr = max(1, int(CONFIG.LAMBDA_ARRIVE * gravity_factor))
-    
+
     # Apply time dependency if enabled
     if time_dependent:
         time_mult = get_time_multipliers(True, 12)
         depart_attr = max(1, int(depart_attr * time_mult['depart']))
         arrive_attr = max(1, int(arrive_attr * time_mult['arrive']))
-    
+
     return depart_attr, arrive_attr
 
 
@@ -241,37 +247,41 @@ def calculate_attractiveness_iac(edge_id: str, zones_data: list, edg_root, netwo
     # IAC parameters from research
     d_param = 0.95
     g_param = 1.02
-    
+
     # Get gravity components
-    depart_gravity, arrive_gravity = calculate_attractiveness_gravity(edge_id, network_tree, False)
-    
+    depart_gravity, arrive_gravity = calculate_attractiveness_gravity(
+        edge_id, network_tree, False)
+
     # Get land use components
-    depart_land, arrive_land = calculate_attractiveness_land_use(edge_id, zones_data, edg_root, False)
-    
+    depart_land, arrive_land = calculate_attractiveness_land_use(
+        edge_id, zones_data, edg_root, False)
+
     # Base attractiveness (theta)
     theta = max(0.1, np.random.normal(1.0, 0.3))
-    
+
     # Random mood factor
     m_rand = max(0.5, np.random.normal(1.0, 0.2))
-    
+
     # Spatial preference (simplified)
     f_spatial = 1.0
-    
+
     # Calculate IAC
-    gravity_norm = (depart_gravity + arrive_gravity) / (2 * CONFIG.LAMBDA_DEPART + 2 * CONFIG.LAMBDA_ARRIVE)
-    land_norm = (depart_land + arrive_land) / (2 * CONFIG.LAMBDA_DEPART + 2 * CONFIG.LAMBDA_ARRIVE)
-    
+    gravity_norm = (depart_gravity + arrive_gravity) / \
+        (2 * CONFIG.LAMBDA_DEPART + 2 * CONFIG.LAMBDA_ARRIVE)
+    land_norm = (depart_land + arrive_land) / \
+        (2 * CONFIG.LAMBDA_DEPART + 2 * CONFIG.LAMBDA_ARRIVE)
+
     iac_factor = gravity_norm * land_norm * theta * m_rand * f_spatial
-    
+
     depart_attr = max(1, int(CONFIG.LAMBDA_DEPART * iac_factor))
     arrive_attr = max(1, int(CONFIG.LAMBDA_ARRIVE * iac_factor))
-    
+
     # Apply time dependency if enabled
     if time_dependent:
         time_mult = get_time_multipliers(True, 12)
         depart_attr = max(1, int(depart_attr * time_mult['depart']))
         arrive_attr = max(1, int(arrive_attr * time_mult['arrive']))
-    
+
     return depart_attr, arrive_attr
 
 
@@ -279,42 +289,46 @@ def calculate_attractiveness_hybrid(edge_id: str, zones_data: list, edg_root, ne
     """Calculate attractiveness using hybrid approach"""
     # Get base Poisson values
     depart_poisson, arrive_poisson = calculate_attractiveness_poisson(0, False)
-    
+
     # Get land use adjustment (with reduced impact)
-    depart_land, arrive_land = calculate_attractiveness_land_use(edge_id, zones_data, edg_root, False)
+    depart_land, arrive_land = calculate_attractiveness_land_use(
+        edge_id, zones_data, edg_root, False)
     land_factor_depart = depart_land / max(1, CONFIG.LAMBDA_DEPART)
     land_factor_arrive = arrive_land / max(1, CONFIG.LAMBDA_ARRIVE)
-    
+
     # Reduce land use impact for hybrid (50% weight)
     land_factor_depart = 1.0 + 0.5 * (land_factor_depart - 1.0)
     land_factor_arrive = 1.0 + 0.5 * (land_factor_arrive - 1.0)
-    
+
     # Get spatial adjustment
-    depart_gravity, arrive_gravity = calculate_attractiveness_gravity(edge_id, network_tree, False)
+    depart_gravity, arrive_gravity = calculate_attractiveness_gravity(
+        edge_id, network_tree, False)
     spatial_factor_depart = depart_gravity / max(1, CONFIG.LAMBDA_DEPART)
     spatial_factor_arrive = arrive_gravity / max(1, CONFIG.LAMBDA_ARRIVE)
-    
+
     # Reduce spatial impact for hybrid (30% weight)
     spatial_factor_depart = 1.0 + 0.3 * (spatial_factor_depart - 1.0)
     spatial_factor_arrive = 1.0 + 0.3 * (spatial_factor_arrive - 1.0)
-    
+
     # Combine factors
-    depart_attr = max(1, int(depart_poisson * land_factor_depart * spatial_factor_depart))
-    arrive_attr = max(1, int(arrive_poisson * land_factor_arrive * spatial_factor_arrive))
-    
+    depart_attr = max(
+        1, int(depart_poisson * land_factor_depart * spatial_factor_depart))
+    arrive_attr = max(
+        1, int(arrive_poisson * land_factor_arrive * spatial_factor_arrive))
+
     # Apply time dependency if enabled
     if time_dependent:
         time_mult = get_time_multipliers(True, 12)
         depart_attr = max(1, int(depart_attr * time_mult['depart']))
         arrive_attr = max(1, int(arrive_attr * time_mult['arrive']))
-    
+
     return depart_attr, arrive_attr
 
 
 def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependent: bool = False, start_time_hour: float = 0.0) -> None:
     """
     Adds attractiveness attributes to each edge in the .net.xml file.
-    
+
     When time_dependent=True, generates 4 phase-specific profiles:
     - Base attributes: depart_attractiveness, arrive_attractiveness
     - Phase-specific: [phase]_depart_attractiveness, [phase]_arrive_attractiveness
@@ -331,12 +345,12 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
     net_file = CONFIG.network_file
     tree = ET.parse(net_file)
     root = tree.getroot()
-    
+
     # Load zone data if needed
     zones_data = []
     if method in ['land_use', 'iac', 'hybrid']:
         zones_data = load_zones_data()
-    
+
     # Load edge data if needed for spatial methods
     edg_root = None
     if method in ['land_use', 'iac', 'hybrid']:
@@ -349,7 +363,8 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
 
     # Get all phases for time-dependent mode
     if time_dependent:
-        phases = ["morning_peak", "midday_offpeak", "evening_peak", "night_low"]
+        phases = ["morning_peak", "midday_offpeak",
+                  "evening_peak", "night_low"]
         # Determine starting phase based on start_time_hour
         current_phase = get_current_phase(start_time_hour)
     else:
@@ -358,58 +373,72 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
 
     for edge in root.findall("edge"):
         edge_id = edge.get('id')
-        
+
         # Skip internal edges (start with ":")
         if edge_id and edge_id.startswith(":"):
             continue
-        
+
         if time_dependent:
             # Generate base attractiveness without time dependency
             if method == "poisson":
-                base_depart, base_arrive = calculate_attractiveness_poisson(seed, False)
+                base_depart, base_arrive = calculate_attractiveness_poisson(
+                    seed, False)
             elif method == "land_use":
-                base_depart, base_arrive = calculate_attractiveness_land_use(edge_id, zones_data, edg_root, False)
+                base_depart, base_arrive = calculate_attractiveness_land_use(
+                    edge_id, zones_data, edg_root, False)
             elif method == "gravity":
-                base_depart, base_arrive = calculate_attractiveness_gravity(edge_id, tree, False)
+                base_depart, base_arrive = calculate_attractiveness_gravity(
+                    edge_id, tree, False)
             elif method == "iac":
-                base_depart, base_arrive = calculate_attractiveness_iac(edge_id, zones_data, edg_root, tree, False)
+                base_depart, base_arrive = calculate_attractiveness_iac(
+                    edge_id, zones_data, edg_root, tree, False)
             elif method == "hybrid":
-                base_depart, base_arrive = calculate_attractiveness_hybrid(edge_id, zones_data, edg_root, tree, False)
+                base_depart, base_arrive = calculate_attractiveness_hybrid(
+                    edge_id, zones_data, edg_root, tree, False)
             else:
-                base_depart, base_arrive = calculate_attractiveness_poisson(seed, False)
-            
+                base_depart, base_arrive = calculate_attractiveness_poisson(
+                    seed, False)
+
             # Generate phase-specific profiles
             for phase in phases:
                 multipliers = get_phase_multipliers(phase)
                 phase_depart = max(1, int(base_depart * multipliers['depart']))
                 phase_arrive = max(1, int(base_arrive * multipliers['arrive']))
-                
+
                 edge.set(f"{phase}_depart_attractiveness", str(phase_depart))
                 edge.set(f"{phase}_arrive_attractiveness", str(phase_arrive))
-            
+
             # Set current phase as active attributes
             current_multipliers = get_phase_multipliers(current_phase)
-            current_depart = max(1, int(base_depart * current_multipliers['depart']))
-            current_arrive = max(1, int(base_arrive * current_multipliers['arrive']))
+            current_depart = max(
+                1, int(base_depart * current_multipliers['depart']))
+            current_arrive = max(
+                1, int(base_arrive * current_multipliers['arrive']))
             edge.set("depart_attractiveness", str(current_depart))
             edge.set("arrive_attractiveness", str(current_arrive))
             edge.set("current_phase", current_phase)
-            
+
         else:
             # Non-time-dependent: single calculation
             if method == "poisson":
-                depart_attr, arrive_attr = calculate_attractiveness_poisson(seed, False)
+                depart_attr, arrive_attr = calculate_attractiveness_poisson(
+                    seed, False)
             elif method == "land_use":
-                depart_attr, arrive_attr = calculate_attractiveness_land_use(edge_id, zones_data, edg_root, False)
+                depart_attr, arrive_attr = calculate_attractiveness_land_use(
+                    edge_id, zones_data, edg_root, False)
             elif method == "gravity":
-                depart_attr, arrive_attr = calculate_attractiveness_gravity(edge_id, tree, False)
+                depart_attr, arrive_attr = calculate_attractiveness_gravity(
+                    edge_id, tree, False)
             elif method == "iac":
-                depart_attr, arrive_attr = calculate_attractiveness_iac(edge_id, zones_data, edg_root, tree, False)
+                depart_attr, arrive_attr = calculate_attractiveness_iac(
+                    edge_id, zones_data, edg_root, tree, False)
             elif method == "hybrid":
-                depart_attr, arrive_attr = calculate_attractiveness_hybrid(edge_id, zones_data, edg_root, tree, False)
+                depart_attr, arrive_attr = calculate_attractiveness_hybrid(
+                    edge_id, zones_data, edg_root, tree, False)
             else:
-                depart_attr, arrive_attr = calculate_attractiveness_poisson(seed, False)
-            
+                depart_attr, arrive_attr = calculate_attractiveness_poisson(
+                    seed, False)
+
             edge.set("depart_attractiveness", str(depart_attr))
             edge.set("arrive_attractiveness", str(arrive_attr))
 

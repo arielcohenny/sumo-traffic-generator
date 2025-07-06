@@ -3,11 +3,8 @@ import subprocess
 import xml.etree.ElementTree as ET
 import random
 import re
-from typing import List
-from alive_progress import *
+from typing import List, Set, Tuple
 from pathlib import Path
-from typing import Set, Tuple
-from src.sim.sumo_utils import *
 from src.config import CONFIG
 
 
@@ -105,10 +102,14 @@ def wipe_crossing_from_con(node_ids: list[str]) -> None:
     cons_to_remove: Set[Tuple[str, str]] = get_cons_to_wipe(node_ids, root)
 
     # remove cons that are marked for deletion
-    for j in list(root.findall("connection")):
+    connections_to_remove = []
+    for j in root.findall("connection"):
         key = (j.get("from"), j.get("to"))
         if key in cons_to_remove:
-            root.remove(j)
+            connections_to_remove.append(j)
+
+    for j in connections_to_remove:
+        root.remove(j)
 
     ET.indent(root)
     tree.write(Path(str(CONFIG.network_con_file)),
@@ -133,9 +134,13 @@ def wipe_crossing_from_edg(node_ids: list[str]) -> None:
                 edgs_to_remove.add(jid)
 
     # remove edges that are marked for deletion
-    for j in list(root.findall("edge")):
+    edges_to_remove_elements = []
+    for j in root.findall("edge"):
         if j.get("id") in edgs_to_remove:
-            root.remove(j)
+            edges_to_remove_elements.append(j)
+
+    for j in edges_to_remove_elements:
+        root.remove(j)
 
     tree.write(Path(str(CONFIG.network_edg_file)),
                encoding="UTF-8", xml_declaration=True)
@@ -156,19 +161,19 @@ def wipe_crossing_from_nod(node_ids: list[str]) -> None:
                 nods_to_remove.add(jid)
 
     # remove nodes that are marked for deletion
-    for j in list(root.findall("node")):
+    nodes_to_remove_elements = []
+    for j in root.findall("node"):
         if j.get("id") in nods_to_remove:
-            root.remove(j)
+            nodes_to_remove_elements.append(j)
+
+    for j in nodes_to_remove_elements:
+        root.remove(j)
 
     tree.write(Path(str(CONFIG.network_nod_file)),
                encoding="UTF-8", xml_declaration=True)
 
 
 def wipe_crossing_from_tll(node_ids: list[str]) -> None:
-    from pathlib import Path
-    import xml.etree.ElementTree as ET
-    from typing import Set, Tuple, List
-
     # Parse the TLS definition file
     tree = ET.parse(Path(str(CONFIG.network_tll_file)))
     root = tree.getroot()
@@ -178,22 +183,27 @@ def wipe_crossing_from_tll(node_ids: list[str]) -> None:
     # Collect (tl_id, linkIndex) for each removed connection
     states_to_remove: List[Tuple[str, int]] = []
 
-    for conn in list(root.findall("connection")):
+    connections_to_remove_elements = []
+    for conn in root.findall("connection"):
         key = (conn.get("from"), conn.get("to"))
         if key in cons_to_remove:
             tl_id = conn.get("tl")
             link_idx = int(conn.get("linkIndex"))
             states_to_remove.append((tl_id, link_idx))
-            root.remove(conn)
+            connections_to_remove_elements.append(conn)
+
+    for conn in connections_to_remove_elements:
+        root.remove(conn)
 
     # 2. Remove entire TLs for the specified node_ids
     tlls_to_remove = set(node_ids)
 
     # 3. Update remaining TL logic phases by dropping removed indices
-    for tl in list(root.findall("tlLogic")):
+    tls_to_remove_elements = []
+    for tl in root.findall("tlLogic"):
         jid = tl.get("id")
         if jid in tlls_to_remove:
-            root.remove(tl)
+            tls_to_remove_elements.append(tl)
             continue
 
         # Collect indices to remove for this TL, in descending order
@@ -209,10 +219,14 @@ def wipe_crossing_from_tll(node_ids: list[str]) -> None:
                 if 0 <= idx < len(state):
                     state = state[:idx] + state[idx+1:]
             phase.set("state", state)
-        
+
         # If all connections were removed, remove the entire traffic light logic
         if all(phase.get("state", "") == "" for phase in tl.findall("phase")):
-            root.remove(tl)
+            tls_to_remove_elements.append(tl)
+
+    # Remove marked traffic lights
+    for tl in tls_to_remove_elements:
+        root.remove(tl)
 
     # 4. Reindex remaining connections so linkIndex starts at 0 and is contiguous per TL
     tl_ids = {conn.get("tl") for conn in root.findall("connection")}
@@ -242,14 +256,15 @@ def parse_junctions_to_remove(junctions_input: str) -> tuple[bool, list[str], in
     """Parse junctions_to_remove input and return (is_list, junction_ids, count)"""
     if not junctions_input or junctions_input == "0":
         return False, [], 0
-    
+
     # Try to parse as integer first
     try:
         count = int(junctions_input)
         return False, [], count
     except ValueError:
         # Parse as comma-separated list
-        junction_ids = [j.strip() for j in junctions_input.split(',') if j.strip()]
+        junction_ids = [j.strip()
+                        for j in junctions_input.split(',') if j.strip()]
         return True, junction_ids, len(junction_ids)
 
 
@@ -257,24 +272,25 @@ def convert_to_incoming_strategy():
     """Convert traffic light layout from opposites to incoming strategy"""
     import xml.etree.ElementTree as ET
     from pathlib import Path
-    
+
     # Parse the TLS definition file
     tree = ET.parse(Path(str(CONFIG.network_tll_file)))
     root = tree.getroot()
-    
+
     # For each traffic light logic
     for tl in root.findall("tlLogic"):
         tl_id = tl.get("id")
-        
+
         # Get all connections for this traffic light, sorted by linkIndex
-        connections = [c for c in root.findall("connection") if c.get("tl") == tl_id]
+        connections = [c for c in root.findall(
+            "connection") if c.get("tl") == tl_id]
         if not connections:
             continue
-            
+
         # Sort connections by linkIndex to ensure correct ordering
         connections.sort(key=lambda c: int(c.get("linkIndex")))
         total_links = len(connections)
-        
+
         # Group connections by incoming edge (from)
         incoming_edges = {}
         for conn in connections:
@@ -283,15 +299,15 @@ def convert_to_incoming_strategy():
             if from_edge not in incoming_edges:
                 incoming_edges[from_edge] = []
             incoming_edges[from_edge].append(link_idx)
-        
+
         # Sort link indices for each incoming edge
         for edge in incoming_edges:
             incoming_edges[edge].sort()
-        
+
         # Create new phases - one for each incoming edge
         new_phases = []
         seen_states = set()
-        
+
         for edge, link_indices in incoming_edges.items():
             # Create green phase for this incoming edge
             state = ['r'] * total_links
@@ -299,31 +315,32 @@ def convert_to_incoming_strategy():
                 if idx < total_links:  # Safety check
                     state[idx] = 'G'
             green_state = ''.join(state)
-            
+
             # Create yellow phase for this incoming edge
             state = ['r'] * total_links
             for idx in link_indices:
                 if idx < total_links:  # Safety check
                     state[idx] = 'y'
             yellow_state = ''.join(state)
-            
+
             # Add phases only if not already seen (avoid duplicates)
             if green_state not in seen_states:
                 new_phases.append(("30", green_state))  # 30 second green
                 new_phases.append(("3", yellow_state))   # 3 second yellow
                 seen_states.add(green_state)
                 seen_states.add(yellow_state)
-        
+
         # Remove old phases
-        for phase in list(tl.findall("phase")):
+        phases_to_remove = list(tl.findall("phase"))
+        for phase in phases_to_remove:
             tl.remove(phase)
-        
+
         # Add new phases
         for duration, state in new_phases:
             phase_elem = ET.SubElement(tl, "phase")
             phase_elem.set("duration", duration)
             phase_elem.set("state", state)
-    
+
     # Write changes back to file
     ET.indent(root)
     tree.write(
@@ -335,8 +352,9 @@ def convert_to_incoming_strategy():
 
 def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_input, lane_count_arg, traffic_light_strategy="opposites"):
     try:
-        is_list, junction_ids, count = parse_junctions_to_remove(junctions_to_remove_input)
-        
+        is_list, junction_ids, count = parse_junctions_to_remove(
+            junctions_to_remove_input)
+
         if count > 0:
             # generate the full grid network first
             generate_full_grid_network(
@@ -355,7 +373,7 @@ def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_inp
         else:
             generate_full_grid_network(
                 dimension, block_size_m, lane_count_arg, "opposites")
-        
+
         # Post-process traffic lights for incoming strategy
         if traffic_light_strategy == "incoming":
             convert_to_incoming_strategy()

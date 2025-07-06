@@ -1,15 +1,17 @@
-Project Progress: Key Milestones
+SUMO traffic simulation framework
 
 1. Grid Generation: Created an n×n junction network (grid.net.xml), enabling flexible removal of internal nodes - supports both random selection by count and explicit junction ID specification for dynamic topology.
 
 2. Zone Extraction: Derived polygonal zones from adjacent junctions per Table 1 in A Simulation Model for Intra‑Urban Movements.
 
 3. Lane Configuration: Applied configurable lane assignment to each edge with three algorithms:
+
    - **Realistic**: Zone-based traffic demand calculation using land use types
    - **Random**: Randomized assignment within defined bounds (1-3 lanes)
    - **Fixed**: Uniform lane count across all edges
 
 4. Edge Attractiveness Modeling: Multiple research-based methods for computing departure/arrival weights:
+
    - **Poisson**: Original distribution approach (λ_depart=3.5, λ_arrive=2.0)
    - **Land Use**: Zone-type multipliers (Residential, Employment, Mixed, etc.)
    - **Gravity**: Network centrality and spatial distance factors
@@ -27,7 +29,7 @@ Project Progress: Key Milestones
 
 Installation
 
-```bash
+````bash
 # 1. Clone this repo
 git clone https://github.com/arielcohenny/sumo-traffic-generator.git
 cd sumo-traffic-generator
@@ -58,7 +60,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --vehicle_types <str>         # Vehicle types with percentages (default: 'passenger 60 commercial 30 public 10')
   --traffic_light_strategy <str> # Traffic light phasing strategy: 'opposites' (default) or 'incoming'
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
-```
+````
 
 ### Lane Count Algorithms
 
@@ -77,6 +79,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 ### 4-Phase Temporal System
 
 When `--time_dependent` is used, applies research-based 4-phase time-of-day multipliers to any base method:
+
 - **Morning Peak** (6:00-9:30): Depart ×1.4, Arrive ×0.7 (High outbound: home→work)
 - **Midday Off-Peak** (9:30-16:00): Depart ×1.0, Arrive ×1.0 (Balanced baseline)
 - **Evening Peak** (16:00-19:00): Depart ×0.7, Arrive ×1.5 (High inbound: work→home)
@@ -94,6 +97,7 @@ The system supports 4 routing strategies with percentage-based mixing:
 - **`attractiveness`**: Multi-criteria routing considering destination attractiveness
 
 **Usage Examples:**
+
 ```bash
 # Default (100% shortest path)
 --routing_strategy "shortest 100"
@@ -109,6 +113,7 @@ The system supports 4 routing strategies with percentage-based mixing:
 ```
 
 **Key Features:**
+
 - Percentages must sum to 100 (validated automatically)
 - Dynamic strategies use TraCI for real-time rerouting
 - Strategies are assigned per-vehicle during route generation
@@ -123,6 +128,7 @@ The system supports 3 vehicle types with percentage-based mixing:
 - **`public`**: Public transit buses (largest, specific route behavior)
 
 **Usage Examples:**
+
 ```bash
 # Default distribution
 --vehicle_types "passenger 60 commercial 30 public 10"
@@ -138,6 +144,7 @@ The system supports 3 vehicle types with percentage-based mixing:
 ```
 
 **Key Features:**
+
 - Percentages must sum to 100 (validated automatically)
 - Each vehicle type has distinct physical characteristics:
   - **Length**: passenger (5m), commercial (8m), public (12m)
@@ -151,6 +158,7 @@ The system supports 3 vehicle types with percentage-based mixing:
 The system supports two traffic light phasing strategies:
 
 - **`opposites`** (default): Opposing directions move together (North-South concurrent, then East-West concurrent)
+
   - More efficient green time usage for balanced traffic
   - Standard 2-phase operation: concurrent movements reduce conflicts
   - Best for grid networks with similar traffic volumes in opposing directions
@@ -161,6 +169,7 @@ The system supports two traffic light phasing strategies:
   - Better for unbalanced traffic or safety-critical intersections
 
 **Usage Examples:**
+
 ```bash
 # Default opposites strategy (North-South together, then East-West together)
 --traffic_light_strategy opposites
@@ -176,9 +185,10 @@ Both strategies work with any lane configuration and are compatible with the Tre
 The system supports multiple temporal distribution patterns for vehicle departure times, replacing the original sequential departure (0, 1, 2, 3...) with realistic temporal patterns based on research:
 
 - **`six_periods`** (default): Research-based 6-period system from mobility papers
+
   - **Morning** (6am-12pm): 20% of vehicles - Gradual traffic buildup
   - **Morning Rush** (7:30am-9:30am): 30% of vehicles - Peak commuter traffic
-  - **Noon** (12pm-5pm): 25% of vehicles - Steady daytime activity  
+  - **Noon** (12pm-5pm): 25% of vehicles - Steady daytime activity
   - **Evening Rush** (5pm-7pm): 20% of vehicles - Evening commute home
   - **Evening** (7pm-10pm): 4% of vehicles - Social/entertainment trips
   - **Night** (10pm-6am): 1% of vehicles - Minimal overnight activity
@@ -186,6 +196,7 @@ The system supports multiple temporal distribution patterns for vehicle departur
 - **`uniform`**: Even distribution across simulation time with small buffer at end
 
 - **`rush_hours:7-9:40,17-19:30,rest:10`**: Custom rush hour definition
+
   - Define specific rush periods with intensity weights
   - `rest` parameter controls non-rush hour baseline traffic
 
@@ -194,6 +205,7 @@ The system supports multiple temporal distribution patterns for vehicle departur
   - Very granular control over temporal patterns
 
 **Usage Examples:**
+
 ```bash
 # Default research-based 6-period system
 --departure_pattern six_periods
@@ -209,6 +221,7 @@ The system supports multiple temporal distribution patterns for vehicle departur
 ```
 
 **Key Features:**
+
 - Scales automatically to simulation `--end-time` (default 24 hours)
 - Rush hour peaks align with real-world commuter patterns
 - Compatible with all routing strategies and vehicle types
@@ -240,13 +253,16 @@ src/
 │ └── **init**.py
 ├── traffic_control/ # Signal‑control logic (third‑party & glue code)
 │ └── decentralized_traffic_bottlenecks/
-│     ├── integration.py  # Bridges our simulator with Nimrod’s algorithm
-│     ├── config.py, # Centralises algorithm defaults & hyper‑parameters (cycle time, max queue, …)
-│     ├── enums.py, # Enumerations capturing cost types, algorithm modes, TLS states, etc.
-│     ├── utils.py, # Shared helpers: JSON I/O, matrix ops, and miscellaneous maths
-│     ├── classes/   # Core algorithm data‑structures (Graph, Network, …)
-│     └── **init**.py
+│ ├── integration.py # Bridges our simulator with Nimrod’s algorithm
+│ ├── config.py, # Centralises algorithm defaults & hyper‑parameters (cycle time, max queue, …)
+│ ├── enums.py, # Enumerations capturing cost types, algorithm modes, TLS states, etc.
+│ ├── utils.py, # Shared helpers: JSON I/O, matrix ops, and miscellaneous maths
+│ ├── classes/ # Core algorithm data‑structures (Graph, Network, …)
+│ └── **init**.py
 │ └── **init**.py
 ├── requirements.txt # Project dependencies
 └── README.md # Short description of the project
+
+```
+
 ```

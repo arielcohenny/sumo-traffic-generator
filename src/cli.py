@@ -1,16 +1,14 @@
-import os
 import argparse
 import random
 import shutil
-from alive_progress import *
+from pathlib import Path
 import traci
-import subprocess
 
 
 from src.sim.sumo_controller import SumoController
-from src.sim.sumo_utils import generate_sumo_conf_file, start_sumo_gui
+from src.sim.sumo_utils import generate_sumo_conf_file
 
-from src.network.generate_grid import *
+from src.network.generate_grid import generate_grid_network, rebuild_network
 from src.network.lane_counts import set_lane_counts
 from src.network.edge_attrs import assign_edge_attractiveness
 from src.network.zones import extract_zones_from_junctions
@@ -32,9 +30,9 @@ from src.config import CONFIG
 
 def main():
     # --- Clean the data directory ---
-    if os.path.exists(CONFIG.output_dir):
+    if CONFIG.output_dir.exists():
         shutil.rmtree(CONFIG.output_dir)
-    os.makedirs(CONFIG.output_dir, exist_ok=True)
+    CONFIG.output_dir.mkdir(exist_ok=True)
 
     # --- Command-line Argument Parsing ---
     parser = argparse.ArgumentParser(
@@ -226,9 +224,11 @@ def main():
         print("Rebuilt the network successfully.")
 
         # --- Step 6: Assign Edge Attractiveness ---
-        assign_edge_attractiveness(seed, args.attractiveness, args.time_dependent, args.start_time_hour)
+        assign_edge_attractiveness(
+            seed, args.attractiveness, args.time_dependent, args.start_time_hour)
         try:
-            verify_assign_edge_attractiveness(seed, args.attractiveness, args.time_dependent)
+            verify_assign_edge_attractiveness(
+                seed, args.attractiveness, args.time_dependent)
         except ValidationError as ve:
             print(f"Failed to assign edge attractiveness: {ve}")
             exit(1)
@@ -307,10 +307,11 @@ def main():
         print("Built Nimrod's Graph from network data.")
         seconds_in_cycle = network_data.calc_cycle_time()
         print("Built network graph and calculated cycle time.")
-        
+
         # Verify Nimrod integration setup
         try:
-            verify_nimrod_integration_setup(tree_data, run_config, network_data, graph, seconds_in_cycle)
+            verify_nimrod_integration_setup(
+                tree_data, run_config, network_data, graph, seconds_in_cycle)
         except ValidationError as ve:
             print(f"Nimrod integration setup validation failed: {ve}")
             exit(1)
@@ -334,13 +335,14 @@ def main():
             # Runtime verification of algorithm behavior
             try:
                 verify_algorithm_runtime_behavior(
-                    current_time, 
-                    phase_map, 
-                    graph, 
+                    current_time,
+                    phase_map,
+                    graph,
                     CONFIG.SIMULATION_VERIFICATION_FREQUENCY
                 )
             except ValidationError as ve:
-                print(f"Algorithm runtime validation failed at step {current_time}: {ve}")
+                print(
+                    f"Algorithm runtime validation failed at step {current_time}: {ve}")
                 traci.close()
                 exit(1)
 

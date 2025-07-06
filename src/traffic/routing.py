@@ -46,7 +46,7 @@ class ShortestPathRoutingStrategy(RoutingStrategy):
                 return []
             edge_objs, _ = result
             return [e.getID() for e in edge_objs]
-        except:
+        except Exception:
             return []
     
     @property
@@ -90,7 +90,7 @@ class RealtimeRoutingStrategy(RoutingStrategy):
                 return []
             edge_objs, _ = result
             return [e.getID() for e in edge_objs]
-        except:
+        except Exception:
             return []
     
     @property
@@ -133,7 +133,7 @@ class FastestRoutingStrategy(RoutingStrategy):
                 return []
             edge_objs, _ = result
             return [e.getID() for e in edge_objs]
-        except:
+        except Exception:
             return []
     
     @property
@@ -191,14 +191,14 @@ class AttractivenessRoutingStrategy(RoutingStrategy):
                     if fastest_route != shortest_route:
                         fastest_score = self._score_route(fastest_route, fastest_cost)
                         routes_with_scores.append((fastest_route, fastest_score))
-            except:
+            except Exception:
                 pass
             
             # Select route with best score
             best_route = max(routes_with_scores, key=lambda x: x[1])[0]
             return best_route
             
-        except:
+        except Exception:
             return []
     
     def _score_route(self, route_edges: List[str], base_cost: float) -> float:
@@ -225,7 +225,7 @@ class AttractivenessRoutingStrategy(RoutingStrategy):
                     # Fallback: use edge length as proxy for attractiveness
                     attractiveness_score += edge.getLength() / 100.0
                     valid_edges += 1
-            except:
+            except Exception:
                 continue
         
         if valid_edges > 0:
