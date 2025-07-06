@@ -1,7 +1,6 @@
 import xml.etree.ElementTree as ET
 import numpy as np
 import json
-import math
 from pathlib import Path
 from shapely.geometry import Polygon, LineString
 from src.config import CONFIG
