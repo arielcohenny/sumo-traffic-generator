@@ -38,32 +38,54 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --seed 42 \
   --step-length 1.0 \
   --end-time 86400 \
-  --attractiveness hybrid \
+  --attractiveness poisson \
   --time_dependent \
   --start_time_hour 7.0 \
-  --routing_strategy "shortest 70 realtime 30" \
-  --vehicle_types "passenger 70 commercial 20 public 10" \
-  --traffic_light_strategy opposites \
+  --routing_strategy 'shortest 70 realtime 30' \
+  --vehicle_types 'passenger 70 commercial 20 public 10' \
   --departure_pattern six_periods \
   --gui
+```
 
-# Commercial traffic scenario with incoming strategy and rush hour patterns
-env PYTHONUNBUFFERED=1 python -m src.cli \
-  --grid_dimension 7 \
-  --num_vehicles 500 \
-  --vehicle_types "passenger 40 commercial 55 public 5" \
-  --routing_strategy "shortest 50 fastest 50" \
-  --traffic_light_strategy incoming \
-  --departure_pattern "rush_hours:6-10:35,16-20:40,rest:8" \
-  --gui
+### Tested Scenarios (5x5 Grid, 150m Blocks)
 
-# Public transport focused scenario
-env PYTHONUNBUFFERED=1 python -m src.cli \
-  --grid_dimension 5 \
-  --num_vehicles 300 \
-  --vehicle_types "passenger 50 commercial 20 public 30" \
-  --routing_strategy "shortest 80 realtime 20" \
-  --gui
+These 10 scenarios have been verified to work correctly:
+
+```bash
+# Scenario 1: Morning Rush Hour Peak Traffic
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 800 --step-length 1.0 --end-time 7200 --departure_pattern six_periods --start_time_hour 7.0 --gui
+
+# Scenario 2: Light Evening Traffic
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 0 --num_vehicles 500 --step-length 1.0 --end-time 5400 --departure_pattern uniform --start_time_hour 20.0 --gui
+
+# Scenario 3: All-Day Urban Simulation
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1200 --step-length 1.0 --end-time 28800 --departure_pattern six_periods --attractiveness poisson --gui
+
+# Scenario 4: Custom Rush Hour Pattern
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 750 --step-length 1.0 --end-time 10800 --departure_pattern 'rush_hours:7-9:50,17-19:40,rest:10' --routing_strategy 'shortest 70 realtime 30' --gui
+
+# Scenario 5: Midnight to Dawn Low Traffic
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 0 --num_vehicles 600 --step-length 1.0 --end-time 21600 --departure_pattern six_periods --start_time_hour 0.0 --time_dependent --gui
+
+# Scenario 6: High-Density Stress Test
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1500 --step-length 1.0 --end-time 14400 --departure_pattern uniform --routing_strategy 'shortest 50 realtime 30 fastest 20' --gui
+
+# Scenario 7: Time-Dependent Attractiveness Test
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 900 --step-length 1.0 --end-time 12600 --departure_pattern six_periods --time_dependent --start_time_hour 8.0 --gui
+
+# Scenario 8: Weekend Traffic Pattern
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 0 --num_vehicles 650 --step-length 1.0 --end-time 18000 --departure_pattern uniform --start_time_hour 10.0 --attractiveness poisson --gui
+
+# Scenario 9: Infrastructure Disruption Test
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1000 --step-length 1.0 --end-time 9000 --departure_pattern six_periods --routing_strategy 'shortest 40 realtime 60' --seed 123 --gui
+
+# Scenario 10: Multi-Modal Traffic Mix
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 850 --step-length 1.0 --end-time 16200 --departure_pattern six_periods --vehicle_types 'passenger 50 commercial 40 public 10' --attractiveness hybrid --gui
+
+# Quick Development Tests
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 500 --end-time 1800 --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 1000 --end-time 3600 --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 800 --routing_strategy 'realtime 100' --end-time 3600 --gui
 ```
 
 ### Testing
