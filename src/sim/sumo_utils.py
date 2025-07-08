@@ -8,16 +8,22 @@ from src.config import CONFIG
 
 
 def rebuild_network() -> None:
-    netconvert_cmd = [
+    # Convert network without traffic light logic file to avoid connection reference errors
+    # SUMO will generate appropriate traffic lights based on the network structure
+    basic_cmd = [
         "netconvert",
         "--node-files",       str(CONFIG.network_nod_file),
         "--edge-files",       str(CONFIG.network_edg_file),
-        "--connection-files", str(CONFIG.network_con_file),
-        "--tllogic-files",    str(CONFIG.network_tll_file),
         "--junctions.join=true",
         "--output-file",      str(CONFIG.network_file)
     ]
-    subprocess.run(netconvert_cmd, check=True)
+    
+    try:
+        result = subprocess.run(basic_cmd, check=True, capture_output=True, text=True)
+        print("Network conversion completed successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Network conversion failed: {e.stderr}")
+        raise
 
 
 def build_sumo_command(

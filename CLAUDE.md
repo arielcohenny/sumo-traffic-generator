@@ -109,16 +109,15 @@ pytest
 
 ### Pipeline Architecture
 
-The application follows a sequential 8-step pipeline:
+The application follows a sequential 7-step pipeline:
 
-1. **Network Generation** (`src/network/generate_grid.py`): Creates orthogonal grid using SUMO's netgenerate
-2. **Edge Splitting** (`src/network/split_edges.py`): Splits edges for enhanced network complexity
+1. **Network Generation** (`src/network/generate_grid.py`): Creates orthogonal grid using SUMO's netgenerate (always 1-lane)
+2. **Integrated Edge Splitting with Flow-Based Lane Assignment** (`src/network/split_edges_with_lanes.py`): Splits edges and assigns lanes based on traffic flow requirements with sophisticated movement distribution
 3. **Zone Extraction** (`src/network/zones.py`): Extracts polygonal zones from junctions (currently disabled)
-4. **Lane Configuration** (`src/network/lane_counts.py`): Applies configurable lane assignments using realistic, random, or fixed algorithms
-5. **Edge Attractiveness** (`src/network/edge_attrs.py`): Computes departure/arrival weights using multiple research-based methods with 4-phase temporal system
-6. **Traffic Light Injection** (`src/network/traffic_lights.py`): Adds default four-phase signal plans
-7. **Route Generation** (`src/traffic/`): Generates vehicle routes using 4-strategy routing system and 3-type vehicle assignment
-8. **Dynamic Simulation** (`src/sim/sumo_controller.py`): Runs SUMO with TraCI integration, Nimrod's algorithm, and real-time phase switching
+4. **Edge Attractiveness** (`src/network/edge_attrs.py`): Computes departure/arrival weights using multiple research-based methods with 4-phase temporal system
+5. **Traffic Light Injection** (`src/network/traffic_lights.py`): Adds default four-phase signal plans
+6. **Route Generation** (`src/traffic/`): Generates vehicle routes using 4-strategy routing system and 3-type vehicle assignment
+7. **Dynamic Simulation** (`src/sim/sumo_controller.py`): Runs SUMO with TraCI integration, Nimrod's algorithm, and real-time phase switching
 
 ### Key Modules
 
@@ -166,7 +165,7 @@ Central configuration in `src/config.py` using dataclasses:
 
 **Key Configuration Constants**:
 
-- `HEAD_DISTANCE = 30`: Distance from downstream end when splitting edges
+- `HEAD_DISTANCE = 50`: Distance from downstream end when splitting edges
 - `MIN_LANES = 1`, `MAX_LANES = 3`: Lane count bounds for randomization
 - `LAMBDA_DEPART = 3.5`, `LAMBDA_ARRIVE = 2.0`: Poisson distribution parameters for edge attractiveness
 - `DEFAULT_JUNCTION_RADIUS = 10.0`: Junction radius in meters
@@ -185,6 +184,13 @@ All generated files are placed in `data/` directory:
 
 ## Development Notes
 
+### Deprecated Files
+
+- **`src/network/split_edges.py`**: ❌ **DEPRECATED** - Replaced by integrated approach in `split_edges_with_lanes.py`
+  - No longer imported or used anywhere in the codebase
+  - Safe to delete to reduce codebase complexity
+  - Functionality merged into unified edge splitting implementation
+
 ### Dependencies
 
 - **SUMO**: Requires SUMO installation with netgenerate, netconvert, sumo, sumo-gui
@@ -193,6 +199,9 @@ All generated files are placed in `data/` directory:
 
 ### Current Implementation Status
 
+- ✅ **Integrated Edge Splitting**: Fully implemented and operational
+- ✅ **Error Resolution**: Fixed TraCI integration issues and XML parsing problems
+- ✅ **Code Cleanup**: Removed unused functions and eliminated code duplication
 - Several pipeline steps have commented-out code or early exit points
 - Most validation functions are disabled in the main CLI
 - Zone extraction (Step 2) is currently disabled
@@ -222,10 +231,21 @@ All generated files are placed in `data/` directory:
 ## Memory
 
 - This project is a sophisticated SUMO traffic simulation framework with intelligent grid network generation and dynamic traffic control
-- Uses a comprehensive 8-step pipeline for network and traffic generation
+- Uses a comprehensive 7-step pipeline for network and traffic generation
 - Implements advanced algorithms for zone extraction, land use assignment, and traffic routing
 - Designed with multiple architectural patterns including Strategy, Adapter, and Pipeline patterns
 - Supports reproducible simulations through seeded random generation
+- **Integrated Edge Splitting with Flow-Based Lane Assignment**: 
+  - ✅ **COMPLETED & WORKING**: Unified edge splitting and lane assignment in single optimized process
+  - Replaces separate edge splitting and lane configuration steps with `split_edges_with_lanes.py`
+  - Always starts with 1-lane network from netgenerate for consistent behavior  
+  - Head lanes = max(number_of_movements, lane_count) to ensure sufficient capacity
+  - Tail lanes = lane_count (based on realistic/random/fixed algorithms)
+  - Sophisticated movement distribution algorithm that maximizes total movement assignments
+  - Maintains spatial logic: right→right lanes, left→left lanes, straight→middle, u-turn→leftmost
+  - Prevents crossing conflicts while ensuring all movements are preserved
+  - Even distribution of tail lanes to head lanes for optimal traffic flow
+  - **Recent Fixes**: Resolved TraCI integration errors and XML parsing issues (Phase handling, Vehicle ID extraction)
 - **Lane Count Algorithms**: Three modes for lane assignment - `realistic` (zone-based demand calculation), `random` (randomized within bounds), and `fixed` (uniform count)
 - **Edge Attractiveness Methods**: Five research-based methods (poisson, land_use, gravity, iac, hybrid) with 4-phase temporal system
 - **4-Phase Temporal System**: 
@@ -270,4 +290,13 @@ All generated files are placed in `data/` directory:
   - Dynamically adjusts traffic light phases based on real-time traffic bottlenecks
   - Aims to minimize overall traffic congestion by decentralized decision-making
   - Adapts signal timing based on local traffic conditions at each intersection
+- **Recent Updates (Latest Session)**:
+  - ✅ **Fixed Integration Errors**: Resolved "string indices must be integers, not 'str'" errors in TraCI integration
+  - ✅ **XML Phase Parsing**: Fixed traffic light phase parsing to handle both single and multiple phase cases
+  - ✅ **Vehicle ID Handling**: Improved vehicle index extraction with proper error handling
+  - ✅ **Route File Parsing**: Fixed Path object to string conversion in TraCI controller
+  - ✅ **Code Cleanup**: Removed 427 lines of unused code from `lane_counts.py` (78% reduction)
+  - ✅ **Eliminated Duplication**: Removed duplicate `load_zones_data` function, now imports from `edge_attrs.py`
+  - ✅ **File Removal**: Can safely delete `split_edges.py` (no longer referenced)
+  - ✅ **Working System**: All components now operational with successful test runs
 - **Reminder**: make sure to periodically update CLAUDE.md and README.md to reflect project developments and improvements

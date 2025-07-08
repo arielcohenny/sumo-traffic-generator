@@ -169,7 +169,7 @@ class SumoController:
             route_path = config_dir / route_file
 
             # Parse route file to get vehicle strategies
-            route_tree = ET.parse(route_path)
+            route_tree = ET.parse(str(route_path))
             route_root = route_tree.getroot()
 
             for vehicle in route_root.findall('vehicle'):

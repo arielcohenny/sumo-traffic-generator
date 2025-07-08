@@ -58,7 +58,12 @@ class NetworkData:
                 self.connections_per_tl[tlLogic['@id']].junction_id)
             # Ariel: added a guard to avoid KeyError
             # A lightweight guard: only look up the connection when it exists.
-            for phase in tlLogic['phase']:
+            # Handle both single phase (dict) and multiple phases (list) cases
+            phases = tlLogic['phase']
+            if isinstance(phases, dict):
+                phases = [phases]  # Convert single phase to list
+            
+            for phase in phases:
                 p_data = Phase(int(phase['@duration']), phase['@state'])
                 conn_list = self.connections_per_tl[tlLogic['@id']].connections
                 for inx, state in enumerate(phase['@state']):

@@ -9,10 +9,9 @@ from src.sim.sumo_controller import SumoController
 from src.sim.sumo_utils import generate_sumo_conf_file, rebuild_network
 
 from src.network.generate_grid import generate_grid_network
-from src.network.lane_counts import set_lane_counts
+from src.network.split_edges_with_lanes import split_edges_with_flow_based_lanes
 from src.network.edge_attrs import assign_edge_attractiveness
 from src.network.zones import extract_zones_from_junctions
-from src.network.split_edges import insert_split_edges
 
 from src.traffic_control.decentralized_traffic_bottlenecks.integration import load_tree
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.graph import Graph
@@ -20,7 +19,7 @@ from src.traffic_control.decentralized_traffic_bottlenecks.classes.network impor
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.net_data_builder import build_network_json
 
 from src.validate.errors import ValidationError
-from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_insert_split_edges, verify_rebuild_network, verify_set_lane_counts, verify_assign_edge_attractiveness, verify_generate_sumo_conf_file
+from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_rebuild_network, verify_assign_edge_attractiveness, verify_generate_sumo_conf_file
 from src.validate.validate_traffic import verify_generate_vehicle_routes
 from src.validate.validate_simulation import verify_nimrod_integration_setup, verify_algorithm_runtime_behavior
 
@@ -166,16 +165,7 @@ def main():
             exit(1)
         print(f"Generated grid successfully.")
 
-        # --- Step 2: Insert Split Edges ---
-        insert_split_edges()
-        try:
-            verify_insert_split_edges(int(args.block_size_m))
-        except ValidationError as ve:
-            print(f"Failed to insert split edges: {ve}")
-            exit(1)
-        print("Inserted split edges successfully.")
-
-        # --- Step 3: Extract Zones - --
+        # --- Step 2: Extract Zones ---
         extract_zones_from_junctions(
             args.block_size_m,
             seed=seed,
@@ -194,27 +184,20 @@ def main():
             exit(1)
         print("Extracted land use zones successfully.")
 
-        # --- Step 4: Set Lane Counts ---
+        # --- Step 3: Integrated Edge Splitting with Flow-Based Lane Assignment ---
         if args.lane_count != "0" and not (args.lane_count.isdigit() and args.lane_count == "0"):
-            set_lane_counts(
+            split_edges_with_flow_based_lanes(
                 seed=seed,
                 min_lanes=CONFIG.MIN_LANES,
                 max_lanes=CONFIG.MAX_LANES,
                 algorithm=args.lane_count
             )
-            try:
-                verify_set_lane_counts(
-                    min_lanes=CONFIG.MIN_LANES,
-                    max_lanes=CONFIG.MAX_LANES,
-                    algorithm=args.lane_count,
-                )
-            except ValidationError as ve:
-                print(f"Lane-count validation failed: {ve}")
-                exit(1)
+            print(
+                "Successfully completed integrated edge splitting with flow-based lane assignment.")
+        else:
+            print("Skipping lane assignment (lane_count is 0).")
 
-        print("Successfully set lane counts for edges.")
-
-        # --- Step 5: Rebuild Network ---
+        # --- Step 4: Rebuild Network ---
         rebuild_network()
         try:
             verify_rebuild_network()
@@ -223,7 +206,7 @@ def main():
             exit(1)
         print("Rebuilt the network successfully.")
 
-        # --- Step 6: Assign Edge Attractiveness ---
+        # --- Step 5: Assign Edge Attractiveness ---
         assign_edge_attractiveness(
             seed, args.attractiveness, args.time_dependent, args.start_time_hour)
         try:
@@ -234,7 +217,7 @@ def main():
             exit(1)
         print("Assigned edge attractiveness successfully.")
 
-        # --- Step 7: Generate Vehicle Routes ---
+        # --- Step 6: Generate Vehicle Routes ---
         generate_vehicle_routes(
             net_file=CONFIG.network_file,
             output_file=CONFIG.routes_file,
@@ -257,7 +240,7 @@ def main():
             exit(1)
         print("Generated vehicle routes successfully.")
 
-        # --- Step 8: Generate SUMO Configuration File ---
+        # --- Step 7: Generate SUMO Configuration File ---
         sumo_cfg_path = generate_sumo_conf_file(
             CONFIG.config_file,
             CONFIG.network_file,
@@ -271,7 +254,7 @@ def main():
             exit(1)
         print(f"Generated SUMO configuration file successfully.")
 
-        # --- Step 9: Dynamic Simulation via TraCI & Nimrod’s Tree Method ---
+        # --- Step 8: Dynamic Simulation via TraCI & Nimrod’s Tree Method ---
         # Load network tree structure and runner configuration
         json_file = Path(CONFIG.network_file).with_suffix(".json")
         if json_file.exists():
@@ -355,7 +338,10 @@ def main():
         print("Simulation completed successfully.")
 
     except Exception as e:
+        import traceback
         print(f"An error occurred. Error: {e}")
+        print("Full traceback:")
+        traceback.print_exc()
         exit(1)
 
 

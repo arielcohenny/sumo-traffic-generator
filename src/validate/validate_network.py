@@ -507,7 +507,7 @@ def verify_insert_split_edges(block_size_m: int) -> None:
         body_length = distance(node_coords[body_from], node_coords[body_to])
         head_length = distance(node_coords[head_from], node_coords[head_to])
 
-        # Head segment should be CONFIG.HEAD_DISTANCE (30m by default)
+        # Head segment should be CONFIG.HEAD_DISTANCE (50m by default)
         expected_head_length = CONFIG.HEAD_DISTANCE
         if abs(head_length - expected_head_length) > 1e-3:
             raise ValidationError(

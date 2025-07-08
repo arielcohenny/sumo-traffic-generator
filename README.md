@@ -4,11 +4,12 @@ SUMO traffic simulation framework
 
 2. Zone Extraction: Derived polygonal zones from adjacent junctions per Table 1 in A Simulation Model for Intra‑Urban Movements.
 
-3. Lane Configuration: Applied configurable lane assignment to each edge with three algorithms:
+3. Integrated Edge Splitting with Flow-Based Lane Assignment: Unified edge splitting and lane configuration into a single optimized process:
 
-   - **Realistic**: Zone-based traffic demand calculation using land use types
-   - **Random**: Randomized assignment within defined bounds (1-3 lanes)
-   - **Fixed**: Uniform lane count across all edges
+   - **Flow-Based Splitting**: Edges split at HEAD_DISTANCE (50m) from downstream junction with intelligent lane distribution
+   - **Movement Preservation**: All traffic movements (left, right, straight, u-turn) preserved through sophisticated lane mapping
+   - **Spatial Logic**: Lane assignments follow real-world patterns (right→right lanes, left→left lanes, straight→middle)
+   - **Three Lane Algorithms**: Realistic (zone-based demand), Random (within bounds), Fixed (uniform count)
 
 4. Edge Attractiveness Modeling: Multiple research-based methods for computing departure/arrival weights:
 
@@ -67,7 +68,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 ### Core Network Parameters
 
 #### `--grid_dimension <int>` (default: 5)
+
 **Purpose:** Defines the size of the orthogonal grid network.
+
 - **Format:** Single integer (e.g., `5` creates a 5×5 grid)
 - **Range:** Minimum 3 for functional networks
 - **Impact:** Larger grids create more complex networks but increase computation time
@@ -76,7 +79,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   - `--grid_dimension 7` → 7×7 grid (49 junctions)
 
 #### `--block_size_m <float>` (default: 200)
+
 **Purpose:** Sets the distance between adjacent junctions in meters.
+
 - **Format:** Floating-point number in meters
 - **Range:** 50-1000m typical for urban scenarios
 - **Impact:** Affects vehicle travel times and network density
@@ -85,7 +90,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   - `--block_size_m 300` → Large suburban blocks
 
 #### `--junctions_to_remove <int|string>` (default: 0)
+
 **Purpose:** Creates network disruptions by removing internal junctions.
+
 - **Format Options:**
   - **Integer:** Random removal count (e.g., `1`, `3`)
   - **List:** Specific junction IDs (e.g., `"A1,B2,C3"`)
@@ -98,20 +105,24 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 ### Traffic Generation Parameters
 
 #### `--num_vehicles <int>` (default: 300)
+
 **Purpose:** Total number of vehicles to generate for the simulation.
+
 - **Range:** 50-2000+ depending on network size and duration
 - **Impact:** Higher counts create more realistic traffic but slower simulation
 - **Guidelines:**
   - **Light traffic:** 200-500 vehicles
-  - **Medium traffic:** 500-1000 vehicles  
+  - **Medium traffic:** 500-1000 vehicles
   - **Heavy traffic:** 1000-1500+ vehicles
 
 #### `--vehicle_types <str>` (default: "passenger 60 commercial 30 public 10")
+
 **Purpose:** Defines the mix of different vehicle types with percentages.
+
 - **Format:** `"type1 percentage1 type2 percentage2 type3 percentage3"`
 - **Vehicle Types:**
   - **`passenger`:** Standard cars (length: 5m, max speed: 50km/h)
-  - **`commercial`:** Trucks/delivery (length: 12m, max speed: 40km/h) 
+  - **`commercial`:** Trucks/delivery (length: 12m, max speed: 40km/h)
   - **`public`:** Buses (length: 10m, max speed: 35km/h)
 - **Constraint:** Percentages must sum to 100
 - **Examples:**
@@ -119,7 +130,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   - `"passenger 40 commercial 55 public 5"` → Industrial area
 
 #### `--departure_pattern <str>` (default: "six_periods")
+
 **Purpose:** Controls when vehicles enter the simulation throughout the day.
+
 - **Options:**
   - **`six_periods`:** Research-based 6-period temporal system
   - **`uniform`:** Even distribution across simulation time
@@ -130,7 +143,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 ### Simulation Control Parameters
 
 #### `--step-length <float>` (default: 1.0)
+
 **Purpose:** Simulation timestep in seconds for TraCI control loop.
+
 - **Range:** 0.1-5.0 seconds typical
 - **Impact:** Smaller values = more precise control, slower simulation
 - **Recommendations:**
@@ -138,7 +153,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   - **Fast simulation:** 2.0-5.0 seconds
 
 #### `--end-time <int>` (default: 86400)
+
 **Purpose:** Total simulation duration in seconds.
+
 - **Common Values:**
   - **1800:** 30 minutes (quick tests)
   - **3600:** 1 hour (standard tests)
@@ -146,26 +163,34 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   - **86400:** 24 hours (full day simulation)
 
 #### `--start_time_hour <float>` (default: 0.0)
+
 **Purpose:** Real-world hour when simulation begins (0-24).
+
 - **Impact:** Affects time-dependent attractiveness and departure patterns
 - **Examples:**
   - `--start_time_hour 7.0` → Start at 7am (morning rush)
   - `--start_time_hour 17.0` → Start at 5pm (evening rush)
 
 #### `--seed <int>` (optional)
+
 **Purpose:** Random number generator seed for reproducible results.
+
 - **Usage:** Omit for random behavior, specify for consistent results
 - **Example:** `--seed 42` → Always generates identical scenarios
 
 #### `--gui`
+
 **Purpose:** Launch SUMO with graphical interface instead of headless mode.
+
 - **Impact:** Enables visual monitoring but slows simulation
 - **Recommended:** For development, debugging, and demonstrations
 
 ### Advanced Traffic Parameters
 
 #### `--routing_strategy <str>` (default: "shortest 100")
+
 **Purpose:** Defines how vehicles choose routes with percentage-based mixing.
+
 - **Strategies:**
   - **`shortest`:** Static shortest path (distance-based)
   - **`realtime`:** Dynamic GPS-style routing (reroutes every 30s)
@@ -179,7 +204,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   - `"shortest 25 realtime 25 fastest 25 attractiveness 25"` → All strategies
 
 #### `--attractiveness <str>` (default: "poisson")
+
 **Purpose:** Method for calculating edge departure/arrival attractiveness weights.
+
 - **Methods:**
   - **`poisson`:** Statistical distribution (λ_depart=3.5, λ_arrive=2.0)
   - **`land_use`:** Zone-type based multipliers (residential, commercial, etc.)
@@ -189,18 +216,22 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 - **Impact:** Affects where vehicles start/end trips, creating realistic flow patterns
 
 #### `--time_dependent`
+
 **Purpose:** Apply 4-phase time-of-day variations to attractiveness patterns.
+
 - **Phases:**
   - **Morning Peak (6:00-9:30):** High outbound traffic (home→work)
   - **Midday Off-Peak (9:30-16:00):** Balanced baseline traffic
-  - **Evening Peak (16:00-19:00):** High inbound traffic (work→home)  
+  - **Evening Peak (16:00-19:00):** High inbound traffic (work→home)
   - **Night Low (19:00-6:00):** Minimal activity
 - **Impact:** Creates realistic daily traffic rhythm vs static patterns
 
 ### Network Configuration Parameters
 
 #### `--lane_count <str|int>` (default: "realistic")
+
 **Purpose:** Algorithm for assigning lane counts to network edges.
+
 - **Options:**
   - **`realistic`:** Zone-based demand calculation (1-3 lanes)
   - **`random`:** Random assignment between min/max bounds
@@ -208,7 +239,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 - **Impact:** Affects network capacity and traffic flow characteristics
 
 #### `--traffic_light_strategy <str>` (default: "opposites")
+
 **Purpose:** Traffic signal phasing strategy at intersections.
+
 - **Strategies:**
   - **`opposites`:** Opposing directions move together (North-South, then East-West)
   - **`incoming`:** Each incoming edge gets individual phase
@@ -393,9 +426,9 @@ src/
 │ └── **init**.py
 ├── network/ # Network utilities and zone extraction
 │ ├── generate_grid.py # Creates orthogonal grid using SUMO's netgenerate
-│ ├── split_edges.py # Splits edges for enhanced network complexity  
+│ ├── split_edges_with_lanes.py # Integrated edge splitting with flow-based lane assignment
 │ ├── zones.py # Polygon extraction and zone generation from junctions
-│ ├── lane_counts.py # Lane assignment algorithms (realistic, random, fixed)
+│ ├── lane_counts.py # Core lane calculation algorithms (realistic, random, fixed)
 │ ├── edge_attrs.py # Multiple edge attractiveness methods with time dependency
 │ ├── traffic_lights.py # Traffic light injection and signal plans
 │ └── **init**.py
@@ -415,7 +448,7 @@ src/
 ├── requirements.txt # Project dependencies
 └── README.md # Short description of the project
 
-```
+````
 
 ## Example Scenarios
 
@@ -424,61 +457,80 @@ Here are 10 comprehensive scenarios for testing the SUMO traffic generator with 
 ### **Scenario 1: Morning Rush Hour Peak Traffic**
 ```bash
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 800 --step-length 1.0 --end-time 7200 --departure_pattern six_periods --start_time_hour 7.0 --gui
-```
+````
+
 **Description:** Simulates 2-hour morning rush period starting at 7am with heavy traffic (800 vehicles) using research-based departure patterns. Perfect for studying congestion during peak commuting hours.
 
 ### **Scenario 2: Light Evening Traffic**
+
 ```bash
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 0 --num_vehicles 500 --step-length 1.0 --end-time 5400 --departure_pattern uniform --start_time_hour 20.0 --gui
 ```
+
 **Description:** 1.5-hour evening simulation with moderate traffic (500 vehicles) uniformly distributed. Tests system performance during lighter traffic periods with no junction disruptions.
 
 ### **Scenario 3: All-Day Urban Simulation**
+
 ```bash
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1200 --step-length 1.0 --end-time 28800 --departure_pattern six_periods --attractiveness poisson --gui
 ```
+
 **Description:** Full 8-hour simulation (8am-4pm) with high vehicle density (1200 vehicles) and one random junction removed. Uses realistic traffic patterns to study long-term traffic flow dynamics.
 
 ### **Scenario 4: Custom Rush Hour Pattern**
+
 ```bash
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 750 --step-length 1.0 --end-time 10800 --departure_pattern 'rush_hours:7-9:50,17-19:40,rest:10' --routing_strategy 'shortest 70 realtime 30' --gui
 ```
+
 **Description:** 3-hour simulation with custom rush hour patterns (strong morning and evening peaks) and mixed routing strategies. Tests dynamic rerouting under realistic traffic conditions.
 
 ### **Scenario 5: Midnight to Dawn Low Traffic**
+
 ```bash
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 0 --num_vehicles 600 --step-length 1.0 --end-time 21600 --departure_pattern six_periods --start_time_hour 0.0 --time_dependent --gui
 ```
+
 **Description:** 6-hour overnight simulation (midnight-6am) with time-dependent attractiveness patterns. Studies traffic behavior during low-demand periods with dynamic edge attractiveness changes.
 
 ### **Scenario 6: High-Density Stress Test**
+
 ```bash
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1500 --step-length 1.0 --end-time 14400 --departure_pattern uniform --routing_strategy 'shortest 50 realtime 30 fastest 20' --gui
 ```
+
 **Description:** 4-hour stress test with very high vehicle density (1500 vehicles) and diverse routing strategies. Tests system stability and Nimrod's algorithm under extreme congestion conditions.
 
 ### **Scenario 7: Time-Dependent Attractiveness Test**
+
 ```bash
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 900 --step-length 1.0 --end-time 12600 --departure_pattern six_periods --time_dependent --start_time_hour 8.0 --gui
 ```
+
 **Description:** 3.5-hour simulation with time-dependent edge attractiveness that changes dynamically during the simulation. Tests how traffic patterns adapt to changing attractiveness profiles during morning hours.
 
 ### **Scenario 8: Weekend Traffic Pattern**
+
 ```bash
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 0 --num_vehicles 650 --step-length 1.0 --end-time 18000 --departure_pattern uniform --start_time_hour 10.0 --attractiveness poisson --gui
 ```
+
 **Description:** 5-hour weekend simulation (10am-3pm) with moderate, uniformly distributed traffic using default Poisson attractiveness. Simulates recreational travel patterns without peak hour constraints.
 
 ### **Scenario 9: Infrastructure Disruption Test**
+
 ```bash
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1000 --step-length 1.0 --end-time 9000 --departure_pattern six_periods --routing_strategy 'shortest 40 realtime 60' --seed 123 --gui
 ```
+
 **Description:** 2.5-hour simulation testing network resilience with one junction removed and heavy real-time rerouting (60%). Uses fixed seed for reproducible infrastructure disruption analysis.
 
 ### **Scenario 10: Multi-Modal Traffic Mix**
+
 ```bash
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 850 --step-length 1.0 --end-time 16200 --departure_pattern six_periods --vehicle_types 'passenger 50 commercial 40 public 10' --attractiveness hybrid --gui
 ```
+
 **Description:** 4.5-hour simulation with heavy commercial vehicle presence (40%) and hybrid attractiveness model. Studies mixed traffic flow with significant freight movement and public transport interaction.
 
 ### **Quick Testing Commands**
@@ -497,5 +549,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 -
 ```
 
 Each scenario tests different aspects of the traffic simulation system including temporal patterns, routing strategies, vehicle compositions, and network disruptions while maintaining realistic parameters for meaningful analysis.
+
+```
 
 ```

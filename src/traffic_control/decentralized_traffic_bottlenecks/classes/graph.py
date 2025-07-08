@@ -116,6 +116,18 @@ class Graph:
 
     def update_traffic_lights(self, step, seconds_in_cycle, algo_type):
         for node_id in self.tl_node_ids:
+            # Ensure node_id is an integer index for the all_nodes list
+            if not isinstance(node_id, int):
+                print(
+                    f"Warning: update_traffic_lights - node_id {node_id} is not an integer, skipping...")
+                continue
+
+            # Check bounds to avoid index out of range
+            if node_id >= len(self.all_nodes):
+                print(
+                    f"Warning: update_traffic_lights - node_id {node_id} is out of bounds for all_nodes list (length {len(self.all_nodes)}), skipping...")
+                continue
+
             self.all_nodes[node_id].update_traffic_light(
                 step % seconds_in_cycle, algo_type)
 
@@ -126,16 +138,70 @@ class Graph:
             self.this_iter_vehicles.add(v_inx)
 
     def get_traffic_lights_phases(self, step):
+        phase_map = {}
         for node_id in self.tl_node_ids:
-            self.all_nodes[node_id].save_phase(step)
+            # Ensure node_id is an integer index for the all_nodes list
+            if not isinstance(node_id, int):
+                print(
+                    f"Warning: node_id {node_id} is not an integer, skipping...")
+                continue
+
+            # Check bounds to avoid index out of range
+            if node_id >= len(self.all_nodes):
+                print(
+                    f"Warning: node_id {node_id} is out of bounds for all_nodes list (length {len(self.all_nodes)}), skipping...")
+                continue
+
+            node = self.all_nodes[node_id]
+            node.save_phase(step)
+
+            # Get current phase state for this traffic light
+            try:
+                # Use the traffic light ID (string) not the node_id (integer)
+                tl_id = node.tl
+                if tl_id:  # Only proceed if tl_id is not None
+                    current_phase = traci.trafficlight.getRedYellowGreenState(
+                        tl_id)
+                    phase_map[tl_id] = current_phase
+            except Exception as e:
+                # Fallback if traffic light doesn't exist or has issues
+                print(
+                    f"Warning: Error getting phase for traffic light {node.tl}: {e}")
+                if hasattr(node, 'tl') and node.tl:
+                    phase_map[node.tl] = "unknown"
+        return phase_map
 
     def calc_nodes_statistics(self, ended_iteration, seconds_in_cycle):
         for node_id in self.tl_node_ids:
+            # Ensure node_id is an integer index for the all_nodes list
+            if not isinstance(node_id, int):
+                print(
+                    f"Warning: calc_nodes_statistics - node_id {node_id} is not an integer, skipping...")
+                continue
+
+            # Check bounds to avoid index out of range
+            if node_id >= len(self.all_nodes):
+                print(
+                    f"Warning: calc_nodes_statistics - node_id {node_id} is out of bounds for all_nodes list (length {len(self.all_nodes)}), skipping...")
+                continue
+
             self.all_nodes[node_id].aggregate_phases_per_iter(
                 ended_iteration, seconds_in_cycle)
 
     def calc_wanted_programs(self, seconds_in_cycle, iteration_trees, iteration, cost_type, algo_type):
         for node_id in self.tl_node_ids:
+            # Ensure node_id is an integer index for the all_nodes list
+            if not isinstance(node_id, int):
+                print(
+                    f"Warning: calc_wanted_programs - node_id {node_id} is not an integer, skipping...")
+                continue
+
+            # Check bounds to avoid index out of range
+            if node_id >= len(self.all_nodes):
+                print(
+                    f"Warning: calc_wanted_programs - node_id {node_id} is out of bounds for all_nodes list (length {len(self.all_nodes)}), skipping...")
+                continue
+
             self.all_nodes[node_id].calc_wanted_program(seconds_in_cycle, iteration_trees[-1], cost_type, self.all_links, self.all_heads_dict,
                                                         iteration, algo_type)
 

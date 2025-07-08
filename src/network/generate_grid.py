@@ -32,9 +32,8 @@ def generate_full_grid_network(dimension, block_size_m, lane_count_arg, traffic_
         # "--aggregate-warnings=1",
         "-o", CONFIG.network_file
     ]
-    # Only use netgenerate's fixed lane count if a specific integer is provided
-    if lane_count_arg.isdigit() and int(lane_count_arg) > 0:
-        netgenerate_cmd.append(f"--default.lanenumber={lane_count_arg}")
+    # Always use 1 lane from netgenerate - lane assignment will be handled by integrated step
+    netgenerate_cmd.append("--default.lanenumber=1")
 
     try:
         subprocess.run(netgenerate_cmd, check=True,
