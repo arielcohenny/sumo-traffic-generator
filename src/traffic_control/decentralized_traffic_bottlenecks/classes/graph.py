@@ -1,4 +1,5 @@
 import traci
+from typing import List
 
 from .iterations_trees import IterationTrees
 from .link import Link
@@ -20,7 +21,7 @@ class Graph:
         self.heads_to_tails = {}
         self.all_heads_dict = {}
         self.loaded_per_iter = []
-        self.all_vehicles: [Vehicle] = [None] * VEHICLES_MAX_NUM
+        self.all_vehicles: List[Vehicle] = [None] * VEHICLES_MAX_NUM
         self.last_iter_vehicles = set()
         self.this_iter_vehicles = set()
         self.ended_vehicles_count = 0
@@ -92,9 +93,9 @@ class Graph:
             head.add_count_to_calculation()
 
     def close_prev_vehicle_step(self, step: int):
-        ended: [int] = list(
+        ended: List[int] = list(
             self.last_iter_vehicles.difference(self.this_iter_vehicles))
-        started: [int] = list(
+        started: List[int] = list(
             self.this_iter_vehicles.difference(self.last_iter_vehicles))
         for v_id in ended:
             vehicle: Vehicle = self.all_vehicles[v_id]
