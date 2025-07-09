@@ -128,6 +128,13 @@ def main():
         help="Traffic light phasing strategy: 'opposites' (default, opposing directions together) or 'incoming' (each edge gets own phase)"
     )
     parser.add_argument(
+        "--traffic_control",
+        type=str,
+        default="tree_method",
+        choices=["tree_method", "actuated", "fixed"],
+        help="Traffic control method: 'tree_method' (default, Nimrod's algorithm), 'actuated' (SUMO gap-based), or 'fixed' (static timing)."
+    )
+    parser.add_argument(
         "--gui",
         action="store_true",
         help="Launch SUMO in GUI mode (sumo-gui) instead of headless sumo"
@@ -255,15 +262,50 @@ def main():
         print(f"Generated SUMO configuration file successfully.")
 
         # --- Step 8: Dynamic Simulation via TraCI & Nimrod’s Tree Method ---
-        # Load network tree structure and runner configuration
-        json_file = Path(CONFIG.network_file).with_suffix(".json")
-        if json_file.exists():
-            json_file.unlink()
-        tree_data, run_config = load_tree(
-            net_file=CONFIG.network_file,
-            sumo_cfg=sumo_cfg_path
-        )
-        print("Loaded network tree and run configuration successfully.")
+        # Initialize traffic control method-specific objects
+        if args.traffic_control == "tree_method":
+            # Load network tree structure and runner configuration
+            json_file = Path(CONFIG.network_file).with_suffix(".json")
+            if json_file.exists():
+                json_file.unlink()
+            tree_data, run_config = load_tree(
+                net_file=CONFIG.network_file,
+                sumo_cfg=sumo_cfg_path
+            )
+            print("Loaded network tree and run configuration successfully.")
+
+            # Build Nimrod's runtime objects once (outside the callback)
+            json_file = Path(CONFIG.network_file).with_suffix(".json")
+            build_network_json(CONFIG.network_file, json_file)
+            print(f"Built network JSON file: {json_file}")
+
+            network_data = Network(json_file)
+            print("Loaded network data from JSON.")
+            graph = Graph(args.end_time)
+            print("Initialized Nimrod's Graph object.")
+            graph.build(network_data.edges_list, network_data.junctions_dict)
+            print("Built Nimrod's Graph from network data.")
+            seconds_in_cycle = network_data.calc_cycle_time()
+            print("Built network graph and calculated cycle time.")
+
+            # Verify Nimrod integration setup
+            try:
+                verify_nimrod_integration_setup(
+                    tree_data, run_config, network_data, graph, seconds_in_cycle)
+            except ValidationError as ve:
+                print(f"Nimrod integration setup validation failed: {ve}")
+                exit(1)
+            print("Nimrod integration setup verified successfully.")
+        
+        elif args.traffic_control == "actuated":
+            print("Using SUMO Actuated traffic control - no additional setup needed.")
+            # Set variables to None for actuated control
+            tree_data = run_config = network_data = graph = seconds_in_cycle = None
+        
+        elif args.traffic_control == "fixed":
+            print("Using Fixed-time traffic control - no additional setup needed.")
+            # Set variables to None for fixed control
+            tree_data = run_config = network_data = graph = seconds_in_cycle = None
 
         # Initialize the TraCI controller
         controller = SumoController(
@@ -277,61 +319,51 @@ def main():
         )
         print("Initialized TraCI controller successfully.")
 
-        # Build Nimrod’s runtime objects once (outside the callback)
-        json_file = Path(CONFIG.network_file).with_suffix(".json")
-        build_network_json(CONFIG.network_file, json_file)
-        print(f"Built network JSON file: {json_file}")
-
-        network_data = Network(json_file)
-        print("Loaded network data from JSON.")
-        graph = Graph(args.end_time)
-        print("Initialized Nimrod's Graph object.")
-        graph.build(network_data.edges_list, network_data.junctions_dict)
-        print("Built Nimrod's Graph from network data.")
-        seconds_in_cycle = network_data.calc_cycle_time()
-        print("Built network graph and calculated cycle time.")
-
-        # Verify Nimrod integration setup
-        try:
-            verify_nimrod_integration_setup(
-                tree_data, run_config, network_data, graph, seconds_in_cycle)
-        except ValidationError as ve:
-            print(f"Nimrod integration setup validation failed: {ve}")
-            exit(1)
-        print("Nimrod integration setup verified successfully.")
 
         # Per‑step TraCI controller  ✅
         def control_callback(current_time: int):
-            """Apply Nimrod's Tree‑Method phase decisions each simulation step."""
+            """Apply selected traffic control method each simulation step."""
+            
+            if args.traffic_control == "tree_method":
+                # Nimrod's Tree Method
+                # 1) Update domain model and compute new Boolean decisions
+                graph.update_traffic_lights(current_time,
+                                            seconds_in_cycle,
+                                            run_config.algo_type)
 
-            # 1) Update domain model and compute new Boolean decisions
-            graph.update_traffic_lights(current_time,
-                                        seconds_in_cycle,
-                                        run_config.algo_type)
+                # 2) Translate to SUMO colour strings (Graph does this for us)
+                # Ariel: adding a guard here to ensure we have valid phase_map
+                phase_map = graph.get_traffic_lights_phases(int(current_time))
+                if not phase_map:   # guard for None / empty dict
+                    return
 
-            # 2) Translate to SUMO colour strings (Graph does this for us)
-            # Ariel: adding a guard here to ensure we have valid phase_map
-            phase_map = graph.get_traffic_lights_phases(int(current_time))
-            if not phase_map:   # guard for None / empty dict
-                return
+                # Runtime verification of algorithm behavior
+                try:
+                    verify_algorithm_runtime_behavior(
+                        current_time,
+                        phase_map,
+                        graph,
+                        CONFIG.SIMULATION_VERIFICATION_FREQUENCY
+                    )
+                except ValidationError as ve:
+                    print(
+                        f"Algorithm runtime validation failed at step {current_time}: {ve}")
+                    traci.close()
+                    exit(1)
 
-            # Runtime verification of algorithm behavior
-            try:
-                verify_algorithm_runtime_behavior(
-                    current_time,
-                    phase_map,
-                    graph,
-                    CONFIG.SIMULATION_VERIFICATION_FREQUENCY
-                )
-            except ValidationError as ve:
-                print(
-                    f"Algorithm runtime validation failed at step {current_time}: {ve}")
-                traci.close()
-                exit(1)
-
-            # 3) Push every TLS state to TraCI
-            for tls_id, state in phase_map.items():
-                traci.trafficlight.setRedYellowGreenState(tls_id, state)
+                # 3) Push every TLS state to TraCI
+                for tls_id, state in phase_map.items():
+                    traci.trafficlight.setRedYellowGreenState(tls_id, state)
+            
+            elif args.traffic_control == "actuated":
+                # SUMO Actuated control - let SUMO handle traffic lights automatically
+                # No explicit control needed, SUMO's actuated logic will manage phases
+                pass
+            
+            elif args.traffic_control == "fixed":
+                # Fixed-time control - let SUMO use the static timings from grid.tll.xml
+                # No explicit control needed, SUMO will use the predefined phase durations
+                pass
 
         # Run the simulation
         controller.run(control_callback)
