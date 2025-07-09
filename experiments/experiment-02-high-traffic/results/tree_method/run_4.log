@@ -1,0 +1,66 @@
+Begin simulating SUMO orthogonal grid network...
+Using seed: 4
+Success.
+Generated grid successfully.
+Created 16 zones based on cellular grid methodology
+Extracted land use zones successfully.
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+Successfully completed integrated edge splitting with flow-based lane assignment.
+Network conversion completed successfully.
+Rebuilt the network successfully.
+Assigned edge attractiveness successfully.
+Using routing strategies: {'shortest': 100.0}
+Using vehicle types: {'passenger': 60.0, 'commercial': 30.0, 'public': 10.0}
+Wrote 1200 vehicles → data/vehicles.rou.xml
+Generated vehicle routes successfully.
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+Generated SUMO configuration file successfully.
+Loaded network tree and run configuration successfully.
+Network data read from data/grid.net.xml
+Built network JSON file: data/grid.net.json
+Loaded network data from JSON.
+Initialized Nimrod's Graph object.
+Built Nimrod's Graph from network data.
+Built network graph and calculated cycle time.
+Nimrod integration setup verified successfully.
+Initialized TraCI controller successfully.
+Running SUMO simulation...
+Starting SUMO with TraCI...
+ Retrying in 1 seconds
+Interrupt signal received, trying to exit gracefully.
+Traceback (most recent call last):
+  File "/Library/Frameworks/EclipseSUMO.framework/Versions/1.22.0/EclipseSUMO/share/sumo/tools/traci/main.py", line 97, in connect
+    return connection.Connection(host, port, proc, traceFile, traceGetters, label)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/EclipseSUMO.framework/Versions/1.22.0/EclipseSUMO/share/sumo/tools/traci/connection.py", line 83, in __init__
+    self._socket.connect((host, port))
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+ConnectionRefusedError: [Errno 61] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/cli.py", line 398, in <module>
+    main()
+    ~~~~^^
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/cli.py", line 369, in main
+    controller.run(control_callback)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/sim/sumo_controller.py", line 328, in run
+    self.start()
+    ~~~~~~~~~~^^
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/sim/sumo_controller.py", line 73, in start
+    traci.start(sumo_cmd)
+    ~~~~~~~~~~~^^^^^^^^^^
+  File "/Library/Frameworks/EclipseSUMO.framework/Versions/1.22.0/EclipseSUMO/share/sumo/tools/traci/main.py", line 147, in start
+    result = init(sumoPort, numRetries, "localhost", label, sumoProcess, doSwitch, traceFile, traceGetters)
+  File "/Library/Frameworks/EclipseSUMO.framework/Versions/1.22.0/EclipseSUMO/share/sumo/tools/traci/main.py", line 116, in init
+    con = connect(port, numRetries, host, proc, 1, traceFile, traceGetters, label)
+  File "/Library/Frameworks/EclipseSUMO.framework/Versions/1.22.0/EclipseSUMO/share/sumo/tools/traci/main.py", line 105, in connect
+    time.sleep(waitBetweenRetries)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

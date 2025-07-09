@@ -624,6 +624,144 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 
 
 Each scenario tests different aspects of the traffic simulation system including temporal patterns, routing strategies, vehicle compositions, and network disruptions while maintaining realistic parameters for meaningful analysis.
 
-```
+## Experimental Framework
+
+The system includes a comprehensive experimental framework for comparing different traffic control methods, replicating Nimrod's research methodology for traffic control evaluation.
+
+### Experiment Structure
+
+The framework is located in the `experiments/` directory with two main experiments:
 
 ```
+experiments/
+├── experiment-01-moderate-traffic/  # 600 vehicles, 2-hour simulation
+│   ├── run_experiment.sh           # Automated experiment runner
+│   ├── analyze_results.py          # Statistical analysis script
+│   └── results/                    # Output directory
+│       ├── tree_method/           # Nimrod's Tree Method results
+│       ├── actuated/              # SUMO Actuated control results
+│       ├── fixed/                 # Fixed-time control results
+│       └── random/                # Mixed routing as random proxy
+└── experiment-02-high-traffic/     # 1200 vehicles, 2-hour simulation
+    ├── run_experiment.sh           # Same structure as experiment-01
+    ├── analyze_results.py
+    └── results/
+```
+
+### Traffic Control Methods Compared
+
+1. **Tree Method** (`tree_method`): Nimrod's decentralized traffic optimization algorithm
+2. **SUMO Actuated** (`actuated`): Vehicle-responsive signal control with gap-based detection
+3. **Fixed Timing** (`fixed`): Static signal timing from pre-configured plans
+4. **Random Proxy** (`random`): Fixed timing with mixed routing strategies (25% each strategy)
+
+### Running Experiments
+
+Each experiment runs 20 iterations per traffic control method (80 total simulations) with different random seeds to ensure statistical significance:
+
+```bash
+# Run moderate traffic experiment (600 vehicles)
+cd experiments/experiment-01-moderate-traffic
+./run_experiment.sh
+
+# Run high traffic experiment (1200 vehicles)
+cd experiments/experiment-02-high-traffic
+./run_experiment.sh
+
+# Analyze results after completion
+python analyze_results.py
+```
+
+### Experimental Parameters
+
+Both experiments use consistent parameters except for vehicle count:
+
+- **Grid**: 5×5 network with 200m blocks
+- **Duration**: 2 hours (7200 seconds)
+- **Step Length**: 1.0 seconds
+- **Departure Pattern**: Uniform distribution
+- **Iterations**: 20 per method for statistical significance
+- **Seeds**: 1-20 for reproducible results
+
+**Moderate Traffic (Experiment 01):**
+- 600 vehicles total
+- Tests normal traffic conditions
+- Expected completion rates: 70-90%
+
+**High Traffic (Experiment 02):**
+- 1200 vehicles total  
+- Tests congested traffic conditions
+- Expected completion rates: 40-70%
+
+### Metrics Collected
+
+Each simulation tracks and outputs:
+
+- **Total Vehicles**: Number of vehicles in simulation
+- **Vehicles Reached Destination**: Successful trip completions
+- **Completion Rate**: Percentage of vehicles reaching destination
+- **Average Travel Time**: Mean journey duration for completed trips
+- **Simulation Time**: Total simulation duration
+
+### Statistical Analysis
+
+The `analyze_results.py` scripts provide:
+
+- **Summary Statistics**: Mean, median, standard deviation for each method
+- **Comparative Analysis**: Performance differences between methods
+- **Confidence Intervals**: 95% confidence intervals for statistical significance
+- **Improvement Calculations**: Percentage improvements of Tree Method vs baselines
+- **Visualization**: Box plots and bar charts comparing methods
+
+**Sample Analysis Output:**
+
+```
+=== EXPERIMENT RESULTS SUMMARY ===
+
+Method: tree_method
+  Average Travel Time: 1456.32 ± 45.67 seconds
+  Completion Rate: 0.847 ± 0.023 (84.7%)
+  
+Method: actuated  
+  Average Travel Time: 1632.45 ± 52.34 seconds
+  Completion Rate: 0.793 ± 0.031 (79.3%)
+
+Tree Method Improvements:
+  vs Actuated: 10.8% faster travel time, 6.8% higher completion rate
+  vs Fixed: 15.2% faster travel time, 12.4% higher completion rate
+```
+
+### Expected Results
+
+Based on Nimrod's research, the Tree Method should demonstrate:
+
+- **20-45% improvement** in travel times vs fixed timing
+- **10-25% improvement** vs actuated control  
+- **Higher completion rates** under congested conditions
+- **More consistent performance** across different traffic loads
+
+### Reproducing Research Results
+
+The experimental framework enables:
+
+1. **Validation** of Nimrod's Tree Method claims
+2. **Baseline Comparison** against standard SUMO control methods
+3. **Scalability Testing** across different traffic densities
+4. **Statistical Significance** through multiple iterations
+5. **Publication-Ready Results** with proper confidence intervals
+
+### Running Custom Experiments
+
+Create new experiments by copying the structure:
+
+```bash
+# Create new experiment directory
+mkdir experiments/experiment-03-custom
+cp experiments/experiment-01-moderate-traffic/* experiments/experiment-03-custom/
+
+# Modify parameters in run_experiment.sh
+# Update vehicle count, grid size, or other parameters
+# Run experiment and analysis
+```
+
+The framework provides a rigorous foundation for traffic control research and algorithm validation.

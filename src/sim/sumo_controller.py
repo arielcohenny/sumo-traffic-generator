@@ -51,6 +51,13 @@ class SumoController:
             'realtime': DEFAULT_REALTIME_REROUTING_INTERVAL,
             'fastest': DEFAULT_FASTEST_REROUTING_INTERVAL
         }
+        
+        # Metrics tracking
+        self.total_arrived = 0
+        self.total_departed = 0
+        self.vehicle_travel_times = {}  # Track when each vehicle started its journey
+        self.vehicle_departures = {}    # Track departure times
+        self.vehicle_arrivals = {}      # Track arrival times
 
     def start(self):
         """
@@ -71,6 +78,75 @@ class SumoController:
         Advance the simulation by one step.
         """
         traci.simulationStep()
+
+    def track_vehicle_metrics(self, current_time):
+        """Track vehicle departures and arrivals during simulation."""
+        try:
+            # Get newly departed vehicles
+            departed_vehicles = traci.simulation.getDepartedIDList()
+            for veh_id in departed_vehicles:
+                if veh_id not in self.vehicle_departures:
+                    self.vehicle_departures[veh_id] = current_time
+                    self.total_departed += 1
+            
+            # Get newly arrived vehicles
+            arrived_vehicles = traci.simulation.getArrivedIDList()
+            for veh_id in arrived_vehicles:
+                if veh_id not in self.vehicle_arrivals:
+                    self.vehicle_arrivals[veh_id] = current_time
+                    self.total_arrived += 1
+                    
+                    # Calculate travel time if we have departure time
+                    if veh_id in self.vehicle_departures:
+                        travel_time = current_time - self.vehicle_departures[veh_id]
+                        self.vehicle_travel_times[veh_id] = travel_time
+                        
+        except Exception as e:
+            # Don't let metrics tracking break the simulation
+            pass
+
+    def collect_final_metrics(self):
+        """Collect final simulation metrics using tracked data."""
+        try:
+            simulation_time = traci.simulation.getTime()
+            
+            # Use our tracked metrics
+            arrived_vehicles = self.total_arrived
+            departed_vehicles = self.total_departed
+            
+            # Calculate average travel time from tracked data
+            mean_travel_time = 0.0
+            if self.vehicle_travel_times:
+                total_travel_time = sum(self.vehicle_travel_times.values())
+                mean_travel_time = total_travel_time / len(self.vehicle_travel_times)
+            
+            metrics = {
+                'arrived_vehicles': arrived_vehicles,
+                'departed_vehicles': departed_vehicles,
+                'loaded_vehicles': traci.simulation.getLoadedNumber(),
+                'simulation_time': simulation_time,
+                'mean_travel_time': mean_travel_time,
+                'mean_waiting_time': 0.0  # Would need additional tracking
+            }
+            
+            # Calculate completion rate
+            if departed_vehicles > 0:
+                metrics['completion_rate'] = arrived_vehicles / departed_vehicles
+            else:
+                metrics['completion_rate'] = 0.0
+                
+            return metrics
+        except Exception as e:
+            print(f"Error collecting final metrics: {e}")
+            return {
+                'arrived_vehicles': 0,
+                'departed_vehicles': 0,
+                'loaded_vehicles': 0,
+                'simulation_time': 0,
+                'completion_rate': 0.0,
+                'mean_travel_time': 0.0,
+                'mean_waiting_time': 0.0
+            }
 
     def close(self):
         """
@@ -272,6 +348,9 @@ class SumoController:
         while current_time < self.end_time:
             self.step()
 
+            # Track vehicle metrics at each step
+            self.track_vehicle_metrics(current_time)
+
             # Check for phase transitions
             if self.time_dependent:
                 self.check_phase_transition(current_time)
@@ -283,4 +362,9 @@ class SumoController:
             control_callback(current_time)
             current_time += self.step_length
 
+        # Collect final metrics before closing
+        self.final_metrics = self.collect_final_metrics()
+        
+        # Print final status
+        print(f"Simulation ended at time {current_time}")
         self.close()

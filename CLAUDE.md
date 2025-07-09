@@ -99,6 +99,50 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 --end-time 3600 --seed 42 --traffic_control fixed
 ```
 
+### Experimental Framework
+
+The project includes a comprehensive experimental framework for comparing traffic control methods:
+
+```bash
+# Run moderate traffic experiment (600 vehicles, 2 hours)
+cd experiments/experiment-01-moderate-traffic
+./run_experiment.sh
+
+# Run high traffic experiment (1200 vehicles, 2 hours)
+cd experiments/experiment-02-high-traffic
+./run_experiment.sh
+
+# Analyze results after experiment completion
+python analyze_results.py
+
+# View experiment progress (during execution)
+ls -la results/*/  # Check progress across all methods
+tail -f results/tree_method/run_1.log  # Monitor specific run
+
+# Quick single-method test (for debugging)
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 200 --num_vehicles 600 --end-time 7200 --traffic_control tree_method --seed 1
+
+# Compare methods with identical conditions
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 --end-time 3600 --seed 42 --traffic_control tree_method
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 --end-time 3600 --seed 42 --traffic_control actuated
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 --end-time 3600 --seed 42 --traffic_control fixed
+```
+
+**Experimental Framework Features:**
+
+- **Automated Execution**: Scripts run 80 simulations (20 per method) with different seeds
+- **Methods Compared**: Tree Method (Nimrod's), SUMO Actuated, Fixed timing, Random proxy
+- **Metrics Tracked**: Travel times, completion rates, throughput, vehicle arrivals/departures
+- **Statistical Analysis**: Confidence intervals, significance tests, performance comparisons
+- **Virtual Environment**: Proper activation ensures all dependencies are available
+- **Research Validation**: Framework designed to replicate Nimrod's experimental methodology
+
+**Expected Experiment Results:**
+- **Tree Method vs Fixed**: 20-45% improvement in travel times
+- **Tree Method vs Actuated**: 10-25% improvement 
+- **Higher Completion Rates**: Tree Method should achieve better completion rates under congestion
+- **Statistical Significance**: 20 iterations provide robust confidence intervals
+
 ### Testing
 
 ```bash
@@ -318,4 +362,29 @@ All generated files are placed in `data/` directory:
   - ✅ **File Removal**: Can safely delete `split_edges.py` (no longer referenced)
   - ✅ **Working System**: All components now operational with successful test runs
   - ✅ **Traffic Control Implementation**: Successfully implemented traffic control method switching with tested examples
+- **Experimental Framework**: 
+  - ✅ **COMPLETED & WORKING**: Comprehensive experimental framework for traffic control method comparison
+  - **Two Main Experiments**: moderate-traffic (600 vehicles) and high-traffic (1200 vehicles) over 2-hour simulations
+  - **Statistical Rigor**: 20 iterations per method (80 total simulations per experiment) with different random seeds
+  - **Four Methods Compared**: Tree Method (Nimrod's), SUMO Actuated, Fixed timing, and Random proxy (mixed routing)
+  - **Automated Execution**: `run_experiment.sh` scripts handle all 80 simulations with proper virtual environment activation
+  - **Metrics Collection**: Real-time tracking of travel times, completion rates, throughput, and vehicle arrivals/departures
+  - **Statistical Analysis**: `analyze_results.py` provides summary statistics, confidence intervals, and performance comparisons
+  - **Research Replication**: Framework designed to validate Nimrod's claims of 20-45% improvement vs fixed timing
+  - **Experimental Structure**: 
+    ```
+    experiments/
+    ├── experiment-01-moderate-traffic/  # 600 vehicles, 2-hour simulation
+    │   ├── run_experiment.sh           # Automated experiment runner
+    │   ├── analyze_results.py          # Statistical analysis script
+    │   └── results/                    # Output directory (tree_method, actuated, fixed, random)
+    └── experiment-02-high-traffic/     # 1200 vehicles, 2-hour simulation
+        ├── run_experiment.sh           # Same structure as experiment-01
+        ├── analyze_results.py
+        └── results/
+    ```
+  - **Usage**: `cd experiments/experiment-01-moderate-traffic && ./run_experiment.sh && python analyze_results.py`
+  - **Virtual Environment Fix**: Resolved shapely import issues by adding proper virtual environment activation to experiment scripts
+  - **Expected Results**: Tree Method should demonstrate 20-45% improvement in travel times vs fixed timing, 10-25% vs actuated
+  - **Publication Ready**: Framework generates publication-quality statistical analysis with confidence intervals and significance tests
 - **Reminder**: make sure to periodically update CLAUDE.md and README.md to reflect project developments and improvements

@@ -368,6 +368,23 @@ def main():
         # Run the simulation
         controller.run(control_callback)
         print("Simulation completed successfully.")
+        
+        # Print metrics for experiment analysis
+        print("\n=== EXPERIMENT METRICS ===")
+        print(f"Total vehicles: {args.num_vehicles}")
+        print(f"Simulation time: {args.end_time}")
+        
+        # Get traffic statistics from controller
+        if hasattr(controller, 'final_metrics'):
+            metrics = controller.final_metrics
+            print(f"Vehicles reached destination: {metrics['arrived_vehicles']}")
+            print(f"Vehicles departed: {metrics['departed_vehicles']}")
+            print(f"Completion rate: {metrics['completion_rate']:.3f}")
+            print(f"Average travel time: {metrics['mean_travel_time']:.2f}")
+        else:
+            print("No metrics available")
+        
+        print("=== END METRICS ===\n")
 
     except Exception as e:
         import traceback
