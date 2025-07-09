@@ -60,6 +60,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --routing_strategy <str>      # Routing strategy with percentages (default: 'shortest 100')
   --vehicle_types <str>         # Vehicle types with percentages (default: 'passenger 60 commercial 30 public 10')
   --traffic_light_strategy <str> # Traffic light phasing strategy: 'opposites' (default) or 'incoming'
+  --traffic_control <str>       # Traffic control method: 'tree_method' (default), 'actuated', or 'fixed'
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
 ````
 
@@ -365,6 +366,59 @@ The system supports two traffic light phasing strategies:
 
 Both strategies work with any lane configuration and are compatible with the Tree Method optimization algorithm.
 
+### Traffic Control Methods
+
+#### `--traffic_control <str>` (default: "tree_method")
+
+**Purpose:** Selects the traffic control algorithm for signal optimization.
+
+- **Options:**
+  - **`tree_method`** (default): Uses Nimrod's Tree Method for decentralized traffic optimization
+  - **`actuated`**: Uses SUMO's built-in actuated control (gap-based vehicle detection)
+  - **`fixed`**: Uses fixed-time control with static timings from traffic light configuration
+
+**Traffic Control Comparison:**
+
+- **`tree_method`**: 
+  - Dynamic, decentralized signal optimization
+  - Adapts to real-time traffic conditions
+  - Uses Nimrod's Tree Method algorithm for bottleneck prioritization
+  - Best for complex traffic scenarios with varying demand patterns
+
+- **`actuated`**: 
+  - Vehicle-responsive signal control
+  - Extends green phases when vehicles are detected
+  - Uses SUMO's gap-based detection system
+  - Good baseline for comparison with dynamic methods
+
+- **`fixed`**: 
+  - Static signal timing from pre-configured plans
+  - Uses timing from `grid.tll.xml` file
+  - Predictable but not adaptive to traffic conditions
+  - Traditional signal control approach
+
+**Usage Examples:**
+
+```bash
+# Default Tree Method (dynamic optimization)
+--traffic_control tree_method
+
+# SUMO Actuated control (vehicle-responsive)
+--traffic_control actuated
+
+# Fixed timing (static control)
+--traffic_control fixed
+```
+
+**Experimental Analysis:**
+
+This parameter enables comparative studies between different traffic control approaches:
+- Use `tree_method` for advanced optimization performance
+- Use `actuated` as primary baseline for comparison
+- Use `fixed` for traditional signal control analysis
+- Run multiple experiments with identical parameters except traffic control method
+- Compare metrics like average travel time, throughput, and congestion levels
+
 ### Vehicle Departure Patterns
 
 The system supports multiple temporal distribution patterns for vehicle departure times, replacing the original sequential departure (0, 1, 2, 3...) with realistic temporal patterns based on research:
@@ -546,6 +600,26 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 -
 
 # Algorithm test (disrupted network with dynamic routing)
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 800 --routing_strategy 'realtime 100' --end-time 3600 --gui
+```
+
+### **Traffic Control Comparison Tests**
+
+For comparing different traffic control methods:
+
+```bash
+# Test 1: Tree Method (Nimrod's algorithm)
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 --end-time 3600 --traffic_control tree_method --gui
+
+# Test 2: SUMO Actuated (baseline comparison)
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 --end-time 3600 --traffic_control actuated --gui
+
+# Test 3: Fixed timing (traditional control)
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 --end-time 3600 --traffic_control fixed --gui
+
+# Experimental comparison with identical conditions
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 --end-time 3600 --seed 42 --traffic_control tree_method
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 --end-time 3600 --seed 42 --traffic_control actuated
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 --end-time 3600 --seed 42 --traffic_control fixed
 ```
 
 Each scenario tests different aspects of the traffic simulation system including temporal patterns, routing strategies, vehicle compositions, and network disruptions while maintaining realistic parameters for meaningful analysis.

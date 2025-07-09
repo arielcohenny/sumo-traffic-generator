@@ -44,6 +44,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --routing_strategy 'shortest 70 realtime 30' \
   --vehicle_types 'passenger 70 commercial 20 public 10' \
   --departure_pattern six_periods \
+  --traffic_control tree_method \
   --gui
 ```
 
@@ -86,6 +87,16 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 -
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 500 --end-time 1800 --gui
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 1000 --end-time 3600 --gui
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 800 --routing_strategy 'realtime 100' --end-time 3600 --gui
+
+# Traffic Control Method Comparison Tests
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 800 --end-time 3600 --traffic_control tree_method --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 800 --end-time 3600 --traffic_control actuated --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 800 --end-time 3600 --traffic_control fixed --gui
+
+# Experimental comparison (identical conditions, different control methods)
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 --end-time 3600 --seed 42 --traffic_control tree_method
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 --end-time 3600 --seed 42 --traffic_control actuated
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 --end-time 3600 --seed 42 --traffic_control fixed
 ```
 
 ### Testing
@@ -290,6 +301,13 @@ All generated files are placed in `data/` directory:
   - Dynamically adjusts traffic light phases based on real-time traffic bottlenecks
   - Aims to minimize overall traffic congestion by decentralized decision-making
   - Adapts signal timing based on local traffic conditions at each intersection
+- **Traffic Control System**: 
+  - ✅ **COMPLETED & WORKING**: Implemented `--traffic_control` argument for switching between different traffic control methods
+  - **Three Control Methods**: `tree_method` (default, Nimrod's algorithm), `actuated` (SUMO gap-based), `fixed` (static timing)
+  - **Conditional Object Initialization**: Only loads Nimrod's objects when using tree_method for optimal performance
+  - **Experimental Comparison**: Enables A/B testing between different traffic control approaches using identical network conditions
+  - **Baseline Evaluation**: SUMO Actuated serves as primary baseline for comparing Nimrod's Tree Method performance
+  - **Integration**: Seamlessly works with all existing features (routing strategies, vehicle types, temporal patterns)
 - **Recent Updates (Latest Session)**:
   - ✅ **Fixed Integration Errors**: Resolved "string indices must be integers, not 'str'" errors in TraCI integration
   - ✅ **XML Phase Parsing**: Fixed traffic light phase parsing to handle both single and multiple phase cases
@@ -299,4 +317,5 @@ All generated files are placed in `data/` directory:
   - ✅ **Eliminated Duplication**: Removed duplicate `load_zones_data` function, now imports from `edge_attrs.py`
   - ✅ **File Removal**: Can safely delete `split_edges.py` (no longer referenced)
   - ✅ **Working System**: All components now operational with successful test runs
+  - ✅ **Traffic Control Implementation**: Successfully implemented traffic control method switching with tested examples
 - **Reminder**: make sure to periodically update CLAUDE.md and README.md to reflect project developments and improvements
