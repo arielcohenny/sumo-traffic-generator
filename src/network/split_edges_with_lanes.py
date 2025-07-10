@@ -123,12 +123,15 @@ def split_edges_at_head_distance(edg_root, edge_coords: Dict[str, Tuple[float, f
         # Calculate edge length and direction
         edge_length = math.sqrt((end_x - start_x)**2 + (end_y - start_y)**2)
         
+        # Use dynamic head distance: min(HEAD_DISTANCE, edge_length / 3)
+        actual_head_distance = min(CONFIG.HEAD_DISTANCE, edge_length / 3)
+        
         # Skip very short edges
-        if edge_length <= CONFIG.HEAD_DISTANCE:
+        if edge_length <= actual_head_distance:
             continue
             
-        # Calculate split point at HEAD_DISTANCE from end
-        ratio = (edge_length - CONFIG.HEAD_DISTANCE) / edge_length
+        # Calculate split point at actual_head_distance from end
+        ratio = (edge_length - actual_head_distance) / edge_length
         split_x = start_x + ratio * (end_x - start_x)
         split_y = start_y + ratio * (end_y - start_y)
         

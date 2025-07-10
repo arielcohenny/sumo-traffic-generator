@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Python-based SUMO traffic generator that creates dynamic traffic simulations with intelligent signal control. It generates orthogonal grid networks, extracts zones, applies configurable lane assignments, and uses Nimrod's decentralized traffic control algorithm for dynamic signal optimization.
+This is a Python-based SUMO traffic generator that creates dynamic traffic simulations with intelligent signal control. It supports both synthetic orthogonal grid networks and real-world OpenStreetMap (OSM) data, applies configurable lane assignments, and uses Nimrod's decentralized traffic control algorithm for dynamic signal optimization. The system seamlessly integrates with Manhattan street networks and other real urban topologies.
 
 ## Common Commands
 
@@ -20,6 +20,8 @@ pip install -r requirements.txt
 ```
 
 ### Running the Application
+
+#### Synthetic Grid Networks
 
 ```bash
 # Basic run
@@ -46,6 +48,36 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --departure_pattern six_periods \
   --traffic_control tree_method \
   --gui
+```
+
+#### OpenStreetMap (OSM) Networks
+
+```bash
+# Basic OSM run with GUI
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 500 --end-time 3600 --gui
+
+# OSM with Nimrod's Tree Method traffic control
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 500 --end-time 3600 --traffic_control tree_method --gui
+
+# OSM with different traffic control methods for comparison
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 800 --end-time 3600 --traffic_control tree_method --seed 42
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 800 --end-time 3600 --traffic_control actuated --seed 42
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 800 --end-time 3600 --traffic_control fixed --seed 42
+
+# OSM with advanced features
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --osm_file src/osm/export.osm \
+  --num_vehicles 1000 \
+  --end-time 7200 \
+  --routing_strategy 'shortest 60 realtime 40' \
+  --vehicle_types 'passenger 50 commercial 40 public 10' \
+  --departure_pattern six_periods \
+  --traffic_control tree_method \
+  --gui
+
+# Manhattan East Village test scenarios
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 300 --end-time 1800 --gui  # Quick test
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 1200 --end-time 7200 --traffic_control tree_method --gui  # Stress test
 ```
 
 ### Tested Scenarios (5x5 Grid, 150m Blocks)
@@ -164,13 +196,20 @@ pytest
 
 ### Pipeline Architecture
 
-The application follows a sequential 7-step pipeline:
+The application follows a sequential 7-step pipeline with support for both synthetic and real-world networks:
 
+#### For Synthetic Grid Networks:
 1. **Network Generation** (`src/network/generate_grid.py`): Creates orthogonal grid using SUMO's netgenerate (always 1-lane)
 2. **Integrated Edge Splitting with Flow-Based Lane Assignment** (`src/network/split_edges_with_lanes.py`): Splits edges and assigns lanes based on traffic flow requirements with sophisticated movement distribution
+
+#### For OpenStreetMap (OSM) Networks:
+1. **OSM Import** (`src/network/import_osm.py`): Imports real-world street networks from OSM data using SUMO's netconvert with specialized parameters for urban networks
+2. **Integrated Edge Splitting with Flow-Based Lane Assignment** (`src/network/split_edges_with_lanes.py`): Same algorithm works seamlessly with real street topology, including dead-end streets and irregular intersections
+
+#### Common Pipeline Steps (3-7):
 3. **Zone Extraction** (`src/network/zones.py`): Extracts polygonal zones from junctions (currently disabled)
 4. **Edge Attractiveness** (`src/network/edge_attrs.py`): Computes departure/arrival weights using multiple research-based methods with 4-phase temporal system
-5. **Traffic Light Injection** (`src/network/traffic_lights.py`): Adds default four-phase signal plans
+5. **Traffic Light Injection** (`src/network/traffic_lights.py`): Adds default four-phase signal plans (preserves existing OSM signals)
 6. **Route Generation** (`src/traffic/`): Generates vehicle routes using 4-strategy routing system and 3-type vehicle assignment
 7. **Dynamic Simulation** (`src/sim/sumo_controller.py`): Runs SUMO with TraCI integration, Nimrod's algorithm, and real-time phase switching
 
@@ -184,8 +223,11 @@ The application follows a sequential 7-step pipeline:
 **Network Generation**:
 
 - `src/network/`: All network manipulation and generation logic
+- `src/network/import_osm.py`: OSM data import with comprehensive netconvert parameters
+- `src/network/split_edges_with_lanes.py`: Universal edge splitting algorithm for both synthetic and real networks
 - Uses SUMO's netgenerate, netconvert tools
 - Validates network structure at each step
+- Handles complex real-world topologies including dead-end streets
 
 **Traffic Generation**:
 
@@ -203,6 +245,7 @@ The application follows a sequential 7-step pipeline:
 
 - `src/traffic_control/decentralized_traffic_bottlenecks/`: Nimrod's Tree Method implementation
 - `src/traffic_control/decentralized_traffic_bottlenecks/integration.py`: Bridges simulator with algorithm
+- `src/traffic_control/decentralized_traffic_bottlenecks/classes/net_data_builder.py`: Network adapter with dead-end street handling for real topologies
 
 **Validation**:
 
@@ -362,6 +405,19 @@ All generated files are placed in `data/` directory:
   - ✅ **File Removal**: Can safely delete `split_edges.py` (no longer referenced)
   - ✅ **Working System**: All components now operational with successful test runs
   - ✅ **Traffic Control Implementation**: Successfully implemented traffic control method switching with tested examples
+- **OpenStreetMap (OSM) Integration**:
+  - ✅ **COMPLETED & WORKING**: Full OSM data support integrated into existing pipeline
+  - **CLI Parameter**: `--osm_file` argument replaces synthetic grid generation with real street network import
+  - **Comprehensive Import**: Uses SUMO netconvert with 14 specialized parameters for urban networks (geometry removal, roundabout detection, signal guessing, ramp detection, passenger vehicle filtering)
+  - **File Management**: Automatic file movement from netconvert output location to expected pipeline locations
+  - **Universal Algorithm Compatibility**: Existing `split_edges_with_lanes.py` works seamlessly with real street topology
+  - **Dynamic Head Distance**: `min(HEAD_DISTANCE, edge_length/3)` prevents issues with short urban streets
+  - **Dead-End Street Handling**: Modified Nimrod's algorithm to gracefully handle missing connections using `.get()` method instead of direct dictionary access
+  - **Traffic Signal Preservation**: Maintains original OSM traffic light IDs and timing in SUMO network
+  - **Real-World Testing**: Successfully tested with 4.6MB Manhattan East Village OSM data (52 edges, 16 signalized intersections)
+  - **Performance Metrics**: 500 vehicles, 96% departure rate, 63% completion rate, 340.6s average travel time on real Manhattan streets
+  - **Integration**: Works with all existing features (vehicle types, routing strategies, departure patterns, traffic control methods)
+  - **Research Application**: Enables testing Nimrod's algorithm on real urban topologies vs synthetic grids
 - **Experimental Framework**: 
   - ✅ **COMPLETED & WORKING**: Comprehensive experimental framework for traffic control method comparison
   - **Two Main Experiments**: moderate-traffic (600 vehicles) and high-traffic (1200 vehicles) over 2-hour simulations

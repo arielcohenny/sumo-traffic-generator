@@ -12,6 +12,7 @@ from src.network.generate_grid import generate_grid_network
 from src.network.split_edges_with_lanes import split_edges_with_flow_based_lanes
 from src.network.edge_attrs import assign_edge_attractiveness
 from src.network.zones import extract_zones_from_junctions
+from src.network.import_osm import import_osm_network
 
 from src.traffic_control.decentralized_traffic_bottlenecks.integration import load_tree
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.graph import Graph
@@ -139,27 +140,42 @@ def main():
         action="store_true",
         help="Launch SUMO in GUI mode (sumo-gui) instead of headless sumo"
     )
+    parser.add_argument(
+        "--osm_file",
+        type=str,
+        help="Path to OSM file to use instead of generating synthetic grid network"
+    )
     args = parser.parse_args()
 
     try:
-        print("Begin simulating SUMO orthogonal grid network...")
-
         # --- Initialize seed ---
         seed = args.seed if args.seed is not None else random.randint(
             0, 2**32 - 1)
         print(f"Using seed: {seed}")
 
-        # --- Step 1: Generate the Orthogonal Grid Network ---
-        generate_grid_network(
-            seed,
-            int(args.grid_dimension),
-            int(args.block_size_m),
-            args.junctions_to_remove,
-            args.lane_count,
-            args.traffic_light_strategy
-        )
-        try:
-            verify_generate_grid_network(
+        # --- Step 1: Generate Network (Grid or OSM) ---
+        if args.osm_file:
+            print("Begin simulating SUMO network from OSM data...")
+            import_osm_network(args.osm_file, "data/grid")
+            print("Successfully imported OSM network.")
+            
+            # Move OSM files to expected locations in data/ directory
+            grid_dir = Path("data/grid")
+            if grid_dir.exists():
+                # Move files from data/grid/osm_network.* to data/grid.*
+                for file_pattern in ["*.nod.xml", "*.edg.xml", "*.con.xml", "*.tll.xml"]:
+                    for src_file in grid_dir.glob(file_pattern):
+                        # Extract the file extension part (e.g., "nod.xml" from "osm_network.nod.xml")
+                        suffix = src_file.name.split(".", 1)[1] if "." in src_file.name else src_file.suffix
+                        dst_file = Path("data") / f"grid.{suffix}"
+                        shutil.move(str(src_file), str(dst_file))
+                        print(f"Moved {src_file} to {dst_file}")
+                # Clean up empty grid directory
+                if not list(grid_dir.iterdir()):
+                    grid_dir.rmdir()
+        else:
+            print("Begin simulating SUMO orthogonal grid network...")
+            generate_grid_network(
                 seed,
                 int(args.grid_dimension),
                 int(args.block_size_m),
@@ -167,10 +183,19 @@ def main():
                 args.lane_count,
                 args.traffic_light_strategy
             )
-        except ValidationError as ve:
-            print(f"Failed generating network file: {ve}")
-            exit(1)
-        print(f"Generated grid successfully.")
+            try:
+                verify_generate_grid_network(
+                    seed,
+                    int(args.grid_dimension),
+                    int(args.block_size_m),
+                    args.junctions_to_remove,
+                    args.lane_count,
+                    args.traffic_light_strategy
+                )
+            except ValidationError as ve:
+                print(f"Failed generating network file: {ve}")
+                exit(1)
+            print(f"Generated grid successfully.")
 
         # --- Step 2: Extract Zones ---
         extract_zones_from_junctions(

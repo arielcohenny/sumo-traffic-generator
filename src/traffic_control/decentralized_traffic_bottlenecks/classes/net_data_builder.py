@@ -90,8 +90,10 @@ class NetworkData:
             if edge_id not in self.edges:
                 self.edges[edge_id] = Edge()
             if is_head:
+                # Handle missing connections for dead-end head segments (real street networks)
+                connections = self.all_connections.get(edge['@id'], [])
                 self.edges[edge_id].set_head(
-                    edge['@id'], edge['@to'], self.all_connections[edge['@id']])
+                    edge['@id'], edge['@to'], connections)
                 self.heads[edge['@id']] = {'to_junction': edge['@to']}
             else:
                 first_lane = edge['lane'][0] if '@id' not in edge['lane'] else edge['lane']
