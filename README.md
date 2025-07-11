@@ -106,17 +106,20 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --traffic_control <str>       # Traffic control method: 'tree_method' (default), 'actuated', or 'fixed'
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
 
-# Examples:
-# Basic OSM run with GUI
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 500 --end-time 3600 --gui
+# Examples with verified working OSM samples:
+# Manhattan Upper West Side (300/300 vehicles successful)
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/manhattan_upper_west.osm --num_vehicles 300 --end-time 3600 --gui
 
-# OSM with Nimrod's Tree Method
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 500 --traffic_control tree_method --gui
+# San Francisco Downtown (298/300 vehicles successful)
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/sf_downtown.osm --num_vehicles 300 --traffic_control tree_method --gui
 
-# Traffic control comparison on OSM data
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 800 --traffic_control tree_method --seed 42
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 800 --traffic_control actuated --seed 42
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 800 --traffic_control fixed --seed 42
+# Washington DC Downtown (300/300 vehicles successful)
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/dc_downtown.osm --num_vehicles 300 --traffic_control tree_method --gui
+
+# Traffic control comparison on verified OSM data
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/manhattan_upper_west.osm --num_vehicles 300 --traffic_control tree_method --seed 42
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/manhattan_upper_west.osm --num_vehicles 300 --traffic_control actuated --seed 42
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/manhattan_upper_west.osm --num_vehicles 300 --traffic_control fixed --seed 42
 ````
 
 ## Parameter Reference
@@ -130,9 +133,10 @@ env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_veh
 - **Format:** Path to .osm file (e.g., `src/osm/export.osm`)
 - **Features:** Automatically processes complex urban topologies including dead-end streets, irregular intersections, and existing traffic signals
 - **Compatibility:** Works with all traffic generation and control features
-- **Examples:**
-  - `--osm_file src/osm/manhattan.osm` → Manhattan street network
-  - `--osm_file data/downtown.osm` → Custom urban area
+- **Verified Working Samples:**
+  - `--osm_file src/osm/samples/manhattan_upper_west.osm` → Manhattan Upper West Side (300/300 vehicles)
+  - `--osm_file src/osm/samples/sf_downtown.osm` → San Francisco Downtown (298/300 vehicles)
+  - `--osm_file src/osm/samples/dc_downtown.osm` → Washington DC Downtown (300/300 vehicles)
 
 ### Core Network Parameters (Synthetic Grids)
 
