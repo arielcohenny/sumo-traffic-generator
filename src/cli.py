@@ -25,6 +25,7 @@ from src.validate.errors import ValidationError
 from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_rebuild_network, verify_assign_edge_attractiveness, verify_generate_sumo_conf_file
 from src.validate.validate_traffic import verify_generate_vehicle_routes
 from src.validate.validate_simulation import verify_nimrod_integration_setup, verify_algorithm_runtime_behavior
+from src.validate.validate_arguments import validate_arguments
 
 from src.traffic.builder import generate_vehicle_routes
 from src.config import CONFIG
@@ -154,6 +155,13 @@ def main():
         help="Size of land use zone grid blocks in meters (default: 200m). Controls resolution of intelligent zone generation."
     )
     args = parser.parse_args()
+
+    # --- Validate arguments ---
+    try:
+        validate_arguments(args)
+    except ValidationError as e:
+        print(f"Error: {e}")
+        exit(1)
 
     try:
         # --- Initialize seed ---
