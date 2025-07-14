@@ -610,7 +610,16 @@ def verify_extract_zones_from_junctions(
         grid_x_size = len(unique_xs)
         grid_y_size = len(unique_ys)
 
-        expected_zones = (grid_x_size - 1) * (grid_y_size - 1)
+        # Calculate expected zones based on cell_size subdivision
+        # Get network bounds
+        network_xmin, network_xmax = min(unique_xs), max(unique_xs)
+        network_ymin, network_ymax = min(unique_ys), max(unique_ys)
+        
+        # Calculate number of cells based on cell_size
+        num_x_cells = max(1, int((network_xmax - network_xmin) / cell_size))
+        num_y_cells = max(1, int((network_ymax - network_ymin) / cell_size))
+        
+        expected_zones = num_x_cells * num_y_cells
         actual_zones = len(polygons)
 
         if actual_zones != expected_zones:

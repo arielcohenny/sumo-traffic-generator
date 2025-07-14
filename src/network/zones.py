@@ -98,21 +98,28 @@ def extract_zones_from_junctions(cell_size: float, seed: int, fill_polygons: boo
         cell_size = min(min(dxs), min(dys))
 
     # Create zones based on cellular grid methodology from the paper
-    # Each zone is a cell between adjacent junctions
+    # Subdivide the area between junctions into smaller cells based on cell_size
     features = []
 
-    # Create zones between junctions (not covering entire coordinate space)
-    # For n×n junctions, we have (n-1)×(n-1) zones
-    x_cells = len(xs) - 1
-    y_cells = len(ys) - 1
+    # Get network bounds
+    network_xmin, network_xmax = min(xs), max(xs)
+    network_ymin, network_ymax = min(ys), max(ys)
 
-    for i in range(x_cells):
-        for j in range(y_cells):
-            # Calculate cell boundaries between adjacent junctions
-            xmin = xs[i]
-            xmax = xs[i + 1]
-            ymin = ys[j]
-            ymax = ys[j + 1]
+    # Calculate number of cells based on cell_size
+    num_x_cells = max(1, int((network_xmax - network_xmin) / cell_size))
+    num_y_cells = max(1, int((network_ymax - network_ymin) / cell_size))
+    
+    # Recalculate actual cell size to fit exactly within network bounds
+    actual_cell_x = (network_xmax - network_xmin) / num_x_cells
+    actual_cell_y = (network_ymax - network_ymin) / num_y_cells
+
+    for i in range(num_x_cells):
+        for j in range(num_y_cells):
+            # Calculate cell boundaries based on cell_size subdivision
+            xmin = network_xmin + i * actual_cell_x
+            xmax = network_xmin + (i + 1) * actual_cell_x
+            ymin = network_ymin + j * actual_cell_y
+            ymax = network_ymin + (j + 1) * actual_cell_y
 
             # Apply inset if specified
             if inset > 0.0:
@@ -184,3 +191,61 @@ def extract_zones_from_junctions(cell_size: float, seed: int, fill_polygons: boo
         f.write("</additional>\n")
 
     print(f"Created {len(features)} zones based on cellular grid methodology")
+
+
+def create_minimal_zones_for_osm(network_file: str, zones_file: str):
+    """
+    Create minimal zones for OSM networks as fallback when intelligent zone generation fails
+    
+    Args:
+        network_file: Path to SUMO network file
+        zones_file: Path to output zones polygon file
+    """
+    import sumolib
+    from shapely.geometry import Polygon
+    
+    # Load network to get bounds
+    net = sumolib.net.readNet(network_file)
+    min_x, min_y, max_x, max_y = net.getBBoxXY()
+    
+    # Create a simple 3x3 grid of zones
+    grid_size = 3
+    cell_width = (max_x - min_x) / grid_size
+    cell_height = (max_y - min_y) / grid_size
+    
+    # Zone type configurations
+    zone_configs = {
+        'residential': {'color': '0,255,0'},    # Green
+        'commercial': {'color': '255,0,0'},     # Red  
+        'mixed': {'color': '128,255,128'}       # Light green
+    }
+    
+    zone_types = ['residential', 'commercial', 'mixed']
+    
+    # Write zones polygon file
+    with open(zones_file, 'w') as f:
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        f.write('<polygons xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.20">\n')
+        
+        zone_count = 0
+        for i in range(grid_size):
+            for j in range(grid_size):
+                # Calculate cell boundaries
+                cell_min_x = min_x + i * cell_width
+                cell_max_x = min_x + (i + 1) * cell_width
+                cell_min_y = min_y + j * cell_height
+                cell_max_y = min_y + (j + 1) * cell_height
+                
+                # Assign zone type (cycle through types)
+                zone_type = zone_types[(i + j) % len(zone_types)]
+                color = zone_configs[zone_type]['color']
+                
+                # Create polygon coordinates
+                coords = f"{cell_min_x:.2f},{cell_min_y:.2f} {cell_max_x:.2f},{cell_min_y:.2f} {cell_max_x:.2f},{cell_max_y:.2f} {cell_min_x:.2f},{cell_max_y:.2f} {cell_min_x:.2f},{cell_min_y:.2f}"
+                
+                f.write(f'  <poly id="osm_fallback_zone_{i}_{j}" type="{zone_type}" color="{color}" fill="1" shape="{coords}"/>\n')
+                zone_count += 1
+        
+        f.write('</polygons>\n')
+    
+    print(f"Created {zone_count} minimal fallback zones")

@@ -1,0 +1,1 @@
+# File moved to tests/zones/test_osm_zones.py

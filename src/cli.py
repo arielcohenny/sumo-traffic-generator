@@ -12,6 +12,8 @@ from src.network.generate_grid import generate_grid_network
 from src.network.split_edges_with_lanes import split_edges_with_flow_based_lanes
 from src.network.edge_attrs import assign_edge_attractiveness
 from src.network.zones import extract_zones_from_junctions
+from src.network.zones_osm import OSMLandUseExtractor, calculate_osm_zone_attractiveness, save_zones_to_poly_file
+from src.network.intelligent_zones import IntelligentZoneGenerator, save_intelligent_zones_to_poly_file, convert_zones_to_projected_coordinates
 from src.network.import_osm import import_osm_network
 
 from src.traffic_control.decentralized_traffic_bottlenecks.integration import load_tree
@@ -145,6 +147,12 @@ def main():
         type=str,
         help="Path to OSM file to use instead of generating synthetic grid network"
     )
+    parser.add_argument(
+        "--land_use_block_size_m",
+        type=float,
+        default=200.0,
+        help="Size of land use zone grid blocks in meters (default: 200m). Controls resolution of intelligent zone generation."
+    )
     args = parser.parse_args()
 
     try:
@@ -197,24 +205,72 @@ def main():
                 exit(1)
             print(f"Generated grid successfully.")
 
-        # --- Step 2: Extract Zones ---
-        extract_zones_from_junctions(
-            args.block_size_m,
-            seed=seed,
-            fill_polygons=True,
-            inset=0.0
-        )
-        try:
-            verify_extract_zones_from_junctions(
-                args.block_size_m,
+        # --- Step 2: Zone Generation ---
+        
+        if args.osm_file:
+            print("Generating OSM-based intelligent zones...")
+            try:
+                # Get bounds directly from OSM file
+                from xml.etree import ElementTree as ET
+                tree = ET.parse(args.osm_file)
+                root = tree.getroot()
+                
+                bounds_elem = root.find('bounds')
+                if bounds_elem is not None:
+                    min_lat = float(bounds_elem.get('minlat'))
+                    min_lon = float(bounds_elem.get('minlon'))
+                    max_lat = float(bounds_elem.get('maxlat'))
+                    max_lon = float(bounds_elem.get('maxlon'))
+                else:
+                    # Calculate bounds from nodes if <bounds> element not present
+                    lats, lons = [], []
+                    for node in root.findall('node'):
+                        lats.append(float(node.get('lat')))
+                        lons.append(float(node.get('lon')))
+                    min_lat, max_lat = min(lats), max(lats)
+                    min_lon, max_lon = min(lons), max(lons)
+                
+                geographic_bounds = (min_lon, min_lat, max_lon, max_lat)
+                print(f"Using geographic bounds from OSM: {geographic_bounds}")
+                
+                # Generate intelligent zones using geographic coordinates
+                zone_generator = IntelligentZoneGenerator(land_use_block_size_m=args.land_use_block_size_m)
+                intelligent_zones = zone_generator.generate_intelligent_zones_from_osm(
+                    osm_file_path=args.osm_file,
+                    geographic_bounds=geographic_bounds
+                )
+                
+                # Save zones in geographic coordinates (will be converted to projected coordinates later)
+                save_intelligent_zones_to_poly_file(intelligent_zones, CONFIG.zones_file, None)
+                print(f"Generated and saved {len(intelligent_zones)} intelligent zones to {CONFIG.zones_file}")
+                
+            except Exception as e:
+                print(f"Failed to generate OSM zones: {e}")
+                exit(1)
+        else:
+            print("Generating synthetic network zones using traditional method...")
+            # For synthetic networks, use the original zone extraction method with configurable block size
+            extract_zones_from_junctions(
+                args.land_use_block_size_m,
                 seed=seed,
                 fill_polygons=True,
                 inset=0.0
             )
-        except ValidationError as ve:
-            print(f"Failed to extract land use zones: {ve}")
-            exit(1)
-        print("Extracted land use zones successfully.")
+            try:
+                verify_extract_zones_from_junctions(
+                    args.land_use_block_size_m,
+                    seed=seed,
+                    fill_polygons=True,
+                    inset=0.0
+                )
+            except ValidationError as ve:
+                print(f"Failed to extract land use zones: {ve}")
+                exit(1)
+            print(f"Extracted land use zones successfully using traditional method with {args.land_use_block_size_m}m blocks.")
+            
+            # No intelligent zone generation for synthetic networks
+            intelligent_zones_network_bounds = None
+            intelligent_zones_osm_file = None
 
         # --- Step 3: Integrated Edge Splitting with Flow-Based Lane Assignment ---
         if args.lane_count != "0" and not (args.lane_count.isdigit() and args.lane_count == "0"):
@@ -237,6 +293,17 @@ def main():
             print(f"Failed to rebuild the network: {ve}")
             exit(1)
         print("Rebuilt the network successfully.")
+        
+        # --- Convert OSM zone coordinates after network is available ---
+        if args.osm_file and Path(CONFIG.zones_file).exists():
+            print("Converting OSM zone coordinates from geographic to projected...")
+            try:
+                # Convert zones from geographic to projected coordinates
+                convert_zones_to_projected_coordinates(CONFIG.zones_file, CONFIG.network_file)
+                print("Successfully converted zone coordinates to projected system.")
+            except Exception as e:
+                print(f"Failed to convert zone coordinates: {e}")
+                print("Zones will remain in geographic coordinates.")
 
         # --- Step 5: Assign Edge Attractiveness ---
         assign_edge_attractiveness(
@@ -286,11 +353,19 @@ def main():
             exit(1)
         print(f"Generated SUMO configuration file successfully.")
 
+        # --- Step 8: Dynamic Simulation via TraCI & Nimrod's Tree Method ---
+        json_file = Path(CONFIG.network_file).with_suffix(".json")
+        
+        # Initialize traffic control method-specific objects
+        if args.traffic_control == "tree_method":
+            # Build network JSON for Nimrod's Tree Method (zones already created in Step 2)
+            build_network_json(CONFIG.network_file, json_file)
+            print(f"Built network JSON file: {json_file}")
+
         # --- Step 8: Dynamic Simulation via TraCI & Nimrod’s Tree Method ---
         # Initialize traffic control method-specific objects
         if args.traffic_control == "tree_method":
             # Load network tree structure and runner configuration
-            json_file = Path(CONFIG.network_file).with_suffix(".json")
             if json_file.exists():
                 json_file.unlink()
             tree_data, run_config = load_tree(
@@ -300,10 +375,13 @@ def main():
             print("Loaded network tree and run configuration successfully.")
 
             # Build Nimrod's runtime objects once (outside the callback)
-            json_file = Path(CONFIG.network_file).with_suffix(".json")
-            build_network_json(CONFIG.network_file, json_file)
-            print(f"Built network JSON file: {json_file}")
-
+            # Note: JSON file already built above for zone generation
+            if not json_file.exists():
+                build_network_json(CONFIG.network_file, json_file)
+                print(f"Built network JSON file for Nimrod: {json_file}")
+            else:
+                print(f"Using existing network JSON file: {json_file}")
+            
             network_data = Network(json_file)
             print("Loaded network data from JSON.")
             graph = Graph(args.end_time)
@@ -326,11 +404,13 @@ def main():
             print("Using SUMO Actuated traffic control - no additional setup needed.")
             # Set variables to None for actuated control
             tree_data = run_config = network_data = graph = seconds_in_cycle = None
+            
         
         elif args.traffic_control == "fixed":
             print("Using Fixed-time traffic control - no additional setup needed.")
             # Set variables to None for fixed control
             tree_data = run_config = network_data = graph = seconds_in_cycle = None
+            
 
         # Initialize the TraCI controller
         controller = SumoController(

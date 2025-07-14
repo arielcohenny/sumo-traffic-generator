@@ -16,7 +16,22 @@ This project is a comprehensive Python-based SUMO traffic generator that creates
    - OSM: Imports real street networks with comprehensive netconvert parameters
    - Supports both 1-lane baseline generation and complex real-world topologies
 
-2. **Zone Extraction**: Derived polygonal zones from adjacent junctions per Table 1 in A Simulation Model for Intra‑Urban Movements.
+2. **Configurable Land Use Zone Generation**: Dual-mode zone system optimized for both network types:
+
+   **For OpenStreetMap Networks**: Intelligent zone generation with advanced analysis methods
+   - **Real OSM Data**: Extracts actual land use tags from OpenStreetMap (residential, commercial, industrial, education, healthcare)
+   - **Building Analysis**: Converts OSM building polygons into traffic generation zones with capacity estimation
+   - **POI Integration**: Incorporates points of interest (shops, restaurants, schools, hospitals) as zone enhancers
+   - **Intelligent Inference**: When OSM data insufficient (<15% coverage), combines network topology analysis, accessibility metrics, and infrastructure analysis
+   - **Lane Count Analysis**: Uses lane counts to distinguish commercial/arterial roads from residential streets
+   - **Score-Based Classification**: Multi-factor scoring system determines optimal zone type for each grid cell
+
+   **For Synthetic Networks**: Traditional zone extraction with configurable resolution
+   - **Junction-Based Zones**: Creates zones based on network topology using proven cellular grid methodology
+   - **Research-Based Land Use**: Six land use types with clustering algorithm (Residential, Mixed, Employment, Public Buildings, Public Open Space, Entertainment/Retail)
+   - **Variety & Realism**: Generates diverse zone types with appropriate colors and attractiveness values
+   
+   **Unified Configuration**: `--land_use_block_size_m` parameter controls grid resolution for both network types (default 200m)
 
 3. **Integrated Edge Splitting with Flow-Based Lane Assignment**: Unified edge splitting and lane configuration into a single optimized process:
 
@@ -26,7 +41,7 @@ This project is a comprehensive Python-based SUMO traffic generator that creates
    - **Three Lane Algorithms**: Realistic (zone-based demand), Random (within bounds), Fixed (uniform count)
    - **Real-World Compatibility**: Handles dead-end streets, irregular intersections, and complex urban topologies
 
-4. Edge Attractiveness Modeling: Multiple research-based methods for computing departure/arrival weights:
+4. **Edge Attractiveness Modeling**: Multiple research-based methods for computing departure/arrival weights:
 
    - **Poisson**: Original distribution approach (λ_depart=3.5, λ_arrive=2.0)
    - **Land Use**: Zone-type multipliers (Residential, Employment, Mixed, etc.)
@@ -85,6 +100,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --start_time_hour <float>     # Real-world hour when simulation starts (0-24, default: 0.0 for midnight)
   --routing_strategy <str>      # Routing strategy with percentages (default: 'shortest 100')
   --vehicle_types <str>         # Vehicle types with percentages (default: 'passenger 60 commercial 30 public 10')
+  --land_use_block_size_m <float> # Land use zone grid resolution in meters (default: 200.0)
   --traffic_light_strategy <str> # Traffic light phasing strategy: 'opposites' (default) or 'incoming'
   --traffic_control <str>       # Traffic control method: 'tree_method' (default), 'actuated', or 'fixed'
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
@@ -103,6 +119,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --start_time_hour <float>     # Real-world hour when simulation starts (0-24, default: 0.0 for midnight)
   --routing_strategy <str>      # Routing strategy with percentages (default: 'shortest 100')
   --vehicle_types <str>         # Vehicle types with percentages (default: 'passenger 60 commercial 30 public 10')
+  --land_use_block_size_m <float> # Land use zone grid resolution in meters (default: 200.0)
   --traffic_control <str>       # Traffic control method: 'tree_method' (default), 'actuated', or 'fixed'
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
 
@@ -120,6 +137,10 @@ env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/dc_downtown.
 env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/manhattan_upper_west.osm --num_vehicles 300 --traffic_control tree_method --seed 42
 env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/manhattan_upper_west.osm --num_vehicles 300 --traffic_control actuated --seed 42
 env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/manhattan_upper_west.osm --num_vehicles 300 --traffic_control fixed --seed 42
+
+# Intelligent zone generation with different resolutions
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 500 --land_use_block_size_m 100 --gui   # Fine-grained zones
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/sf_downtown.osm --num_vehicles 300 --land_use_block_size_m 150 --gui  # OSM with custom resolution
 ````
 
 ## Parameter Reference
@@ -174,6 +195,25 @@ env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/manhattan_up
   - `--junctions_to_remove 0` → Perfect grid (no disruptions)
   - `--junctions_to_remove 2` → Remove 2 random junctions
   - `--junctions_to_remove "A1,C3"` → Remove specific junctions
+
+#### `--land_use_block_size_m <float>` (default: 200.0)
+
+**Purpose:** Controls the resolution of zone generation for both network types.
+
+- **Format:** Floating-point number in meters
+- **Range:** 50-500m typical for different analysis scales
+- **Dual-Mode Behavior:**
+  - **OSM Networks:** Grid resolution for intelligent zone analysis (topology + accessibility + infrastructure)
+  - **Synthetic Networks:** Subdivision size for traditional zone extraction (independent of junction spacing)
+- **Zone System Features:**
+  - **For OSM:** Uses actual land use tags when available, intelligent inference when data insufficient
+  - **For Synthetic:** Creates diverse zone types (Residential, Mixed, Employment, Public Buildings, etc.)
+  - **Lane Count Analysis:** Higher lane counts indicate commercial areas, lower counts suggest residential
+  - **Research-Based:** Six land use types with clustering algorithm and appropriate attractiveness values
+- **Examples:**
+  - `--land_use_block_size_m 75` → Fine-grained zones (75m×75m cells)
+  - `--land_use_block_size_m 150` → Medium resolution zones 
+  - `--land_use_block_size_m 300` → Coarse-grained zones (300m×300m cells)
 
 ### Traffic Generation Parameters
 
