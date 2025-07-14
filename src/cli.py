@@ -12,7 +12,6 @@ from src.network.generate_grid import generate_grid_network
 from src.network.split_edges_with_lanes import split_edges_with_flow_based_lanes
 from src.network.edge_attrs import assign_edge_attractiveness
 from src.network.zones import extract_zones_from_junctions
-from src.network.zones_osm import OSMLandUseExtractor, calculate_osm_zone_attractiveness, save_zones_to_poly_file
 from src.network.intelligent_zones import IntelligentZoneGenerator, save_intelligent_zones_to_poly_file, convert_zones_to_projected_coordinates
 from src.network.import_osm import import_osm_network
 
@@ -174,7 +173,7 @@ def main():
             print("Begin simulating SUMO network from OSM data...")
             import_osm_network(args.osm_file, "data/grid")
             print("Successfully imported OSM network.")
-            
+
             # Move OSM files to expected locations in data/ directory
             grid_dir = Path("data/grid")
             if grid_dir.exists():
@@ -182,7 +181,8 @@ def main():
                 for file_pattern in ["*.nod.xml", "*.edg.xml", "*.con.xml", "*.tll.xml"]:
                     for src_file in grid_dir.glob(file_pattern):
                         # Extract the file extension part (e.g., "nod.xml" from "osm_network.nod.xml")
-                        suffix = src_file.name.split(".", 1)[1] if "." in src_file.name else src_file.suffix
+                        suffix = src_file.name.split(
+                            ".", 1)[1] if "." in src_file.name else src_file.suffix
                         dst_file = Path("data") / f"grid.{suffix}"
                         shutil.move(str(src_file), str(dst_file))
                         print(f"Moved {src_file} to {dst_file}")
@@ -214,7 +214,7 @@ def main():
             print(f"Generated grid successfully.")
 
         # --- Step 2: Zone Generation ---
-        
+
         if args.osm_file:
             print("Generating OSM-based intelligent zones...")
             try:
@@ -222,7 +222,7 @@ def main():
                 from xml.etree import ElementTree as ET
                 tree = ET.parse(args.osm_file)
                 root = tree.getroot()
-                
+
                 bounds_elem = root.find('bounds')
                 if bounds_elem is not None:
                     min_lat = float(bounds_elem.get('minlat'))
@@ -237,21 +237,24 @@ def main():
                         lons.append(float(node.get('lon')))
                     min_lat, max_lat = min(lats), max(lats)
                     min_lon, max_lon = min(lons), max(lons)
-                
+
                 geographic_bounds = (min_lon, min_lat, max_lon, max_lat)
                 print(f"Using geographic bounds from OSM: {geographic_bounds}")
-                
+
                 # Generate intelligent zones using geographic coordinates
-                zone_generator = IntelligentZoneGenerator(land_use_block_size_m=args.land_use_block_size_m)
+                zone_generator = IntelligentZoneGenerator(
+                    land_use_block_size_m=args.land_use_block_size_m)
                 intelligent_zones = zone_generator.generate_intelligent_zones_from_osm(
                     osm_file_path=args.osm_file,
                     geographic_bounds=geographic_bounds
                 )
-                
+
                 # Save zones in geographic coordinates (will be converted to projected coordinates later)
-                save_intelligent_zones_to_poly_file(intelligent_zones, CONFIG.zones_file, None)
-                print(f"Generated and saved {len(intelligent_zones)} intelligent zones to {CONFIG.zones_file}")
-                
+                save_intelligent_zones_to_poly_file(
+                    intelligent_zones, CONFIG.zones_file, None)
+                print(
+                    f"Generated and saved {len(intelligent_zones)} intelligent zones to {CONFIG.zones_file}")
+
             except Exception as e:
                 print(f"Failed to generate OSM zones: {e}")
                 exit(1)
@@ -274,13 +277,14 @@ def main():
             except ValidationError as ve:
                 print(f"Failed to extract land use zones: {ve}")
                 exit(1)
-            print(f"Extracted land use zones successfully using traditional method with {args.land_use_block_size_m}m blocks.")
-            
+            print(
+                f"Extracted land use zones successfully using traditional method with {args.land_use_block_size_m}m blocks.")
+
             # No intelligent zone generation for synthetic networks
             intelligent_zones_network_bounds = None
             intelligent_zones_osm_file = None
 
-        # --- Step 3: Integrated Edge Splitting with Flow-Based Lane Assignment ---
+        # --- Step 3: Integrated Edge Splitting with Lane Assignment ---
         if args.lane_count != "0" and not (args.lane_count.isdigit() and args.lane_count == "0"):
             split_edges_with_flow_based_lanes(
                 seed=seed,
@@ -289,7 +293,7 @@ def main():
                 algorithm=args.lane_count
             )
             print(
-                "Successfully completed integrated edge splitting with flow-based lane assignment.")
+                "Successfully completed integrated edge splitting with lane assignment.")
         else:
             print("Skipping lane assignment (lane_count is 0).")
 
@@ -301,19 +305,20 @@ def main():
             print(f"Failed to rebuild the network: {ve}")
             exit(1)
         print("Rebuilt the network successfully.")
-        
-        # --- Convert OSM zone coordinates after network is available ---
+
+        # --- Step 5: Zone Coordinate Conversion (OSM Mode Only) ---
         if args.osm_file and Path(CONFIG.zones_file).exists():
             print("Converting OSM zone coordinates from geographic to projected...")
             try:
                 # Convert zones from geographic to projected coordinates
-                convert_zones_to_projected_coordinates(CONFIG.zones_file, CONFIG.network_file)
+                convert_zones_to_projected_coordinates(
+                    CONFIG.zones_file, CONFIG.network_file)
                 print("Successfully converted zone coordinates to projected system.")
             except Exception as e:
                 print(f"Failed to convert zone coordinates: {e}")
                 print("Zones will remain in geographic coordinates.")
 
-        # --- Step 5: Assign Edge Attractiveness ---
+        # --- Step 6: Edge Attractiveness Assignment ---
         assign_edge_attractiveness(
             seed, args.attractiveness, args.time_dependent, args.start_time_hour)
         try:
@@ -324,7 +329,7 @@ def main():
             exit(1)
         print("Assigned edge attractiveness successfully.")
 
-        # --- Step 6: Generate Vehicle Routes ---
+        # --- Step 7: Traffic Generation ---
         generate_vehicle_routes(
             net_file=CONFIG.network_file,
             output_file=CONFIG.routes_file,
@@ -347,7 +352,7 @@ def main():
             exit(1)
         print("Generated vehicle routes successfully.")
 
-        # --- Step 7: Generate SUMO Configuration File ---
+        # --- Step 8: SUMO Configuration Generation ---
         sumo_cfg_path = generate_sumo_conf_file(
             CONFIG.config_file,
             CONFIG.network_file,
@@ -361,16 +366,16 @@ def main():
             exit(1)
         print(f"Generated SUMO configuration file successfully.")
 
-        # --- Step 8: Dynamic Simulation via TraCI & Nimrod's Tree Method ---
+        # --- Step 9: Dynamic Simulation ---
         json_file = Path(CONFIG.network_file).with_suffix(".json")
-        
+
         # Initialize traffic control method-specific objects
         if args.traffic_control == "tree_method":
             # Build network JSON for Nimrod's Tree Method (zones already created in Step 2)
             build_network_json(CONFIG.network_file, json_file)
             print(f"Built network JSON file: {json_file}")
 
-        # --- Step 8: Dynamic Simulation via TraCI & Nimrod’s Tree Method ---
+        # ---  & Nimrod’s Tree Method ---
         # Initialize traffic control method-specific objects
         if args.traffic_control == "tree_method":
             # Load network tree structure and runner configuration
@@ -389,7 +394,7 @@ def main():
                 print(f"Built network JSON file for Nimrod: {json_file}")
             else:
                 print(f"Using existing network JSON file: {json_file}")
-            
+
             network_data = Network(json_file)
             print("Loaded network data from JSON.")
             graph = Graph(args.end_time)
@@ -407,18 +412,16 @@ def main():
                 print(f"Nimrod integration setup validation failed: {ve}")
                 exit(1)
             print("Nimrod integration setup verified successfully.")
-        
+
         elif args.traffic_control == "actuated":
             print("Using SUMO Actuated traffic control - no additional setup needed.")
             # Set variables to None for actuated control
             tree_data = run_config = network_data = graph = seconds_in_cycle = None
-            
-        
+
         elif args.traffic_control == "fixed":
             print("Using Fixed-time traffic control - no additional setup needed.")
             # Set variables to None for fixed control
             tree_data = run_config = network_data = graph = seconds_in_cycle = None
-            
 
         # Initialize the TraCI controller
         controller = SumoController(
@@ -432,11 +435,11 @@ def main():
         )
         print("Initialized TraCI controller successfully.")
 
-
         # Per‑step TraCI controller  ✅
+
         def control_callback(current_time: int):
             """Apply selected traffic control method each simulation step."""
-            
+
             if args.traffic_control == "tree_method":
                 # Nimrod's Tree Method
                 # 1) Update domain model and compute new Boolean decisions
@@ -467,12 +470,12 @@ def main():
                 # 3) Push every TLS state to TraCI
                 for tls_id, state in phase_map.items():
                     traci.trafficlight.setRedYellowGreenState(tls_id, state)
-            
+
             elif args.traffic_control == "actuated":
                 # SUMO Actuated control - let SUMO handle traffic lights automatically
                 # No explicit control needed, SUMO's actuated logic will manage phases
                 pass
-            
+
             elif args.traffic_control == "fixed":
                 # Fixed-time control - let SUMO use the static timings from grid.tll.xml
                 # No explicit control needed, SUMO will use the predefined phase durations
@@ -481,22 +484,23 @@ def main():
         # Run the simulation
         controller.run(control_callback)
         print("Simulation completed successfully.")
-        
+
         # Print metrics for experiment analysis
         print("\n=== EXPERIMENT METRICS ===")
         print(f"Total vehicles: {args.num_vehicles}")
         print(f"Simulation time: {args.end_time}")
-        
+
         # Get traffic statistics from controller
         if hasattr(controller, 'final_metrics'):
             metrics = controller.final_metrics
-            print(f"Vehicles reached destination: {metrics['arrived_vehicles']}")
+            print(
+                f"Vehicles reached destination: {metrics['arrived_vehicles']}")
             print(f"Vehicles departed: {metrics['departed_vehicles']}")
             print(f"Completion rate: {metrics['completion_rate']:.3f}")
             print(f"Average travel time: {metrics['mean_travel_time']:.2f}")
         else:
             print("No metrics available")
-        
+
         print("=== END METRICS ===\n")
 
     except Exception as e:
