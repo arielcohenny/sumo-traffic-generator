@@ -4,7 +4,7 @@ OSM Import Module
 
 This module handles importing OpenStreetMap data and converting it to SUMO network files,
 replacing the synthetic grid generation functionality while maintaining compatibility
-with the existing pipeline and Nimrod's Tree Method algorithm.
+with the existing pipeline and Tree Method algorithm.
 """
 
 import os

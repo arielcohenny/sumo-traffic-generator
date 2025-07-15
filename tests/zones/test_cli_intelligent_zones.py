@@ -20,7 +20,7 @@ def test_cli_with_intelligent_zones():
         "--num_vehicles", "50",
         "--end-time", "300",
         "--land_use_block_size_m", "100",
-        "--traffic_control", "fixed"  # Use fixed to avoid Nimrod setup complexity
+        "--traffic_control", "fixed"  # Use fixed to avoid Tree Method setup complexity
     ]
     
     print(f"🚀 Running command: {' '.join(cmd)}")

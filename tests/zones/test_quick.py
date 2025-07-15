@@ -27,7 +27,7 @@ def run_quick_test():
         "--num_vehicles", "5",    # Very few vehicles
         "--end-time", "60",       # 1 minute simulation
         "--land_use_block_size_m", "50",  # Small zone resolution
-        "--traffic_control", "fixed"  # Use fixed to avoid Nimrod complexity
+        "--traffic_control", "fixed"  # Use fixed to avoid Tree Method complexity
     ]
     
     print(f"🚀 Running command:")

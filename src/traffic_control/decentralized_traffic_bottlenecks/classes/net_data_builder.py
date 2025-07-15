@@ -242,12 +242,12 @@ class Phase:
 # ----------------------------------------------------------------------
 
 # This function is intended to be used as a library entry point
-# to convert a SUMO network XML file into a Nimrod-style JSON file.
+# to convert a SUMO network XML file into a Tree Method-style JSON file.
 
 
 def build_network_json(net_xml_path: str, json_out_path: str) -> None:
     """
-    Convert *net_xml_path* (.net.xml) into Nimrod-style JSON saved
+    Convert *net_xml_path* (.net.xml) into Tree Method-style JSON saved
     to *json_out_path*.  Thin wrapper around NetworkData.
     """
     NetworkData(net_xml_path, json_out_path)

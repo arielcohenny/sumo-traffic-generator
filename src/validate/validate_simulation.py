@@ -1,9 +1,9 @@
 # src/validate/validate_simulation.py
 """
-Runtime validation for Nimrod's decentralized traffic control algorithm integration.
+Runtime validation for Tree Method decentralized traffic control algorithm integration.
 
 This module provides inline verification during simulation to ensure:
-1. Nimrod's objects are properly initialized and integrated
+1. Tree Method objects are properly initialized and integrated
 2. The algorithm executes correctly during runtime
 3. Traffic light decisions are reasonable and responsive
 4. No crashes or infinite loops in the algorithm
@@ -26,7 +26,7 @@ __all__ = [
 
 
 # ---------------------------------------------------------------------------
-#  Nimrod Integration Setup Verification
+#  Tree Method Integration Setup Verification
 # ---------------------------------------------------------------------------
 
 def verify_nimrod_integration_setup(
@@ -36,16 +36,16 @@ def verify_nimrod_integration_setup(
     graph: Any,
     seconds_in_cycle: float
 ) -> None:
-    """Verify Nimrod objects initialized correctly after setup phase.
+    """Verify Tree Method objects initialized correctly after setup phase.
     
-    This function validates the Nimrod integration setup by checking:
+    This function validates the Tree Method integration setup by checking:
     1. Tree data structure is valid
     2. Run configuration has expected parameters
     3. Network data loaded correctly from JSON
     4. Graph building completed successfully
     5. Cycle time calculation is reasonable
     
-    Called once after Nimrod setup, before simulation starts.
+    Called once after Tree Method setup, before simulation starts.
     """
     
     # 1 ── validate tree_data structure ───────────────────────────────────────
@@ -62,7 +62,7 @@ def verify_nimrod_integration_setup(
     
     # Check for expected algorithm configuration
     if not hasattr(run_config, 'algo_type'):
-        raise ValidationError("Run config missing algo_type - Nimrod algorithm type not specified")
+        raise ValidationError("Run config missing algo_type - Tree Method algorithm type not specified")
     
     # 3 ── validate network_data object ───────────────────────────────────────
     if network_data is None:

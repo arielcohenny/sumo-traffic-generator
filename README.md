@@ -1,6 +1,6 @@
 SUMO traffic simulation framework with real-world OpenStreetMap (OSM) support
 
-This project is a comprehensive Python-based SUMO traffic generator that creates dynamic traffic simulations with intelligent signal control. It supports both synthetic orthogonal grid networks and real-world OpenStreetMap (OSM) data, with configurable lane assignments and Nimrod's decentralized traffic control algorithm for dynamic signal optimization.
+This project is a comprehensive Python-based SUMO traffic generator that creates dynamic traffic simulations with intelligent signal control. It supports both synthetic orthogonal grid networks and real-world OpenStreetMap (OSM) data, with configurable lane assignments and Tree Method decentralized traffic control algorithm for dynamic signal optimization.
 
 ## Key Features
 
@@ -56,7 +56,7 @@ This project is a comprehensive Python-based SUMO traffic generator that creates
 
 7. TraCI Runtime Integration – Introduced sim/sumo_controller.py, a thin wrapper around TraCI that launches SUMO (GUI or headless), advances the simulation, and exposes a per‑step callback API for custom control logic.
 
-8. Nimrod’s Tree‑Method Control – Integrated the decentralized‑traffic‑bottlenecks library: the pipeline now converts the network to a JSON tree, builds Nimrod’s Graph, computes an optimal phase map each step, and applies it via TraCI—enabling fully dynamic, decentralized signal control during the simulation.
+8. Tree Method’s Tree‑Method Control – Integrated the decentralized‑traffic‑bottlenecks library: the pipeline now converts the network to a JSON tree, builds Tree Method’s Graph, computes an optimal phase map each step, and applies it via TraCI—enabling fully dynamic, decentralized signal control during the simulation.
 
 ### OpenStreetMap (OSM) Integration
 
@@ -485,7 +485,7 @@ Both strategies work with any lane configuration and are compatible with the Tre
 **Purpose:** Selects the traffic control algorithm for signal optimization.
 
 - **Options:**
-  - **`tree_method`** (default): Uses Nimrod's Tree Method for decentralized traffic optimization
+  - **`tree_method`** (default): Uses Tree Method's Tree Method for decentralized traffic optimization
   - **`actuated`**: Uses SUMO's built-in actuated control (gap-based vehicle detection)
   - **`fixed`**: Uses fixed-time control with static timings from traffic light configuration
 
@@ -494,7 +494,7 @@ Both strategies work with any lane configuration and are compatible with the Tre
 - **`tree_method`**: 
   - Dynamic, decentralized signal optimization
   - Adapts to real-time traffic conditions
-  - Uses Nimrod's Tree Method algorithm for bottleneck prioritization
+  - Uses Tree Method's Tree Method algorithm for bottleneck prioritization
   - Best for complex traffic scenarios with varying demand patterns
 
 - **`actuated`**: 
@@ -604,7 +604,7 @@ src/
 │ └── **init**.py
 ├── traffic_control/ # Signal‑control logic (third‑party & glue code)
 │ └── decentralized_traffic_bottlenecks/
-│ ├── integration.py # Bridges our simulator with Nimrod’s algorithm
+│ ├── integration.py # Bridges our simulator with Tree Method’s algorithm
 │ ├── config.py, # Centralises algorithm defaults & hyper‑parameters (cycle time, max queue, …)
 │ ├── enums.py, # Enumerations capturing cost types, algorithm modes, TLS states, etc.
 │ ├── utils.py, # Shared helpers: JSON I/O, matrix ops, and miscellaneous maths
@@ -665,7 +665,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 -
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1500 --step-length 1.0 --end-time 14400 --departure_pattern uniform --routing_strategy 'shortest 50 realtime 30 fastest 20' --gui
 ```
 
-**Description:** 4-hour stress test with very high vehicle density (1500 vehicles) and diverse routing strategies. Tests system stability and Nimrod's algorithm under extreme congestion conditions.
+**Description:** 4-hour stress test with very high vehicle density (1500 vehicles) and diverse routing strategies. Tests system stability and Tree Method's algorithm under extreme congestion conditions.
 
 ### **Scenario 7: Time-Dependent Attractiveness Test**
 
@@ -719,7 +719,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 -
 For comparing different traffic control methods:
 
 ```bash
-# Test 1: Tree Method (Nimrod's algorithm)
+# Test 1: Tree Method (Tree Method's algorithm)
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 --end-time 3600 --traffic_control tree_method --gui
 
 # Test 2: SUMO Actuated (baseline comparison)
@@ -738,7 +738,7 @@ Each scenario tests different aspects of the traffic simulation system including
 
 ## Experimental Framework
 
-The system includes a comprehensive experimental framework for comparing different traffic control methods, replicating Nimrod's research methodology for traffic control evaluation.
+The system includes a comprehensive experimental framework for comparing different traffic control methods, replicating Tree Method's research methodology for traffic control evaluation.
 
 ### Experiment Structure
 
@@ -750,7 +750,7 @@ experiments/
 │   ├── run_experiment.sh           # Automated experiment runner
 │   ├── analyze_results.py          # Statistical analysis script
 │   └── results/                    # Output directory
-│       ├── tree_method/           # Nimrod's Tree Method results
+│       ├── tree_method/           # Tree Method's Tree Method results
 │       ├── actuated/              # SUMO Actuated control results
 │       ├── fixed/                 # Fixed-time control results
 │       └── random/                # Mixed routing as random proxy
@@ -762,7 +762,7 @@ experiments/
 
 ### Traffic Control Methods Compared
 
-1. **Tree Method** (`tree_method`): Nimrod's decentralized traffic optimization algorithm
+1. **Tree Method** (`tree_method`): Tree Method's decentralized traffic optimization algorithm
 2. **SUMO Actuated** (`actuated`): Vehicle-responsive signal control with gap-based detection
 3. **Fixed Timing** (`fixed`): Static signal timing from pre-configured plans
 4. **Random Proxy** (`random`): Fixed timing with mixed routing strategies (25% each strategy)
@@ -845,7 +845,7 @@ Tree Method Improvements:
 
 ### Expected Results
 
-Based on Nimrod's research, the Tree Method should demonstrate:
+Based on Tree Method's research, the Tree Method should demonstrate:
 
 - **20-45% improvement** in travel times vs fixed timing
 - **10-25% improvement** vs actuated control  
@@ -856,7 +856,7 @@ Based on Nimrod's research, the Tree Method should demonstrate:
 
 The experimental framework enables:
 
-1. **Validation** of Nimrod's Tree Method claims
+1. **Validation** of Tree Method's Tree Method claims
 2. **Baseline Comparison** against standard SUMO control methods
 3. **Scalability Testing** across different traffic densities
 4. **Statistical Significance** through multiple iterations

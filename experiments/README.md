@@ -1,6 +1,6 @@
 # Traffic Control Experiments
 
-This directory contains experiments designed to replicate and extend Nimrod's traffic control research comparing different traffic signal control methods.
+This directory contains experiments designed to replicate and extend Tree Method traffic control research comparing different traffic signal control methods.
 
 ## Experiments Overview
 
@@ -18,7 +18,7 @@ This directory contains experiments designed to replicate and extend Nimrod's tr
 
 ## Traffic Control Methods
 
-1. **Tree Method**: Nimrod's decentralized bottleneck prioritization algorithm
+1. **Tree Method**: Decentralized bottleneck prioritization algorithm
 2. **SUMO Actuated**: Gap-based vehicle detection (baseline comparison)
 3. **Fixed**: Static signal timing from pre-configured plans
 4. **Random**: Mixed routing strategies simulating unpredictable behavior
@@ -69,7 +69,7 @@ python analyze_results.py
 
 ## Key Metrics
 
-Based on Nimrod's research methodology:
+Based on Tree Method research methodology:
 
 1. **Average Travel Time**: Mean time for vehicles to reach destinations
 2. **Throughput**: Number of vehicles successfully completing trips
@@ -78,7 +78,7 @@ Based on Nimrod's research methodology:
 
 ## Expected Results
 
-According to Nimrod's paper findings:
+According to Tree Method research findings:
 - Tree Method should show 20-45% travel time reduction vs SUMO Actuated
 - Tree Method should show 7-24% throughput improvement vs SUMO Actuated
 - Benefits more pronounced under high traffic load conditions

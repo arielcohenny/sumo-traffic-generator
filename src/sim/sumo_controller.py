@@ -358,7 +358,7 @@ class SumoController:
             # Handle dynamic rerouting
             self.handle_dynamic_rerouting(current_time)
 
-            # Apply control callback (Nimrod's algorithm, etc.)
+            # Apply control callback (Tree Method algorithm, etc.)
             control_callback(current_time)
             current_time += self.step_length
 

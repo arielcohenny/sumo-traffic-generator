@@ -135,7 +135,7 @@ def main():
         type=str,
         default="tree_method",
         choices=["tree_method", "actuated", "fixed"],
-        help="Traffic control method: 'tree_method' (default, Nimrod's algorithm), 'actuated' (SUMO gap-based), or 'fixed' (static timing)."
+        help="Traffic control method: 'tree_method' (default, Tree Method algorithm), 'actuated' (SUMO gap-based), or 'fixed' (static timing)."
     )
     parser.add_argument(
         "--gui",
@@ -371,11 +371,10 @@ def main():
 
         # Initialize traffic control method-specific objects
         if args.traffic_control == "tree_method":
-            # Build network JSON for Nimrod's Tree Method (zones already created in Step 2)
+            # Build network JSON for Tree Method (zones already created in Step 2)
             build_network_json(CONFIG.network_file, json_file)
             print(f"Built network JSON file: {json_file}")
 
-        # ---  & Nimrod’s Tree Method ---
         # Initialize traffic control method-specific objects
         if args.traffic_control == "tree_method":
             # Load network tree structure and runner configuration
@@ -387,31 +386,31 @@ def main():
             )
             print("Loaded network tree and run configuration successfully.")
 
-            # Build Nimrod's runtime objects once (outside the callback)
+            # Build Tree Method runtime objects once (outside the callback)
             # Note: JSON file already built above for zone generation
             if not json_file.exists():
                 build_network_json(CONFIG.network_file, json_file)
-                print(f"Built network JSON file for Nimrod: {json_file}")
+                print(f"Built network JSON file for Tree Method: {json_file}")
             else:
                 print(f"Using existing network JSON file: {json_file}")
 
             network_data = Network(json_file)
             print("Loaded network data from JSON.")
             graph = Graph(args.end_time)
-            print("Initialized Nimrod's Graph object.")
+            print("Initialized Tree Method Graph object.")
             graph.build(network_data.edges_list, network_data.junctions_dict)
-            print("Built Nimrod's Graph from network data.")
+            print("Built Tree Method Graph from network data.")
             seconds_in_cycle = network_data.calc_cycle_time()
             print("Built network graph and calculated cycle time.")
 
-            # Verify Nimrod integration setup
+            # Verify Tree Method integration setup
             try:
                 verify_nimrod_integration_setup(
                     tree_data, run_config, network_data, graph, seconds_in_cycle)
             except ValidationError as ve:
-                print(f"Nimrod integration setup validation failed: {ve}")
+                print(f"Tree Method integration setup validation failed: {ve}")
                 exit(1)
-            print("Nimrod integration setup verified successfully.")
+            print("Tree Method integration setup verified successfully.")
 
         elif args.traffic_control == "actuated":
             print("Using SUMO Actuated traffic control - no additional setup needed.")
@@ -441,7 +440,7 @@ def main():
             """Apply selected traffic control method each simulation step."""
 
             if args.traffic_control == "tree_method":
-                # Nimrod's Tree Method
+                # Tree Method
                 # 1) Update domain model and compute new Boolean decisions
                 graph.update_traffic_lights(current_time,
                                             seconds_in_cycle,

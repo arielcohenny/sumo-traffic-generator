@@ -1794,7 +1794,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 
 #### 8.3.1 Tree Method (`--traffic_control tree_method`)
 
-- **Algorithm**: Nimrod's decentralized traffic control with bottleneck detection
+- **Algorithm**: Tree Method decentralized traffic control with bottleneck detection
 - **OSM Adaptation**: Modified to handle missing connections in real street networks using `.get()` method
 - **Objects**: Requires Network, Graph, and cycle time calculation
 - **Real-time**: Updates traffic light phases based on current traffic conditions
@@ -1856,7 +1856,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 
 **Simulation Runtime Validation Functions:**
 
-- **verify_nimrod_integration_setup()**: Validates Nimrod's traffic control algorithm initialization
+- **verify_nimrod_integration_setup()**: Validates Tree Method traffic control algorithm initialization
 - **verify_algorithm_runtime_behavior()**: Validates algorithm behavior during simulation runtime
 
 #### 9.1.5 validate_arguments.py

@@ -3,7 +3,7 @@
 """
 Analysis script for Experiment 01: Moderate Traffic Load
 Extracts metrics from SUMO simulation logs and generates comparative analysis
-Based on Nimrod's experimental methodology from Traffic Control paper
+Based on Tree Method experimental methodology from Traffic Control paper
 """
 
 import os
@@ -111,7 +111,7 @@ def generate_summary_statistics(all_results):
     return summary
 
 def create_comparison_plots(all_results, output_dir):
-    """Create comparison plots similar to Nimrod's paper"""
+    """Create comparison plots similar to Tree Method paper"""
     # Prepare data for plotting
     plot_data = []
     for method, results in all_results.items():

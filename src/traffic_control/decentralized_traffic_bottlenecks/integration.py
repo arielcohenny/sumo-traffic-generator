@@ -17,7 +17,7 @@ def load_tree(
     sumo_cfg: str | None = None
 ) -> tuple[SimpleNamespace, RunConfig]:
     """
-    Instead of Nimrod’s JSON-based loader, we:
+    Instead of Tree Method’s JSON-based loader, we:
       1. (Optionally) copy the SUMO config to simulation.sumocfg
       2. Parse net_file for <tlLogic> entries
       3. Build a trivial tree_data with just the list of TLS IDs
