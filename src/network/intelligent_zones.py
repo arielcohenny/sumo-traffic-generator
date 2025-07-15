@@ -23,6 +23,7 @@ from pathlib import Path
 import logging
 import numpy as np
 import json
+import math
 from dataclasses import dataclass
 
 # Optional imports with fallbacks
@@ -797,24 +798,36 @@ class IntelligentZoneGenerator:
         # Create grid based on geographic bounds and block size
         min_lon, min_lat, max_lon, max_lat = geographic_bounds
         
-        # Convert block size from meters to degrees (rough approximation)
-        # 1 degree ≈ 111,000 meters at equator
-        grid_size_degrees = self.block_size_m / 111000
+        # More accurate meter-to-degree conversion for the specific latitude
+        lat_center = (min_lat + max_lat) / 2
+        meters_per_degree_lat = 111000
+        meters_per_degree_lon = 111000 * math.cos(math.radians(lat_center))
+
+        grid_size_degrees_lat = self.block_size_m / meters_per_degree_lat
+        grid_size_degrees_lon = self.block_size_m / meters_per_degree_lon
+
+        num_cols = max(1, int((max_lon - min_lon) / grid_size_degrees_lon))
+        num_rows = max(1, int((max_lat - min_lat) / grid_size_degrees_lat))
         
-        num_cols = max(1, int((max_lon - min_lon) / grid_size_degrees))
-        num_rows = max(1, int((max_lat - min_lat) / grid_size_degrees))
+        # Ensure grid exactly covers the bounds
+        actual_grid_width = num_cols * grid_size_degrees_lon
+        actual_grid_height = num_rows * grid_size_degrees_lat
+        if actual_grid_width < (max_lon - min_lon):
+            num_cols += 1
+        if actual_grid_height < (max_lat - min_lat):
+            num_rows += 1
         
-        logger.info(f"Creating {num_cols}x{num_rows} grid with {grid_size_degrees:.6f} degree cells")
+        logger.info(f"Creating {num_cols}x{num_rows} grid with lat={grid_size_degrees_lat:.6f}°, lon={grid_size_degrees_lon:.6f}° cells")
         
         zones = []
         
         for i in range(num_cols):
             for j in range(num_rows):
                 # Calculate cell boundaries in geographic coordinates
-                cell_min_lon = min_lon + i * grid_size_degrees
-                cell_max_lon = min_lon + (i + 1) * grid_size_degrees
-                cell_min_lat = min_lat + j * grid_size_degrees
-                cell_max_lat = min_lat + (j + 1) * grid_size_degrees
+                cell_min_lon = min_lon + i * grid_size_degrees_lon
+                cell_max_lon = min_lon + (i + 1) * grid_size_degrees_lon
+                cell_min_lat = min_lat + j * grid_size_degrees_lat
+                cell_max_lat = min_lat + (j + 1) * grid_size_degrees_lat
                 
                 cell_center_lon = (cell_min_lon + cell_max_lon) / 2
                 cell_center_lat = (cell_min_lat + cell_max_lat) / 2
@@ -824,7 +837,7 @@ class IntelligentZoneGenerator:
                 zone_scores = ZoneScore()
                 
                 # Check for nearby OSM zones
-                search_radius = grid_size_degrees * 1.5
+                search_radius = max(grid_size_degrees_lat, grid_size_degrees_lon) * 1.5
                 for zone in self.osm_zones:
                     if cell_center.distance(zone['geometry'].centroid) <= search_radius:
                         zone_type = zone['zone_type']
@@ -892,6 +905,87 @@ class IntelligentZoneGenerator:
         
         logger.info(f"Generated {len(zones)} OSM-based intelligent zones")
         return zones
+
+def extract_zones_from_osm(osm_file_path: str, land_use_block_size_m: float, zones_file: str) -> int:
+    """
+    Extract intelligent zones from OSM file and save to polygon file
+    
+    Args:
+        osm_file_path: Path to OSM file
+        land_use_block_size_m: Size of grid cells in meters
+        zones_file: Output polygon file path
+        
+    Returns:
+        Number of zones generated
+    """
+    logger.info("Generating OSM-based intelligent zones...")
+    
+    try:
+        # Get bounds from highway nodes only (not isolated nodes)
+        tree = ET.parse(osm_file_path)
+        root = tree.getroot()
+
+        # First try to get bounds from <bounds> element
+        bounds_elem = root.find('bounds')
+        if bounds_elem is not None:
+            min_lat = float(bounds_elem.get('minlat'))
+            min_lon = float(bounds_elem.get('minlon'))
+            max_lat = float(bounds_elem.get('maxlat'))
+            max_lon = float(bounds_elem.get('maxlon'))
+            logger.info("Using bounds from OSM <bounds> element")
+        else:
+            # Calculate bounds from highway nodes only
+            logger.info("Calculating bounds from highway-connected nodes")
+            highway_node_ids = set()
+            for way in root.findall('way'):
+                if any(tag.get('k') == 'highway' for tag in way.findall('tag')):
+                    for nd in way.findall('nd'):
+                        highway_node_ids.add(nd.get('ref'))
+
+            lats, lons = [], []
+            for node in root.findall('node'):
+                if node.get('id') in highway_node_ids:
+                    lats.append(float(node.get('lat')))
+                    lons.append(float(node.get('lon')))
+            
+            if not lats or not lons:
+                # Fallback to all nodes if no highway nodes found
+                logger.warning("No highway nodes found, using all nodes for bounds")
+                lats, lons = [], []
+                for node in root.findall('node'):
+                    lats.append(float(node.get('lat')))
+                    lons.append(float(node.get('lon')))
+                    
+            min_lat, max_lat = min(lats), max(lats)
+            min_lon, max_lon = min(lons), max(lons)
+
+            # Add small padding to ensure full coverage
+            lat_padding = (max_lat - min_lat) * 0.05  # 5% padding
+            lon_padding = (max_lon - min_lon) * 0.05
+            min_lat -= lat_padding
+            max_lat += lat_padding
+            min_lon -= lon_padding
+            max_lon += lon_padding
+
+        geographic_bounds = (min_lon, min_lat, max_lon, max_lat)
+        logger.info(f"Using geographic bounds from OSM: {geographic_bounds}")
+
+        # Generate intelligent zones using geographic coordinates
+        zone_generator = IntelligentZoneGenerator(land_use_block_size_m=land_use_block_size_m)
+        intelligent_zones = zone_generator.generate_intelligent_zones_from_osm(
+            osm_file_path=osm_file_path,
+            geographic_bounds=geographic_bounds
+        )
+
+        # Save zones in geographic coordinates (will be converted to projected coordinates later)
+        save_intelligent_zones_to_poly_file(intelligent_zones, zones_file, None)
+        logger.info(f"Generated and saved {len(intelligent_zones)} intelligent zones to {zones_file}")
+        
+        return len(intelligent_zones)
+
+    except Exception as e:
+        logger.error(f"Failed to generate OSM zones: {e}")
+        raise
 
 def save_intelligent_zones_to_poly_file(zones: List[Dict], output_file: str, net_file: str = None) -> None:
     """
@@ -1034,7 +1128,10 @@ def convert_zones_to_projected_coordinates(zones_file: str, net_file: str) -> No
                         converted_coords.append(f"{x:.2f},{y:.2f}")
                     except Exception as e:
                         logger.warning(f"Could not convert coordinate {coord_pair}: {e}")
-                        converted_coords.append(coord_pair)  # Keep original
+                        logger.warning(f"Network bounds: {net.getBBoxXY()}")
+                        logger.warning(f"Attempting to convert lat={lat}, lon={lon}")
+                        # Skip malformed coordinates instead of keeping originals
+                        continue
             
             # Update the shape attribute with converted coordinates
             poly.set('shape', ' '.join(converted_coords))

@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import logging
+import shutil
 
 from ..config import OSMConfig
 
@@ -62,6 +63,49 @@ def import_osm_network(osm_file_path: str, output_prefix: str = "data/grid") -> 
         raise RuntimeError(f"Failed to convert OSM file: {e.stderr}")
     except FileNotFoundError:
         raise RuntimeError("netconvert not found. Please ensure SUMO is installed and in your PATH.")
+
+
+def generate_network_from_osm(osm_file_path: str) -> None:
+    """
+    Generate SUMO network from OSM file with proper file management
+    
+    This function combines OSM import with the file management logic needed
+    to integrate with the existing pipeline that expects files in data/ directory.
+    
+    Args:
+        osm_file_path: Path to OSM file
+    """
+    logger.info(f"Generating SUMO network from OSM file: {osm_file_path}")
+    
+    # Call existing import_osm_network function
+    import_osm_network(osm_file_path, "data/grid")
+    logger.info("Successfully imported OSM network.")
+    
+    # Move OSM files to expected locations in data/ directory
+    grid_dir = Path("data/grid")
+    if grid_dir.exists():
+        logger.info("Moving OSM files to expected locations...")
+        
+        # Move files from data/grid/osm_network.* to data/grid.*
+        files_moved = 0
+        for file_pattern in ["*.nod.xml", "*.edg.xml", "*.con.xml", "*.tll.xml"]:
+            for src_file in grid_dir.glob(file_pattern):
+                # Extract the file extension part (e.g., "nod.xml" from "osm_network.nod.xml")
+                suffix = src_file.name.split(".", 1)[1] if "." in src_file.name else src_file.suffix
+                dst_file = Path("data") / f"grid.{suffix}"
+                
+                shutil.move(str(src_file), str(dst_file))
+                logger.info(f"Moved {src_file} to {dst_file}")
+                files_moved += 1
+        
+        # Clean up empty grid directory
+        if not list(grid_dir.iterdir()):
+            grid_dir.rmdir()
+            logger.info("Cleaned up empty grid directory")
+        
+        logger.info(f"Successfully moved {files_moved} network files to data/ directory")
+    else:
+        logger.warning("Grid directory not found - files may not have been generated correctly")
 
 
 class OSMImporter:

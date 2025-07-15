@@ -12,8 +12,8 @@ from src.network.generate_grid import generate_grid_network
 from src.network.split_edges_with_lanes import split_edges_with_flow_based_lanes
 from src.network.edge_attrs import assign_edge_attractiveness
 from src.network.zones import extract_zones_from_junctions
-from src.network.intelligent_zones import IntelligentZoneGenerator, save_intelligent_zones_to_poly_file, convert_zones_to_projected_coordinates
-from src.network.import_osm import import_osm_network
+from src.network.intelligent_zones import convert_zones_to_projected_coordinates, extract_zones_from_osm
+from src.network.import_osm import generate_network_from_osm
 
 from src.traffic_control.decentralized_traffic_bottlenecks.integration import load_tree
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.graph import Graph
@@ -25,6 +25,7 @@ from src.validate.validate_network import verify_generate_grid_network, verify_e
 from src.validate.validate_traffic import verify_generate_vehicle_routes
 from src.validate.validate_simulation import verify_nimrod_integration_setup, verify_algorithm_runtime_behavior
 from src.validate.validate_arguments import validate_arguments
+from src.validate.validate_intelligent_zones import verify_convert_zones_to_projected_coordinates
 
 from src.traffic.builder import generate_vehicle_routes
 from src.config import CONFIG
@@ -171,24 +172,8 @@ def main():
         # --- Step 1: Generate Network (Grid or OSM) ---
         if args.osm_file:
             print("Begin simulating SUMO network from OSM data...")
-            import_osm_network(args.osm_file, "data/grid")
-            print("Successfully imported OSM network.")
-
-            # Move OSM files to expected locations in data/ directory
-            grid_dir = Path("data/grid")
-            if grid_dir.exists():
-                # Move files from data/grid/osm_network.* to data/grid.*
-                for file_pattern in ["*.nod.xml", "*.edg.xml", "*.con.xml", "*.tll.xml"]:
-                    for src_file in grid_dir.glob(file_pattern):
-                        # Extract the file extension part (e.g., "nod.xml" from "osm_network.nod.xml")
-                        suffix = src_file.name.split(
-                            ".", 1)[1] if "." in src_file.name else src_file.suffix
-                        dst_file = Path("data") / f"grid.{suffix}"
-                        shutil.move(str(src_file), str(dst_file))
-                        print(f"Moved {src_file} to {dst_file}")
-                # Clean up empty grid directory
-                if not list(grid_dir.iterdir()):
-                    grid_dir.rmdir()
+            generate_network_from_osm(args.osm_file)
+            print("Successfully generated SUMO network from OSM data.")
         else:
             print("Begin simulating SUMO orthogonal grid network...")
             generate_grid_network(
@@ -218,43 +203,13 @@ def main():
         if args.osm_file:
             print("Generating OSM-based intelligent zones...")
             try:
-                # Get bounds directly from OSM file
-                from xml.etree import ElementTree as ET
-                tree = ET.parse(args.osm_file)
-                root = tree.getroot()
-
-                bounds_elem = root.find('bounds')
-                if bounds_elem is not None:
-                    min_lat = float(bounds_elem.get('minlat'))
-                    min_lon = float(bounds_elem.get('minlon'))
-                    max_lat = float(bounds_elem.get('maxlat'))
-                    max_lon = float(bounds_elem.get('maxlon'))
-                else:
-                    # Calculate bounds from nodes if <bounds> element not present
-                    lats, lons = [], []
-                    for node in root.findall('node'):
-                        lats.append(float(node.get('lat')))
-                        lons.append(float(node.get('lon')))
-                    min_lat, max_lat = min(lats), max(lats)
-                    min_lon, max_lon = min(lons), max(lons)
-
-                geographic_bounds = (min_lon, min_lat, max_lon, max_lat)
-                print(f"Using geographic bounds from OSM: {geographic_bounds}")
-
-                # Generate intelligent zones using geographic coordinates
-                zone_generator = IntelligentZoneGenerator(
-                    land_use_block_size_m=args.land_use_block_size_m)
-                intelligent_zones = zone_generator.generate_intelligent_zones_from_osm(
+                num_zones = extract_zones_from_osm(
                     osm_file_path=args.osm_file,
-                    geographic_bounds=geographic_bounds
+                    land_use_block_size_m=args.land_use_block_size_m,
+                    zones_file=CONFIG.zones_file
                 )
-
-                # Save zones in geographic coordinates (will be converted to projected coordinates later)
-                save_intelligent_zones_to_poly_file(
-                    intelligent_zones, CONFIG.zones_file, None)
                 print(
-                    f"Generated and saved {len(intelligent_zones)} intelligent zones to {CONFIG.zones_file}")
-
+                    f"Generated and saved {num_zones} intelligent zones to {CONFIG.zones_file}")
             except Exception as e:
                 print(f"Failed to generate OSM zones: {e}")
                 exit(1)
@@ -279,10 +234,6 @@ def main():
                 exit(1)
             print(
                 f"Extracted land use zones successfully using traditional method with {args.land_use_block_size_m}m blocks.")
-
-            # No intelligent zone generation for synthetic networks
-            intelligent_zones_network_bounds = None
-            intelligent_zones_osm_file = None
 
         # --- Step 3: Integrated Edge Splitting with Lane Assignment ---
         if args.lane_count != "0" and not (args.lane_count.isdigit() and args.lane_count == "0"):
@@ -317,6 +268,20 @@ def main():
             except Exception as e:
                 print(f"Failed to convert zone coordinates: {e}")
                 print("Zones will remain in geographic coordinates.")
+
+        # --- Step 5.1: Validate Zone Coverage (OSM Mode Only) ---
+        if args.osm_file and Path(CONFIG.zones_file).exists():
+            print("Validating zone coverage against network bounds...")
+            try:
+                verify_convert_zones_to_projected_coordinates(
+                    CONFIG.zones_file, CONFIG.network_file)
+                print("Zone coverage validation passed.")
+            except ValidationError as ve:
+                print(f"Zone coverage validation failed: {ve}")
+                exit(1)
+            except Exception as e:
+                print(f"Zone coverage validation failed: {e}")
+                exit(1)
 
         # --- Step 6: Edge Attractiveness Assignment ---
         assign_edge_attractiveness(
