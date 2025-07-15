@@ -50,7 +50,13 @@ def verify_convert_zones_to_projected_coordinates(zones_file: str, network_file:
     try:
         # Load network for bounds checking
         net = sumolib.net.readNet(network_file)
-        net_bounds = net.getBBoxXY()
+        net_bounds_raw = net.getBBoxXY()  # Returns [(min_x, min_y), (max_x, max_y)]
+        
+        # Extract individual coordinates from getBBoxXY format
+        min_x, min_y = net_bounds_raw[0]
+        max_x, max_y = net_bounds_raw[1]
+        net_bounds = (min_x, min_y, max_x, max_y)
+        
         logger.info(f"Network bounds: {net_bounds}")
         
         # Parse zone coordinates
