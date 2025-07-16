@@ -35,19 +35,19 @@ def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int,
     con_root = con_tree.getroot()
     tll_root = tll_tree.getroot()
     
-    # Step 2: Analyze original connections to count movements per edge
-    movement_counts = analyze_movements_from_connections(con_root)
+    # Step 2: Analyze original connections to get detailed movement data
+    movement_data = analyze_movements_from_connections(con_root)
     
     # Step 3: Calculate edge coordinates for splitting
     edge_coords = extract_edge_coordinates(edg_root, nod_root)
     
     # Step 4: Split edges and calculate lane assignments
-    split_edges, new_nodes = split_edges_at_head_distance(edg_root, edge_coords, movement_counts, algorithm, rng, min_lanes, max_lanes)
+    split_edges, new_nodes = split_edges_at_head_distance(edg_root, edge_coords, movement_data, algorithm, rng, min_lanes, max_lanes)
     
     # Step 5: Update all XML files
     update_nodes_file(nod_root, new_nodes)
     update_edges_file(edg_root, split_edges)
-    update_connections_file(con_root, split_edges, movement_counts)
+    update_connections_file(con_root, split_edges, movement_data)
     update_traffic_lights_file(tll_root, split_edges)
     
     # Step 6: Write updated files
@@ -56,16 +56,66 @@ def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int,
     print("Completed integrated edge splitting with flow-based lane assignment.")
 
 
-def analyze_movements_from_connections(con_root) -> Dict[str, int]:
-    """Count the number of movements (connections) from each edge."""
-    movement_counts = {}
+def analyze_movements_from_connections(con_root) -> Dict[str, Dict]:
+    """Analyze detailed movement information from connections.
     
+    Returns:
+        Dict mapping edge_id to movement data:
+        {
+            'edge_id': {
+                'total_movement_lanes': int,  # Sum of lanes each movement uses
+                'movements': [
+                    {
+                        'to_edge': str,
+                        'from_lanes': List[int],  # Original lanes this movement uses
+                        'num_lanes': int  # Number of lanes this movement needs
+                    }
+                ]
+            }
+        }
+    """
+    edge_movements = {}
+    
+    # Group connections by from_edge and to_edge
     for connection in con_root.findall("connection"):
         from_edge = connection.get("from")
-        if from_edge:
-            movement_counts[from_edge] = movement_counts.get(from_edge, 0) + 1
+        to_edge = connection.get("to")
+        from_lane = connection.get("fromLane")
+        
+        if from_edge and to_edge and from_lane is not None:
+            if from_edge not in edge_movements:
+                edge_movements[from_edge] = {}
+            
+            if to_edge not in edge_movements[from_edge]:
+                edge_movements[from_edge][to_edge] = []
+            
+            edge_movements[from_edge][to_edge].append(int(from_lane))
     
-    return movement_counts
+    # Calculate total movement lanes for each edge
+    movement_data = {}
+    for edge_id, destinations in edge_movements.items():
+        movements = []
+        total_lanes = 0
+        
+        for to_edge, from_lanes in destinations.items():
+            # Remove duplicates and sort
+            unique_lanes = sorted(set(from_lanes))
+            num_lanes = len(unique_lanes)
+            
+            movements.append({
+                'to_edge': to_edge,
+                'from_lanes': unique_lanes,
+                'num_lanes': num_lanes
+            })
+            
+            total_lanes += num_lanes
+        
+        movement_data[edge_id] = {
+            'total_movement_lanes': total_lanes,
+            'movements': movements
+        }
+    
+    return movement_data
 
 
 def extract_edge_coordinates(edg_root, nod_root) -> Dict[str, Tuple[float, float, float, float]]:
@@ -103,7 +153,7 @@ def extract_edge_coordinates(edg_root, nod_root) -> Dict[str, Tuple[float, float
 
 
 def split_edges_at_head_distance(edg_root, edge_coords: Dict[str, Tuple[float, float, float, float]], 
-                                movement_counts: Dict[str, int], algorithm: str, rng, min_lanes: int, max_lanes: int) -> Tuple[Dict[str, Dict], List[Dict]]:
+                                movement_data: Dict[str, Dict], algorithm: str, rng, min_lanes: int, max_lanes: int) -> Tuple[Dict[str, Dict], List[Dict]]:
     """Split edges and calculate lane assignments."""
     split_edges = {}
     new_nodes = []
@@ -136,9 +186,10 @@ def split_edges_at_head_distance(edg_root, edge_coords: Dict[str, Tuple[float, f
         split_y = start_y + ratio * (end_y - start_y)
         
         # Calculate lane counts
-        num_movements = movement_counts.get(edge_id, 1)
+        edge_movement_info = movement_data.get(edge_id, {'total_movement_lanes': 1, 'movements': []})
+        total_movement_lanes = edge_movement_info['total_movement_lanes']
         tail_lanes = calculate_lane_count(edge_id, algorithm, rng, min_lanes, max_lanes)
-        head_lanes = max(num_movements, tail_lanes)
+        head_lanes = max(total_movement_lanes, tail_lanes)
         
         # Create new intermediate node
         head_node_id = f"{edge_id}_H_node"
@@ -177,7 +228,8 @@ def split_edges_at_head_distance(edg_root, edge_coords: Dict[str, Tuple[float, f
             'head': head_segment,
             'tail_lanes': tail_lanes,
             'head_lanes': head_lanes,
-            'num_movements': num_movements,
+            'total_movement_lanes': total_movement_lanes,
+            'movements': edge_movement_info['movements'],
             'head_node_id': head_node_id
         }
     
@@ -221,16 +273,60 @@ def update_edges_file(edg_root, split_edges: Dict[str, Dict]):
             head_elem.set(attr, value)
 
 
-def update_connections_file(con_root, split_edges: Dict[str, Dict], movement_counts: Dict[str, int]):
-    """Update connections to reference head segments and add internal connections."""
+def update_connections_file(con_root, split_edges: Dict[str, Dict], movement_data: Dict[str, Dict]):
+    """Update connections to reference head segments with proper movement-to-lane assignment."""
     
-    # Update existing connections to reference head segments
+    # First, assign head lanes to movements for each edge
+    edge_movement_assignments = {}
+    for edge_id, split_data in split_edges.items():
+        if edge_id in movement_data:
+            movements = movement_data[edge_id]['movements']
+            head_lanes = split_data['head_lanes']
+            
+            # Assign head lanes to movements (one movement per head lane)
+            movement_to_head_lanes = {}
+            head_lane_idx = 0
+            
+            for movement in movements:
+                to_edge = movement['to_edge']
+                num_lanes_needed = movement['num_lanes']
+                
+                # Assign consecutive head lanes to this movement
+                assigned_head_lanes = []
+                for _ in range(num_lanes_needed):
+                    if head_lane_idx < head_lanes:
+                        assigned_head_lanes.append(head_lane_idx)
+                        head_lane_idx += 1
+                
+                if assigned_head_lanes:
+                    movement_to_head_lanes[to_edge] = assigned_head_lanes
+            
+            edge_movement_assignments[edge_id] = movement_to_head_lanes
+    
+    # Update existing connections to reference head segments with specific lane assignments
     for connection in con_root.findall("connection"):
         from_edge = connection.get("from")
-        if from_edge in split_edges:
+        to_edge = connection.get("to")
+        
+        if from_edge in split_edges and from_edge in edge_movement_assignments:
             # Update to reference head segment
             head_edge_id = split_edges[from_edge]['head']['id']
             connection.set("from", head_edge_id)
+            
+            # Assign specific head lane for this movement
+            if to_edge in edge_movement_assignments[from_edge]:
+                assigned_head_lanes = edge_movement_assignments[from_edge][to_edge]
+                if assigned_head_lanes:
+                    # Use the first assigned head lane for this movement
+                    connection.set("fromLane", str(assigned_head_lanes[0]))
+                    
+                    # Create additional connections for multi-lane movements
+                    for head_lane in assigned_head_lanes[1:]:
+                        new_conn = ET.SubElement(con_root, "connection")
+                        new_conn.set("from", head_edge_id)
+                        new_conn.set("to", to_edge)
+                        new_conn.set("fromLane", str(head_lane))
+                        new_conn.set("toLane", connection.get("toLane", "0"))
     
     # Add internal connections (tail to head)
     for edge_id, split_data in split_edges.items():

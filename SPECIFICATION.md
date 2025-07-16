@@ -913,7 +913,7 @@ Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zo
 ##### Unified Lane Assignment Formula (Both OSM and Non-OSM):
 
 - **Tail Lanes**: `lane_count` (from OSM data or calculated algorithm)
-- **Head Lanes**: `min(lane_count, total_movement_lanes)`
+- **Head Lanes**: `max(lane_count, total_movement_lanes)`
 - **Purpose**: Tail segment uses original lane count, head segment provides adequate capacity for all movements
 
 #### 3.1.6 Movement-to-Head-Lane Assignment Algorithm
@@ -1097,17 +1097,38 @@ Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zo
 
 #### 3.1.9 Edge Splitting Validation
 
-- **Step**: Verify edge splitting was completed successfully
-- **Function**: Implicit validation through XML file generation
+- **Step**: Comprehensive validation of edge splitting and lane assignment
+- **Function**: `verify_split_edges_with_flow_based_lanes()` in `src/validate/validate_split_edges_with_lanes.py`
+- **Execution**: Runs after network rebuild (Step 4) to validate final network structure
 
-##### Validation Checks:
+##### Primary Validation Checks:
 
-- **H-node Creation**: One intermediate node per split edge
-- **Geometric Consistency**: Split points positioned correctly on original edge line
-- **Lane Count Consistency**: Tail and head segments have correct lane counts
-- **Movement Preservation**: All original movements maintained through new structure
-- **One Movement Per Head Lane**: Each head lane serves exactly one movement
-- **File Integrity**: All XML files remain valid and consistent
+1. **Tail Lane Consistency**: Verify tail segments have same lane count as original edges
+2. **Head Lane Accuracy**: Confirm head segments have correct total movement lanes
+3. **Movement Integrity**: Ensure all head lanes have exactly one outgoing direction  
+4. **Connectivity Validation**: Check all head lanes have incoming connections from tail lanes
+5. **Complete Flow**: Verify all tail lanes lead to head lanes
+
+##### Structural Validation Checks:
+
+- **Network Completeness**: Validate all expected tail and head segments exist
+- **Lane Index Consistency**: Ensure proper sequential lane numbering (0,1,2...)
+- **Connection Bounds**: Verify all connections reference valid lane indices
+- **Edge Mapping**: Confirm proper edge-to-movement-to-lane assignments
+
+##### Validation Process:
+
+- **Network Parsing**: Extract lane information from rebuilt `.net.xml` file
+- **Connection Analysis**: Parse movement data from `.con.xml` file  
+- **Cross-Validation**: Compare network structure against connection requirements
+- **Error Reporting**: Detailed error messages for any validation failures
+- **Success Confirmation**: "✅ VALIDATION PASSED: X edges validated successfully"
+
+##### Validation Timing:
+
+- **Pre-Network Rebuild**: Not executed (head segments don't exist yet)
+- **Post-Network Rebuild**: Executed after Step 4 completion
+- **Integration**: Seamlessly integrated into CLI pipeline with proper error handling
 
 #### 3.1.10 Edge Splitting Completion
 
@@ -1840,6 +1861,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 
 - **verify_generate_grid_network()**: Validates synthetic grid generation with junction removal
 - **verify_insert_split_edges()**: Validates edge splitting into body + head segments
+- **verify_split_edges_with_flow_based_lanes()**: Validates comprehensive edge splitting and lane assignment
 - **verify_extract_zones_from_junctions()**: Validates zone extraction from junction topology
 - **verify_rebuild_network()**: Validates network compilation from separate XML files
 - **verify_set_lane_counts()**: Validates lane assignment algorithms and distribution
@@ -1859,7 +1881,87 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **verify_nimrod_integration_setup()**: Validates Tree Method traffic control algorithm initialization
 - **verify_algorithm_runtime_behavior()**: Validates algorithm behavior during simulation runtime
 
-#### 9.1.5 validate_arguments.py
+#### 9.1.5 validate_split_edges_with_lanes.py
+
+**Edge Splitting and Lane Assignment Validation Functions:**
+
+- **verify_split_edges_with_flow_based_lanes()**: Comprehensive validation of edge splitting and lane assignment
+
+##### Validation Implementation Details:
+
+**Primary Validation Checks:**
+
+1. **Tail Lane Consistency Validation**:
+   - **Purpose**: Ensure tail segments retain original edge lane counts
+   - **Method**: Compare tail segment lane count against original edge definition
+   - **Validation**: `actual_tail_lanes == original_edge_lanes`
+   - **Error Example**: "Edge A0B0: tail lanes (1) != original lanes (2)"
+
+2. **Head Lane Accuracy Validation**:
+   - **Purpose**: Confirm head segments have correct total movement lanes
+   - **Method**: Count total lanes used by all outgoing movements
+   - **Validation**: `actual_head_lanes == total_movement_lanes`
+   - **Calculation**: `total_movement_lanes = sum(lanes_per_movement for all movements)`
+   - **Error Example**: "Edge A0B0: head lanes (3) != total movement lanes (4)"
+
+3. **Movement Integrity Validation**:
+   - **Purpose**: Ensure each head lane serves exactly one outgoing movement
+   - **Method**: Parse connection file to verify one-to-one movement mapping
+   - **Validation**: Each head lane has exactly one outgoing connection
+   - **Error Example**: "Edge A0B0: head lane 2 has 3 connections (expected 1)"
+
+4. **Connectivity Validation**:
+   - **Purpose**: Verify complete tail-to-head connectivity
+   - **Method**: Check all head lanes have incoming connections from tail segments
+   - **Validation**: Every head lane receives traffic from at least one tail lane
+   - **Error Example**: "Edge A0B0: head lanes {1,3} have no incoming connections from tail"
+
+5. **Complete Flow Validation**:
+   - **Purpose**: Ensure all tail lanes connect to head segments
+   - **Method**: Verify every tail lane has outgoing connections to head segment
+   - **Validation**: No tail lanes are orphaned or disconnected
+   - **Error Example**: "Edge A0B0: tail lanes {0,2} have no outgoing connections"
+
+**Structural Validation Checks:**
+
+- **Network Completeness**: Validate all expected tail and head segments exist in network
+- **Lane Index Consistency**: Ensure proper sequential lane numbering (0,1,2...)
+- **Connection Bounds**: Verify all connections reference valid lane indices within bounds
+- **Edge Mapping**: Confirm proper edge-to-movement-to-lane assignments
+
+**Validation Process Flow:**
+
+1. **Network Parsing**: Extract lane information from rebuilt `.net.xml` file
+2. **Connection Analysis**: Parse movement data from `.con.xml` file  
+3. **Movement Calculation**: Analyze total movement lanes per edge
+4. **Cross-Validation**: Compare network structure against connection requirements
+5. **Error Reporting**: Generate detailed error messages for any validation failures
+6. **Success Confirmation**: Display validation success with edge count
+
+**Integration and Timing:**
+
+- **Execution Point**: After network rebuild (Step 4) when all segments exist
+- **CLI Integration**: Seamlessly integrated into pipeline with proper error handling
+- **Error Handling**: Uses ValidationError for consistent error reporting
+- **Performance**: Validates all edges efficiently in single pass
+
+**Example Validation Output:**
+
+```
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 80 edges validated successfully
+```
+
+**Error Example Output:**
+
+```
+❌ VALIDATION FAILED: 3 errors found:
+  - Edge A0B0: tail lanes (1) != original lanes (2)
+  - Edge C2D2: head lanes (3) != total movement lanes (4)  
+  - Edge E1E2: head lane 1 has 0 connections (expected 1)
+```
+
+#### 9.1.6 validate_arguments.py
 
 **CLI Argument Validation Functions:**
 

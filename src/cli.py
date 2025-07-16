@@ -26,6 +26,7 @@ from src.validate.validate_traffic import verify_generate_vehicle_routes
 from src.validate.validate_simulation import verify_nimrod_integration_setup, verify_algorithm_runtime_behavior
 from src.validate.validate_arguments import validate_arguments
 from src.validate.validate_intelligent_zones import verify_convert_zones_to_projected_coordinates
+from src.validate.validate_split_edges_with_lanes import verify_split_edges_with_flow_based_lanes
 
 from src.traffic.builder import generate_vehicle_routes
 from src.config import CONFIG
@@ -256,6 +257,17 @@ def main():
             print(f"Failed to rebuild the network: {ve}")
             exit(1)
         print("Rebuilt the network successfully.")
+        
+        # Validate the split edges with flow-based lanes (after network rebuild)
+        if args.lane_count != "0" and not (args.lane_count.isdigit() and args.lane_count == "0"):
+            try:
+                verify_split_edges_with_flow_based_lanes(
+                    network_file=CONFIG.network_file,
+                    connections_file=CONFIG.network_con_file
+                )
+            except ValidationError as ve:
+                print(f"Failed to validate split edges with flow-based lanes: {ve}")
+                exit(1)
 
         # --- Step 5: Zone Coordinate Conversion (OSM Mode Only) ---
         if args.osm_file and Path(CONFIG.zones_file).exists():
