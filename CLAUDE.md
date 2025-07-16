@@ -11,6 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **DO NOT** add fallback solutions, error handling, or "helpful" additions without explicit user approval
 - **DO NOT** change the architecture, pipeline steps, or execution order without user consent
 - **DO NOT** write the name Nimrod explicitly but instead use 'Tree Method'
+- **NEVER MODIFY SPECIFICATION.md WITHOUT EXPLICIT USER APPROVAL**
 - **ALWAYS** ask for permission before making structural changes
 - **STICK TO** exactly what the user asks for - nothing more, nothing less
 - When the user asks a question, answer it directly without implementing unsolicited "improvements"

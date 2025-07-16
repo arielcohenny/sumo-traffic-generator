@@ -246,6 +246,21 @@ def main():
             )
             print(
                 "Successfully completed integrated edge splitting with lane assignment.")
+
+            # Validate the split edges with flow-based lanes (immediately after the operation)
+            try:
+                verify_split_edges_with_flow_based_lanes(
+                    connections_file=str(CONFIG.network_con_file),
+                    edges_file=str(CONFIG.network_edg_file),
+                    nodes_file=str(CONFIG.network_nod_file)
+                )
+                print("Split edges validation passed successfully.")
+            except ValidationError as ve:
+                print(f"Split edges validation failed: {ve}")
+                exit(1)
+            except ValueError as ve:
+                print(f"Split edges validation failed: {ve}")
+                exit(1)
         else:
             print("Skipping lane assignment (lane_count is 0).")
 
@@ -257,17 +272,6 @@ def main():
             print(f"Failed to rebuild the network: {ve}")
             exit(1)
         print("Rebuilt the network successfully.")
-        
-        # Validate the split edges with flow-based lanes (after network rebuild)
-        if args.lane_count != "0" and not (args.lane_count.isdigit() and args.lane_count == "0"):
-            try:
-                verify_split_edges_with_flow_based_lanes(
-                    network_file=CONFIG.network_file,
-                    connections_file=CONFIG.network_con_file
-                )
-            except ValidationError as ve:
-                print(f"Failed to validate split edges with flow-based lanes: {ve}")
-                exit(1)
 
         # --- Step 5: Zone Coordinate Conversion (OSM Mode Only) ---
         if args.osm_file and Path(CONFIG.zones_file).exists():
@@ -281,8 +285,6 @@ def main():
                 print(f"Failed to convert zone coordinates: {e}")
                 print("Zones will remain in geographic coordinates.")
 
-        # --- Step 5.1: Validate Zone Coverage (OSM Mode Only) ---
-        if args.osm_file and Path(CONFIG.zones_file).exists():
             print("Validating zone coverage against network bounds...")
             try:
                 verify_convert_zones_to_projected_coordinates(
