@@ -81,8 +81,8 @@ def _validate_numeric_ranges(args) -> None:
     # Land use block size validation
     if args.land_use_block_size_m <= 0:
         raise ValidationError(f"Land use block size must be > 0, got {args.land_use_block_size_m}")
-    if args.land_use_block_size_m < 50 or args.land_use_block_size_m > 500:
-        raise ValidationError(f"Land use block size should be 50-500m, got {args.land_use_block_size_m}")
+    if args.land_use_block_size_m < 10 or args.land_use_block_size_m > 100:
+        raise ValidationError(f"Land use block size should be 10-100m (research paper methodology), got {args.land_use_block_size_m}")
 
 
 def _validate_routing_strategy(routing_strategy: str) -> None:

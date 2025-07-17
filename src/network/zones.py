@@ -20,22 +20,24 @@ def assign_land_use_to_zones(features, seed):
     rng = random.Random(seed)
 
     total_cells = len(features)
+
     land_use_targets = [
         {**lu, "target": round(total_cells * lu["percentage"] / 100)} for lu in CONFIG.land_uses
     ]
 
-    grid = {(feat['properties']['i'], feat['properties']['j'])
-             : feat for feat in features}
+    grid = {(feat['properties']['i'], feat['properties']['j']): feat for feat in features}
     available = set(grid.keys())
 
     def get_neighbors(cell):
         x, y = cell
         return [(x + dx, y + dy) for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)] if (x + dx, y + dy) in available]
 
-    for lu in land_use_targets:
+    for i, lu in enumerate(land_use_targets):
         remaining = lu["target"]
+        clusters_created = 0
+
         while remaining > 0 and available:
-            start = rng.choice(list(available))
+            start = rng.choice(sorted(list(available)))
             cluster_size = min(remaining, lu["max_size"])
             cluster = set()
             queue = deque([start])
@@ -45,12 +47,16 @@ def assign_land_use_to_zones(features, seed):
                     cluster.add(cell)
                     available.remove(cell)
                     queue.extend(get_neighbors(cell))
+
+            clusters_created += 1
+            cluster_actual_size = len(cluster)
+
             for cell in cluster:
                 grid[cell]['properties']['land_use'] = lu['name']
                 grid[cell]['properties']['color'] = lu['color']
-            remaining -= len(cluster)
+            remaining -= cluster_actual_size
 
-    for cell in available:
+    for cell in sorted(available):
         lu = rng.choice(land_use_targets)
         grid[cell]['properties']['land_use'] = lu['name']
         grid[cell]['properties']['color'] = lu['color']
@@ -108,7 +114,7 @@ def extract_zones_from_junctions(cell_size: float, seed: int, fill_polygons: boo
     # Calculate number of cells based on cell_size
     num_x_cells = max(1, int((network_xmax - network_xmin) / cell_size))
     num_y_cells = max(1, int((network_ymax - network_ymin) / cell_size))
-    
+
     # Recalculate actual cell size to fit exactly within network bounds
     actual_cell_x = (network_xmax - network_xmin) / num_x_cells
     actual_cell_y = (network_ymax - network_ymin) / num_y_cells
@@ -190,43 +196,42 @@ def extract_zones_from_junctions(cell_size: float, seed: int, fill_polygons: boo
             )
         f.write("</additional>\n")
 
-    print(f"Created {len(features)} zones based on cellular grid methodology")
-
 
 def create_minimal_zones_for_osm(network_file: str, zones_file: str):
     """
     Create minimal zones for OSM networks as fallback when intelligent zone generation fails
-    
+
     Args:
         network_file: Path to SUMO network file
         zones_file: Path to output zones polygon file
     """
     import sumolib
     from shapely.geometry import Polygon
-    
+
     # Load network to get bounds
     net = sumolib.net.readNet(network_file)
     min_x, min_y, max_x, max_y = net.getBBoxXY()
-    
+
     # Create a simple 3x3 grid of zones
     grid_size = 3
     cell_width = (max_x - min_x) / grid_size
     cell_height = (max_y - min_y) / grid_size
-    
+
     # Zone type configurations
     zone_configs = {
         'residential': {'color': '0,255,0'},    # Green
-        'commercial': {'color': '255,0,0'},     # Red  
+        'commercial': {'color': '255,0,0'},     # Red
         'mixed': {'color': '128,255,128'}       # Light green
     }
-    
+
     zone_types = ['residential', 'commercial', 'mixed']
-    
+
     # Write zones polygon file
     with open(zones_file, 'w') as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        f.write('<polygons xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.20">\n')
-        
+        f.write(
+            '<polygons xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.20">\n')
+
         zone_count = 0
         for i in range(grid_size):
             for j in range(grid_size):
@@ -235,17 +240,18 @@ def create_minimal_zones_for_osm(network_file: str, zones_file: str):
                 cell_max_x = min_x + (i + 1) * cell_width
                 cell_min_y = min_y + j * cell_height
                 cell_max_y = min_y + (j + 1) * cell_height
-                
+
                 # Assign zone type (cycle through types)
                 zone_type = zone_types[(i + j) % len(zone_types)]
                 color = zone_configs[zone_type]['color']
-                
+
                 # Create polygon coordinates
                 coords = f"{cell_min_x:.2f},{cell_min_y:.2f} {cell_max_x:.2f},{cell_min_y:.2f} {cell_max_x:.2f},{cell_max_y:.2f} {cell_min_x:.2f},{cell_max_y:.2f} {cell_min_x:.2f},{cell_min_y:.2f}"
-                
-                f.write(f'  <poly id="osm_fallback_zone_{i}_{j}" type="{zone_type}" color="{color}" fill="1" shape="{coords}"/>\n')
+
+                f.write(
+                    f'  <poly id="osm_fallback_zone_{i}_{j}" type="{zone_type}" color="{color}" fill="1" shape="{coords}"/>\n')
                 zone_count += 1
-        
+
         f.write('</polygons>\n')
-    
+
     print(f"Created {zone_count} minimal fallback zones")

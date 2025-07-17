@@ -323,7 +323,7 @@ When OSM land use data is insufficient (<15% coverage), the system uses intellig
 
 #### Configuration Parameters:
 
-- **`--land_use_block_size_m`**: Controls zone resolution (default 200m), creates grid-based zones for both OSM and non-OSM cases
+- **`--land_use_block_size_m`**: Controls zone resolution (default 25.0m for both network types, following research paper methodology), creates fine-grained cells for detailed spatial analysis
 - **Unified System**: Same intelligent inference works for both OSM-enhanced and purely synthetic networks
 - **Score-Based Classification**: Multi-factor scoring system determines optimal zone type for each grid cell
 
@@ -519,7 +519,7 @@ All generated files are placed in `data/` directory:
     - **Configurable Subdivision**: Zone size independent of junction spacing, controlled by `--land_use_block_size_m`
     - **Variety & Realism**: Generates diverse zone types with appropriate colors and attractiveness values
     - **File**: `src/network/zones.py` - Updated `extract_zones_from_junctions` function with configurable cell size
-  - **Unified Configuration**: `--land_use_block_size_m` parameter (default 200m) controls zone resolution for both network types
+  - **Unified Configuration**: `--land_use_block_size_m` parameter (default 25.0m for both network types) controls zone resolution following research paper methodology
   - **Updated Validation**: Fixed zone count validation in `src/validate/validate_network.py` to work with configurable zone sizes
   - **Integration**: Seamlessly works in CLI pipeline - Step 2 for synthetic networks, Step 7.5 for OSM networks
 - **Reminder**: make sure to periodically update CLAUDE.md and README.md to reflect project developments and improvements

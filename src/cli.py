@@ -152,8 +152,8 @@ def main():
     parser.add_argument(
         "--land_use_block_size_m",
         type=float,
-        default=200.0,
-        help="Size of land use zone grid blocks in meters (default: 200m). Controls resolution of intelligent zone generation."
+        default=25.0,
+        help="Size of land use zone grid blocks in meters. Default: 25.0m (following research paper methodology). Controls resolution of zone generation."
     )
     args = parser.parse_args()
 
@@ -242,7 +242,8 @@ def main():
                 seed=seed,
                 min_lanes=CONFIG.MIN_LANES,
                 max_lanes=CONFIG.MAX_LANES,
-                algorithm=args.lane_count
+                algorithm=args.lane_count,
+                block_size_m=args.block_size_m
             )
             print(
                 "Successfully completed integrated edge splitting with lane assignment.")

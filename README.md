@@ -31,7 +31,7 @@ This project is a comprehensive Python-based SUMO traffic generator that creates
    - **Research-Based Land Use**: Six land use types with clustering algorithm (Residential, Mixed, Employment, Public Buildings, Public Open Space, Entertainment/Retail)
    - **Variety & Realism**: Generates diverse zone types with appropriate colors and attractiveness values
    
-   **Unified Configuration**: `--land_use_block_size_m` parameter controls grid resolution for both network types (default 200m)
+   **Unified Configuration**: `--land_use_block_size_m` parameter controls grid resolution (default 25.0m for both network types, following research paper methodology)
 
 3. **Integrated Edge Splitting with Flow-Based Lane Assignment**: Unified edge splitting and lane configuration into a single optimized process:
 
@@ -100,7 +100,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --start_time_hour <float>     # Real-world hour when simulation starts (0-24, default: 0.0 for midnight)
   --routing_strategy <str>      # Routing strategy with percentages (default: 'shortest 100')
   --vehicle_types <str>         # Vehicle types with percentages (default: 'passenger 60 commercial 30 public 10')
-  --land_use_block_size_m <float> # Land use zone grid resolution in meters (default: 200.0)
+  --land_use_block_size_m <float> # Land use zone grid resolution in meters (default: 25.0)
   --traffic_light_strategy <str> # Traffic light phasing strategy: 'opposites' (default) or 'incoming'
   --traffic_control <str>       # Traffic control method: 'tree_method' (default), 'actuated', or 'fixed'
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
@@ -119,7 +119,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --start_time_hour <float>     # Real-world hour when simulation starts (0-24, default: 0.0 for midnight)
   --routing_strategy <str>      # Routing strategy with percentages (default: 'shortest 100')
   --vehicle_types <str>         # Vehicle types with percentages (default: 'passenger 60 commercial 30 public 10')
-  --land_use_block_size_m <float> # Land use zone grid resolution in meters (default: 200.0)
+  --land_use_block_size_m <float> # Land use zone grid resolution in meters (default: 25.0)
   --traffic_control <str>       # Traffic control method: 'tree_method' (default), 'actuated', or 'fixed'
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
 
@@ -139,8 +139,8 @@ env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/manhattan_up
 env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/manhattan_upper_west.osm --num_vehicles 300 --traffic_control fixed --seed 42
 
 # Intelligent zone generation with different resolutions
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 500 --land_use_block_size_m 100 --gui   # Fine-grained zones
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/sf_downtown.osm --num_vehicles 300 --land_use_block_size_m 150 --gui  # OSM with custom resolution
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 500 --land_use_block_size_m 10 --gui   # Very fine-grained zones
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/sf_downtown.osm --num_vehicles 300 --land_use_block_size_m 50 --gui  # OSM with custom resolution
 ````
 
 ## Parameter Reference
@@ -196,12 +196,13 @@ env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/sf_downtown.
   - `--junctions_to_remove 2` → Remove 2 random junctions
   - `--junctions_to_remove "A1,C3"` → Remove specific junctions
 
-#### `--land_use_block_size_m <float>` (default: 200.0)
+#### `--land_use_block_size_m <float>` (default: 25.0)
 
 **Purpose:** Controls the resolution of zone generation for both network types.
 
 - **Format:** Floating-point number in meters
-- **Range:** 50-500m typical for different analysis scales
+- **Default:** 25.0m for both network types (following research paper methodology from "A Simulation Model for Intra-Urban Movements")
+- **Range:** 10-100m typical for different analysis scales
 - **Dual-Mode Behavior:**
   - **OSM Networks:** Grid resolution for intelligent zone analysis (topology + accessibility + infrastructure)
   - **Synthetic Networks:** Subdivision size for traditional zone extraction (independent of junction spacing)
@@ -211,9 +212,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/sf_downtown.
   - **Lane Count Analysis:** Higher lane counts indicate commercial areas, lower counts suggest residential
   - **Research-Based:** Six land use types with clustering algorithm and appropriate attractiveness values
 - **Examples:**
-  - `--land_use_block_size_m 75` → Fine-grained zones (75m×75m cells)
-  - `--land_use_block_size_m 150` → Medium resolution zones 
-  - `--land_use_block_size_m 300` → Coarse-grained zones (300m×300m cells)
+  - `--land_use_block_size_m 10` → Very fine-grained zones (10m×10m cells)
+  - `--land_use_block_size_m 25` → Default resolution zones (25m×25m cells, research paper methodology)
+  - `--land_use_block_size_m 50` → Coarser zones (50m×50m cells)
 
 ### Traffic Generation Parameters
 

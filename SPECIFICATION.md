@@ -134,9 +134,13 @@ Launch SUMO GUI.
 
 Path to OSM file that replaces synthetic grid generation.
 
-#### 0.4.19 `--land_use_block_size_m` (float, default: 200.0)
+#### 0.4.19 `--land_use_block_size_m` (float, default: 25.0)
 
-Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zones) mode.
+Zone cell size in meters for both OSM (intelligent zones) and non-OSM (traditional zones) mode.
+
+**Default**: 25.0m for both network types (following research paper methodology from "A Simulation Model for Intra-Urban Movements")
+
+**Purpose**: Controls the resolution of land use zone generation. Creates fine-grained cells for detailed spatial analysis independent of street block size.
 
 ### 0.5 Argument Validation
 
@@ -195,7 +199,7 @@ Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zo
   - `--step-length`: > 0, reasonable range (0.1-10.0 seconds)
   - `--end-time`: > 0
   - `--start_time_hour`: 0-24 range
-  - `--land_use_block_size_m`: > 0, reasonable range (50-500m)
+  - `--land_use_block_size_m`: > 0, reasonable range (10-100m). **Default**: 25.0m for both network types (research paper methodology)
 
 #### 0.5.6 Junctions to Remove Validation
 
@@ -508,19 +512,47 @@ Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zo
 
 ## 2. Zone Generation
 
-### 2.1 Mode Selection Based on Arguments
+### 2.1 Universal Land Use Zone Types (Both OSM and Non-OSM)
+
+Based on "A Simulation Model for Intra-Urban Movements" research methodology, the system uses exactly **six research-based land use types** that apply to both OSM and synthetic networks:
+
+#### Zone Type Definitions:
+
+- **Residential**: 34% distribution, max 1000 cells, blue color (#1f78b4)
+  - Multiplier: 1.0, departure_weight: 1.5, arrival_weight: 0.8
+  
+- **Employment**: 10% distribution, max 500 cells, green color (#33a02c)
+  - Multiplier: 1.8, departure_weight: 0.9, arrival_weight: 1.8
+  
+- **Public Buildings**: 12% distribution, max 200 cells, pink color (#fb9a99)
+  - Multiplier: 3.0, departure_weight: 0.5, arrival_weight: 3.5
+  
+- **Mixed** (Residential + Employment + Retail): 24% distribution, max 300 cells, orange color (#ff7f00)
+  - Multiplier: 2.0, departure_weight: 1.2, arrival_weight: 1.8
+  
+- **Entertainment/Retail**: 8% distribution, max 40 cells, purple color (#6a3d9a)
+  - Multiplier: 2.5, departure_weight: 0.8, arrival_weight: 2.0
+  
+- **Public Open Space**: 12% distribution, max 100 cells, light green (#b2df8a)
+  - Multiplier: 1.0, departure_weight: 1.5, arrival_weight: 0.8
+
+#### Universal Application:
+- **Non-OSM Mode**: Uses clustering algorithm to assign these types to synthetic grid cells
+- **OSM Mode**: Maps OSM land use tags to these standard types, falls back to intelligent inference when data insufficient
+
+### 2.2 Mode Selection Based on Arguments
 
 - **Step**: Determine zone generation approach based on network type
 - **Function**: Conditional logic in `src/cli.py`
 - **Process**:
   - Check if `--osm_file` argument was provided in Step 1
-  - If OSM network: Execute intelligent zone generation workflow (Section 2.2)
-  - If synthetic grid: Execute traditional zone extraction workflow (Section 2.3)
+  - If OSM network: Execute intelligent zone generation workflow (Section 2.3)
+  - If synthetic grid: Execute traditional zone extraction workflow (Section 2.4)
 - **Arguments Used**: `--land_use_block_size_m` (affects both modes)
 
-### 2.2 OSM Mode (intelligent zones)
+### 2.3 OSM Mode (intelligent zones)
 
-#### 2.2.1 Geographic Bounds Extraction
+#### 2.3.1 Geographic Bounds Extraction
 
 - **Step**: Extract geographic boundaries from OSM file for zone generation
 - **Function**: Bounds extraction in `src/cli.py`
@@ -536,7 +568,7 @@ Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zo
   - Create geographic bounds tuple: `(min_lon, min_lat, max_lon, max_lat)`
   - Print bounds for verification: `f"Using geographic bounds from OSM: {geographic_bounds}"`
 
-#### 2.2.2 Intelligent Zone Generation
+#### 2.3.2 Intelligent Zone Generation
 
 - **Step**: Generate intelligent land use zones using real OSM data and inference
 - **Function**: `IntelligentZoneGenerator.generate_intelligent_zones_from_osm()` in `src/network/intelligent_zones.py`
@@ -545,14 +577,9 @@ Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zo
 
 ##### Zone Configuration System:
 
-- **Six Zone Types**: residential, commercial, industrial, education, healthcare, mixed
-- **Zone Configurations with Traffic Multipliers**:
-  - **Residential**: Green (0,255,0), 1.0 multiplier, departure_weight=1.5, arrival_weight=0.8
-  - **Commercial**: Red (255,0,0), 2.5 multiplier, departure_weight=0.8, arrival_weight=2.0
-  - **Industrial**: Gray (128,128,128), 1.8 multiplier, departure_weight=0.9, arrival_weight=1.8
-  - **Education**: Blue (0,0,255), 3.0 multiplier, departure_weight=0.5, arrival_weight=3.5
-  - **Healthcare**: Yellow (255,255,0), 2.2 multiplier, departure_weight=0.3, arrival_weight=2.8
-  - **Mixed**: Light Green (128,255,128), 2.0 multiplier, departure_weight=1.2, arrival_weight=1.8
+- **Zone Types**: Uses the six research-based land use types defined in Section 2.1
+- **OSM Mapping**: Maps OSM land use tags to standard zone types
+- **Intelligent Inference**: When OSM data insufficient, infers zone types using network topology + accessibility + infrastructure analysis
 
 ##### OSM Data Loading and Parsing:
 
@@ -688,7 +715,7 @@ Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zo
 - **Memory Usage**: Stores full OSM data in memory for spatial analysis
 - **Processing Time**: Varies with OSM file size and grid resolution
 
-#### 2.2.3 OSM Zone File Creation
+#### 2.3.3 OSM Zone File Creation
 
 - **Step**: Save intelligent zones to polygon file in geographic coordinates
 - **Function**: `save_intelligent_zones_to_poly_file()` in `src/network/intelligent_zones.py`
@@ -713,9 +740,9 @@ Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zo
 - **Error Handling**: Print failure message and exit with code 1 on validation failure
 - **Failure Message**: `f"Failed to generate OSM zones: {e}"`
 
-### 2.3 Non-OSM Mode (traditional zones)
+### 2.4 Non-OSM Mode (traditional zones)
 
-#### 2.3.1 Traditional Zone Extraction
+#### 2.4.1 Traditional Zone Extraction
 
 - **Step**: Extract zones from junction-based cellular grid methodology
 - **Function**: `extract_zones_from_junctions()` in `src/network/zones.py`
@@ -731,20 +758,16 @@ Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zo
 
 ##### Cellular Grid Creation:
 
-- **Cell Size Configuration**: Uses `--land_use_block_size_m` parameter (default value matches `--block_size_m` in non-OSM mode)
+- **Cell Size Configuration**: Uses `--land_use_block_size_m` parameter (default 25.0m for both network types)
 - **Grid Subdivision**: `num_x_cells = int((xmax - xmin) / cell_size)`, same for y-axis
 - **Polygon Generation**: Create rectangular zones using Shapely `box()` geometry
 - **Zone Independence**: Block size independent of junction spacing for flexible resolution
 
 ##### Land Use Classification System:
 
-- **Six Research-Based Land Use Types**:
-  - Residential: 34% distribution, max 1000m² clusters, blue color (#1f78b4)
-  - Employment: 10% distribution, max 500m² clusters, green color (#33a02c)
-  - Public Buildings: 12% distribution, max 200m² clusters, pink color (#fb9a99)
-  - Mixed: 24% distribution, max 300m² clusters, orange color (#ff7f00)
-  - Entertainment/Retail: 8% distribution, max 40m² clusters, purple color (#6a3d9a)
-  - Public Open Space: 12% distribution, max 100m² clusters, light green (#b2df8a)
+- **Zone Types**: Uses the six research-based land use types defined in Section 2.1
+- **Distribution**: Follows exact percentages and cluster sizes from research paper
+- **Assignment**: Uses clustering algorithm with BFS to create contiguous land use clusters
 
 ##### Clustering Algorithm:
 
@@ -753,7 +776,7 @@ Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zo
 - **Spatial Distribution**: Ensures realistic geographic distribution of land uses
 - **Randomization**: Uses provided seed for reproducible zone assignment
 
-#### 2.3.2 Traditional Zone Validation
+#### 2.4.2 Traditional Zone Validation
 
 - **Step**: Verify traditional zone extraction success
 - **Function**: `verify_extract_zones_from_junctions()` in `src/validate/validate_network.py`
@@ -787,7 +810,7 @@ Zone size in meters for both OSM (intelligent zones) and non-OSM (traditional zo
 - **Success Message**: `f"Extracted land use zones successfully using traditional method with {args.land_use_block_size_m}m blocks."`
 - **Zone Information**: Log zone count, land use distribution, and file size
 
-### 2.4 Common Zone Generation Outputs
+### 2.5 Common Zone Generation Outputs
 
 - **File Generated** (both modes): `data/zones.poly.xml`
 - **Format**: SUMO polygon XML with zone type, color, and coordinate information

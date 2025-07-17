@@ -1,46 +1,6 @@
 import xml.etree.ElementTree as ET
 from src.config import CONFIG
-from shapely.geometry import Point, Polygon
-from src.network.edge_attrs import load_zones_data
-
-
-def find_adjacent_zones(edge_id: str, zones_data: list, edg_root) -> list:
-    """Find zones adjacent to a given edge"""
-    if not zones_data:
-        return []
-
-    # Get edge geometry
-    edge = edg_root.find(f"edge[@id='{edge_id}']")
-    if edge is None or 'shape' not in edge.attrib:
-        return []
-
-    try:
-        # Parse edge shape coordinates
-        coords = [tuple(map(float, p.split(',')))
-                  for p in edge.get('shape').split()]
-        if len(coords) < 2:
-            return []
-
-        # Create a buffer around the edge line to find intersecting zones
-        edge_line = Point(coords[0]).buffer(
-            50).union(Point(coords[-1]).buffer(50))
-
-        adjacent_zones = []
-        for zone_feature in zones_data:
-            try:
-                # Create polygon from zone coordinates
-                zone_coords = zone_feature['geometry']['coordinates'][0]
-                zone_polygon = Polygon(zone_coords)
-
-                # Check if edge intersects or is near the zone
-                if edge_line.intersects(zone_polygon) or edge_line.distance(zone_polygon) < 10:
-                    adjacent_zones.append(zone_feature['properties'])
-            except (KeyError, ValueError, TypeError):
-                continue
-
-        return adjacent_zones
-    except (ValueError, TypeError):
-        return []
+from src.network.edge_attrs import load_zones_data, find_adjacent_zones
 
 
 def is_perimeter_edge(edge_id: str, edg_root) -> bool:
@@ -59,10 +19,11 @@ def is_perimeter_edge(edge_id: str, edg_root) -> bool:
     return any(marker in from_node or marker in to_node for marker in boundary_markers)
 
 
-def calculate_lane_count_realistic(edge_id: str, edg_root) -> int:
+def calculate_lane_count_realistic(edge_id: str, edg_root, block_size_m: int = 200) -> int:
     """Calculate lane count based on land use zones and edge characteristics"""
     zones_data = load_zones_data()
-    adjacent_zones = find_adjacent_zones(edge_id, zones_data, edg_root)
+    adjacent_zones = find_adjacent_zones(
+        edge_id, zones_data, edg_root, block_size_m)
 
     if not adjacent_zones:
         # Fallback: return moderate lane count if no zone data
@@ -73,36 +34,40 @@ def calculate_lane_count_realistic(edge_id: str, edg_root) -> int:
 
     # Traffic generation weights by land use type
     land_use_weights = {
-        'Mixed': 3.0,                    # Highest traffic generation
-        'Employment': 2.5,               # High peak traffic
-        'Entertainment/Retail': 2.5,    # High commercial traffic
-        'Public Buildings': 2.0,        # Moderate institutional traffic
-        'Residential': 1.5,              # Moderate residential traffic
-        'Public Open Space': 1.0         # Lower recreational traffic
+        'Mixed': 1,                    # Highest traffic generation
+        'Employment': 1,               # High peak traffic
+        'Entertainment/Retail': 1,    # High commercial traffic
+        'Public Buildings': 0.5,        # Moderate institutional traffic
+        'Residential': 0.3,              # Moderate residential traffic
+        'Public Open Space': 0.2         # Lower recreational traffic
     }
 
-    for zone in adjacent_zones:
+    for i, zone in enumerate(adjacent_zones):
         land_use = zone.get('land_use', 'Residential')
         attractiveness = zone.get('attractiveness', 0.5)
 
         # Weight by land use and attractiveness
         weight = land_use_weights.get(land_use, 1.5)
-        demand_score += weight * attractiveness
+        zone_contribution = weight * attractiveness
+        demand_score += zone_contribution
 
     # Apply edge position modifier
     if is_perimeter_edge(edge_id, edg_root):
         demand_score *= 0.8  # Perimeter edges typically have less internal traffic
 
     # Convert demand score to lane count (1-3 lanes)
-    if demand_score < 1.5:
-        return 1
-    elif demand_score < 3.0:
-        return 2
+    if demand_score < 1.0:
+        lanes = 1
+        return lanes
+    elif demand_score < 2.5:
+        lanes = 2
+        return lanes
     else:
-        return 3
+        lanes = 3
+        return lanes
 
 
-def calculate_lane_count(edge_id: str, algorithm: str, rng, min_lanes: int, max_lanes: int) -> int:
+def calculate_lane_count(edge_id: str, algorithm: str, rng, min_lanes: int, max_lanes: int, block_size_m: int = 200) -> int:
     """Calculate lane count based on specified algorithm"""
     if algorithm == 'random':
         return rng.randint(min_lanes, max_lanes)
@@ -110,7 +75,8 @@ def calculate_lane_count(edge_id: str, algorithm: str, rng, min_lanes: int, max_
         # Parse edge files to get edge root
         edg_tree = ET.parse(CONFIG.network_edg_file)
         edg_root = edg_tree.getroot()
-        realistic_lanes = calculate_lane_count_realistic(edge_id, edg_root)
+        realistic_lanes = calculate_lane_count_realistic(
+            edge_id, edg_root, block_size_m)
         # Clamp to min/max bounds
         return max(min_lanes, min(max_lanes, realistic_lanes))
     elif algorithm.isdigit():

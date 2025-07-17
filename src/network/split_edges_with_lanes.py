@@ -8,7 +8,7 @@ from src.config import CONFIG
 from src.network.lane_counts import calculate_lane_count
 
 
-def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int, algorithm: str) -> None:
+def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int, algorithm: str, block_size_m: int = 200) -> None:
     """Integrated edge splitting with flow-based lane assignment.
     
     Replaces separate edge splitting and lane configuration steps with a single
@@ -42,7 +42,7 @@ def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int,
     edge_coords = extract_edge_coordinates(edg_root, nod_root)
     
     # Step 4: Split edges and calculate lane assignments
-    split_edges, new_nodes = split_edges_at_head_distance(edg_root, edge_coords, movement_data, algorithm, rng, min_lanes, max_lanes)
+    split_edges, new_nodes = split_edges_at_head_distance(edg_root, edge_coords, movement_data, algorithm, rng, min_lanes, max_lanes, block_size_m)
     
     # Step 5: Update all XML files
     update_nodes_file(nod_root, new_nodes)
@@ -153,7 +153,7 @@ def extract_edge_coordinates(edg_root, nod_root) -> Dict[str, Tuple[float, float
 
 
 def split_edges_at_head_distance(edg_root, edge_coords: Dict[str, Tuple[float, float, float, float]], 
-                                movement_data: Dict[str, Dict], algorithm: str, rng, min_lanes: int, max_lanes: int) -> Tuple[Dict[str, Dict], List[Dict]]:
+                                movement_data: Dict[str, Dict], algorithm: str, rng, min_lanes: int, max_lanes: int, block_size_m: int) -> Tuple[Dict[str, Dict], List[Dict]]:
     """Split edges and calculate lane assignments."""
     split_edges = {}
     new_nodes = []
@@ -188,7 +188,7 @@ def split_edges_at_head_distance(edg_root, edge_coords: Dict[str, Tuple[float, f
         # Calculate lane counts
         edge_movement_info = movement_data.get(edge_id, {'total_movement_lanes': 1, 'movements': []})
         total_movement_lanes = edge_movement_info['total_movement_lanes']
-        tail_lanes = calculate_lane_count(edge_id, algorithm, rng, min_lanes, max_lanes)
+        tail_lanes = calculate_lane_count(edge_id, algorithm, rng, min_lanes, max_lanes, block_size_m)
         head_lanes = max(total_movement_lanes, tail_lanes)
         
         # Create new intermediate node

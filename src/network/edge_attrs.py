@@ -1,9 +1,52 @@
 import xml.etree.ElementTree as ET
-import numpy as np
 import json
 from pathlib import Path
-from shapely.geometry import Polygon, LineString
 from src.config import CONFIG
+
+try:
+    import numpy as np
+    from shapely.geometry import Polygon, LineString
+    SHAPELY_AVAILABLE = True
+except ImportError:
+    SHAPELY_AVAILABLE = False
+    print("Warning: shapely/numpy not available, using fallback geometry functions")
+
+
+def _point_in_polygon(x, y, polygon_coords):
+    """Simple point-in-polygon test using ray casting"""
+    n = len(polygon_coords)
+    inside = False
+
+    p1x, p1y = polygon_coords[0]
+    for i in range(1, n + 1):
+        p2x, p2y = polygon_coords[i % n]
+        if y > min(p1y, p2y):
+            if y <= max(p1y, p2y):
+                if x <= max(p1x, p2x):
+                    if p1y != p2y:
+                        xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                    if p1x == p2x or x <= xinters:
+                        inside = not inside
+        p1x, p1y = p2x, p2y
+
+    return inside
+
+
+def _line_intersects_polygon_fallback(line_coords, polygon_coords):
+    """Check if line intersects polygon without shapely"""
+    # Check if any line endpoint is inside polygon
+    for x, y in line_coords:
+        if _point_in_polygon(x, y, polygon_coords):
+            return True
+
+    # Check if line is very close to polygon boundary
+    min_dist = float('inf')
+    for lx, ly in line_coords:
+        for px, py in polygon_coords:
+            dist = ((lx - px)**2 + (ly - py)**2) ** 0.5
+            min_dist = min(min_dist, dist)
+
+    return min_dist < 50  # Within 50 units
 
 
 def load_zones_data():
@@ -15,13 +58,16 @@ def load_zones_data():
     try:
         with open(zones_geojson_path, 'r') as f:
             geojson_data = json.load(f)
-        return geojson_data.get('features', [])
+        features = geojson_data.get('features', [])
+        if features:
+            sample_zone = features[0]
+        return features
     except (json.JSONDecodeError, FileNotFoundError):
         return []
 
 
-def find_adjacent_zones(edge_id: str, zones_data: list, edg_root) -> list:
-    """Find zones adjacent to a given edge"""
+def find_adjacent_zones(edge_id: str, zones_data: list, edg_root, block_size_m: int = 200) -> list:
+    """Find zones adjacent to a given edge using node coordinates when shape is not available"""
     if not zones_data:
         return []
 
@@ -35,32 +81,65 @@ def find_adjacent_zones(edge_id: str, zones_data: list, edg_root) -> list:
     if edge_elem is None:
         return []
 
-    # Parse edge shape to create LineString
+    # Try to get shape coordinates first
     shape_str = edge_elem.get('shape', '')
-    if not shape_str:
+    coords = []
+
+    if shape_str:
+        # Parse shape coordinates if available
+        try:
+            for coord_pair in shape_str.split():
+                x, y = map(float, coord_pair.split(','))
+                coords.append((x, y))
+        except (ValueError, TypeError):
+            coords = []
+
+    # If no shape coordinates, derive from node positions
+    if not coords or len(coords) < 2:
+        # Get from and to nodes
+        from_node = edge_elem.get('from')
+        to_node = edge_elem.get('to')
+
+        if not from_node or not to_node:
+            return []
+
+        # Find node coordinates from the edg_root's parent or use fallback based on node names
+        from_coords = _get_node_coordinates(from_node, block_size_m)
+        to_coords = _get_node_coordinates(to_node, block_size_m)
+
+        if from_coords and to_coords:
+            coords = [from_coords, to_coords]
+        else:
+            return []
+
+    if len(coords) < 2:
         return []
 
     try:
-        # Parse shape coordinates
-        coords = []
-        for coord_pair in shape_str.split():
-            x, y = map(float, coord_pair.split(','))
-            coords.append((x, y))
-
-        if len(coords) < 2:
-            return []
-
-        edge_line = LineString(coords)
-
         # Find adjacent zones
         adjacent_zones = []
         for zone_feature in zones_data:
             zone_coords = zone_feature['geometry']['coordinates'][0]
-            zone_polygon = Polygon(zone_coords)
 
-            # Check if edge intersects or is very close to zone
-            if edge_line.intersects(zone_polygon) or edge_line.distance(zone_polygon) < 10:
-                adjacent_zones.append(zone_feature)
+            if SHAPELY_AVAILABLE:
+                # Use shapely for precise geometry
+                edge_line = LineString(coords)
+                zone_polygon = Polygon(zone_coords)
+                intersects = edge_line.intersects(zone_polygon)
+                distance = edge_line.distance(zone_polygon)
+                is_adjacent = intersects or distance < 10
+            else:
+                # Use fallback geometry functions
+                is_adjacent = _line_intersects_polygon_fallback(
+                    coords, zone_coords)
+
+            if is_adjacent:
+                zone_props = zone_feature.get('properties', {})
+                # Return just properties, not full feature
+                adjacent_zones.append(zone_props)
+            else:
+                # Show some non-adjacent zones for comparison
+                zone_props = zone_feature.get('properties', {})
 
         return adjacent_zones
 
@@ -68,12 +147,36 @@ def find_adjacent_zones(edge_id: str, zones_data: list, edg_root) -> list:
         return []
 
 
+def _get_node_coordinates(node_id: str, block_size_m: int = 200) -> tuple:
+    """Get coordinates for a node based on its ID using standard grid naming"""
+    # Parse node ID like A0, B1, C2, etc.
+    if len(node_id) < 2:
+        return None
+
+    # Extract column (letter) and row (number)
+    col_char = node_id[0]
+    row_char = node_id[1]
+
+    try:
+        # Convert column letter to x coordinate (A=0, B=block_size, C=2*block_size, etc.)
+        col_index = ord(col_char) - ord('A')
+        x = col_index * block_size_m
+
+        # Convert row number to y coordinate
+        row_index = int(row_char)
+        y = row_index * block_size_m
+
+        return (float(x), float(y))
+    except (ValueError, TypeError):
+        return None
+
+
 def get_current_phase(current_hour: float) -> str:
     """Get current traffic phase based on hour of day (0-24)
 
     Research-based 4-phase system:
     - morning_peak: 6:00-9:30 (Extended morning rush, commuter-heavy)
-    - midday_offpeak: 9:30-16:00 (Lower baseline traffic)  
+    - midday_offpeak: 9:30-16:00 (Lower baseline traffic)
     - evening_peak: 16:00-19:00 (Extended evening rush, higher volumes)
     - night_low: 19:00-6:00 (Reduced overnight traffic)
     """

@@ -119,12 +119,12 @@ class IntelligentZoneGenerator:
         }
     }
     
-    def __init__(self, land_use_block_size_m: float = 200.0):
+    def __init__(self, land_use_block_size_m: float = 25.0):
         """
         Initialize intelligent zone generator
         
         Args:
-            land_use_block_size_m: Size of grid cells in meters (default 200m)
+            land_use_block_size_m: Size of grid cells in meters (default 25m)
         """
         self.block_size_m = land_use_block_size_m
         self.network_graph = None
@@ -1145,7 +1145,7 @@ def convert_zones_to_projected_coordinates(zones_file: str, net_file: str) -> No
 # Main function for testing
 if __name__ == "__main__":
     # Example usage
-    generator = IntelligentZoneGenerator(land_use_block_size_m=200.0)
+    generator = IntelligentZoneGenerator(land_use_block_size_m=25.0)
     
     # Test with synthetic network
     network_json = "data/grid.net.json"
