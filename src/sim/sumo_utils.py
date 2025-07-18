@@ -8,18 +8,21 @@ from src.config import CONFIG
 
 
 def rebuild_network() -> None:
-    # Convert network without traffic light logic file to avoid connection reference errors
-    # SUMO will generate appropriate traffic lights based on the network structure
+    # Convert network with connections and traffic light logic files to preserve manual lane assignments
+    # This ensures netconvert uses our geometric angle-based lane assignments instead of generating its own
     basic_cmd = [
         "netconvert",
         "--node-files",       str(CONFIG.network_nod_file),
         "--edge-files",       str(CONFIG.network_edg_file),
-        "--junctions.join=true",
+        "--connection-files", str(CONFIG.network_con_file),
+        "--tllogic-files",    str(CONFIG.network_tll_file),
+        # "--junctions.join=true", # Joins junctions that are close to each other (recommended for OSM import); default: false
         "--output-file",      str(CONFIG.network_file)
     ]
-    
+
     try:
-        result = subprocess.run(basic_cmd, check=True, capture_output=True, text=True)
+        result = subprocess.run(basic_cmd, check=True,
+                                capture_output=True, text=True)
         print("Network conversion completed successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Network conversion failed: {e.stderr}")
