@@ -7,23 +7,23 @@ This document provides the formal specification for the SUMO Traffic Generator, 
 ### 0.1 Data Directory Cleanup
 
 - **Step**: Clean and prepare output directory
-- **Function**: Directory cleanup in `src/cli.py`
+- **Function**: Directory cleanup via pipeline orchestration
 - **Process**:
-  - Remove existing `data/` directory if it exists (`shutil.rmtree(CONFIG.output_dir)`)
-  - Create fresh `data/` directory (`CONFIG.output_dir.mkdir(exist_ok=True)`)
+  - Remove existing `workspace/` directory if it exists (`shutil.rmtree(CONFIG.output_dir)`)
+  - Create fresh `workspace/` directory (`CONFIG.output_dir.mkdir(exist_ok=True)`)
 - **Purpose**: Ensures clean state for each simulation run
 
 ### 0.2 Command-Line Argument Parsing
 
 - **Step**: Parse and validate all CLI arguments
-- **Function**: `argparse.ArgumentParser()` in `src/cli.py`
+- **Function**: `src/args/parser.py` via CLI orchestration
 - **Process**: Parse 20 available arguments with defaults and validation
 - **Available Arguments**: See section 0.3 below
 
 ### 0.3 Seed Initialization
 
 - **Step**: Initialize random seed for reproducible simulations
-- **Function**: Seed generation in `src/cli.py`
+- **Function**: Seed generation via pipeline orchestration
 - **Process**:
   - Use provided `--seed` value if specified
   - Generate random seed if not provided: `random.randint(0, 2**32 - 1)`
@@ -159,10 +159,10 @@ Path to folder containing pre-built Tree Method sample files for bypass mode.
 **Usage Examples**:
 ```bash
 # Basic Tree Method validation
-env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control tree_method --gui
 
 # Compare traffic control methods on identical network
-env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control actuated --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control actuated --gui
 ```
 
 ### 0.5 Argument Validation
@@ -266,7 +266,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_sample
 ### 1.1 Mode Selection Based on Arguments
 
 - **Step**: Determine network generation approach
-- **Function**: Conditional logic in `src/cli.py`
+- **Function**: Pipeline factory pattern (`src/pipeline/pipeline_factory.py`)
 - **Process**:
   - Check if `--osm_file` argument is provided
   - If OSM file provided: Execute OSM import workflow (Section 1.2)
@@ -304,21 +304,21 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_sample
   - `--output.original-names`: Keep original OSM element names
   - `--keep-edges.by-vclass passenger`: Filter to keep only passenger vehicle infrastructure
   - `--remove-edges.by-vclass pedestrian`: Remove pedestrian-only paths
-  - Command: `netconvert --osm-files {osm_file} --output-prefix data/grid/osm_network`
+  - Command: `netconvert --osm-files {osm_file} --output-prefix workspace/grid/osm_network`
 - **Failure**: System fails with error if OSM file lacks sufficient data for network generation
-- **Output**: Intermediate files in `data/grid/` directory
+- **Output**: Intermediate files in `workspace/grid/` directory
 
 #### 1.2.2 OSM File Organization
 
 - **Step**: Move OSM-generated files to expected pipeline locations
 - **Function**: File movement logic in `src/cli.py`
 - **Process**:
-  - Move files from `data/grid/osm_network.*` to `data/grid.*`
+  - Move files from `workspace/grid/osm_network.*` to `workspace/grid.*`
   - Handle file patterns: `*.nod.xml`, `*.edg.xml`, `*.con.xml`, `*.tll.xml`
   - Extract file extensions and rename to standard format
-  - Clean up temporary `data/grid/` directory
+  - Clean up temporary `workspace/grid/` directory
   - Print movement confirmation for each file
-- **Output**: `data/grid.nod.xml`, `data/grid.edg.xml`, `data/grid.con.xml`, `data/grid.tll.xml`
+- **Output**: `workspace/grid.nod.xml`, `workspace/grid.edg.xml`, `workspace/grid.con.xml`, `workspace/grid.tll.xml`
 
 #### 1.2.3 Dead-End Street Handling (OSM-Specific)
 
@@ -354,10 +354,10 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_sample
 
 ##### Required Output Files:
 
-- `data/grid.nod.xml`: Network nodes (junctions)
-- `data/grid.edg.xml`: Network edges (streets)
-- `data/grid.con.xml`: Connection definitions
-- `data/grid.tll.xml`: Traffic light definitions
+- `workspace/grid.nod.xml`: Network nodes (junctions)
+- `workspace/grid.edg.xml`: Network edges (streets)
+- `workspace/grid.con.xml`: Connection definitions
+- `workspace/grid.tll.xml`: Traffic light definitions
 
 ##### XML Structure Validation:
 
@@ -409,7 +409,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_sample
 
 ##### Sample Management:
 
-- **Download Script**: `scripts/download_osm_samples.py` using Overpass API
+- **Download Script**: `tools/scripts/download_osm_samples.py` using Overpass API
 - **Query Filter**: Highway types (motorway, trunk, primary, secondary, tertiary, unclassified, residential) and traffic signals
 - **Testing Verified**: Each sample validated for reliable traffic simulation with high vehicle route generation success rates
 
@@ -520,16 +520,16 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_sample
 
 - **Step**: Confirm successful grid generation
 - **Function**: Success logging in `src/cli.py`
-- **Output**: Same file structure as OSM mode: `data/grid.nod.xml`, `data/grid.edg.xml`, `data/grid.con.xml`, `data/grid.tll.xml`
+- **Output**: Same file structure as OSM mode: `workspace/grid.nod.xml`, `workspace/grid.edg.xml`, `workspace/grid.con.xml`, `workspace/grid.tll.xml`
 - **Success Message**: "Generated grid successfully."
 
 ### 1.4 Common Network Generation Outputs
 
 - **Files Generated** (both modes):
-  - `data/grid.nod.xml`: Network nodes (junctions)
-  - `data/grid.edg.xml`: Network edges (streets)
-  - `data/grid.con.xml`: Connection definitions
-  - `data/grid.tll.xml`: Traffic light definitions
+  - `workspace/grid.nod.xml`: Network nodes (junctions)
+  - `workspace/grid.edg.xml`: Network edges (streets)
+  - `workspace/grid.con.xml`: Connection definitions
+  - `workspace/grid.tll.xml`: Traffic light definitions
 - **Purpose**: Provide foundation network structure for subsequent pipeline steps
 - **Format**: SUMO-compatible XML network definition files
 
@@ -566,7 +566,7 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 ### 2.2 Mode Selection Based on Arguments
 
 - **Step**: Determine zone generation approach based on network type
-- **Function**: Conditional logic in `src/cli.py`
+- **Function**: Pipeline step coordination (`src/pipeline/standard_pipeline.py`)
 - **Process**:
   - Check if `--osm_file` argument was provided in Step 1
   - If OSM network: Execute intelligent zone generation workflow (Section 2.3)
@@ -747,7 +747,7 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
   - Create SUMO polygon XML format with zone type, color, and coordinates
   - Save initially in geographic coordinates (lat/lon)
   - Zone count and type distribution logged for verification
-- **Output**: `data/zones.poly.xml` with intelligent zone classification
+- **Output**: `workspace/zones.poly.xml` with intelligent zone classification
 - **Coordinates**: Geographic (lat/lon) format, converted to projected later in Step 5
 - **Success Message**: `f"Generated and saved {len(intelligent_zones)} intelligent zones to {CONFIG.zones_file}"`
 
@@ -774,7 +774,7 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 
 ##### Junction Coordinate Parsing:
 
-- **Source File**: Parse coordinates from `data/grid.nod.xml`
+- **Source File**: Parse coordinates from `workspace/grid.nod.xml`
 - **Node Filtering**: Exclude internal nodes, include only junction nodes
 - **Coordinate Extraction**: Extract x,y coordinates for grid boundary calculation
 - **Network Bounds**: Calculate `network_xmin`, `network_xmax`, `network_ymin`, `network_ymax`
@@ -813,7 +813,7 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 
 ##### Zone Structure Validation:
 
-- **File Existence**: Verify `data/zones.poly.xml` was created
+- **File Existence**: Verify `workspace/zones.poly.xml` was created
 - **XML Structure**: Parse and validate polygon XML format
 - **Coordinate Bounds**: Ensure all zone coordinates within network bounds
 - **Land Use Distribution**: Verify land use percentages approximate target distribution
@@ -829,13 +829,13 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 
 - **Step**: Confirm successful traditional zone generation
 - **Function**: Success logging in `src/cli.py`
-- **Output**: `data/zones.poly.xml` with traditional zone extraction
+- **Output**: `workspace/zones.poly.xml` with traditional zone extraction
 - **Success Message**: `f"Extracted land use zones successfully using traditional method with {args.land_use_block_size_m}m blocks."`
 - **Zone Information**: Log zone count, land use distribution, and file size
 
 ### 2.5 Common Zone Generation Outputs
 
-- **File Generated** (both modes): `data/zones.poly.xml`
+- **File Generated** (both modes): `workspace/zones.poly.xml`
 - **Format**: SUMO polygon XML with zone type, color, and coordinate information
 - **Content**: Land use zones with attractiveness multipliers for traffic generation
 - **Purpose**: Provide spatial context for edge attractiveness assignment in Step 6
@@ -855,10 +855,10 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 
 ##### File Loading Process:
 
-- **Parse Nodes File**: Load `data/grid.nod.xml` for junction coordinates
-- **Parse Edges File**: Load `data/grid.edg.xml` for edge definitions and geometry
-- **Parse Connections File**: Load `data/grid.con.xml` for traffic movement analysis
-- **Parse Traffic Lights File**: Load `data/grid.tll.xml` for signal connections
+- **Parse Nodes File**: Load `workspace/grid.nod.xml` for junction coordinates
+- **Parse Edges File**: Load `workspace/grid.edg.xml` for edge definitions and geometry
+- **Parse Connections File**: Load `workspace/grid.con.xml` for traffic movement analysis
+- **Parse Traffic Lights File**: Load `workspace/grid.tll.xml` for signal connections
 - **Validation**: Ensure all files exist and are valid XML structures
 
 #### 3.1.2 Movement Analysis
@@ -909,7 +909,7 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 
 **1. Realistic Algorithm (`--lane_count realistic`):**
 
-- **Zone Integration**: Load zone data from `data/zones.poly.xml`
+- **Zone Integration**: Load zone data from `workspace/zones.poly.xml`
 - **Spatial Analysis**: Find zones adjacent to each edge using geometric intersection
 - **Land Use Weights**: Apply traffic generation weights by zone type:
   - Mixed: 3.0 (highest traffic generation)
@@ -1185,10 +1185,10 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 ### 3.2 Common Edge Splitting Outputs
 
 - **Files Modified** (both modes):
-  - `data/grid.nod.xml`: Network nodes with added split points
-  - `data/grid.edg.xml`: Edges replaced with tail/head segments and lane counts
-  - `data/grid.con.xml`: Connections updated with internal connections and lane distribution
-  - `data/grid.tll.xml`: Traffic lights updated to reference head segments
+  - `workspace/grid.nod.xml`: Network nodes with added split points
+  - `workspace/grid.edg.xml`: Edges replaced with tail/head segments and lane counts
+  - `workspace/grid.con.xml`: Connections updated with internal connections and lane distribution
+  - `workspace/grid.tll.xml`: Traffic lights updated to reference head segments
 - **Purpose**: Create optimized network structure with appropriate lane capacity for traffic movements
 - **Integration**: Unified algorithm works seamlessly with both OSM and synthetic grid networks
 - **Configuration Constants**:
@@ -1212,14 +1212,14 @@ After edge splitting and lane assignment modifications, the SUMO network must be
 ### 4.2 Network Rebuild Process
 
 - **Step**: Rebuild SUMO network from all modified XML components
-- **Function**: `rebuild_network()` in `src/sim/sumo_utils.py`
+- **Function**: `rebuild_network()` in `src/sumo_integration/sumo_utils.py`
 - **Tool Used**: SUMO's `netconvert` utility
 - **Input Files**: Modified XML files from edge splitting process:
-  - `data/grid.nod.xml` (nodes with new intermediate split nodes)
-  - `data/grid.edg.xml` (edges with tail/head segments)
-  - `data/grid.con.xml` (connections with movement-specific lane assignments)
-  - `data/grid.tll.xml` (traffic lights with updated connection references)
-- **Output**: `data/grid.net.xml` (complete SUMO network ready for simulation)
+  - `workspace/grid.nod.xml` (nodes with new intermediate split nodes)
+  - `workspace/grid.edg.xml` (edges with tail/head segments)
+  - `workspace/grid.con.xml` (connections with movement-specific lane assignments)
+  - `workspace/grid.tll.xml` (traffic lights with updated connection references)
+- **Output**: `workspace/grid.net.xml` (complete SUMO network ready for simulation)
 
 ### 4.3 Technical Requirements
 
@@ -1243,7 +1243,7 @@ After edge splitting and lane assignment modifications, the SUMO network must be
 - **Step**: Verify network rebuild was successful
 - **Function**: `verify_rebuild_network()` in `src/validate/validate_network.py`
 - **Validation Checks**:
-  - **File Existence**: Confirm `data/grid.net.xml` was generated successfully
+  - **File Existence**: Confirm `workspace/grid.net.xml` was generated successfully
   - **XML Validity**: Ensure output file is valid XML with proper SUMO network structure
   - **Edge Preservation**: Verify all split edges (tail and head segments) exist in final network
   - **Node Integration**: Confirm all intermediate split nodes are properly integrated
@@ -1279,7 +1279,7 @@ After edge splitting and lane assignment modifications, the SUMO network must be
 
 - **Step**: Convert zone coordinates from geographic (lat/lon) to projected (x,y)
 - **Function**: `convert_zones_to_projected_coordinates()` in `src/network/intelligent_zones.py`
-- **Arguments Used**: Existing `data/zones.poly.xml` and `data/grid.net.xml`
+- **Arguments Used**: Existing `workspace/zones.poly.xml` and `workspace/grid.net.xml`
 - **Timing**: Only executed when `--osm_file` argument was used in Step 1
 
 #### 5.2.1 Coordinate Transformation Process
@@ -1291,8 +1291,8 @@ After edge splitting and lane assignment modifications, the SUMO network must be
 
 #### 5.2.2 Zone File Update
 
-- **Input File**: `data/zones.poly.xml` with geographic coordinates
-- **Output File**: `data/zones.poly.xml` updated with projected coordinates (same filename, converted content)
+- **Input File**: `workspace/zones.poly.xml` with geographic coordinates
+- **Output File**: `workspace/zones.poly.xml` updated with projected coordinates (same filename, converted content)
 - **Preservation**: Maintains all zone properties (type, color, attractiveness) while updating only coordinates
 - **Validation**: Ensures all zone polygons remain valid after coordinate transformation
 
@@ -1337,9 +1337,9 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Function**: `assign_edge_attractiveness()` in `src/network/edge_attrs.py`
 - **Arguments Used**: `--attractiveness`, `--time_dependent`, `--start_time_hour`, `--seed`
 - **Input Files**:
-  - `data/grid.net.xml` (rebuilt network with final edge definitions)
-  - `data/zones.poly.xml` (zones with correct coordinate system from Steps 2/5)
-  - `data/grid.edg.xml` (original edge file for spatial analysis methods)
+  - `workspace/grid.net.xml` (rebuilt network with final edge definitions)
+  - `workspace/zones.poly.xml` (zones with correct coordinate system from Steps 2/5)
+  - `workspace/grid.edg.xml` (original edge file for spatial analysis methods)
 
 #### 6.2.1 Five Attractiveness Calculation Methods
 
@@ -1456,7 +1456,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Step**: Confirm successful attractiveness assignment
 - **Function**: Success logging in `src/cli.py`
 - **Success Message**: "Assigned edge attractiveness successfully."
-- **Output File**: Updated `data/grid.net.xml` with attractiveness attributes on all edges
+- **Output File**: Updated `workspace/grid.net.xml` with attractiveness attributes on all edges
 - **Ready for Next Step**: Network edges now have traffic generation parameters for vehicle route generation
 
 ## 7. Vehicle Route Generation
@@ -1476,7 +1476,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Function**: `generate_vehicle_routes()` in `src/traffic/builder.py`
 - **Arguments Used**: `--num_vehicles`, `--vehicle_types`, `--departure_pattern`, `--routing_strategy`, `--seed`, `--end_time`
 - **Input Files**:
-  - `data/grid.net.xml` (network with attractiveness attributes)
+  - `workspace/grid.net.xml` (network with attractiveness attributes)
   - Uses edge attractiveness values for origin/destination selection
   - Network topology for route calculation
 
@@ -1624,7 +1624,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Step**: Confirm successful route generation
 - **Function**: Success logging in `src/cli.py`
 - **Success Message**: "Generated vehicle routes successfully."
-- **Output File**: `data/vehicles.rou.xml` with complete route definitions for all vehicles
+- **Output File**: `workspace/vehicles.rou.xml` with complete route definitions for all vehicles
 - **Ready for Next Step**: Vehicle routes are prepared for SUMO configuration generation
 
 ## 8. SUMO Configuration Generation
@@ -1641,22 +1641,22 @@ For synthetic grid networks (when `--osm_file` is not provided):
 ### 8.2 SUMO Configuration Generation Process
 
 - **Step**: Generate SUMO configuration file linking all simulation components
-- **Function**: `generate_sumo_conf_file()` in `src/sim/sumo_utils.py`
+- **Function**: `generate_sumo_conf_file()` in `src/sumo_integration/sumo_utils.py`
 - **Arguments Used**: `--step_length`, `--end_time`, `--gui`
 - **Input Files**:
-  - `data/grid.net.xml` (complete network with attractiveness)
-  - `data/vehicles.rou.xml` (vehicle routes and types)
-  - `data/zones.poly.xml` (zones for visualization)
+  - `workspace/grid.net.xml` (complete network with attractiveness)
+  - `workspace/vehicles.rou.xml` (vehicle routes and types)
+  - `workspace/zones.poly.xml` (zones for visualization)
 
 ### 8.3 Configuration File Creation
 
 **SUMO Configuration File:**
 
-- **Output**: `data/grid.sumocfg` with references to all simulation components
+- **Output**: `workspace/grid.sumocfg` with references to all simulation components
 - **Content**:
-  - Network file reference: `data/grid.net.xml`
-  - Route file reference: `data/vehicles.rou.xml`
-  - Additional files: `data/zones.poly.xml`
+  - Network file reference: `workspace/grid.net.xml`
+  - Route file reference: `workspace/vehicles.rou.xml`
+  - Additional files: `workspace/zones.poly.xml`
   - Simulation parameters: step length, end time, GUI settings
 - **Format**: XML configuration following SUMO standards
 
@@ -1665,7 +1665,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Step**: Confirm successful configuration file generation
 - **Function**: Success logging in `src/cli.py`
 - **Success Message**: "Generated SUMO configuration successfully."
-- **Output File**: `data/grid.sumocfg` ready for simulation execution
+- **Output File**: `workspace/grid.sumocfg` ready for simulation execution
 - **Ready for Next Step**: All components prepared for dynamic simulation
 
 ## 9. Dynamic Simulation with Traffic Control
@@ -1682,13 +1682,13 @@ For synthetic grid networks (when `--osm_file` is not provided):
 ### 9.2 Dynamic Simulation Process
 
 - **Step**: Execute SUMO simulation with real-time traffic control integration
-- **Function**: `SumoController.run()` in `src/sim/sumo_controller.py`
+- **Function**: `SumoController.run()` in `src/sumo_integration/sumo_controller.py`
 - **Arguments Used**: `--traffic_control`, `--gui`, `--step_length`, `--end_time`, `--time_dependent`, `--start_time_hour`, `--routing_strategy`
 - **Input Files**:
-  - `data/grid.sumocfg` (SUMO configuration file)
-  - `data/grid.net.xml` (complete network with attractiveness)
-  - `data/vehicles.rou.xml` (vehicle routes and types)
-  - `data/zones.poly.xml` (zones for visualization)
+  - `workspace/grid.sumocfg` (SUMO configuration file)
+  - `workspace/grid.net.xml` (complete network with attractiveness)
+  - `workspace/vehicles.rou.xml` (vehicle routes and types)
+  - `workspace/zones.poly.xml` (zones for visualization)
 
 #### 9.2.1 TraCI Controller Initialization
 
@@ -1916,7 +1916,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 
 ### 8.4 Simulation Output (Both Modes)
 
-- **Configuration**: `data/grid.sumocfg` with all simulation parameters
+- **Configuration**: `workspace/grid.sumocfg` with all simulation parameters
 - **Metrics**: Travel times, completion rates, throughput, vehicle arrivals/departures
 - **Validation**: `verify_generate_sumo_conf_file()` ensures configuration integrity
 - **Experimental**: Designed for statistical comparison of traffic control methods
@@ -2137,17 +2137,36 @@ Starting comprehensive split edges validation...
 ### 12.1 Development and Testing Scripts
 
 - **Purpose**: Provide auxiliary tools and utilities for development, testing, and data management
-- **Location**: `scripts/` directory in project root
+- **Location**: `tools/scripts/` directory in project root
 - **Usage**: Support development workflow and provide verified test data for users
 
 #### 12.1.1 OSM Sample Data Download Script
 
-- **Script**: `scripts/download_osm_samples.py`
+- **Script**: `tools/scripts/download_osm_samples.py`
 - **Function**: Download verified working OSM areas for testing and demonstration
-- **Usage**: `python scripts/download_osm_samples.py`
+- **Usage**: `python tools/scripts/download_osm_samples.py`
 
 ##### Sample Areas Provided:
 
 - **Manhattan Upper West**: Grid pattern, 300/300 vehicle success rate (40.7800, -73.9850, 40.7900, -73.9750)
 - **San Francisco Downtown**: Strong grid layout, 298/300 vehicle success rate (37.7850, -122.4100, 37.7950, -122.4000)
 - **Washington DC Downtown**: Planned grid system, 300/300 vehicle success rate (38.8950, -77.0350, 38.9050, -77.0250)
+
+## Project Architecture Updates
+
+This specification reflects the current modular architecture:
+
+### Core Modules
+- **`src/orchestration/`**: High-level simulation coordination and traffic controller abstractions
+- **`src/sumo_integration/`**: SUMO/TraCI interface layer and utilities  
+- **`src/pipeline/`**: Pipeline pattern implementation with factory and step classes
+- **`src/args/`**: Dedicated argument parsing module
+
+### Evaluation Framework
+- **`evaluation/benchmarks/`**: Statistical comparison studies and performance analysis
+- **`evaluation/datasets/`**: Research datasets including OSM files and Tree Method networks
+- **`tests/`**: Software testing framework (unit, integration, validation)
+
+### Development Tools
+- **`tools/scripts/`**: Development utilities and data management scripts
+- **`workspace/`**: Generated simulation files (temporary, gitignored)

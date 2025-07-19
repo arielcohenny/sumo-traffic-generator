@@ -20,13 +20,13 @@ from ..config import OSMConfig
 logger = logging.getLogger(__name__)
 
 
-def import_osm_network(osm_file_path: str, output_prefix: str = "data/grid") -> None:
+def import_osm_network(osm_file_path: str, output_prefix: str = "workspace/grid") -> None:
     """
     Simple function to import OSM network and convert to SUMO files.
     
     Args:
         osm_file_path: Path to OSM file
-        output_prefix: Prefix for output files (default: "data/grid")
+        output_prefix: Prefix for output files (default: "workspace/grid")
     """
     try:
         # Use netconvert to convert OSM directly to the desired prefix
@@ -70,7 +70,7 @@ def generate_network_from_osm(osm_file_path: str) -> None:
     Generate SUMO network from OSM file with proper file management
     
     This function combines OSM import with the file management logic needed
-    to integrate with the existing pipeline that expects files in data/ directory.
+    to integrate with the existing pipeline that expects files in workspace/ directory.
     
     Args:
         osm_file_path: Path to OSM file
@@ -78,21 +78,21 @@ def generate_network_from_osm(osm_file_path: str) -> None:
     logger.info(f"Generating SUMO network from OSM file: {osm_file_path}")
     
     # Call existing import_osm_network function
-    import_osm_network(osm_file_path, "data/grid")
+    import_osm_network(osm_file_path, "workspace/grid")
     logger.info("Successfully imported OSM network.")
     
-    # Move OSM files to expected locations in data/ directory
-    grid_dir = Path("data/grid")
+    # Move OSM files to expected locations in workspace/ directory
+    grid_dir = Path("workspace/grid")
     if grid_dir.exists():
         logger.info("Moving OSM files to expected locations...")
         
-        # Move files from data/grid/osm_network.* to data/grid.*
+        # Move files from workspace/grid/osm_network.* to workspace/grid.*
         files_moved = 0
         for file_pattern in ["*.nod.xml", "*.edg.xml", "*.con.xml", "*.tll.xml"]:
             for src_file in grid_dir.glob(file_pattern):
                 # Extract the file extension part (e.g., "nod.xml" from "osm_network.nod.xml")
                 suffix = src_file.name.split(".", 1)[1] if "." in src_file.name else src_file.suffix
-                dst_file = Path("data") / f"grid.{suffix}"
+                dst_file = Path("workspace") / f"grid.{suffix}"
                 
                 shutil.move(str(src_file), str(dst_file))
                 logger.info(f"Moved {src_file} to {dst_file}")
@@ -103,7 +103,7 @@ def generate_network_from_osm(osm_file_path: str) -> None:
             grid_dir.rmdir()
             logger.info("Cleaned up empty grid directory")
         
-        logger.info(f"Successfully moved {files_moved} network files to data/ directory")
+        logger.info(f"Successfully moved {files_moved} network files to workspace/ directory")
     else:
         logger.warning("Grid directory not found - files may not have been generated correctly")
 

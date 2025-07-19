@@ -41,6 +41,7 @@ def validate_arguments(args) -> None:
     
     # Cross-argument validations
     _validate_cross_arguments(args)
+    _validate_sample_arguments(args)
 
 
 def _validate_numeric_ranges(args) -> None:
@@ -410,3 +411,32 @@ def _validate_cross_arguments(args) -> None:
     
     # Traffic light strategy compatibility (currently no restrictions)
     # Could add future constraints here if needed
+
+
+def _validate_sample_arguments(args) -> None:
+    """Validate arguments when using --tree_method_sample.
+    
+    Args:
+        args: Parsed command line arguments
+        
+    Raises:
+        ValidationError: If incompatible arguments are used with --tree_method_sample
+    """
+    if not args.tree_method_sample:
+        return
+    
+    # Check for incompatible arguments (network generation related)
+    incompatible = []
+    if args.osm_file:
+        incompatible.append('--osm_file')
+    if args.grid_dimension != 5:  # non-default
+        incompatible.append('--grid_dimension')
+    if args.block_size_m != 200:  # non-default
+        incompatible.append('--block_size_m')
+    if args.junctions_to_remove != "0":
+        incompatible.append('--junctions_to_remove')
+    if args.lane_count != "realistic":
+        incompatible.append('--lane_count')
+        
+    if incompatible:
+        raise ValidationError(f"--tree_method_sample incompatible with: {', '.join(incompatible)}")

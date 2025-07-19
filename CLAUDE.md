@@ -151,22 +151,22 @@ Use original test cases to validate Tree Method implementation:
 
 ```bash
 # Basic Tree Method sample run with GUI
-env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control tree_method --gui
 
 # Compare different traffic control methods on same pre-built network
-env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --gui
-env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control actuated --gui  
-env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control fixed --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control tree_method --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control actuated --gui  
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control fixed --gui
 
 # Performance testing without GUI
-env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --end-time 3600
-env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control actuated --end-time 3600
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control tree_method --end-time 3600
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control actuated --end-time 3600
 
 # Extended simulation (2 hours like original)
-env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --end-time 7300
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control tree_method --end-time 7300
 
 # Quick validation runs
-env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --end-time 1800 --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control tree_method --end-time 1800 --gui
 ```
 
 **Tree Method Sample Features:**
@@ -182,11 +182,11 @@ The project includes a comprehensive experimental framework for comparing traffi
 
 ```bash
 # Run moderate traffic experiment (600 vehicles, 2 hours)
-cd experiments/experiment-01-moderate-traffic
+cd evaluation/benchmarks/experiment-01-moderate-traffic
 ./run_experiment.sh
 
 # Run high traffic experiment (1200 vehicles, 2 hours)
-cd experiments/experiment-02-high-traffic
+cd evaluation/benchmarks/experiment-02-high-traffic
 ./run_experiment.sh
 
 # Analyze results after experiment completion
@@ -224,11 +224,16 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 -
 ### Testing
 
 ```bash
-# Run tests (when implemented)
-pytest
+# Run all software tests
+pytest tests/
 
-# Run validation functions (currently commented out in CLI)
-# The validation runs automatically as part of the pipeline
+# Run specific test categories
+pytest tests/unit/           # Unit tests
+pytest tests/integration/    # Pipeline integration tests
+pytest tests/validation/     # Domain validation tests
+
+# Run performance benchmarks
+cd evaluation/benchmarks/experiment-01-moderate-traffic && ./run_experiment.sh
 ```
 
 ### Code Quality (to be implemented)
@@ -260,7 +265,7 @@ The application follows a sequential 7-step pipeline with support for both synth
 4. **Edge Attractiveness** (`src/network/edge_attrs.py`): Computes departure/arrival weights using multiple research-based methods with 4-phase temporal system
 5. **Traffic Light Injection** (`src/network/traffic_lights.py`): Adds default four-phase signal plans (preserves existing OSM signals)
 6. **Route Generation** (`src/traffic/`): Generates vehicle routes using 4-strategy routing system and 3-type vehicle assignment
-7. **Dynamic Simulation** (`src/sim/sumo_controller.py`): Runs SUMO with TraCI integration, Tree Method algorithm, and real-time phase switching
+7. **Dynamic Simulation** (`src/sumo_integration/sumo_controller.py`): Runs SUMO with TraCI integration, Tree Method algorithm, and real-time phase switching
 
 ### Key Modules
 
@@ -287,8 +292,10 @@ The application follows a sequential 7-step pipeline with support for both synth
 
 **Simulation Control**:
 
-- `src/sim/sumo_controller.py`: TraCI wrapper with per-step callback API
-- `src/sim/sumo_utils.py`: SUMO utility functions
+- `src/sumo_integration/sumo_controller.py`: TraCI wrapper with per-step callback API
+- `src/sumo_integration/sumo_utils.py`: SUMO utility functions
+- `src/orchestration/simulator.py`: Main simulation orchestrator
+- `src/orchestration/traffic_controller.py`: Traffic control abstractions and factory
 
 **Traffic Control**:
 
@@ -360,7 +367,7 @@ When OSM land use data is insufficient (<15% coverage), the system uses intellig
 
 ### Generated Files Structure
 
-All generated files are placed in `data/` directory:
+All generated files are placed in `workspace/` directory:
 
 - `grid.net.xml`: SUMO network file
 - `grid.nod.xml`, `grid.edg.xml`, `grid.con.xml`, `grid.tll.xml`: Network components
@@ -381,7 +388,7 @@ All generated files are placed in `data/` directory:
 
 - **SUMO**: Requires SUMO installation with netgenerate, netconvert, sumo, sumo-gui
 - **Python Libraries**: numpy, shapely, geopandas, sumolib, traci, xmltodict, alive-progress
-- **Testing**: pytest included but no tests currently implemented
+- **Testing**: pytest for software testing (tests/), separate evaluation framework for research (evaluation/)
 
 ### Current Implementation Status
 
@@ -391,7 +398,7 @@ All generated files are placed in `data/` directory:
 - Several pipeline steps have commented-out code or early exit points
 - Most validation functions are disabled in the main CLI
 - Zone extraction (Step 2) is currently disabled
-- No unit tests despite pytest dependency
+- Separate testing framework (tests/) for software quality and evaluation framework (evaluation/) for research
 
 ### Key Patterns
 
@@ -410,7 +417,7 @@ All generated files are placed in `data/` directory:
 
 1. Modify configuration in `src/config.py`
 2. Run pipeline with `python -m src.cli`
-3. Check generated files in `data/` directory
+3. Check generated files in `workspace/` directory
 4. Use `--gui` flag for visual debugging
 5. Validate results using the validation functions (when enabled)
 
@@ -517,7 +524,7 @@ All generated files are placed in `data/` directory:
   - **Research Replication**: Framework designed to validate Tree Method claims of 20-45% improvement vs fixed timing
   - **Experimental Structure**:
     ```
-    experiments/
+    evaluation/benchmarks/
     ├── experiment-01-moderate-traffic/  # 600 vehicles, 2-hour simulation
     │   ├── run_experiment.sh           # Automated experiment runner
     │   ├── analyze_results.py          # Statistical analysis script
@@ -527,7 +534,7 @@ All generated files are placed in `data/` directory:
         ├── analyze_results.py
         └── results/
     ```
-  - **Usage**: `cd experiments/experiment-01-moderate-traffic && ./run_experiment.sh && python analyze_results.py`
+  - **Usage**: `cd evaluation/benchmarks/experiment-01-moderate-traffic && ./run_experiment.sh && python analyze_results.py`
   - **Virtual Environment Fix**: Resolved shapely import issues by adding proper virtual environment activation to experiment scripts
   - **Expected Results**: Tree Method should demonstrate 20-45% improvement in travel times vs fixed timing, 10-25% vs actuated
   - **Publication Ready**: Framework generates publication-quality statistical analysis with confidence intervals and significance tests

@@ -7,7 +7,7 @@ from typing import List, Optional
 @dataclass(frozen=True)
 class _Config:
     # ---------- paths ----------
-    output_dir: Path = Path("data")
+    output_dir: Path = Path("workspace")
     network_prefix = output_dir / "grid"
     network_file: Path = f"{network_prefix}.net.xml"
     network_nod_file: Path = f"{network_prefix}.nod.xml"

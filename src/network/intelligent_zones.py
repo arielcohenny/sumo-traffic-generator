@@ -1148,7 +1148,7 @@ if __name__ == "__main__":
     generator = IntelligentZoneGenerator(land_use_block_size_m=25.0)
     
     # Test with synthetic network
-    network_json = "data/grid.net.json"
+    network_json = "workspace/grid.net.json"
     network_bounds = (-73.990, 40.740, -73.970, 40.760)  # Example Manhattan bounds
     osm_file = "src/osm/export.osm"
     
@@ -1161,7 +1161,7 @@ if __name__ == "__main__":
             )
             
             # Save zones
-            save_intelligent_zones_to_poly_file(zones, "data/intelligent_zones.poly.xml", "data/grid.net.xml")
+            save_intelligent_zones_to_poly_file(zones, "workspace/intelligent_zones.poly.xml", "workspace/grid.net.xml")
             
             print(f"Successfully generated {len(zones)} intelligent zones")
             
