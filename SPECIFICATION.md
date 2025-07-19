@@ -518,22 +518,22 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 
 #### Zone Type Definitions:
 
-- **Residential**: 34% distribution, max 1000 cells, blue color (#1f78b4)
+- **Residential**: 34% distribution, max 1000 cells, orange color (#FFA500)
   - Multiplier: 1.0, departure_weight: 1.5, arrival_weight: 0.8
   
-- **Employment**: 10% distribution, max 500 cells, green color (#33a02c)
+- **Employment**: 10% distribution, max 500 cells, dark red color (#8B0000)
   - Multiplier: 1.8, departure_weight: 0.9, arrival_weight: 1.8
   
-- **Public Buildings**: 12% distribution, max 200 cells, pink color (#fb9a99)
+- **Public Buildings**: 12% distribution, max 200 cells, dark blue color (#000080)
   - Multiplier: 3.0, departure_weight: 0.5, arrival_weight: 3.5
   
-- **Mixed** (Residential + Employment + Retail): 24% distribution, max 300 cells, orange color (#ff7f00)
+- **Mixed** (Residential + Employment + Retail): 24% distribution, max 300 cells, yellow color (#FFFF00)
   - Multiplier: 2.0, departure_weight: 1.2, arrival_weight: 1.8
   
-- **Entertainment/Retail**: 8% distribution, max 40 cells, purple color (#6a3d9a)
+- **Entertainment/Retail**: 8% distribution, max 40 cells, dark green color (#006400)
   - Multiplier: 2.5, departure_weight: 0.8, arrival_weight: 2.0
   
-- **Public Open Space**: 12% distribution, max 100 cells, light green (#b2df8a)
+- **Public Open Space**: 12% distribution, max 100 cells, light green color (#90EE90)
   - Multiplier: 1.0, departure_weight: 1.5, arrival_weight: 0.8
 
 #### Universal Application:

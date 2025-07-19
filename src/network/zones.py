@@ -219,9 +219,9 @@ def create_minimal_zones_for_osm(network_file: str, zones_file: str):
 
     # Zone type configurations
     zone_configs = {
-        'residential': {'color': '0,255,0'},    # Green
-        'commercial': {'color': '255,0,0'},     # Red
-        'mixed': {'color': '128,255,128'}       # Light green
+        'residential': {'color': '255,165,0'},    # Orange
+        'commercial': {'color': '0,100,0'},       # Dark green
+        'mixed': {'color': '255,255,0'}           # Yellow
     }
 
     zone_types = ['residential', 'commercial', 'mixed']

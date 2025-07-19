@@ -21,17 +21,17 @@ class _Config:
     # ---------- land-use palette ----------
     land_uses: list[dict] = field(default_factory=lambda: [
         {"name": "Residential",           "percentage": 34,
-            "max_size": 1000, "color": "#1f78b4"},
+            "max_size": 1000, "color": "#FFA500"},
         {"name": "Employment",            "percentage": 10,
-            "max_size":  500, "color": "#33a02c"},
+            "max_size":  500, "color": "#8B0000"},
         {"name": "Public Buildings",      "percentage": 12,
-            "max_size":  200, "color": "#fb9a99"},
+            "max_size":  200, "color": "#000080"},
         {"name": "Mixed",                 "percentage": 24,
-            "max_size":  300, "color": "#ff7f00"},
+            "max_size":  300, "color": "#FFFF00"},
         {"name": "Entertainment/Retail",  "percentage":  8,
-            "max_size":   40, "color": "#6a3d9a"},
+            "max_size":   40, "color": "#006400"},
         {"name": "Public Open Space",     "percentage": 12,
-            "max_size":  100, "color": "#b2df8a"},
+            "max_size":  100, "color": "#90EE90"},
     ])
 
     # ---------- vehicle generation ----------

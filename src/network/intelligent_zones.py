@@ -82,37 +82,37 @@ class IntelligentZoneGenerator:
     # Zone type configurations with attractiveness multipliers
     ZONE_CONFIGS = {
         'residential': {
-            'color': '0,255,0',  # Green
+            'color': '255,165,0',  # Orange
             'multiplier': 1.0,
             'departure_weight': 1.5,
             'arrival_weight': 0.8
         },
         'commercial': {
-            'color': '255,0,0',  # Red
+            'color': '0,100,0',  # Dark green
             'multiplier': 2.5,
             'departure_weight': 0.8,
             'arrival_weight': 2.0
         },
         'industrial': {
-            'color': '128,128,128',  # Gray
+            'color': '139,0,0',  # Dark red
             'multiplier': 1.8,
             'departure_weight': 0.9,
             'arrival_weight': 1.8
         },
         'education': {
-            'color': '0,0,255',  # Blue
+            'color': '0,0,128',  # Dark blue
             'multiplier': 3.0,
             'departure_weight': 0.5,
             'arrival_weight': 3.5
         },
         'healthcare': {
-            'color': '255,255,0',  # Yellow
+            'color': '0,0,128',  # Dark blue
             'multiplier': 2.2,
             'departure_weight': 0.3,
             'arrival_weight': 2.8
         },
         'mixed': {
-            'color': '128,255,128',  # Light green
+            'color': '255,255,0',  # Yellow
             'multiplier': 2.0,
             'departure_weight': 1.2,
             'arrival_weight': 1.8
