@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Experiment 01: Moderate Traffic Load Comparison
-# Based on Nimrod's experimental design from Traffic Control paper
+# Based on Tree Method experimental design from Traffic Control paper
 # Compares Tree Method vs SUMO Actuated vs Fixed vs Random traffic control
 
 set -e

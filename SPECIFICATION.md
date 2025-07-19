@@ -1,6 +1,6 @@
 # SUMO Traffic Generator Specification
 
-This document provides the formal specification for the SUMO Traffic Generator, detailing all available CLI arguments and the 8-step pipeline execution process.
+This document provides the formal specification for the SUMO Traffic Generator, detailing all available CLI arguments and the 9-step pipeline execution process.
 
 ## 0. Initialization and Setup
 
@@ -17,7 +17,7 @@ This document provides the formal specification for the SUMO Traffic Generator, 
 
 - **Step**: Parse and validate all CLI arguments
 - **Function**: `argparse.ArgumentParser()` in `src/cli.py`
-- **Process**: Parse 19 available arguments with defaults and validation
+- **Process**: Parse 20 available arguments with defaults and validation
 - **Available Arguments**: See section 0.3 below
 
 ### 0.3 Seed Initialization
@@ -141,6 +141,29 @@ Zone cell size in meters for both OSM (intelligent zones) and non-OSM (tradition
 **Default**: 25.0m for both network types (following research paper methodology from "A Simulation Model for Intra-Urban Movements")
 
 **Purpose**: Controls the resolution of land use zone generation. Creates fine-grained cells for detailed spatial analysis independent of street block size.
+
+#### 0.4.20 `--tree_method_sample` (str, optional)
+
+Path to folder containing pre-built Tree Method sample files for bypass mode.
+
+**Purpose**: Enables testing and validation using original research networks without generating new networks.
+
+**Behavior**: 
+- **Bypass Mode**: Skips Steps 1-8 entirely, goes directly to Step 9 (Dynamic Simulation)
+- **File Requirements**: Folder must contain `network.net.xml`, `vehicles.trips.xml`, and `simulation.sumocfg.xml`
+- **File Management**: Automatically copies and adapts sample files to our pipeline naming convention
+- **Validation**: Tests our Tree Method implementation against established research benchmarks
+
+**Incompatible Arguments**: Cannot be used with network generation arguments (`--osm_file`, `--grid_dimension`, `--block_size_m`, `--junctions_to_remove`, `--lane_count`)
+
+**Usage Examples**:
+```bash
+# Basic Tree Method validation
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --gui
+
+# Compare traffic control methods on identical network
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control actuated --gui
+```
 
 ### 0.5 Argument Validation
 
@@ -1874,7 +1897,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **OSM Adaptation**: Modified to handle missing connections in real street networks using `.get()` method
 - **Objects**: Requires Network, Graph, and cycle time calculation
 - **Real-time**: Updates traffic light phases based on current traffic conditions
-- **Validation**: `verify_nimrod_integration_setup()` and `verify_algorithm_runtime_behavior()`
+- **Validation**: `verify_tree_method_integration_setup()` and `verify_algorithm_runtime_behavior()`
 
 #### 9.4.2 Actuated Control (`--traffic_control actuated`)
 
@@ -1933,7 +1956,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 
 **Simulation Runtime Validation Functions:**
 
-- **verify_nimrod_integration_setup()**: Validates Tree Method traffic control algorithm initialization
+- **verify_tree_method_integration_setup()**: Validates Tree Method traffic control algorithm initialization
 - **verify_algorithm_runtime_behavior()**: Validates algorithm behavior during simulation runtime
 
 #### 9.1.5 validate_split_edges_with_lanes.py

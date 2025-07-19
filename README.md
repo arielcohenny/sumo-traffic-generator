@@ -103,6 +103,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --land_use_block_size_m <float> # Land use zone grid resolution in meters (default: 25.0)
   --traffic_light_strategy <str> # Traffic light phasing strategy: 'opposites' (default) or 'incoming'
   --traffic_control <str>       # Traffic control method: 'tree_method' (default), 'actuated', or 'fixed'
+  --tree_method_sample <path>   # Use pre-built Tree Method sample from folder (bypasses network generation)
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
 ````
 
@@ -121,6 +122,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --vehicle_types <str>         # Vehicle types with percentages (default: 'passenger 60 commercial 30 public 10')
   --land_use_block_size_m <float> # Land use zone grid resolution in meters (default: 25.0)
   --traffic_control <str>       # Traffic control method: 'tree_method' (default), 'actuated', or 'fixed'
+  --tree_method_sample <path>   # Use pre-built Tree Method sample from folder (bypasses network generation)
   --gui                         # Launch SUMO in GUI mode (sumo-gui) instead of headless sumo
 
 # Examples with verified working OSM samples:
@@ -141,6 +143,38 @@ env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/manhattan_up
 # Intelligent zone generation with different resolutions
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 500 --land_use_block_size_m 10 --gui   # Very fine-grained zones
 env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/samples/sf_downtown.osm --num_vehicles 300 --land_use_block_size_m 50 --gui  # OSM with custom resolution
+````
+
+### Tree Method Sample Testing
+
+Test and validate Tree Method implementation using original research networks:
+
+```bash
+# Basic Tree Method validation with pre-built network (946 vehicles, 2-hour simulation)
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --gui
+
+# Compare traffic control methods on identical pre-built network
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control actuated --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control fixed --gui
+
+# Performance testing without GUI
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --end-time 3600
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control actuated --end-time 3600
+
+# Full 2-hour simulation (original experiment duration)
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --end-time 7300
+
+# Quick validation tests
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --end-time 1800 --gui
+```
+
+**Tree Method Sample Features:**
+- **Bypass Mode**: Skips network generation (Steps 1-8), goes directly to simulation (Step 9)
+- **Pre-built Networks**: Uses original complex urban networks from research
+- **Research Validation**: Test our Tree Method implementation against established benchmarks
+- **Method Comparison**: Compare Tree Method vs Actuated vs Fixed on identical network conditions
+- **File Management**: Automatically copies and adapts sample files to pipeline naming convention
 ````
 
 ## Parameter Reference
@@ -531,6 +565,52 @@ This parameter enables comparative studies between different traffic control app
 - Use `fixed` for traditional signal control analysis
 - Run multiple experiments with identical parameters except traffic control method
 - Compare metrics like average travel time, throughput, and congestion levels
+
+### Tree Method Sample Testing
+
+#### `--tree_method_sample <path>` (optional)
+
+**Purpose:** Enables bypass mode for testing and validation using pre-built Tree Method sample networks.
+
+- **Format:** Path to folder containing Tree Method sample files
+- **Required Files:** Folder must contain `network.net.xml`, `vehicles.trips.xml`, and `simulation.sumocfg.xml`
+- **Behavior:** 
+  - **Pipeline Bypass:** Skips Steps 1-8 (network generation), goes directly to Step 9 (Dynamic Simulation)
+  - **File Management:** Automatically copies and adapts sample files to pipeline naming convention
+  - **Research Validation:** Tests Tree Method implementation against original research networks
+
+**Incompatible Arguments:** Cannot be used with network generation parameters:
+- `--osm_file`, `--grid_dimension`, `--block_size_m`, `--junctions_to_remove`, `--lane_count`
+
+**Sample Network Characteristics:**
+- **946 vehicles** over **2-hour simulation** (7300 seconds)
+- **Complex urban topology** with multi-lane edges and advanced traffic signals
+- **Pre-processed networks** from original research (Experiment1-realistic-high-load)
+- **Research benchmarks** for validating Tree Method performance claims
+
+**Usage Examples:**
+
+```bash
+# Basic Tree Method validation on pre-built network
+--tree_method_sample tree_method_samples/
+
+# Compare different traffic control methods on identical network conditions
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control actuated --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control fixed --gui
+
+# Performance testing without GUI (recommended for benchmarking)
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --end-time 3600
+
+# Full 2-hour simulation (original experiment duration)
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --end-time 7300
+```
+
+**Research Benefits:**
+- **Validation:** Test our Tree Method implementation against established research benchmarks
+- **Comparison:** Compare Tree Method vs Actuated vs Fixed on identical network conditions
+- **Performance:** Validate claims of 20-45% improvement vs fixed timing, 10-25% vs actuated
+- **Reproducibility:** Use same networks that produced published research results
 
 ### Vehicle Departure Patterns
 

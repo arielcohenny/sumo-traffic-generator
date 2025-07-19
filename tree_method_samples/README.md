@@ -1,6 +1,6 @@
-# Tree Method Sample - Nimrod's Experiment1
+# Tree Method Sample - Original Experiment1
 
-This directory contains one test case from Nimrod's original research for validating our Tree Method implementation.
+This directory contains one test case from original research for validating our Tree Method implementation.
 
 ## Files
 
@@ -11,7 +11,7 @@ This directory contains one test case from Nimrod's original research for valida
 
 ## Test Case Details
 
-**Source**: `nimrodSerokTAU/decentralized-traffic-bottlenecks/data/Experiment1-realistic-high-load/1/`
+**Source**: `decentralized-traffic-bottlenecks/data/Experiment1-realistic-high-load/1/`
 
 **Scenario**: Realistic High Load
 - **946 vehicles** over **2 hours** (7300 seconds)
@@ -21,7 +21,7 @@ This directory contains one test case from Nimrod's original research for valida
 
 ## Usage
 
-This test case can be used to validate our Tree Method implementation against Nimrod's original research data.
+This test case can be used to validate our Tree Method implementation against original research data.
 
 **To run with our system:**
 ```bash

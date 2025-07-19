@@ -20,7 +20,7 @@ except ImportError:
         pass
 
 __all__ = [
-    "verify_nimrod_integration_setup",
+    "verify_tree_method_integration_setup",
     "verify_algorithm_runtime_behavior",
 ]
 
@@ -29,7 +29,7 @@ __all__ = [
 #  Tree Method Integration Setup Verification
 # ---------------------------------------------------------------------------
 
-def verify_nimrod_integration_setup(
+def verify_tree_method_integration_setup(
     tree_data: Any,
     run_config: Any, 
     network_data: Any,

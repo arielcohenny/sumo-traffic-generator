@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Python-based SUMO traffic generator that creates dynamic traffic simulations with intelligent signal control. It supports both synthetic orthogonal grid networks and real-world OpenStreetMap (OSM) data, applies configurable lane assignments, and uses Nimrod's decentralized traffic control algorithm for dynamic signal optimization. The system seamlessly integrates with Manhattan street networks and other real urban topologies.
+This is a Python-based SUMO traffic generator that creates dynamic traffic simulations with intelligent signal control. It supports both synthetic orthogonal grid networks and real-world OpenStreetMap (OSM) data, applies configurable lane assignments, and uses Tree Method's decentralized traffic control algorithm for dynamic signal optimization. The system seamlessly integrates with Manhattan street networks and other real urban topologies.
 
 ## Common Commands
 
@@ -70,7 +70,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 # Basic OSM run with GUI
 env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 500 --end-time 3600 --gui
 
-# OSM with Nimrod's Tree Method traffic control
+# OSM with Tree Method traffic control
 env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 500 --end-time 3600 --traffic_control tree_method --gui
 
 # OSM with different traffic control methods for comparison
@@ -145,6 +145,37 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 --end-time 3600 --seed 42 --traffic_control fixed
 ```
 
+### Tree Method Sample Testing
+
+Use original test cases to validate Tree Method implementation:
+
+```bash
+# Basic Tree Method sample run with GUI
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --gui
+
+# Compare different traffic control methods on same pre-built network
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control actuated --gui  
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control fixed --gui
+
+# Performance testing without GUI
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --end-time 3600
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control actuated --end-time 3600
+
+# Extended simulation (2 hours like original)
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --end-time 7300
+
+# Quick validation runs
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample tree_method_samples/ --traffic_control tree_method --end-time 1800 --gui
+```
+
+**Tree Method Sample Features:**
+- **Bypass Mode**: Skips Steps 1-8, goes directly to Step 9 (Dynamic Simulation)
+- **Pre-built Networks**: Uses original complex urban networks (946 vehicles, 2-hour simulation)
+- **Research Validation**: Test our Tree Method implementation against established benchmarks
+- **Method Comparison**: Compare Tree Method vs Actuated vs Fixed on identical network conditions
+- **File Management**: Automatically copies and adapts sample files to our pipeline naming convention
+
 ### Experimental Framework
 
 The project includes a comprehensive experimental framework for comparing traffic control methods:
@@ -177,11 +208,11 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 -
 **Experimental Framework Features:**
 
 - **Automated Execution**: Scripts run 80 simulations (20 per method) with different seeds
-- **Methods Compared**: Tree Method (Nimrod's), SUMO Actuated, Fixed timing, Random proxy
+- **Methods Compared**: Tree Method, SUMO Actuated, Fixed timing, Random proxy
 - **Metrics Tracked**: Travel times, completion rates, throughput, vehicle arrivals/departures
 - **Statistical Analysis**: Confidence intervals, significance tests, performance comparisons
 - **Virtual Environment**: Proper activation ensures all dependencies are available
-- **Research Validation**: Framework designed to replicate Nimrod's experimental methodology
+- **Research Validation**: Framework designed to replicate Tree Method experimental methodology
 
 **Expected Experiment Results:**
 
@@ -229,7 +260,7 @@ The application follows a sequential 7-step pipeline with support for both synth
 4. **Edge Attractiveness** (`src/network/edge_attrs.py`): Computes departure/arrival weights using multiple research-based methods with 4-phase temporal system
 5. **Traffic Light Injection** (`src/network/traffic_lights.py`): Adds default four-phase signal plans (preserves existing OSM signals)
 6. **Route Generation** (`src/traffic/`): Generates vehicle routes using 4-strategy routing system and 3-type vehicle assignment
-7. **Dynamic Simulation** (`src/sim/sumo_controller.py`): Runs SUMO with TraCI integration, Nimrod's algorithm, and real-time phase switching
+7. **Dynamic Simulation** (`src/sim/sumo_controller.py`): Runs SUMO with TraCI integration, Tree Method algorithm, and real-time phase switching
 
 ### Key Modules
 
@@ -261,7 +292,7 @@ The application follows a sequential 7-step pipeline with support for both synth
 
 **Traffic Control**:
 
-- `src/traffic_control/decentralized_traffic_bottlenecks/`: Nimrod's Tree Method implementation
+- `src/traffic_control/decentralized_traffic_bottlenecks/`: Tree Method implementation
 - `src/traffic_control/decentralized_traffic_bottlenecks/integration.py`: Bridges simulator with algorithm
 - `src/traffic_control/decentralized_traffic_bottlenecks/classes/net_data_builder.py`: Network adapter with dead-end street handling for real topologies
 
@@ -277,7 +308,7 @@ Central configuration in `src/config.py` using dataclasses:
 - `GridConfig`: Network generation parameters
 - `TrafficConfig`: Vehicle and route parameters
 - `SimulationConfig`: SUMO simulation parameters
-- `AlgorithmConfig`: Nimrod's algorithm parameters
+- `AlgorithmConfig`: Tree Method algorithm parameters
 
 **Key Configuration Constants**:
 
@@ -439,18 +470,18 @@ All generated files are placed in `data/` directory:
   - Spatial analysis for edge-zone adjacency detection
   - Research-based land use multipliers and gravity model parameters
   - Modular architecture allowing combination of spatial, temporal, land use, and routing factors
-- **Nimrod's Traffic Control Algorithm**:
-  - Uses Nimrod's decentralized traffic control algorithm for dynamic signal optimization
+- **Tree Method Traffic Control Algorithm**:
+  - Uses Tree Method decentralized traffic control algorithm for dynamic signal optimization
   - Implements intelligent signal control through tree-based method
   - Dynamically adjusts traffic light phases based on real-time traffic bottlenecks
   - Aims to minimize overall traffic congestion by decentralized decision-making
   - Adapts signal timing based on local traffic conditions at each intersection
 - **Traffic Control System**:
   - ✅ **COMPLETED & WORKING**: Implemented `--traffic_control` argument for switching between different traffic control methods
-  - **Three Control Methods**: `tree_method` (default, Nimrod's algorithm), `actuated` (SUMO gap-based), `fixed` (static timing)
-  - **Conditional Object Initialization**: Only loads Nimrod's objects when using tree_method for optimal performance
+  - **Three Control Methods**: `tree_method` (default, Tree Method algorithm), `actuated` (SUMO gap-based), `fixed` (static timing)
+  - **Conditional Object Initialization**: Only loads Tree Method objects when using tree_method for optimal performance
   - **Experimental Comparison**: Enables A/B testing between different traffic control approaches using identical network conditions
-  - **Baseline Evaluation**: SUMO Actuated serves as primary baseline for comparing Nimrod's Tree Method performance
+  - **Baseline Evaluation**: SUMO Actuated serves as primary baseline for comparing Tree Method performance
   - **Integration**: Seamlessly works with all existing features (routing strategies, vehicle types, temporal patterns)
 - **Recent Updates (Latest Session)**:
   - ✅ **Fixed Integration Errors**: Resolved "string indices must be integers, not 'str'" errors in TraCI integration
@@ -469,21 +500,21 @@ All generated files are placed in `data/` directory:
   - **File Management**: Automatic file movement from netconvert output location to expected pipeline locations
   - **Universal Algorithm Compatibility**: Existing `split_edges_with_lanes.py` works seamlessly with real street topology
   - **Dynamic Head Distance**: `min(HEAD_DISTANCE, edge_length/3)` prevents issues with short urban streets
-  - **Dead-End Street Handling**: Modified Nimrod's algorithm to gracefully handle missing connections using `.get()` method instead of direct dictionary access
+  - **Dead-End Street Handling**: Modified Tree Method algorithm to gracefully handle missing connections using `.get()` method instead of direct dictionary access
   - **Traffic Signal Preservation**: Maintains original OSM traffic light IDs and timing in SUMO network
   - **Real-World Testing**: Successfully tested with 4.6MB Manhattan East Village OSM data (52 edges, 16 signalized intersections)
   - **Performance Metrics**: 500 vehicles, 96% departure rate, 63% completion rate, 340.6s average travel time on real Manhattan streets
   - **Integration**: Works with all existing features (vehicle types, routing strategies, departure patterns, traffic control methods)
-  - **Research Application**: Enables testing Nimrod's algorithm on real urban topologies vs synthetic grids
+  - **Research Application**: Enables testing Tree Method algorithm on real urban topologies vs synthetic grids
 - **Experimental Framework**:
   - ✅ **COMPLETED & WORKING**: Comprehensive experimental framework for traffic control method comparison
   - **Two Main Experiments**: moderate-traffic (600 vehicles) and high-traffic (1200 vehicles) over 2-hour simulations
   - **Statistical Rigor**: 20 iterations per method (80 total simulations per experiment) with different random seeds
-  - **Four Methods Compared**: Tree Method (Nimrod's), SUMO Actuated, Fixed timing, and Random proxy (mixed routing)
+  - **Four Methods Compared**: Tree Method, SUMO Actuated, Fixed timing, and Random proxy (mixed routing)
   - **Automated Execution**: `run_experiment.sh` scripts handle all 80 simulations with proper virtual environment activation
   - **Metrics Collection**: Real-time tracking of travel times, completion rates, throughput, and vehicle arrivals/departures
   - **Statistical Analysis**: `analyze_results.py` provides summary statistics, confidence intervals, and performance comparisons
-  - **Research Replication**: Framework designed to validate Nimrod's claims of 20-45% improvement vs fixed timing
+  - **Research Replication**: Framework designed to validate Tree Method claims of 20-45% improvement vs fixed timing
   - **Experimental Structure**:
     ```
     experiments/

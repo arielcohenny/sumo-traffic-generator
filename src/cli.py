@@ -3,9 +3,10 @@ import random
 import shutil
 from pathlib import Path
 import traci
+import xml.etree.ElementTree as ET
+import sumolib
 
 
-from src.sim.sumo_controller import SumoController
 from src.sim.sumo_utils import generate_sumo_conf_file, rebuild_network
 
 from src.network.generate_grid import generate_grid_network
@@ -19,17 +20,322 @@ from src.traffic_control.decentralized_traffic_bottlenecks.integration import lo
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.graph import Graph
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.network import Network
 from src.traffic_control.decentralized_traffic_bottlenecks.classes.net_data_builder import build_network_json
+from src.traffic_control.decentralized_traffic_bottlenecks.utils import is_calculation_time, calc_iteration_from_step
+from src.traffic_control.decentralized_traffic_bottlenecks.enums import AlgoType, CostType
+from src.traffic_control.decentralized_traffic_bottlenecks.classes.iterations_trees import IterationTrees
 
 from src.validate.errors import ValidationError
 from src.validate.validate_network import verify_generate_grid_network, verify_extract_zones_from_junctions, verify_rebuild_network, verify_assign_edge_attractiveness, verify_generate_sumo_conf_file
 from src.validate.validate_traffic import verify_generate_vehicle_routes
-from src.validate.validate_simulation import verify_nimrod_integration_setup, verify_algorithm_runtime_behavior
+from src.validate.validate_simulation import verify_tree_method_integration_setup, verify_algorithm_runtime_behavior
 from src.validate.validate_arguments import validate_arguments
 from src.validate.validate_intelligent_zones import verify_convert_zones_to_projected_coordinates
 from src.validate.validate_split_edges_with_lanes import verify_split_edges_with_flow_based_lanes
 
 from src.traffic.builder import generate_vehicle_routes
 from src.config import CONFIG
+
+
+def validate_tree_method_sample_args(args):
+    """Validate arguments when using --tree_method_sample"""
+    if args.tree_method_sample:
+        # Incompatible arguments (generate network-related)
+        incompatible = []
+        if args.osm_file:
+            incompatible.append('--osm_file')
+        if args.grid_dimension != 5:  # non-default
+            incompatible.append('--grid_dimension')
+        if args.block_size_m != 200:  # non-default
+            incompatible.append('--block_size_m')
+        if args.junctions_to_remove != "0":
+            incompatible.append('--junctions_to_remove')
+        if args.lane_count != "realistic":
+            incompatible.append('--lane_count')
+            
+        if incompatible:
+            raise ValidationError(f"--tree_method_sample incompatible with: {', '.join(incompatible)}")
+
+
+def update_sumo_config_paths():
+    """Update SUMO config file to reference our file naming convention"""
+    tree = ET.parse(CONFIG.config_file)
+    root = tree.getroot()
+    
+    # Update file paths to match our naming
+    for input_elem in root.findall('.//input'):
+        net_file = input_elem.find('net-file')
+        if net_file is not None:
+            net_file.set('value', 'grid.net.xml')
+            
+        route_files = input_elem.find('route-files')
+        if route_files is not None:
+            route_files.set('value', 'vehicles.rou.xml')
+    
+    # Save updated config
+    tree.write(CONFIG.config_file, encoding='utf-8', xml_declaration=True)
+    print("Updated SUMO config file paths")
+
+
+def setup_tree_method_sample(sample_folder: str):
+    """Copy and adapt Tree Method sample files for our pipeline"""
+    try:
+        # Validate sample folder exists
+        sample_path = Path(sample_folder)
+        if not sample_path.exists():
+            raise ValueError(f"Sample folder not found: {sample_folder}")
+        
+        # Required files in sample folder
+        required_files = {
+            'network.net.xml': CONFIG.network_file,           # -> data/grid.net.xml
+            'vehicles.trips.xml': CONFIG.routes_file,         # -> data/vehicles.rou.xml  
+            'simulation.sumocfg.xml': CONFIG.config_file      # -> data/grid.sumocfg
+        }
+        
+        # Copy and rename files to our convention
+        for source_name, target_path in required_files.items():
+            source_file = sample_path / source_name
+            if not source_file.exists():
+                raise ValueError(f"Required file missing: {source_file}")
+            
+            shutil.copy2(source_file, target_path)
+            print(f"Copied {source_name} -> {target_path}")
+        
+        # Update SUMO config file to use our file naming convention
+        update_sumo_config_paths()
+        
+    except FileNotFoundError as e:
+        print(f"Error: Sample file not found - {e}")
+        exit(1)
+    except PermissionError as e:
+        print(f"Error: Permission denied - {e}")
+        exit(1)
+    except Exception as e:
+        print(f"Error setting up Tree Method sample: {e}")
+        exit(1)
+
+
+def parse_routing_strategy(routing_strategy):
+    """Parse routing strategy string to extract individual strategies and percentages"""
+    strategies = {}
+    parts = routing_strategy.split()
+    for i in range(0, len(parts), 2):
+        if i + 1 < len(parts):
+            strategy = parts[i]
+            percentage = float(parts[i + 1])
+            strategies[strategy] = percentage
+    return strategies
+
+
+def should_reroute_vehicles(step, strategy, last_reroute, interval):
+    """Check if vehicles should be rerouted based on strategy and interval"""
+    return step - last_reroute >= interval
+
+
+def reroute_vehicles_by_strategy(strategy_type):
+    """Reroute vehicles based on strategy type"""
+    vehicle_ids = traci.vehicle.getIDList()
+    for vehicle_id in vehicle_ids:
+        try:
+            if strategy_type == "realtime":
+                traci.vehicle.rerouteEffort(vehicle_id)
+            elif strategy_type == "fastest":
+                traci.vehicle.reroute(vehicle_id)
+        except traci.exceptions.TraCIException:
+            # Vehicle might have left the simulation
+            continue
+
+
+def run_tree_method_simulation(args):
+    """Universal simulation using Tree Method approach for all traffic control methods"""
+    print("--- Step 9: Dynamic Simulation (Tree Method Universal Approach) ---")
+    
+    # Initialize variables for all traffic control methods
+    tree_data = run_config = network_data = graph = seconds_in_cycle = None
+    iteration_trees = []  # List to store iteration trees
+    
+    # Traffic control method-specific initialization
+    if args.traffic_control == 'tree_method':
+        print("Initializing Tree Method objects...")
+        
+        # Build network JSON for Tree Method
+        json_file = Path(CONFIG.network_file).with_suffix(".json")
+        build_network_json(CONFIG.network_file, json_file)
+        print(f"Built network JSON file: {json_file}")
+        
+        # Load Tree Method objects
+        try:
+            tree_data, run_config = load_tree(
+                net_file=CONFIG.network_file,
+                sumo_cfg=CONFIG.config_file
+            )
+            print("Loaded network tree and run configuration successfully.")
+            
+            network_data = Network(json_file)
+            print("Loaded network data from JSON.")
+            graph = Graph(args.end_time)
+            print("Initialized Tree Method Graph object.")
+            graph.build(network_data.edges_list, network_data.junctions_dict)
+            print("Built Tree Method Graph from network data.")
+            seconds_in_cycle = network_data.calc_cycle_time()
+            print("Built network graph and calculated cycle time.")
+            
+            # Initialize iteration trees (will be created as needed during simulation)
+            
+            # Verify Tree Method integration setup
+            verify_tree_method_integration_setup(
+                tree_data, run_config, network_data, graph, seconds_in_cycle)
+            print("Tree Method integration setup verified successfully.")
+            
+        except ValidationError as ve:
+            print(f"Tree Method integration setup validation failed: {ve}")
+            exit(1)
+    
+    elif args.traffic_control == "actuated":
+        print("Using SUMO Actuated traffic control - no additional setup needed.")
+    
+    elif args.traffic_control == "fixed":
+        print("Using Fixed-time traffic control - no additional setup needed.")
+    
+    # Parse routing strategies
+    routing_strategies = {}
+    if hasattr(args, 'routing_strategy') and args.routing_strategy:
+        routing_strategies = parse_routing_strategy(args.routing_strategy)
+    
+    # Choose SUMO binary based on GUI flag
+    if args.gui:
+        sumo_binary = sumolib.checkBinary('sumo-gui')
+    else:
+        sumo_binary = sumolib.checkBinary('sumo')
+    
+    # Start TraCI (Tree Method way)
+    print("Starting SUMO simulation with TraCI...")
+    traci.start([sumo_binary, '-c', str(CONFIG.config_file)])
+    
+    # Initialize simulation variables
+    step = 0
+    iteration = 0
+    last_realtime_reroute = 0
+    last_fastest_reroute = 0
+    
+    # Simulation metrics
+    total_vehicles = 0
+    completed_vehicles = 0
+    simulation_start_time = step
+    
+    try:
+        # Main simulation loop (Tree Method pattern)
+        while traci.simulation.getMinExpectedNumber() > 0 and step < args.end_time:
+            
+            # Tree Method: Calculation time check
+            if args.traffic_control == "tree_method" and is_calculation_time(step, seconds_in_cycle):
+                iteration = calc_iteration_from_step(step, seconds_in_cycle)
+                if iteration > 0:  # Skip first iteration
+                    print(f"Tree Method calculation at step {step}, iteration {iteration}")
+                    try:
+                        # Perform Tree Method calculations
+                        ended_iteration = iteration - 1
+                        this_iter_trees_costs = graph.calculate_iteration(
+                            ended_iteration, 
+                            iteration_trees, 
+                            step, 
+                            seconds_in_cycle,
+                            run_config.cost_type if run_config else CostType.TREE_CURRENT, 
+                            run_config.algo_type if run_config else AlgoType.BABY_STEPS
+                        )
+                        graph.calc_nodes_statistics(ended_iteration, seconds_in_cycle)
+                    except Exception as e:
+                        print(f"Warning: Tree Method calculation failed at step {step}: {e}")
+            
+            # Traffic control method-specific updates (BEFORE simulation step)
+            if args.traffic_control == "tree_method" and graph:
+                try:
+                    # Tree Method traffic light updates
+                    graph.update_traffic_lights(step, seconds_in_cycle, 
+                                               run_config.algo_type if run_config else AlgoType.BABY_STEPS)
+                except Exception as e:
+                    print(f"Warning: Tree Method traffic light update failed at step {step}: {e}")
+            
+            # Dynamic rerouting logic (our addition)
+            if routing_strategies:
+                if "realtime" in routing_strategies and should_reroute_vehicles(step, "realtime", last_realtime_reroute, 30):
+                    reroute_vehicles_by_strategy("realtime")
+                    last_realtime_reroute = step
+                    
+                if "fastest" in routing_strategies and should_reroute_vehicles(step, "fastest", last_fastest_reroute, 45):
+                    reroute_vehicles_by_strategy("fastest")
+                    last_fastest_reroute = step
+            
+            # Core simulation step (Tree Method pattern)
+            traci.simulationStep()
+            
+            # Post-step processing (metrics collection)
+            if step % 100 == 0:  # Log every 100 steps
+                current_vehicles = len(traci.vehicle.getIDList())
+                if step == simulation_start_time:
+                    total_vehicles = max(total_vehicles, current_vehicles)
+                print(f"Step {step}: {current_vehicles} vehicles active")
+            
+            # Tree Method: Post-step data collection
+            if args.traffic_control == "tree_method" and graph:
+                try:
+                    # Skip fill_link_in_step if there are None edges - data quality issue in Tree Method samples
+                    if hasattr(graph, 'all_links'):
+                        valid_links = [link for link in graph.all_links if link.edge_name != "None" and link.edge_name is not None]
+                        if len(valid_links) == len(graph.all_links):
+                            graph.fill_link_in_step()
+                        # Skip this step if there are None edges to avoid TraCI errors
+                    
+                    graph.add_vehicles_to_step()
+                    graph.close_prev_vehicle_step(step)
+                    current_iteration = calc_iteration_from_step(step, seconds_in_cycle)
+                    graph.fill_head_iteration()
+                except Exception as e:
+                    # Only print every 100 steps to avoid spam
+                    if step % 100 == 0:
+                        print(f"Warning: Tree Method post-processing failed at step {step}: {e}")
+            
+            # Runtime validation (every 30 steps by default)
+            if args.traffic_control == "tree_method" and step % CONFIG.SIMULATION_VERIFICATION_FREQUENCY == 0:
+                try:
+                    # Get current phase map for validation
+                    phase_map = graph.get_traffic_lights_phases(step) if graph else {}
+                    verify_algorithm_runtime_behavior(
+                        step, phase_map, graph, CONFIG.SIMULATION_VERIFICATION_FREQUENCY
+                    )
+                except ValidationError as ve:
+                    print(f"Algorithm runtime validation failed at step {step}: {ve}")
+            
+            step += 1
+        
+        # Simulation completed
+        print(f"Simulation completed at step {step}")
+        
+        # Collect final metrics
+        final_vehicles = len(traci.vehicle.getIDList())
+        completed_vehicles = total_vehicles - final_vehicles
+        
+        print("\n=== SIMULATION METRICS ===")
+        print(f"Total simulation steps: {step}")
+        print(f"Total vehicles: {total_vehicles}")
+        print(f"Completed vehicles: {completed_vehicles}")
+        if total_vehicles > 0:
+            completion_rate = (completed_vehicles / total_vehicles) * 100
+            print(f"Completion rate: {completion_rate:.1f}%")
+        print(f"Traffic control method: {args.traffic_control}")
+        
+    except Exception as e:
+        print(f"Simulation error: {e}")
+        raise
+    finally:
+        # Clean shutdown
+        try:
+            traci.close()
+        except:
+            pass
+    
+    print("Tree Method simulation completed successfully!")
+
+
 
 
 def main():
@@ -155,11 +461,18 @@ def main():
         default=25.0,
         help="Size of land use zone grid blocks in meters. Default: 25.0m (following research paper methodology). Controls resolution of zone generation."
     )
+    parser.add_argument(
+        "--tree_method_sample",
+        type=str,
+        metavar="FOLDER_PATH",
+        help="Use pre-built Tree Method sample from specified folder (skips steps 1-8, goes directly to simulation)"
+    )
     args = parser.parse_args()
 
     # --- Validate arguments ---
     try:
         validate_arguments(args)
+        validate_tree_method_sample_args(args)
     except ValidationError as e:
         print(f"Error: {e}")
         exit(1)
@@ -169,6 +482,14 @@ def main():
         seed = args.seed if args.seed is not None else random.randint(
             0, 2**32 - 1)
         print(f"Using seed: {seed}")
+
+        # --- Check for Tree Method Sample Bypass Mode ---
+        if args.tree_method_sample:
+            print(f"Tree Method Sample Mode: Using pre-built network from {args.tree_method_sample}")
+            print("Skipping Steps 1-8, going directly to Step 9 (Dynamic Simulation)")
+            setup_tree_method_sample(args.tree_method_sample)
+            run_tree_method_simulation(args)
+            return
 
         # --- Step 1: Network Generation ---
         if args.osm_file:
@@ -346,141 +667,8 @@ def main():
             exit(1)
         print(f"Generated SUMO configuration file successfully.")
 
-        # --- Step 9: Dynamic Simulation ---
-        json_file = Path(CONFIG.network_file).with_suffix(".json")
-
-        # Initialize traffic control method-specific objects
-        if args.traffic_control == "tree_method":
-            # Build network JSON for Tree Method (zones already created in Step 2)
-            build_network_json(CONFIG.network_file, json_file)
-            print(f"Built network JSON file: {json_file}")
-
-        # Initialize traffic control method-specific objects
-        if args.traffic_control == "tree_method":
-            # Load network tree structure and runner configuration
-            if json_file.exists():
-                json_file.unlink()
-            tree_data, run_config = load_tree(
-                net_file=CONFIG.network_file,
-                sumo_cfg=sumo_cfg_path
-            )
-            print("Loaded network tree and run configuration successfully.")
-
-            # Build Tree Method runtime objects once (outside the callback)
-            # Note: JSON file already built above for zone generation
-            if not json_file.exists():
-                build_network_json(CONFIG.network_file, json_file)
-                print(f"Built network JSON file for Tree Method: {json_file}")
-            else:
-                print(f"Using existing network JSON file: {json_file}")
-
-            network_data = Network(json_file)
-            print("Loaded network data from JSON.")
-            graph = Graph(args.end_time)
-            print("Initialized Tree Method Graph object.")
-            graph.build(network_data.edges_list, network_data.junctions_dict)
-            print("Built Tree Method Graph from network data.")
-            seconds_in_cycle = network_data.calc_cycle_time()
-            print("Built network graph and calculated cycle time.")
-
-            # Verify Tree Method integration setup
-            try:
-                verify_nimrod_integration_setup(
-                    tree_data, run_config, network_data, graph, seconds_in_cycle)
-            except ValidationError as ve:
-                print(f"Tree Method integration setup validation failed: {ve}")
-                exit(1)
-            print("Tree Method integration setup verified successfully.")
-
-        elif args.traffic_control == "actuated":
-            print("Using SUMO Actuated traffic control - no additional setup needed.")
-            # Set variables to None for actuated control
-            tree_data = run_config = network_data = graph = seconds_in_cycle = None
-
-        elif args.traffic_control == "fixed":
-            print("Using Fixed-time traffic control - no additional setup needed.")
-            # Set variables to None for fixed control
-            tree_data = run_config = network_data = graph = seconds_in_cycle = None
-
-        # Initialize the TraCI controller
-        controller = SumoController(
-            sumo_cfg=sumo_cfg_path,
-            step_length=args.step_length,
-            end_time=args.end_time,
-            gui=args.gui,
-            time_dependent=args.time_dependent,
-            start_time_hour=args.start_time_hour,
-            routing_strategy=args.routing_strategy
-        )
-        print("Initialized TraCI controller successfully.")
-
-        # Per‑step TraCI controller  ✅
-
-        def control_callback(current_time: int):
-            """Apply selected traffic control method each simulation step."""
-
-            if args.traffic_control == "tree_method":
-                # Tree Method
-                # 1) Update domain model and compute new Boolean decisions
-                graph.update_traffic_lights(current_time,
-                                            seconds_in_cycle,
-                                            run_config.algo_type)
-
-                # 2) Translate to SUMO colour strings (Graph does this for us)
-                # Ariel: adding a guard here to ensure we have valid phase_map
-                phase_map = graph.get_traffic_lights_phases(int(current_time))
-                if not phase_map:   # guard for None / empty dict
-                    return
-
-                # Runtime verification of algorithm behavior
-                try:
-                    verify_algorithm_runtime_behavior(
-                        current_time,
-                        phase_map,
-                        graph,
-                        CONFIG.SIMULATION_VERIFICATION_FREQUENCY
-                    )
-                except ValidationError as ve:
-                    print(
-                        f"Algorithm runtime validation failed at step {current_time}: {ve}")
-                    traci.close()
-                    exit(1)
-
-                # 3) Push every TLS state to TraCI
-                for tls_id, state in phase_map.items():
-                    traci.trafficlight.setRedYellowGreenState(tls_id, state)
-
-            elif args.traffic_control == "actuated":
-                # SUMO Actuated control - let SUMO handle traffic lights automatically
-                # No explicit control needed, SUMO's actuated logic will manage phases
-                pass
-
-            elif args.traffic_control == "fixed":
-                # Fixed-time control - let SUMO use the static timings from grid.tll.xml
-                # No explicit control needed, SUMO will use the predefined phase durations
-                pass
-
-        # Run the simulation
-        controller.run(control_callback)
-        print("Simulation completed successfully.")
-
-        # Print metrics for experiment analysis
-        print("\n=== EXPERIMENT METRICS ===")
-        print(f"Total vehicles: {args.num_vehicles}")
-        print(f"Simulation time: {args.end_time}")
-
-        # Get traffic statistics from controller
-        if hasattr(controller, 'final_metrics'):
-            metrics = controller.final_metrics
-            print(
-                f"Vehicles reached destination: {metrics['arrived_vehicles']}")
-            print(f"Vehicles departed: {metrics['departed_vehicles']}")
-            print(f"Completion rate: {metrics['completion_rate']:.3f}")
-            print(f"Average travel time: {metrics['mean_travel_time']:.2f}")
-        else:
-            print("No metrics available")
-
-        print("=== END METRICS ===\n")
+        # --- Step 9: Dynamic Simulation (Tree Method Universal Approach) ---
+        run_tree_method_simulation(args)
 
     except Exception as e:
         import traceback
