@@ -1602,11 +1602,52 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Function**: Success logging in `src/cli.py`
 - **Success Message**: "Generated vehicle routes successfully."
 - **Output File**: `data/vehicles.rou.xml` with complete route definitions for all vehicles
-- **Ready for Next Step**: Vehicle routes are prepared for dynamic simulation execution
+- **Ready for Next Step**: Vehicle routes are prepared for SUMO configuration generation
 
-## 8. Dynamic Simulation with Traffic Control
+## 8. SUMO Configuration Generation
 
 ### 8.1 Purpose and Process Overview
+
+**Purpose of SUMO Configuration Generation:**
+
+- **Simulation Setup**: Creates the central configuration file that links all generated components for SUMO execution
+- **File Coordination**: Ensures proper referencing of network, routes, and zones files
+- **Parameter Integration**: Incorporates simulation parameters (step length, end time, GUI settings) into configuration
+- **Simulation Preparation**: Final step before dynamic simulation execution
+
+### 8.2 SUMO Configuration Generation Process
+
+- **Step**: Generate SUMO configuration file linking all simulation components
+- **Function**: `generate_sumo_conf_file()` in `src/sim/sumo_utils.py`
+- **Arguments Used**: `--step_length`, `--end_time`, `--gui`
+- **Input Files**:
+  - `data/grid.net.xml` (complete network with attractiveness)
+  - `data/vehicles.rou.xml` (vehicle routes and types)
+  - `data/zones.poly.xml` (zones for visualization)
+
+### 8.3 Configuration File Creation
+
+**SUMO Configuration File:**
+
+- **Output**: `data/grid.sumocfg` with references to all simulation components
+- **Content**:
+  - Network file reference: `data/grid.net.xml`
+  - Route file reference: `data/vehicles.rou.xml`
+  - Additional files: `data/zones.poly.xml`
+  - Simulation parameters: step length, end time, GUI settings
+- **Format**: XML configuration following SUMO standards
+
+### 8.4 SUMO Configuration Generation Completion
+
+- **Step**: Confirm successful configuration file generation
+- **Function**: Success logging in `src/cli.py`
+- **Success Message**: "Generated SUMO configuration successfully."
+- **Output File**: `data/grid.sumocfg` ready for simulation execution
+- **Ready for Next Step**: All components prepared for dynamic simulation
+
+## 9. Dynamic Simulation with Traffic Control
+
+### 9.1 Purpose and Process Overview
 
 **Purpose of Dynamic Simulation:**
 
@@ -1615,7 +1656,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Performance Measurement**: Collects traffic metrics (travel times, completion rates, throughput) for analysis
 - **Research Platform**: Enables controlled comparison of different traffic control methods under identical conditions
 
-### 8.2 Dynamic Simulation Process
+### 9.2 Dynamic Simulation Process
 
 - **Step**: Execute SUMO simulation with real-time traffic control integration
 - **Function**: `SumoController.run()` in `src/sim/sumo_controller.py`
@@ -1626,16 +1667,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
   - `data/vehicles.rou.xml` (vehicle routes and types)
   - `data/zones.poly.xml` (zones for visualization)
 
-#### 8.2.1 SUMO Configuration Generation
-
-**Configuration File Creation:**
-
-- **Step**: Generate SUMO configuration file linking all simulation components
-- **Function**: `generate_sumo_conf_file()` in `src/sim/sumo_utils.py`
-- **Output**: `data/grid.sumocfg` with references to network, routes, and zones files
-- **Parameters**: Includes step length, end time, and GUI settings
-
-#### 8.2.2 TraCI Controller Initialization
+#### 9.2.1 TraCI Controller Initialization
 
 **Controller Setup:**
 
@@ -1647,7 +1679,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
   - Dynamic vehicle rerouting for realtime/fastest strategies
   - Traffic metrics collection throughout simulation
 
-#### 8.2.3 Traffic Control Method Integration
+#### 9.2.2 Traffic Control Method Integration
 
 **Conditional Object Initialization:**
 
@@ -1656,7 +1688,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 
 ### 8.3 Traffic Control Methods
 
-#### 8.3.1 Tree Method (Decentralized Bottleneck Prioritization Algorithm)
+#### 9.3.1 Tree Method (Decentralized Bottleneck Prioritization Algorithm)
 
 **Algorithm Overview:**
 
@@ -1753,7 +1785,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Objects**: `Network`, `Graph`, cycle time calculation
 - **Validation**: Runtime verification of algorithm behavior at configured frequency
 
-#### 8.3.2 Actuated Control (SUMO Built-in)
+#### 9.3.2 Actuated Control (SUMO Built-in)
 
 **Algorithm Overview:**
 
@@ -1774,7 +1806,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Gap Detection**: Automatically detects vehicle presence and absence
 - **Phase Extension**: Extends green phases when vehicles present, minimum/maximum timing constraints apply
 
-#### 8.3.3 Fixed Timing Control (Static)
+#### 9.3.3 Fixed Timing Control (Static)
 
 **Algorithm Overview:**
 
@@ -1836,7 +1868,7 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Output**: Complete traffic simulation with performance metrics
 - **Research Results**: Traffic control method performance data ready for analysis
 
-#### 8.3.1 Tree Method (`--traffic_control tree_method`)
+#### 9.4.1 Tree Method (`--traffic_control tree_method`)
 
 - **Algorithm**: Tree Method decentralized traffic control with bottleneck detection
 - **OSM Adaptation**: Modified to handle missing connections in real street networks using `.get()` method
@@ -1844,14 +1876,14 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Real-time**: Updates traffic light phases based on current traffic conditions
 - **Validation**: `verify_nimrod_integration_setup()` and `verify_algorithm_runtime_behavior()`
 
-#### 8.3.2 Actuated Control (`--traffic_control actuated`)
+#### 9.4.2 Actuated Control (`--traffic_control actuated`)
 
 - **Algorithm**: SUMO's gap-based actuated signal control
 - **Process**: Let SUMO handle traffic lights automatically based on vehicle detection
 - **Setup**: No additional objects required
 - **Baseline**: Serves as primary comparison baseline for Tree Method performance
 
-#### 8.3.3 Fixed Control (`--traffic_control fixed`)
+#### 9.4.3 Fixed Control (`--traffic_control fixed`)
 
 - **Algorithm**: Static timing from configuration files
 - **OSM Mode**: Uses original OSM signal timing when available
@@ -1866,9 +1898,9 @@ For synthetic grid networks (when `--osm_file` is not provided):
 - **Validation**: `verify_generate_sumo_conf_file()` ensures configuration integrity
 - **Experimental**: Designed for statistical comparison of traffic control methods
 
-## 9. Validation
+## 10. Validation
 
-### 9.1 Validation Framework Overview
+### 10.1 Validation Framework Overview
 
 - **Purpose**: Comprehensive runtime validation system for ensuring pipeline integrity and correctness
 - **Location**: `src/validate/` directory with 4 core modules
@@ -1990,9 +2022,9 @@ Starting comprehensive split edges validation...
 
 - **validate_arguments()**: Validates command-line arguments for consistency and format correctness
 
-## 10. Comprehensive Test Suite
+## 11. Comprehensive Test Suite
 
-### 10.1 Test Framework Overview
+### 11.1 Test Framework Overview
 
 **Purpose of Test Suite:**
 
@@ -2001,7 +2033,7 @@ Starting comprehensive split edges validation...
 - **Regression Prevention**: Catches issues introduced by code changes
 - **Documentation**: Serves as executable examples of component usage
 
-### 10.2 Test Organization
+### 11.2 Test Organization
 
 **Test Structure:**
 
@@ -2010,7 +2042,7 @@ Starting comprehensive split edges validation...
 - **Framework**: Python-based testing using standard testing practices
 - **Scope**: Unit tests for specific components and integration tests for workflows
 
-### 10.3 Zone Testing Suite
+### 11.3 Zone Testing Suite
 
 **Test Files (12 total):**
 
@@ -2035,7 +2067,7 @@ Starting comprehensive split edges validation...
 - `tests/zones/cleanup_tests.py` - Test environment cleanup
 - `tests/README.md` - Test documentation and usage instructions
 
-### 10.4 Test Coverage Areas
+### 11.4 Test Coverage Areas
 
 **Zone Generation Components:**
 
@@ -2052,7 +2084,7 @@ Starting comprehensive split edges validation...
 - **Data Validation**: Ensures zone output format and content correctness
 - **Performance Testing**: Validates zone generation efficiency for various network sizes
 
-### 10.5 Running Tests
+### 11.5 Running Tests
 
 **Test Execution:**
 
@@ -2061,7 +2093,7 @@ Starting comprehensive split edges validation...
 - **Usage**: Standard Python testing practices for individual test files
 - **Output**: Test results include pass/fail status and detailed error information for failures
 
-### 10.6 Future Test Expansion
+### 11.6 Future Test Expansion
 
 **Planned Coverage Areas:**
 
@@ -2077,15 +2109,15 @@ Starting comprehensive split edges validation...
 - **Regression Testing**: Critical bug fixes should include tests preventing regression
 - **Documentation**: Tests serve as executable documentation for component usage
 
-## 11. Scripts
+## 12. Scripts
 
-### 11.1 Development and Testing Scripts
+### 12.1 Development and Testing Scripts
 
 - **Purpose**: Provide auxiliary tools and utilities for development, testing, and data management
 - **Location**: `scripts/` directory in project root
 - **Usage**: Support development workflow and provide verified test data for users
 
-#### 10.1.1 OSM Sample Data Download Script
+#### 12.1.1 OSM Sample Data Download Script
 
 - **Script**: `scripts/download_osm_samples.py`
 - **Function**: Download verified working OSM areas for testing and demonstration

@@ -170,7 +170,7 @@ def main():
             0, 2**32 - 1)
         print(f"Using seed: {seed}")
 
-        # --- Step 1: Generate Network (Grid or OSM) ---
+        # --- Step 1: Network Generation ---
         if args.osm_file:
             print("Begin simulating SUMO network from OSM data...")
             generate_network_from_osm(args.osm_file)
@@ -265,7 +265,7 @@ def main():
         else:
             print("Skipping lane assignment (lane_count is 0).")
 
-        # --- Step 4: Rebuild Network ---
+        # --- Step 4: Network Rebuild ---
         rebuild_network()
         try:
             verify_rebuild_network()
@@ -309,7 +309,7 @@ def main():
             exit(1)
         print("Assigned edge attractiveness successfully.")
 
-        # --- Step 7: Traffic Generation ---
+        # --- Step 7: Vehicle Route Generation ---
         generate_vehicle_routes(
             net_file=CONFIG.network_file,
             output_file=CONFIG.routes_file,
