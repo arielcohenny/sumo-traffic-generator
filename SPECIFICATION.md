@@ -2100,92 +2100,277 @@ Starting comprehensive split edges validation...
 
 - **validate_arguments()**: Validates command-line arguments for consistency and format correctness
 
-## 11. Comprehensive Test Suite
+## 11. Software Testing Framework
 
-### 11.1 Test Framework Overview
+### 11.1 Testing Framework Overview
 
-**Purpose of Test Suite:**
+**Purpose of Professional Test Suite:**
 
-- **Development Support**: Provides automated testing for complex zone generation algorithms
-- **Quality Assurance**: Ensures implementation correctness during development and modifications
+- **Code Quality**: Ensures implementation correctness and maintainability
 - **Regression Prevention**: Catches issues introduced by code changes
-- **Documentation**: Serves as executable examples of component usage
+- **Development Support**: Provides automated validation for complex pipeline operations
+- **Performance Monitoring**: Tracks system performance and prevents degradation
+- **Documentation**: Serves as executable examples of system usage
 
-### 11.2 Test Organization
-
-**Test Structure:**
+**Framework Architecture:**
 
 - **Location**: `tests/` directory in project root
-- **Focus Area**: Currently focused on zone generation functionality
-- **Framework**: Python-based testing using standard testing practices
-- **Scope**: Unit tests for specific components and integration tests for workflows
+- **Framework**: pytest with professional configuration and plugins
+- **Coverage**: pytest-cov for comprehensive code coverage analysis
+- **Structure**: Three-tier architecture (unit/integration/system tests)
+- **Scope**: Complete SUMO Traffic Generator pipeline validation
 
-### 11.3 Zone Testing Suite
+### 11.2 Test Categories
 
-**Test Files (12 total):**
+#### 11.2.1 Unit Tests (`tests/unit/`)
 
-**Core Functionality Tests:**
+**Purpose**: Test isolated components and functions
 
-- `tests/zones/test_intelligent_zones.py` - Core intelligent zone generation algorithms
-- `tests/zones/test_osm_zones.py` - OSM-specific zone extraction and processing
-- `tests/zones/test_cli_intelligent_zones.py` - CLI integration for intelligent zones
-- `tests/zones/test_zone_creation.py` - Zone creation workflows
-- `tests/zones/test_coordinate_transform.py` - Geographic to projected coordinate conversion
+- **Scope**: Parsers, validators, utilities, configuration classes
+- **Framework**: pytest with mocking for external dependencies
+- **Coverage**: Individual functions and classes
+- **Mock Dependencies**: External services (SUMO, file I/O)
 
-**Development and Debug Support:**
+#### 11.2.2 Integration Tests (`tests/integration/`)
 
-- `tests/zones/test_osm_zone_debug.py` - Debug utilities for OSM zone issues
-- `tests/zones/debug_coordinates.py` - Coordinate transformation debugging
-- `tests/zones/debug_import.py` - OSM import debugging utilities
-- `tests/zones/test_quick.py` - Quick verification tests
-- `tests/zones/test_zone_fix.py` - Tests for zone-related bug fixes
+**Purpose**: Test individual pipeline steps in isolation
 
-**Utilities:**
+- **Scope**: Network generation, lane assignment, traffic generation, simulation execution
+- **Framework**: pytest with actual workspace directory
+- **Coverage**: Individual pipeline steps and their file outputs
+- **Validation**: File generation, format correctness, parameter handling
 
-- `tests/zones/cleanup_tests.py` - Test environment cleanup
-- `tests/README.md` - Test documentation and usage instructions
+**Key Integration Tests:**
 
-### 11.4 Test Coverage Areas
+- **Network Generation**: Grid creation and OSM import validation
+- **Lane Assignment**: Edge splitting and lane configuration testing
+- **Traffic Generation**: Route and vehicle file creation
+- **Pipeline Steps**: Each of the 9 pipeline steps tested individually
 
-**Zone Generation Components:**
+#### 11.2.3 System Tests (`tests/system/`)
 
-- **Traditional Zone Extraction**: Cellular grid methodology for synthetic networks
-- **Intelligent Zone Generation**: Advanced OSM-based zone inference with multi-factor analysis
-- **Coordinate System Handling**: Geographic to projected coordinate transformations
-- **CLI Integration**: Command-line interface testing for zone-related functionality
-- **Error Handling**: Edge cases and error condition testing
+**Purpose**: Test complete end-to-end scenarios
 
-**Testing Methodology:**
+- **Scope**: Complete SUMO Traffic Generator scenarios from CLAUDE.md
+- **Framework**: pytest with performance regression testing
+- **Coverage**: Full scenarios, method comparisons, reproducibility
 
-- **Component Isolation**: Tests focus on specific zone generation components
-- **Integration Testing**: End-to-end zone generation workflow validation
-- **Data Validation**: Ensures zone output format and content correctness
-- **Performance Testing**: Validates zone generation efficiency for various network sizes
+**Scenario Testing (14 verified scenarios):**
 
-### 11.5 Running Tests
+- **Basic Scenarios**: Grid dimensions 3x3, 5x5, 7x7 with various vehicle counts
+- **Traffic Control Comparisons**: Tree Method vs Actuated vs Fixed timing
+- **OSM Network Testing**: Real-world street network validation
+- **Tree Method Samples**: Research benchmark validation
+- **Performance Testing**: Travel time and completion rate analysis
 
-**Test Execution:**
+### 11.3 Test Infrastructure
 
-- **Location**: Tests executed from project root directory
-- **Requirements**: Test dependencies specified in project requirements
-- **Usage**: Standard Python testing practices for individual test files
-- **Output**: Test results include pass/fail status and detailed error information for failures
+#### 11.3.1 Coverage Reporting
 
-### 11.6 Future Test Expansion
+**Configuration**: `.coveragerc` in project root with organized data storage
 
-**Planned Coverage Areas:**
+```ini
+[run]
+source = src
+data_file = tests/coverage/.coverage
+parallel = true
 
-- **Network Generation**: Tests for both OSM import and synthetic grid generation
-- **Traffic Generation**: Route and vehicle generation testing
-- **Simulation Control**: TraCI integration and traffic control algorithm testing
-- **Pipeline Integration**: End-to-end system testing across all 8 pipeline steps
-- **Performance Testing**: Load testing and benchmarking for various network sizes
+[html]
+directory = tests/coverage/htmlcov
+show_contexts = true
+```
 
-**Development Guidelines:**
+**Coverage Organization:**
 
-- **Test-Driven Development**: New features should include corresponding test coverage
-- **Regression Testing**: Critical bug fixes should include tests preventing regression
-- **Documentation**: Tests serve as executable documentation for component usage
+- **Data Storage**: `tests/coverage/.coverage` - SQLite coverage database
+- **HTML Reports**: `tests/coverage/htmlcov/` - Browser-viewable coverage reports
+- **XML Reports**: `tests/coverage/coverage.xml` - CI/CD integration format
+
+#### 11.3.2 Golden Master Testing
+
+**Performance Baselines**: JSON files with expected performance metrics
+
+- **`tests/system/fixtures/golden_master_3x3.json`**: 3x3 grid baseline (48 edges, 33 junctions)
+- **`tests/system/fixtures/golden_master_5x5.json`**: 5x5 grid baseline (152 edges, 100 junctions)
+
+**Regression Detection**: Automatically detects performance degradation
+
+#### 11.3.3 Test Utilities
+
+**Helper Functions** (`tests/utils/`):
+
+- **`test_helpers.py`**: Workspace management, XML parsing, metric extraction
+- **`assertions.py`**: Custom assertion classes for file validation
+- **`conftest.py`**: pytest configuration and shared fixtures
+
+**Workspace Management:**
+
+- **Consistent Directory Handling**: All tests use actual `workspace/` directory
+- **File Validation**: Automated checking of generated SUMO files
+- **Cleanup**: Automatic workspace cleanup between tests
+
+### 11.4 Running Tests
+
+#### 11.4.1 Complete Test Suite
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run with coverage reporting
+pytest tests/ --cov=src --cov-report=html
+
+# View coverage report
+open tests/coverage/htmlcov/index.html
+```
+
+#### 11.4.2 Category-Specific Testing
+
+```bash
+# Unit tests only
+pytest tests/unit/
+
+# Integration tests (pipeline steps)
+pytest tests/integration/
+
+# System tests (full scenarios)
+pytest tests/system/
+
+# Performance tests
+pytest tests/system/test_performance.py
+```
+
+#### 11.4.3 Test Markers
+
+```bash
+# Run only fast tests
+pytest -m "not slow"
+
+# Run system tests with detailed output
+pytest tests/system/ -v
+
+# Run specific scenario tests
+pytest tests/system/test_scenarios.py::test_basic_3x3_grid -v
+```
+
+### 11.5 Test Scenarios
+
+#### 11.5.1 Synthetic Grid Scenarios
+
+**Basic Grid Tests:**
+
+- **3x3 Grid**: 150 vehicles, basic functionality validation
+- **5x5 Grid**: 500 vehicles, moderate complexity testing
+- **7x7 Grid**: 1000 vehicles, high complexity validation
+
+**Traffic Control Method Comparisons:**
+
+- **Tree Method**: Dynamic decentralized traffic control
+- **SUMO Actuated**: Gap-based signal control
+- **Fixed Timing**: Static signal phases
+
+#### 11.5.2 OSM Network Scenarios
+
+**Real-World Testing:**
+
+- **Manhattan East Village**: 500 vehicles on real street network
+- **Complex Intersections**: Dead-end streets and irregular topology
+- **Signal Preservation**: Maintains original OSM traffic light timing
+
+#### 11.5.3 Tree Method Sample Validation
+
+**Research Benchmark Testing:**
+
+- **Sample Networks**: Pre-built complex urban networks (946 vehicles)
+- **Method Comparison**: Tree Method vs baseline methods on identical conditions
+- **Performance Validation**: Confirms Tree Method implementation correctness
+
+### 11.6 Performance Testing
+
+#### 11.6.1 Travel Time Analysis
+
+**Metrics Tracked:**
+
+- **Average Travel Time**: Mean vehicle travel time across simulation
+- **Completion Rates**: Percentage of vehicles reaching destination
+- **Throughput**: Vehicle arrivals and departures per time unit
+
+#### 11.6.2 Regression Detection
+
+**Golden Master Comparison:**
+
+- **Baseline Validation**: Compares current performance against established baselines
+- **Tolerance Ranges**: Allows for acceptable variation while detecting significant changes
+- **Automatic Alerts**: Test failures when performance degrades beyond thresholds
+
+### 11.7 Framework Integration
+
+**Clear Separation of Concerns:**
+
+- **`tests/`**: Software engineering quality assurance
+  - Code correctness and reliability
+  - Regression prevention
+  - Development workflow support
+
+- **`evaluation/`**: Research validation and performance analysis
+  - Statistical benchmarks and comparisons
+  - Publication-ready experimental results
+  - Dataset management for reproducible research
+
+Both frameworks complement each other but serve different purposes in maintaining a high-quality research codebase.
+
+### 11.8 Getting Started
+
+#### 11.8.1 Installation
+
+```bash
+# Install testing dependencies
+pip install pytest pytest-cov pytest-mock
+
+# Verify test environment
+pytest --version
+```
+
+#### 11.8.2 First Test Run
+
+```bash
+# Run complete test suite
+pytest tests/
+
+# Generate coverage report
+pytest tests/ --cov=src --cov-report=html
+
+# View results
+open tests/coverage/htmlcov/index.html
+```
+
+#### 11.8.3 Development Workflow
+
+1. **Write Tests First**: Follow test-driven development practices
+2. **Run Tests Frequently**: Execute relevant tests during development
+3. **Check Coverage**: Ensure new code has appropriate test coverage
+4. **Validate Performance**: Run performance tests for changes affecting algorithms
+5. **Pre-Commit Testing**: Run full test suite before code commits
+
+### 11.9 Test Maintenance
+
+#### 11.9.1 Adding New Tests
+
+**Guidelines:**
+
+- **Follow Directory Structure**: Place tests in appropriate category (unit/integration/system)
+- **Use Naming Conventions**: Test files start with `test_`, test functions start with `test_`
+- **Include Documentation**: Add docstrings explaining test purpose and validation
+- **Update Baselines**: Modify golden master files when intentional changes occur
+
+#### 11.9.2 Continuous Integration
+
+**CI/CD Integration:**
+
+- **Automated Testing**: All tests run automatically on code changes
+- **Coverage Requirements**: Maintain minimum coverage thresholds
+- **Performance Monitoring**: Track performance trends over time
+- **Failure Notifications**: Immediate alerts for test failures or performance regression
 
 ## 12. Scripts
 
@@ -2207,6 +2392,33 @@ Starting comprehensive split edges validation...
 - **San Francisco Downtown**: Strong grid layout, 298/300 vehicle success rate (37.7850, -122.4100, 37.7950, -122.4000)
 - **Washington DC Downtown**: Planned grid system, 300/300 vehicle success rate (38.8950, -77.0350, 38.9050, -77.0250)
 
+### 12.2 Testing Infrastructure Scripts
+
+#### 12.2.1 Test Execution Scripts
+
+**Automated Test Running:**
+
+- **Full Test Suite**: `pytest tests/` - Runs all test categories
+- **Coverage Generation**: `pytest tests/ --cov=src --cov-report=html` - Generates coverage reports
+- **Category Testing**: Individual test category execution (unit/integration/system)
+
+#### 12.2.2 Test Utilities
+
+**Test Helper Functions** (`tests/utils/`):
+
+- **Workspace Management**: Consistent directory handling across all test types
+- **XML Validation**: SUMO file format validation and metric extraction
+- **Custom Assertions**: Specialized assertion classes for traffic simulation validation
+- **Golden Master Management**: Performance baseline comparison and updates
+
+#### 12.2.3 Coverage Organization
+
+**Coverage Configuration** (`.coveragerc`):
+
+- **Source Tracking**: Monitors `src/` directory for code coverage
+- **Data Organization**: Stores coverage data in `tests/coverage/` directory
+- **Report Generation**: HTML and XML format reports for development and CI/CD
+
 ## Project Architecture Updates
 
 This specification reflects the current modular architecture:
@@ -2217,11 +2429,24 @@ This specification reflects the current modular architecture:
 - **`src/pipeline/`**: Pipeline pattern implementation with factory and step classes
 - **`src/args/`**: Dedicated argument parsing module
 
-### Evaluation Framework
+### Quality Assurance Framework
+- **`tests/`**: Professional software testing framework with three-tier architecture
+  - **`tests/unit/`**: Component isolation testing with mocking
+  - **`tests/integration/`**: Pipeline step testing with actual workspace
+  - **`tests/system/`**: End-to-end scenario testing with performance baselines
+  - **`tests/utils/`**: Test infrastructure and helper functions
+  - **`tests/coverage/`**: Coverage data and HTML/XML reports
+
+### Research and Evaluation Framework
 - **`evaluation/benchmarks/`**: Statistical comparison studies and performance analysis
 - **`evaluation/datasets/`**: Research datasets including OSM files and Tree Method networks
-- **`tests/`**: Software testing framework (unit, integration, validation)
 
 ### Development Tools
 - **`tools/scripts/`**: Development utilities and data management scripts
 - **`workspace/`**: Generated simulation files (temporary, gitignored)
+
+### Configuration Files
+- **`.coveragerc`**: Coverage configuration for pytest-cov integration
+- **`.gitignore`**: Excludes temporary files, coverage data, and workspace artifacts
+- **`CLAUDE.md`**: Development instructions for Claude Code AI assistant
+- **`SPECIFICATION.md`**: This comprehensive technical specification
