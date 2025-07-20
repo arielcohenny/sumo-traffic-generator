@@ -158,11 +158,15 @@ def get_simulation_metrics(workspace: Path) -> Dict[str, Any]:
             net_tree = ET.parse(net_file)
             net_root = net_tree.getroot()
             
-            edges = net_root.findall(".//edge[@function!='internal']")
-            metrics["network_edges"] = len(edges)
+            # Count non-internal edges (edges without function="internal")
+            all_edges = net_root.findall(".//edge")
+            non_internal_edges = [e for e in all_edges if e.get("function") != "internal"]
+            metrics["network_edges"] = len(non_internal_edges)
             
-            junctions = net_root.findall(".//junction[@type!='internal']")
-            metrics["network_junctions"] = len(junctions)
+            # Count non-internal junctions
+            all_junctions = net_root.findall(".//junction")
+            non_internal_junctions = [j for j in all_junctions if j.get("type") != "internal"]
+            metrics["network_junctions"] = len(non_internal_junctions)
         
         # Extract vehicle metrics
         rou_file = workspace / "vehicles.rou.xml"

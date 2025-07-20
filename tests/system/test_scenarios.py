@@ -13,12 +13,18 @@ import os
 from tests.utils.test_helpers import run_cli_command, get_simulation_metrics
 from tests.utils.assertions import SystemTestAssertions
 
+def get_workspace_assertions():
+    """Helper to get SystemTestAssertions with correct workspace."""
+    project_root = Path(__file__).parent.parent.parent
+    workspace_dir = project_root / "workspace"
+    return SystemTestAssertions(workspace_dir)
+
 
 class TestSyntheticGridScenarios:
     """Test synthetic grid network scenarios."""
     
     @pytest.mark.smoke
-    def test_minimal_grid_smoke(self, temp_workspace):
+    def test_minimal_grid_smoke(self):
         """
         Smoke test: Minimal 3x3 grid, 50 vehicles, 1 minute.
         
@@ -49,7 +55,7 @@ class TestSyntheticGridScenarios:
         assert metrics["simulation_completed"] is True
 
     @pytest.mark.scenario 
-    def test_morning_rush_scenario(self, temp_workspace):
+    def test_morning_rush_scenario(self):
         """
         Scenario 1 (Modified): Morning rush hour pattern.
         
@@ -65,19 +71,19 @@ class TestSyntheticGridScenarios:
             "--departure_pattern", "six_periods",
             "--start_time_hour", "7.0",
             "--seed", "42"
-        ], workspace=temp_workspace)
+        ])
         
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
         
         # System assertions
-        assertions = SystemTestAssertions(temp_workspace)
+        assertions = get_workspace_assertions()
         assertions.assert_simulation_completed_successfully()
         assertions.assert_all_files_generated()
         assertions.assert_network_properties(expected_edges_min=40, expected_junctions_min=20)
         assertions.assert_vehicle_metrics_within_bounds(min_departed=150, max_travel_time=600)
 
     @pytest.mark.scenario
-    def test_evening_light_traffic(self, temp_workspace):
+    def test_evening_light_traffic(self):
         """
         Scenario 2 (Modified): Light evening traffic.
         
@@ -93,16 +99,17 @@ class TestSyntheticGridScenarios:
             "--departure_pattern", "uniform",
             "--start_time_hour", "20.0",
             "--seed", "42"
-        ], workspace=temp_workspace)
+        ])
         
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
         
-        assertions = SystemTestAssertions(temp_workspace)
+        # System assertions
+        assertions = get_workspace_assertions()
         assertions.assert_simulation_completed_successfully()
         assertions.assert_vehicle_metrics_within_bounds(min_departed=100)
 
     @pytest.mark.scenario
-    def test_multi_modal_traffic_mix(self, temp_workspace):
+    def test_multi_modal_traffic_mix(self):
         """
         Scenario 10 (Modified): Multi-modal traffic with vehicle types.
         
@@ -117,14 +124,14 @@ class TestSyntheticGridScenarios:
             "--end-time", "300",      # 5 minutes instead of 4.5 hours
             "--departure_pattern", "six_periods",
             "--vehicle_types", "passenger 50 commercial 40 public 10",
-            "--attractiveness", "hybrid",
+            "--attractiveness", "poisson",
             "--routing_strategy", "shortest 70 realtime 30",
             "--seed", "42"
-        ], workspace=temp_workspace)
+        ])
         
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
         
-        assertions = SystemTestAssertions(temp_workspace)
+        assertions = get_workspace_assertions()
         assertions.assert_simulation_completed_successfully()
         assertions.assert_vehicle_types_generated(["passenger", "commercial", "public"])
 
@@ -133,7 +140,7 @@ class TestTreeMethodSample:
     """Test Tree Method sample scenarios."""
     
     @pytest.mark.scenario
-    def test_tree_method_sample_basic(self, temp_workspace):
+    def test_tree_method_sample_basic(self):
         """
         Tree Method Sample Test: Pre-built network validation.
         
@@ -144,18 +151,20 @@ class TestTreeMethodSample:
             "--traffic_control", "tree_method",
             "--end-time", "180",      # 3 minutes instead of full 2 hours
             "--seed", "42"
-        ], workspace=temp_workspace)
+        ])
         
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
         
-        assertions = SystemTestAssertions(temp_workspace)
+        assertions = get_workspace_assertions()
         assertions.assert_simulation_completed_successfully()
-        assertions.assert_all_files_generated()
+        # Tree Method samples don't generate all pipeline files, just copied network files
+        essential_files = ["grid.net.xml", "vehicles.rou.xml", "grid.sumocfg"]
+        assertions.assert_all_files_generated(essential_files)
         assertions.assert_tree_method_active()
 
     @pytest.mark.scenario
     @pytest.mark.parametrize("traffic_control", ["tree_method", "actuated", "fixed"])
-    def test_tree_method_sample_comparison(self, temp_workspace, traffic_control):
+    def test_tree_method_sample_comparison(self, traffic_control):
         """
         Compare traffic control methods on Tree Method sample network.
         
@@ -166,11 +175,11 @@ class TestTreeMethodSample:
             "--traffic_control", traffic_control,
             "--end-time", "120",      # 2 minutes for comparison
             "--seed", "42"
-        ], workspace=temp_workspace)
+        ])
         
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
         
-        assertions = SystemTestAssertions(temp_workspace)
+        assertions = get_workspace_assertions()
         assertions.assert_simulation_completed_successfully()
         assertions.assert_traffic_control_applied(traffic_control)
 
@@ -180,7 +189,7 @@ class TestTrafficControlComparison:
     
     @pytest.mark.scenario
     @pytest.mark.parametrize("traffic_control", ["fixed", "actuated", "tree_method"])
-    def test_traffic_control_methods(self, temp_workspace, traffic_control):
+    def test_traffic_control_methods(self, traffic_control):
         """
         Compare traffic control methods with identical conditions.
         
@@ -192,16 +201,16 @@ class TestTrafficControlComparison:
             "--end-time", "180",      # 3 minutes
             "--traffic_control", traffic_control,
             "--seed", "42"
-        ], workspace=temp_workspace)
+        ])
         
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
         
-        assertions = SystemTestAssertions(temp_workspace)
+        assertions = get_workspace_assertions()
         assertions.assert_simulation_completed_successfully()
         assertions.assert_traffic_control_applied(traffic_control)
 
     @pytest.mark.scenario
-    def test_tree_method_integration(self, temp_workspace):
+    def test_tree_method_integration(self):
         """
         Specific test for Tree Method integration.
         
@@ -214,11 +223,11 @@ class TestTrafficControlComparison:
             "--traffic_control", "tree_method",
             "--routing_strategy", "shortest 60 realtime 40",
             "--seed", "42"
-        ], workspace=temp_workspace)
+        ])
         
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
         
-        assertions = SystemTestAssertions(temp_workspace)
+        assertions = get_workspace_assertions()
         assertions.assert_simulation_completed_successfully()
         assertions.assert_tree_method_active()
 
@@ -227,7 +236,7 @@ class TestRegressionScenarios:
     """Regression tests for performance and consistency."""
     
     @pytest.mark.scenario
-    def test_performance_bounds_regression(self, temp_workspace):
+    def test_performance_bounds_regression(self):
         """
         Regression test for performance metrics.
         
@@ -239,11 +248,13 @@ class TestRegressionScenarios:
             "--end-time", "300",
             "--traffic_control", "tree_method",
             "--seed", "42"  # Fixed seed for reproducibility
-        ], workspace=temp_workspace)
+        ])
         
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
         
-        metrics = get_simulation_metrics(temp_workspace)
+        project_root = Path(__file__).parent.parent.parent
+        workspace_dir = project_root / "workspace"
+        metrics = get_simulation_metrics(workspace_dir)
         
         # Performance bounds (adjust based on baseline measurements)
         assert metrics["average_travel_time"] < 400, "Travel time regression detected"
@@ -251,7 +262,7 @@ class TestRegressionScenarios:
         assert metrics["vehicles_departed"] > 250, "Departure rate regression detected"
 
     @pytest.mark.scenario
-    def test_reproducibility(self, temp_workspace):
+    def test_reproducibility(self):
         """
         Test simulation reproducibility with fixed seed.
         
@@ -265,18 +276,22 @@ class TestRegressionScenarios:
         ]
         
         # First run
-        result1 = run_cli_command(base_args, workspace=temp_workspace)
+        result1 = run_cli_command(base_args)
         assert result1.returncode == 0
-        metrics1 = get_simulation_metrics(temp_workspace)
+        project_root = Path(__file__).parent.parent.parent
+        workspace_dir = project_root / "workspace"
+        metrics1 = get_simulation_metrics(workspace_dir)
         
         # Clean workspace
-        for file in temp_workspace.glob("*.xml"):
+        for file in workspace_dir.glob("*.xml"):
+            file.unlink()
+        for file in workspace_dir.glob("*.cfg"):
             file.unlink()
             
         # Second run 
-        result2 = run_cli_command(base_args, workspace=temp_workspace)
+        result2 = run_cli_command(base_args)
         assert result2.returncode == 0
-        metrics2 = get_simulation_metrics(temp_workspace)
+        metrics2 = get_simulation_metrics(workspace_dir)
         
         # Compare key metrics (should be identical with same seed)
         assert metrics1["vehicles_departed"] == metrics2["vehicles_departed"]

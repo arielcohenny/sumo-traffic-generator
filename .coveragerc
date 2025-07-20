@@ -1,0 +1,33 @@
+# Coverage configuration file
+# NOTE: This file must remain in project root for coverage.py to find it
+# Coverage data and reports are stored in tests/coverage/ directory
+
+[run]
+source = src
+data_file = tests/coverage/.coverage
+parallel = true
+
+[paths]
+source = 
+    src/
+    */src/
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    class .*\bProtocol\):
+    @(abc\.)?abstractmethod
+
+[html]
+directory = tests/coverage/htmlcov
+show_contexts = true
+
+[xml]
+output = tests/coverage/coverage.xml
