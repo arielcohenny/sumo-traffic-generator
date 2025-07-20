@@ -268,10 +268,12 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/dataset
 - **Step**: Determine network generation approach
 - **Function**: Pipeline factory pattern (`src/pipeline/pipeline_factory.py`)
 - **Process**:
+  - Check if `--tree_method_sample` argument is provided
+  - If Tree Method sample provided: Execute research dataset workflow (Section 1.4)
   - Check if `--osm_file` argument is provided
   - If OSM file provided: Execute OSM import workflow (Section 1.2)
   - If no OSM file: Execute synthetic grid generation workflow (Section 1.3)
-- **Arguments Used**: `--osm_file`
+- **Arguments Used**: `--tree_method_sample`, `--osm_file`
 
 ### 1.2 OSM Mode (`--osm_file` provided)
 
@@ -523,13 +525,66 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/dataset
 - **Output**: Same file structure as OSM mode: `workspace/grid.nod.xml`, `workspace/grid.edg.xml`, `workspace/grid.con.xml`, `workspace/grid.tll.xml`
 - **Success Message**: "Generated grid successfully."
 
-### 1.4 Common Network Generation Outputs
+### 1.4 Tree Method Research Dataset Mode (`--tree_method_sample` provided)
 
-- **Files Generated** (both modes):
+#### 1.4.1 Research Dataset Loading
+
+- **Step**: Load pre-built Tree Method research networks for validation
+- **Function**: `src/pipeline/sample_pipeline.py`
+- **Arguments Used**: `--tree_method_sample`
+- **Process**:
+  - Validate sample folder exists and contains required files
+  - Check for required files: `network.net.xml`, `vehicles.trips.xml`, `simulation.sumocfg.xml`
+  - Copy sample files to workspace directory
+  - Adapt file names to pipeline naming convention
+- **Purpose**: Enable research validation against established Tree Method benchmarks
+
+#### 1.4.2 File Management and Adaptation
+
+- **Step**: Copy and rename sample files to match pipeline expectations
+- **Function**: File copying logic in `src/pipeline/sample_pipeline.py`
+- **Process**:
+  - `network.net.xml` → `workspace/grid.net.xml`
+  - `vehicles.trips.xml` → `workspace/vehicles.rou.xml`
+  - `simulation.sumocfg.xml` → `workspace/grid.sumocfg`
+  - Preserve original file content and structure
+  - Update configuration file paths if needed
+- **Validation**: Verify all required files copied successfully
+
+#### 1.4.3 Research Network Characteristics
+
+- **Dataset Source**: Original Tree Method research networks (decentralized-traffic-bottlenecks)
+- **Network Complexity**: Complex urban topology with multi-lane edges and advanced traffic signals
+- **Simulation Scale**: 946 vehicles over 2-hour simulation period (7300 seconds)
+- **Research Context**: Pre-processed networks from original research (Experiment1-realistic-high-load)
+- **Validation Purpose**: Test Tree Method implementation against published performance benchmarks
+
+#### 1.4.4 Pipeline Bypass Behavior
+
+- **Bypass Mode**: Skips Steps 1-8 entirely, proceeds directly to Step 9 (Dynamic Simulation)
+- **Steps Skipped**: Network generation, zone extraction, edge splitting, attractiveness assignment, route generation
+- **Benefits**: Immediate simulation execution, research validation, method comparison
+- **Incompatible Arguments**: Cannot be used with network generation parameters (`--osm_file`, `--grid_dimension`, `--block_size_m`, `--junctions_to_remove`, `--lane_count`)
+
+#### 1.4.5 Tree Method Research Dataset Completion
+
+- **Step**: Confirm successful dataset loading and preparation
+- **Function**: Success logging in `src/pipeline/sample_pipeline.py`
+- **Success Message**: "Successfully loaded Tree Method research dataset."
+- **Output**: Research network ready for immediate simulation execution
+- **Ready for Step 9**: All components prepared for dynamic simulation with traffic control comparison
+
+### 1.5 Common Network Generation Outputs
+
+- **Files Generated** (OSM and synthetic modes):
   - `workspace/grid.nod.xml`: Network nodes (junctions)
   - `workspace/grid.edg.xml`: Network edges (streets)
   - `workspace/grid.con.xml`: Connection definitions
   - `workspace/grid.tll.xml`: Traffic light definitions
+- **Files Provided** (Tree Method research dataset mode):
+  - `workspace/grid.net.xml`: Complete pre-built network
+  - `workspace/vehicles.rou.xml`: Pre-generated vehicle routes
+  - `workspace/grid.sumocfg`: Pre-configured simulation parameters
 - **Purpose**: Provide foundation network structure for subsequent pipeline steps
 - **Format**: SUMO-compatible XML network definition files
 
