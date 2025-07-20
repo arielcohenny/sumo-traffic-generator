@@ -120,6 +120,10 @@ class TreeMethodController(TrafficController):
                         self.run_config.algo_type if self.run_config else AlgoType.BABY_STEPS
                     )
                     self.graph.calc_nodes_statistics(ended_iteration, self.seconds_in_cycle)
+                except ZeroDivisionError as zde:
+                    import traceback
+                    self.logger.warning(f"Tree Method division by zero at step {step}: {zde}")
+                    self.logger.warning(f"Traceback: {traceback.format_exc()}")
                 except Exception as e:
                     self.logger.warning(f"Tree Method calculation failed at step {step}: {e}")
         

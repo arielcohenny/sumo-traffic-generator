@@ -54,8 +54,12 @@ class Link:
         self.speeds_sec_sum += speed_km_h
 
     def add_speed_to_calculation(self, iteration):
-        self.calc_iteration_speed.append(
-            round(self.speeds_sec_sum / len(self.speed_each_sec)))
+        # Prevent division by zero when speed_each_sec is empty
+        if len(self.speed_each_sec) == 0:
+            self.calc_iteration_speed.append(MIN_VELOCITY)
+        else:
+            self.calc_iteration_speed.append(
+                round(self.speeds_sec_sum / len(self.speed_each_sec)))
         self.speeds_sec_sum = 0
         self.speed_each_sec = []
 
@@ -76,6 +80,9 @@ class Link:
         return max(round(self.free_flow_v_km_h * ((1 - (current_density / MAX_DENSITY) ** (L - 1)) ** (1 / (1 - M)))), MIN_VELOCITY)
 
     def calc_k_by_u(self, current_speed_km_h):  # test for k=50, uf=90, u=42.73
+        # Prevent division by zero when free_flow_v_km_h is 0 (invalid edges)
+        if self.free_flow_v_km_h == 0:
+            return 0
         return max(round(MAX_DENSITY * ((max(1 - (current_speed_km_h / self.free_flow_v_km_h), 0) ** (1 - M)) ** (1 / (L - 1)))), 0)
 
     def calc_dist_in_iter_time(self, velocity):
@@ -83,7 +90,11 @@ class Link:
         return min(round(velocity * 1000 / (60 / ITERATION_TIME_MINUTES)), self.distance_meters)
 
     def calc_my_iteration_data(self, iteration, loaded_per_iter):  # q = uk
-        current_speed = max(self.calc_iteration_speed[-1], MIN_VELOCITY)
+        # Prevent index error when calc_iteration_speed is empty
+        if not self.calc_iteration_speed:
+            current_speed = MIN_VELOCITY
+        else:
+            current_speed = max(self.calc_iteration_speed[-1], MIN_VELOCITY)
         current_density = self.calc_k_by_u(current_speed)
         current_flow_per_lane_per_hour = current_speed * current_density
         current_flow_per_iter = current_flow_per_lane_per_hour * \
@@ -123,14 +134,21 @@ class Link:
             heads_vehicles_count_sum = 0
             for head_name in self.head_names:
                 heads_vehicles_count_sum += all_heads[head_name].iterations_vehicle_count[-1]
+            
+            # Prevent division by zero when no vehicles are at any heads
+            if heads_vehicles_count_sum == 0:
+                return  # Skip cost calculation when no vehicles present
+                
             for head_name in self.head_names:
                 heads_costs[head_name] = all_heads[head_name].iterations_vehicle_count[-1] / \
                     heads_vehicles_count_sum * link_cost
 
     def fill_my_cost_and_weight(self, iteration, cost_type: CostType):
-        current_weight = 1 / \
-            len(self.in_tree_fathers[iteration]
-                ) if iteration in self.in_tree_fathers else 0
+        # Prevent division by zero when in_tree_fathers is empty
+        if iteration in self.in_tree_fathers and len(self.in_tree_fathers[iteration]) > 0:
+            current_weight = 1 / len(self.in_tree_fathers[iteration])
+        else:
+            current_weight = 0
         current_weight = round(current_weight, 2) if cost_type in [CostType.TREE_CUMULATIVE_DIVIDED.name, CostType.TREE_CURRENT_DIVIDED.name,
                                                                    CostType.TREE_CUMULATIVE_DIVIDED_LTD.name] else 1
         current_cost = self.iteration_data[iteration].current_cost_minutes
