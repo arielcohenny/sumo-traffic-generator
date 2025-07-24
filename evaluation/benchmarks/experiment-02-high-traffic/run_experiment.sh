@@ -18,7 +18,6 @@ echo "Results dir: $RESULTS_DIR"
 mkdir -p "$RESULTS_DIR/tree_method"
 mkdir -p "$RESULTS_DIR/actuated"
 mkdir -p "$RESULTS_DIR/fixed"
-mkdir -p "$RESULTS_DIR/random"
 
 # Experiment parameters (high traffic load)
 GRID_DIMENSION=5
@@ -90,23 +89,6 @@ for i in $(seq 1 $NUM_RUNS); do
         --seed $i \
         --departure_pattern uniform \
         > "$RESULTS_DIR/fixed/run_${i}.log" 2>&1
-done
-
-# Run Random experiments (using random routing strategy as proxy)
-echo "Running Random experiments..."
-for i in $(seq 1 $NUM_RUNS); do
-    echo "  Run $i/$NUM_RUNS"
-    env PYTHONUNBUFFERED=1 python3 -m src.cli \
-        --grid_dimension $GRID_DIMENSION \
-        --block_size_m $BLOCK_SIZE \
-        --num_vehicles $NUM_VEHICLES \
-        --end-time $END_TIME \
-        --step-length $STEP_LENGTH \
-        --traffic_control fixed \
-        --routing_strategy "shortest 25 realtime 25 fastest 25 attractiveness 25" \
-        --seed $i \
-        --departure_pattern uniform \
-        > "$RESULTS_DIR/random/run_${i}.log" 2>&1
 done
 
 echo "Experiment 02 completed!"

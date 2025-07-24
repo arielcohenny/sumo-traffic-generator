@@ -43,7 +43,7 @@ def run_command(cmd: List[str], cwd: Path = None) -> bool:
             cwd=cwd,
             capture_output=True,
             text=True,
-            timeout=600  # 10 minute timeout
+            timeout=7500  # 2.1 hour timeout to accommodate 7300s simulation + overhead
         )
         
         if result.returncode == 0:
@@ -73,8 +73,8 @@ def main():
                        default=["tree_method"],
                        choices=["tree_method", "actuated", "fixed"],
                        help="Traffic control methods to test")
-    parser.add_argument("--end-time", type=int, default=1800,
-                       help="Simulation duration in seconds (default: 1800 for quick validation)")
+    parser.add_argument("--end-time", type=int, default=7300,
+                       help="Simulation duration in seconds (default: 7300 to match original experiments)")
     parser.add_argument("--skip-analysis", action="store_true",
                        help="Skip statistical analysis")
     

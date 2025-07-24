@@ -1,0 +1,155 @@
+INFO:StandardPipeline:Prepared output directory: workspace
+INFO:StandardPipeline:--- Step 1: Network Generation ---
+INFO:NetworkGenerationStep:Starting NetworkGenerationStep
+INFO:NetworkGenerationStep:Generating SUMO orthogonal grid network...
+INFO:NetworkGenerationStep:Using seed: 8
+Success.
+INFO:NetworkGenerationStep:Generated grid successfully
+INFO:NetworkGenerationStep:Completed NetworkGenerationStep successfully
+INFO:StandardPipeline:--- Step 2: Zone Generation ---
+INFO:ZoneGenerationStep:Starting ZoneGenerationStep
+INFO:ZoneGenerationStep:Generating synthetic network zones using traditional method...
+INFO:pyogrio._io:Created 1,024 records
+INFO:ZoneGenerationStep:Extracted land use zones successfully using traditional method with 25.0m blocks
+INFO:ZoneGenerationStep:Completed ZoneGenerationStep successfully
+INFO:StandardPipeline:--- Step 3: Integrated Edge Splitting with Lane Assignment ---
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+INFO:StandardPipeline:Successfully completed integrated edge splitting with lane assignment
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 80 edges validated successfully
+INFO:StandardPipeline:Split edges validation passed successfully
+INFO:StandardPipeline:--- Step 4: Network Rebuild ---
+Network conversion completed successfully.
+INFO:StandardPipeline:Rebuilt the network successfully
+INFO:StandardPipeline:--- Step 6: Edge Attractiveness Assignment ---
+INFO:StandardPipeline:Assigned edge attractiveness successfully
+INFO:StandardPipeline:--- Step 7: Vehicle Route Generation ---
+Using routing strategies: {'shortest': 100.0}
+Using vehicle types: {'passenger': 60.0, 'commercial': 30.0, 'public': 10.0}
+Wrote 600 vehicles → workspace/vehicles.rou.xml
+INFO:StandardPipeline:Generated vehicle routes successfully
+INFO:StandardPipeline:--- Step 8: SUMO Configuration Generation ---
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+INFO:StandardPipeline:Generated SUMO configuration file successfully
+INFO:StandardPipeline:--- Step 9: Dynamic Simulation ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: fixed
+INFO:TrafficSimulator:QA: Controller type: FixedController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+INFO:FixedController:=== FIXED CONTROLLER INITIALIZATION ===
+INFO:FixedController:QA: FIXED - Found 25 traffic lights
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:261: UserWarning: Call to deprecated function getAllProgramLogics, use getCompleteRedYellowGreenDefinition instead.
+  complete_def = traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0]
+INFO:FixedController:QA: FIXED A0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED - Initialization complete, will use setPhase + setPhaseDuration
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+INFO:TrafficSimulator:Step 0: 0 vehicles active
+INFO:TrafficSimulator:Step 100: 11 vehicles active
+INFO:TrafficSimulator:Step 200: 10 vehicles active
+INFO:TrafficSimulator:Step 300: 15 vehicles active
+INFO:TrafficSimulator:Step 400: 9 vehicles active
+INFO:TrafficSimulator:Step 500: 6 vehicles active
+INFO:TrafficSimulator:Step 600: 12 vehicles active
+INFO:TrafficSimulator:Step 700: 12 vehicles active
+INFO:TrafficSimulator:Step 800: 15 vehicles active
+INFO:TrafficSimulator:Step 900: 17 vehicles active
+INFO:TrafficSimulator:Step 1000: 13 vehicles active
+INFO:TrafficSimulator:Step 1100: 8 vehicles active
+INFO:TrafficSimulator:Step 1200: 12 vehicles active
+INFO:TrafficSimulator:Step 1300: 18 vehicles active
+INFO:TrafficSimulator:Step 1400: 19 vehicles active
+INFO:TrafficSimulator:Step 1500: 25 vehicles active
+INFO:TrafficSimulator:Step 1600: 11 vehicles active
+INFO:TrafficSimulator:Step 1700: 8 vehicles active
+INFO:TrafficSimulator:Step 1800: 5 vehicles active
+INFO:TrafficSimulator:Step 1900: 13 vehicles active
+INFO:TrafficSimulator:Step 2000: 10 vehicles active
+INFO:TrafficSimulator:Step 2100: 12 vehicles active
+INFO:TrafficSimulator:Step 2200: 11 vehicles active
+INFO:TrafficSimulator:Step 2300: 10 vehicles active
+INFO:TrafficSimulator:Step 2400: 16 vehicles active
+INFO:TrafficSimulator:Step 2500: 13 vehicles active
+INFO:TrafficSimulator:Step 2600: 11 vehicles active
+INFO:TrafficSimulator:Step 2700: 11 vehicles active
+INFO:TrafficSimulator:Step 2800: 16 vehicles active
+INFO:TrafficSimulator:Step 2900: 14 vehicles active
+INFO:TrafficSimulator:Step 3000: 7 vehicles active
+INFO:TrafficSimulator:Step 3100: 7 vehicles active
+INFO:TrafficSimulator:Step 3200: 13 vehicles active
+INFO:TrafficSimulator:Step 3300: 22 vehicles active
+INFO:TrafficSimulator:Step 3400: 12 vehicles active
+INFO:TrafficSimulator:Step 3500: 7 vehicles active
+INFO:TrafficSimulator:Step 3600: 7 vehicles active
+INFO:TrafficSimulator:Step 3700: 8 vehicles active
+INFO:TrafficSimulator:Step 3800: 8 vehicles active
+INFO:TrafficSimulator:Step 3900: 12 vehicles active
+INFO:TrafficSimulator:Step 4000: 13 vehicles active
+INFO:TrafficSimulator:Step 4100: 12 vehicles active
+INFO:TrafficSimulator:Step 4200: 8 vehicles active
+INFO:TrafficSimulator:Step 4300: 8 vehicles active
+INFO:TrafficSimulator:Step 4400: 14 vehicles active
+Step #0.00 (0ms ?*RT. ?UPS, TraCI: 10ms, vehicles TOT 0 ACT 0 BUF 0)                      Step #100.00 (1ms ~= 1000.00*RT, ~11000.00UPS, TraCI: 2ms, vehicles TOT 13 ACT 11 BUF 0)  Step #200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 25 ACT 10 BUF 0)                   Step #300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 37 ACT 15 BUF 0)                   Step #400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 44 ACT 9 BUF 0)                    Step #500.00 (1ms ~= 1000.00*RT, ~6000.00UPS, TraCI: 1ms, vehicles TOT 50 ACT 6 BUF 0)    Step #600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 60 ACT 12 BUF 0)                   Step #700.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 68 ACT 12 BUF 0)                   Step #800.00 (1ms ~= 1000.00*RT, ~15000.00UPS, TraCI: 1ms, vehicles TOT 81 ACT 15 BUF 0)  Step #900.00 (1ms ~= 1000.00*RT, ~17000.00UPS, TraCI: 2ms, vehicles TOT 93 ACT 17 BUF 0)  Step #1000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 104 ACT 13 BUF 0)                 Step #1100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 112 ACT 8 BUF 0)                  Step #1200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 120 ACT 12 BUF 0)                 Step #1300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 133 ACT 18 BUF 1)                 Step #1400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 146 ACT 19 BUF 0)                 Step #1500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 162 ACT 25 BUF 0)                 Step #1600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 170 ACT 11 BUF 0)                 Step #1700.00 (1ms ~= 1000.00*RT, ~8000.00UPS, TraCI: 1ms, vehicles TOT 174 ACT 8 BUF 0)  Step #1800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 179 ACT 5 BUF 0)                  Step #1900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 191 ACT 13 BUF 0)                 Step #2000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 199 ACT 10 BUF 0)                 Step #2100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 209 ACT 12 BUF 0)                 Step #2200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 216 ACT 11 BUF 0)                 Step #2300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 223 ACT 10 BUF 0)                 Step #2400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 237 ACT 16 BUF 0)                 Step #2500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 247 ACT 13 BUF 0)                 Step #2600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 258 ACT 11 BUF 0)                 Step #2700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 269 ACT 11 BUF 0)                 Step #2800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 279 ACT 16 BUF 0)                 Step #2900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 291 ACT 14 BUF 0)                 Step #3000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 295 ACT 7 BUF 0)                  Step #3100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 300 ACT 7 BUF 0)                  Step #3200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 313 ACT 13 BUF 0)                 Step #3300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 326 ACT 22 BUF 0)                 Step #3400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 332 ACT 12 BUF 0)                 Step #3500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 339 ACT 7 BUF 0)                  Step #3600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 345 ACT 7 BUF 0)                  Step #3700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 351 ACT 8 BUF 0)                  Step #3800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 360 ACT 8 BUF 0)                  Step #3900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 371 ACT 12 BUF 0)                 Step #4000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 380 ACT 13 BUF 0)                 Step #4100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 389 ACT 12 BUF 0)                 Step #4200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 393 ACT 8 BUF 0)                  Step #4300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 401 ACT 8 BUF 0)                  Step #4400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 412 ACT 14 BUF 0)                 SINFO:TrafficSimulator:Step 4500: 11 vehicles active
+INFO:TrafficSimulator:Step 4600: 10 vehicles active
+INFO:TrafficSimulator:Step 4700: 11 vehicles active
+INFO:TrafficSimulator:Step 4800: 12 vehicles active
+INFO:TrafficSimulator:Step 4900: 5 vehicles active
+INFO:TrafficSimulator:Step 5000: 7 vehicles active
+INFO:TrafficSimulator:Step 5100: 11 vehicles active
+INFO:TrafficSimulator:Step 5200: 12 vehicles active
+INFO:TrafficSimulator:Step 5300: 13 vehicles active
+INFO:TrafficSimulator:Step 5400: 8 vehicles active
+INFO:TrafficSimulator:Step 5500: 9 vehicles active
+INFO:TrafficSimulator:Step 5600: 13 vehicles active
+INFO:TrafficSimulator:Step 5700: 9 vehicles active
+INFO:TrafficSimulator:Step 5800: 11 vehicles active
+INFO:TrafficSimulator:Step 5900: 11 vehicles active
+INFO:TrafficSimulator:Step 6000: 19 vehicles active
+INFO:TrafficSimulator:Step 6100: 17 vehicles active
+INFO:TrafficSimulator:Step 6200: 13 vehicles active
+INFO:TrafficSimulator:Step 6300: 14 vehicles active
+INFO:TrafficSimulator:Step 6400: 17 vehicles active
+INFO:TrafficSimulator:Step 6500: 13 vehicles active
+INFO:TrafficSimulator:Step 6600: 2 vehicles active
+INFO:TrafficSimulator:=== SIMULATION METRICS ===
+INFO:TrafficSimulator:Total simulation steps: 6641
+INFO:TrafficSimulator:Total vehicles: 25
+INFO:TrafficSimulator:Completed vehicles: 25
+INFO:TrafficSimulator:Completion rate: 100.0%
+INFO:TrafficSimulator:Traffic control method: fixed
+INFO:FixedController:QA: FIXED cleanup completed
+tep #4500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 419 ACT 11 BUF 0)                 Step #4600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 426 ACT 10 BUF 0)                 Step #4700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 434 ACT 11 BUF 0)                 Step #4800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 443 ACT 12 BUF 0)                 Step #4900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 449 ACT 5 BUF 0)                  Step #5000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 454 ACT 7 BUF 0)                  Step #5100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 463 ACT 11 BUF 0)                 Step #5200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 472 ACT 12 BUF 0)                 Step #5300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 483 ACT 13 BUF 0)                 Step #5400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 488 ACT 8 BUF 0)                  Step #5500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 497 ACT 9 BUF 0)                  Step #5600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 506 ACT 13 BUF 0)                 Step #5700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 512 ACT 9 BUF 0)                  Step #5800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 522 ACT 11 BUF 0)                 Step #5900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 531 ACT 11 BUF 0)                 Step #6000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 545 ACT 19 BUF 0)                 Step #6100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 558 ACT 17 BUF 0)                 Step #6200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 565 ACT 13 BUF 0)                 Step #6300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 578 ACT 14 BUF 0)                 Step #6400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 591 ACT 17 BUF 0)                 Step #6500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 600 ACT 13 BUF 0)                 Step #6600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 600 ACT 2 BUF 0)                  Step #6641.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 600 ACT 0 BUF 0)                  
+INFO:TrafficSimulator:Simulation completed successfully!
+INFO:StandardPipeline:=== SIMULATION COMPLETED ===
+INFO:StandardPipeline:total_simulation_steps: 6641
+INFO:StandardPipeline:total_vehicles: 25
+INFO:StandardPipeline:completed_vehicles: 25
+INFO:StandardPipeline:traffic_control_method: fixed
+INFO:StandardPipeline:completion_rate: 100.0
+INFO:__main__:Pipeline execution completed successfully

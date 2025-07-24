@@ -66,7 +66,7 @@ def run_simulation(test_case_path: str, traffic_control: str, end_time: int = 73
             cmd,
             capture_output=True,
             text=True,
-            timeout=300,  # 5 minute timeout
+            timeout=7500,  # 2.1 hour timeout for 7300s simulation + overhead
             env=env,
             cwd=Path(__file__).parent.parent.parent  # Run from project root
         )

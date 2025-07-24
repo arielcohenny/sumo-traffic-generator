@@ -54,9 +54,8 @@ class TrafficSimulator:
     def _initialize_simulation(self) -> None:
         """Initialize simulation components."""
         self.logger.info("Initializing traffic simulation...")
-        
-        # Initialize traffic controller
-        self.traffic_controller.initialize()
+        self.logger.info(f"QA: Traffic control method selected: {self.args.traffic_control}")
+        self.logger.info(f"QA: Controller type: {type(self.traffic_controller).__name__}")
         
         # Choose SUMO binary based on GUI flag
         if self.args.gui:
@@ -64,9 +63,13 @@ class TrafficSimulator:
         else:
             sumo_binary = sumolib.checkBinary('sumo')
         
-        # Start TraCI
+        # Start TraCI FIRST
         self.logger.info("Starting SUMO simulation with TraCI...")
         traci.start([sumo_binary, '-c', str(CONFIG.config_file)])
+        
+        # Initialize traffic controller AFTER TraCI is connected
+        self.traffic_controller.initialize()
+        self.logger.info("QA: Traffic controller initialization completed")
     
     def _run_simulation_loop(self) -> Dict[str, Any]:
         """Run the main simulation loop.
@@ -130,8 +133,8 @@ class TrafficSimulator:
         """Collect simulation metrics at given step."""
         if step % 100 == 0:  # Log every 100 steps
             current_vehicles = len(traci.vehicle.getIDList())
-            if step == 0:
-                self.total_vehicles = max(self.total_vehicles, current_vehicles)
+            # Track maximum vehicles throughout the simulation
+            self.total_vehicles = max(self.total_vehicles, current_vehicles)
             self.logger.info(f"Step {step}: {current_vehicles} vehicles active")
     
     def _calculate_final_metrics(self, final_step: int) -> Dict[str, Any]:

@@ -64,6 +64,9 @@ class SamplePipeline(BasePipeline):
             # Update SUMO config file to use our file naming convention
             self._update_sumo_config_paths()
             
+            # Extract and override end time from SUMO config
+            self._override_end_time_from_config()
+            
         except (FileNotFoundError, PermissionError, ValueError) as e:
             self.logger.error(f"Error setting up Tree Method sample: {e}")
             raise
@@ -86,6 +89,34 @@ class SamplePipeline(BasePipeline):
         # Save updated config
         tree.write(CONFIG.config_file, encoding='utf-8', xml_declaration=True)
         self.logger.info("Updated SUMO config file paths")
+    
+    def _override_end_time_from_config(self) -> None:
+        """Extract end time from SUMO config and override CLI argument."""
+        try:
+            tree = ET.parse(CONFIG.config_file)
+            root = tree.getroot()
+            
+            # Find the end time in the config
+            for time_elem in root.findall('.//time'):
+                end_elem = time_elem.find('end')
+                if end_elem is not None:
+                    config_end_time = int(end_elem.get('value'))
+                    
+                    self.logger.info(f"Found SUMO config end time: {config_end_time} seconds")
+                    self.logger.info(f"CLI end time was: {self.args.end_time} seconds")
+                    
+                    # Override the CLI argument with the config value
+                    self.args.end_time = config_end_time
+                    
+                    self.logger.info(f"Overriding end time to match SUMO config: {config_end_time} seconds")
+                    return
+            
+            # If no end time found in config, warn but continue with CLI value
+            self.logger.warning(f"No end time found in SUMO config, using CLI value: {self.args.end_time}")
+            
+        except (ET.ParseError, ValueError, AttributeError) as e:
+            self.logger.warning(f"Error parsing end time from SUMO config: {e}")
+            self.logger.warning(f"Continuing with CLI end time: {self.args.end_time}")
     
     def _execute_simulation(self) -> None:
         """Execute dynamic simulation using pre-built sample network."""

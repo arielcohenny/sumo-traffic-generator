@@ -122,7 +122,7 @@ def run_validation_case(test_case_path: Path, traffic_control: str,
             cwd=Path(__file__).parent.parent.parent,
             capture_output=True,
             text=True,
-            timeout=600,  # 10 minute timeout per case
+            timeout=7500,  # 2.1 hour timeout for 7300s simulation + overhead
             env=env
         )
         
@@ -220,8 +220,8 @@ def main():
                        default=["tree_method"],
                        choices=["tree_method", "actuated", "fixed"],
                        help="Traffic control methods to test")
-    parser.add_argument("--end-time", type=int, default=1800,
-                       help="Simulation duration in seconds (default: 1800)")
+    parser.add_argument("--end-time", type=int, default=7300,
+                       help="Simulation duration in seconds (default: 7300 to match original experiments)")
     parser.add_argument("--max-cases", type=int, default=10,
                        help="Maximum test cases per experiment (default: 10)")
     parser.add_argument("--require-original-results", action="store_true",

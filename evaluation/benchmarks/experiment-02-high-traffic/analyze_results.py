@@ -64,7 +64,7 @@ def extract_metrics_from_log(log_file):
 
 def analyze_experiment_results(results_dir):
     """Analyze results from all traffic control methods"""
-    methods = ['tree_method', 'actuated', 'fixed', 'random']
+    methods = ['tree_method', 'actuated', 'fixed']
     all_results = {}
     
     for method in methods:

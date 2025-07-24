@@ -7,7 +7,7 @@
 set -e
 
 EXPERIMENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$EXPERIMENT_DIR/../.." && pwd)"
+PROJECT_ROOT="$(cd "$EXPERIMENT_DIR/../../.." && pwd)"
 RESULTS_DIR="$EXPERIMENT_DIR/results"
 
 echo "Starting Experiment 01: Moderate Traffic Load"
@@ -18,7 +18,6 @@ echo "Results dir: $RESULTS_DIR"
 mkdir -p "$RESULTS_DIR/tree_method"
 mkdir -p "$RESULTS_DIR/actuated"
 mkdir -p "$RESULTS_DIR/fixed"
-mkdir -p "$RESULTS_DIR/random"
 
 # Experiment parameters (moderate traffic load)
 GRID_DIMENSION=5
@@ -32,14 +31,17 @@ NUM_RUNS=20
 cd "$PROJECT_ROOT"
 
 # Check if virtual environment exists and activate it
-if [ -d "venv" ]; then
-    echo "Activating virtual environment..."
-    source venv/bin/activate
-elif [ -d ".venv" ]; then
+if [ -d ".venv" ]; then
     echo "Activating virtual environment..."
     source .venv/bin/activate
+    PYTHON_CMD="python"
+elif [ -d "venv" ]; then
+    echo "Activating virtual environment..."
+    source venv/bin/activate
+    PYTHON_CMD="python"
 else
     echo "Warning: No virtual environment found, using system Python"
+    PYTHON_CMD="python3"
 fi
 
 echo "Running $NUM_RUNS experiments for each traffic control method..."
@@ -48,7 +50,7 @@ echo "Running $NUM_RUNS experiments for each traffic control method..."
 echo "Running Tree Method experiments..."
 for i in $(seq 1 $NUM_RUNS); do
     echo "  Run $i/$NUM_RUNS"
-    env PYTHONUNBUFFERED=1 python3 -m src.cli \
+    env PYTHONUNBUFFERED=1 PYTHONPATH="$PROJECT_ROOT" $PYTHON_CMD -m src.cli \
         --grid_dimension $GRID_DIMENSION \
         --block_size_m $BLOCK_SIZE \
         --num_vehicles $NUM_VEHICLES \
@@ -64,7 +66,7 @@ done
 echo "Running SUMO Actuated experiments..."
 for i in $(seq 1 $NUM_RUNS); do
     echo "  Run $i/$NUM_RUNS"
-    env PYTHONUNBUFFERED=1 python3 -m src.cli \
+    env PYTHONUNBUFFERED=1 PYTHONPATH="$PROJECT_ROOT" $PYTHON_CMD -m src.cli \
         --grid_dimension $GRID_DIMENSION \
         --block_size_m $BLOCK_SIZE \
         --num_vehicles $NUM_VEHICLES \
@@ -80,7 +82,7 @@ done
 echo "Running Fixed timing experiments..."
 for i in $(seq 1 $NUM_RUNS); do
     echo "  Run $i/$NUM_RUNS"
-    env PYTHONUNBUFFERED=1 python3 -m src.cli \
+    env PYTHONUNBUFFERED=1 PYTHONPATH="$PROJECT_ROOT" $PYTHON_CMD -m src.cli \
         --grid_dimension $GRID_DIMENSION \
         --block_size_m $BLOCK_SIZE \
         --num_vehicles $NUM_VEHICLES \
@@ -90,23 +92,6 @@ for i in $(seq 1 $NUM_RUNS); do
         --seed $i \
         --departure_pattern uniform \
         > "$RESULTS_DIR/fixed/run_${i}.log" 2>&1
-done
-
-# Run Random experiments (using random routing strategy as proxy)
-echo "Running Random experiments..."
-for i in $(seq 1 $NUM_RUNS); do
-    echo "  Run $i/$NUM_RUNS"
-    env PYTHONUNBUFFERED=1 python3 -m src.cli \
-        --grid_dimension $GRID_DIMENSION \
-        --block_size_m $BLOCK_SIZE \
-        --num_vehicles $NUM_VEHICLES \
-        --end-time $END_TIME \
-        --step-length $STEP_LENGTH \
-        --traffic_control fixed \
-        --routing_strategy "shortest 25 realtime 25 fastest 25 attractiveness 25" \
-        --seed $i \
-        --departure_pattern uniform \
-        > "$RESULTS_DIR/random/run_${i}.log" 2>&1
 done
 
 echo "Experiment 01 completed!"

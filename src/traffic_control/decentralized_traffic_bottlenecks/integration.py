@@ -13,7 +13,7 @@ def load_tree(
     net_file: str,
     *,
     cost_type: CostType = CostType.TREE_CURRENT,
-    algo_type: AlgoType = AlgoType.PLANNED,
+    algo_type: AlgoType = AlgoType.BABY_STEPS,
     sumo_cfg: str | None = None
 ) -> tuple[SimpleNamespace, RunConfig]:
     """
