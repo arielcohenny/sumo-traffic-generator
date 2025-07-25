@@ -132,7 +132,5 @@ class SamplePipeline(BasePipeline):
         simulator = TrafficSimulator(self.args, traffic_controller)
         metrics = simulator.run()
         
-        # Log final metrics
+        # Final metrics are provided by SUMO's automatic statistics output
         self.logger.info("=== SAMPLE SIMULATION COMPLETED ===")
-        for key, value in metrics.items():
-            self.logger.info(f"{key}: {value}")

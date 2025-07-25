@@ -160,22 +160,10 @@ class TreeMethodController(TrafficController):
         
         # Tree Method traffic light updates
         try:
-            if hasattr(self, 'graph') and self.graph:
-                algo_type = self.run_config.algo_type if self.run_config else AlgoType.BABY_STEPS
-                self.graph.update_traffic_lights(step, self.seconds_in_cycle, algo_type)
-                
-                # Log phase durations every 90 steps (once per cycle)
-                if step % 90 == 0 and hasattr(self.graph, 'tl_node_ids'):
-                    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
-                        node = self.graph.tl_node_ids[node_id]
-                        if hasattr(node, 'phases') and len(node.phases) > 0:
-                            durations = [p.duration for p in node.phases]
-                            self.logger.info(f"VERIFY: Step {step}, Node {node_id}, Phase Durations: {durations}")
-                    
+            self.graph.update_traffic_lights(step, self.seconds_in_cycle, 
+                                           self.run_config.algo_type if self.run_config else AlgoType.BABY_STEPS)
         except Exception as e:
-            self.logger.error(f"Tree Method traffic light update ERROR at step {step}: {e}")
-            import traceback
-            self.logger.error(f"Traceback: {traceback.format_exc()}")
+            self.logger.warning(f"Tree Method traffic light update failed at step {step}: {e}")
         
         # Post-step data collection
         try:
@@ -197,7 +185,14 @@ class TreeMethodController(TrafficController):
         # Runtime validation (every 30 steps by default)
         if step % CONFIG.SIMULATION_VERIFICATION_FREQUENCY == 0:
             try:
-                phase_map = self.graph.get_traffic_lights_phases(step) if self.graph else {}
+                # Save phase data - get_traffic_lights_phases doesn't return data, just saves it
+                if self.graph:
+                    self.graph.get_traffic_lights_phases(step)
+                    # Use empty dict as phase_map since the method doesn't return phase data
+                    phase_map = {}
+                else:
+                    phase_map = {}
+                    
                 verify_algorithm_runtime_behavior(
                     step, phase_map, self.graph, CONFIG.SIMULATION_VERIFICATION_FREQUENCY
                 )

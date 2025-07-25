@@ -1,0 +1,1816 @@
+INFO:SamplePipeline:Prepared output directory: workspace
+INFO:SamplePipeline:Tree Method Sample Mode: Using pre-built network from /Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/evaluation/datasets/decentralized_traffic_bottleneck/Experiment4-and-moderate-load/10
+INFO:SamplePipeline:Skipping Steps 1-8, going directly to Step 9 (Dynamic Simulation)
+INFO:SamplePipeline:Copied network.net.xml -> workspace/grid.net.xml
+INFO:SamplePipeline:Copied vehicles.trips.xml -> workspace/vehicles.rou.xml
+INFO:SamplePipeline:Copied simulation.sumocfg.xml -> workspace/grid.sumocfg
+INFO:SamplePipeline:Updated SUMO config file paths
+INFO:SamplePipeline:Found SUMO config end time: 7300 seconds
+INFO:SamplePipeline:CLI end time was: 7300 seconds
+INFO:SamplePipeline:Overriding end time to match SUMO config: 7300 seconds
+INFO:SamplePipeline:--- Step 9: Dynamic Simulation (Tree Method Sample) ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: tree_method
+INFO:TrafficSimulator:QA: Controller type: TreeMethodController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+***Starting server on port 52131 ***
+Loading net-file from 'workspace/grid.net.xml' ... done (29ms).
+Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 7 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 4 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 0 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_HLC_AYA', program '0' for tl-index 0 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_HLC_AYA', program '0' for tl-index 7 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_HLC_AYA', program '0' for tl-index 3 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_JBT', program '0' for tl-index 0 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_JBT', program '0' for tl-index 5 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_JBT', program '0' for tl-index 10 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_PNK', program '0' for tl-index 5 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_PNK', program '0' for tl-index 2 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_PNK', program '0' for tl-index 0 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_YMK', program '0' for tl-index 0 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_YMK', program '0' for tl-index 13 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_YMK', program '0' for tl-index 5 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_PNK', program '0' for tl-index 4 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_PNK', program '0' for tl-index 11 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_PNK', program '0' for tl-index 0 when switching to phase 3.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_PNK', program '0' for tl-index 8 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_YMK', program '0' for tl-index 0 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_YMK', program '0' for tl-index 5 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_YMK', program '0' for tl-index 8 when switching to phase 3.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_YMK', program '0' for tl-index 12 when switching to phase 0.
+Loading route-files incrementally from 'workspace/vehicles.rou.xml'
+Loading done.
+Simulation version 1.22.0 started with time: 0.00.
+INFO:TreeMethodController:=== TREE METHOD CONTROLLER INITIALIZATION ===
+INFO:TreeMethodController:QA: TREE METHOD - Initializing Tree Method objects...
+INFO:TreeMethodController:QA: TREE METHOD - Built network JSON file: workspace/grid.net.json
+INFO:TreeMethodController:QA: TREE METHOD - Loaded network tree and run configuration successfully
+INFO:TreeMethodController:QA: TREE METHOD - Loaded network data from JSON
+INFO:TreeMethodController:QA: TREE METHOD - Initialized Tree Method Graph object
+INFO:TreeMethodController:QA: TREE METHOD - Built Tree Method Graph from network data
+INFO:TreeMethodController:QA: TREE METHOD - Built network graph and calculated cycle time: 90s
+INFO:TreeMethodController:QA: TREE METHOD - Integration setup verified successfully
+INFO:TreeMethodController:QA: TREE METHOD - Connected to 7 traffic lights
+INFO:TreeMethodController:QA: TREE METHOD - Graph initialized with 7 traffic light nodes
+INFO:TreeMethodController:QA: TREE METHOD - Initialization complete, ready for algorithm control
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 0: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 0: Phase map is None at time 0 - algorithm may have crashed
+INFO:TrafficSimulator:Step 0: 1 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 30: Phase map is None at time 30 - algorithm may have crashed
+Warning: Vehicle 'veh33' performs emergency braking on lane 'E_BLK_W_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=35.00.
+Warning: Vehicle 'veh33' performs emergency stop at the end of lane 'E_BLK_W_AYA_H_s_0' because of a red traffic light (decel=-15.42, offset=1.85), time=35.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 60: Phase map is None at time 60 - algorithm may have crashed
+Warning: Vehicle 'veh83' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=60.00.
+Warning: Vehicle 'veh83' performs emergency stop at the end of lane 'E_NMR_N_JBT_H_s_0' because of a red traffic light (decel=-18.57, offset=9.07), time=60.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 90: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 90: Phase map is None at time 90 - algorithm may have crashed
+INFO:TrafficSimulator:Step 100: 207 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 120: Phase map is None at time 120 - algorithm may have crashed
+Warning: Vehicle 'veh15' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=130.00.
+Warning: Vehicle 'veh15' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_1' because of a red traffic light (decel=-17.21, offset=1.18), time=130.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 150: Phase map is None at time 150 - algorithm may have crashed
+Warning: Vehicle 'veh79' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=150.00.
+Warning: Vehicle 'veh79' performs emergency stop at the end of lane 'E_PNK_E_NMR_H_sr_0' because of a red traffic light (decel=-9.84, offset=0.17), time=150.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 180: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 180: Phase map is None at time 180 - algorithm may have crashed
+Warning: Vehicle 'veh316' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_2' with decel=9.00, wished=4.50, severity=1.00, time=180.00.
+Warning: Vehicle 'veh316' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_2' because of a red traffic light (decel=-15.07, offset=0.21), time=180.00.
+INFO:TrafficSimulator:Step 200: 365 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 210: Phase map is None at time 210 - algorithm may have crashed
+Warning: Vehicle 'veh269' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=220.00.
+Warning: Teleporting vehicle 'veh273'; collision with vehicle 'veh249', lane='E_GOR_W_NMR_H_s_1', gap=-7.11, time=222.00, stage=move.
+Warning: Vehicle 'veh273' ends teleporting on edge 'E_PNK_W_WZM', time=225.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 240: Phase map is None at time 240 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh421'; collision with vehicle 'veh414', lane='E_GOR_W_NMR_H_s_1', gap=-1.83, time=265.00, stage=move.
+Warning: Vehicle 'veh421' ends teleporting on edge 'E_PNK_W_WZM_T', time=265.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 270: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 270: Phase map is None at time 270 - algorithm may have crashed
+Warning: Vehicle 'veh502' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_0' with decel=9.00, wished=4.50, severity=1.00, time=270.00.
+Warning: Vehicle 'veh502' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_0' because of a red traffic light (decel=-9.93, offset=0.51), time=270.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 300: Phase map is None at time 300 - algorithm may have crashed
+Warning: Vehicle 'veh355' performs emergency braking on lane 'E_NMR_S_JBT_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=300.00.
+INFO:TrafficSimulator:Step 300: 437 vehicles active
+Warning: Vehicle 'veh466' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=306.00.
+Warning: Vehicle 'veh603' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=325.00.
+Warning: Vehicle 'veh603' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-14.75, offset=2.75), time=325.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 330: Phase map is None at time 330 - algorithm may have crashed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 360: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 360: Phase map is None at time 360 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 390: Phase map is None at time 390 - algorithm may have crashed
+Warning: Vehicle 'veh740' performs emergency braking on lane 'E_NMR_S_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=395.00.
+Warning: Vehicle 'veh740' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_1' because of a red traffic light (decel=-13.41, offset=2.16), time=395.00.
+INFO:TrafficSimulator:Step 400: 492 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 420: Phase map is None at time 420 - algorithm may have crashed
+Warning: Vehicle 'veh730' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=420.00.
+Warning: Vehicle 'veh730' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_1' because of a red traffic light (decel=-15.50, offset=1.97), time=420.00.
+Warning: Vehicle 'veh720' performs emergency braking on lane 'E_GOR_W_NMR_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=420.00.
+Warning: Vehicle 'veh720' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_0' because of a red traffic light (decel=-16.43, offset=4.12), time=420.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 450: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 450: Phase map is None at time 450 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 480: Phase map is None at time 480 - algorithm may have crashed
+Warning: Vehicle 'veh850' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=481.00.
+Warning: Vehicle 'veh850' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-19.60, offset=0.96), time=481.00.
+Warning: Vehicle 'veh1039' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=481.00.
+Warning: Vehicle 'veh1039' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_1' because of a red traffic light (decel=-16.93, offset=3.37), time=481.00.
+Warning: Vehicle 'veh854' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=485.00.
+Warning: Vehicle 'veh854' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-15.51, offset=2.56), time=485.00.
+INFO:TrafficSimulator:Step 500: 539 vehicles active
+Warning: Vehicle 'veh944' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=504.00.
+Warning: Vehicle 'veh861' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=504.00.
+Warning: Vehicle 'veh861' performs emergency stop at the end of lane 'E_PNK_E_NMR_H_sr_1' because of a red traffic light (decel=-13.15, offset=1.43), time=504.00.
+Warning: Vehicle 'veh797' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=505.00.
+Warning: Vehicle 'veh797' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_1' because of a red traffic light (decel=-11.00, offset=1.93), time=505.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 510: Phase map is None at time 510 - algorithm may have crashed
+Warning: Vehicle 'veh1089' performs emergency braking on lane 'E_AYA_N_GRN_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=515.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 540: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 540: Phase map is None at time 540 - algorithm may have crashed
+Warning: Vehicle 'veh916' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=563.00.
+Warning: Vehicle 'veh916' performs emergency stop at the end of lane 'E_PNK_W_WZM_H_sl_1' because of a red traffic light (decel=-9.19, offset=0.07), time=563.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 570: Phase map is None at time 570 - algorithm may have crashed
+Warning: Vehicle 'veh1017' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=570.00.
+Warning: Vehicle 'veh1017' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-10.33, offset=0.65), time=571.00.
+Warning: Teleporting vehicle 'veh1050'; collision with vehicle 'veh970', lane='E_GOR_W_NMR_H_s_1', gap=-7.37, time=573.00, stage=move.
+Warning: Vehicle 'veh1050' ends teleporting on edge 'E_PNK_W_WZM', time=576.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 600: Phase map is None at time 600 - algorithm may have crashed
+INFO:TrafficSimulator:Step 600: 543 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 630: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 630: Phase map is None at time 630 - algorithm may have crashed
+Warning: Vehicle 'veh1252' performs emergency braking on lane 'E_NMR_S_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=655.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 660: Phase map is None at time 660 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh1123'; collision with vehicle 'veh1142', lane='E_GOR_W_NMR_H_s_1', gap=-7.38, time=661.00, stage=move.
+Warning: Vehicle 'veh1123' ends teleporting on edge 'E_PNK_W_WZM_T', time=661.00.
+Warning: Teleporting vehicle 'veh1225'; collision with vehicle 'veh1296', lane='E_GOR_W_NMR_H_s_1', gap=-7.14, time=667.00, stage=move.
+Warning: Vehicle 'veh1225' ends teleporting on edge 'E_PNK_W_WZM_T', time=667.00.
+Warning: Vehicle 'veh1024' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=685.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 690: Phase map is None at time 690 - algorithm may have crashed
+INFO:TrafficSimulator:Step 700: 563 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 720: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 720: Phase map is None at time 720 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh1340'; collision with vehicle 'veh1432', lane='E_GOR_W_NMR_H_s_1', gap=-6.74, time=749.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 750: Phase map is None at time 750 - algorithm may have crashed
+Warning: Vehicle 'veh1340' ends teleporting on edge 'E_PNK_W_WZM_T', time=750.00.
+Warning: Vehicle 'veh1651' performs emergency braking on lane 'E_BLK_W_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=753.00.
+Warning: Vehicle 'veh1651' performs emergency stop at the end of lane 'E_BLK_W_AYA_H_s_0' because of a red traffic light (decel=-13.96, offset=1.60), time=753.00.
+Warning: Vehicle 'veh1577' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=771.00.
+Warning: Vehicle 'veh1577' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_1' because of a red traffic light (decel=-17.65, offset=6.58), time=771.00.
+Warning: Vehicle 'veh1076' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=771.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 780: Phase map is None at time 780 - algorithm may have crashed
+Warning: Vehicle 'veh1282' performs emergency braking on lane 'E_NMR_S_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=780.00.
+INFO:TrafficSimulator:Step 800: 567 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 810: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 810: Phase map is None at time 810 - algorithm may have crashed
+Warning: Vehicle 'veh1369' performs emergency braking on lane 'E_YMK_E_WZM_H_slr_1' with decel=9.00, wished=4.50, severity=1.00, time=810.00.
+Warning: Teleporting vehicle 'veh1629'; collision with vehicle 'veh1638', lane='E_GOR_W_NMR_H_s_1', gap=-7.47, time=837.00, stage=move.
+Warning: Vehicle 'veh1629' ends teleporting on edge 'E_PNK_W_WZM_T', time=839.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 840: Phase map is None at time 840 - algorithm may have crashed
+Warning: Vehicle 'veh1217' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=861.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 870: Phase map is None at time 870 - algorithm may have crashed
+Warning: Vehicle 'veh1559' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=875.00.
+Warning: Vehicle 'veh1559' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-12.70, offset=1.59), time=875.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 900: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 900: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 900: Phase map is None at time 900 - algorithm may have crashed
+INFO:TrafficSimulator:Step 900: 555 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 930: Phase map is None at time 930 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 960: Phase map is None at time 960 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh2064'; collision with vehicle 'veh2026', lane='E_GOR_W_NMR_H_s_1', gap=-5.70, time=978.00, stage=move.
+Warning: Vehicle 'veh2064' ends teleporting on edge 'E_PNK_W_WZM_T', time=978.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 990: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 990: Phase map is None at time 990 - algorithm may have crashed
+Warning: Vehicle 'veh2150' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_0' with decel=9.00, wished=4.50, severity=1.00, time=990.00.
+INFO:TrafficSimulator:Step 1000: 560 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1020: Phase map is None at time 1020 - algorithm may have crashed
+Warning: Vehicle 'veh2284' performs emergency braking on lane 'E_BLK_W_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=1021.00.
+Warning: Vehicle 'veh2284' performs emergency stop at the end of lane 'E_BLK_W_AYA_H_s_0' because of a red traffic light (decel=-13.81, offset=3.10), time=1021.00.
+Warning: Vehicle 'veh2120' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=1041.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1050: Phase map is None at time 1050 - algorithm may have crashed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 1080: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1080: Phase map is None at time 1080 - algorithm may have crashed
+Warning: Vehicle 'veh2438' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=1080.00.
+Warning: Vehicle 'veh2438' performs emergency stop at the end of lane 'E_JBT_E_NMR_H_sl_0' because of a red traffic light (decel=-12.84, offset=3.51), time=1080.00.
+Warning: Teleporting vehicle 'veh2173'; collision with vehicle 'veh2165', lane='E_GOR_W_NMR_H_s_1', gap=-3.11, time=1089.00, stage=move.
+Warning: Vehicle 'veh2173' ends teleporting on edge 'E_PNK_W_WZM_T', time=1089.00.
+Warning: Vehicle 'veh2211' performs emergency braking on lane 'E_NMR_N_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=1099.00.
+Warning: Vehicle 'veh2211' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_1' because of a red traffic light (decel=-13.20, offset=3.73), time=1099.00.
+INFO:TrafficSimulator:Step 1100: 596 vehicles active
+Warning: Vehicle 'veh2229' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=1103.00.
+Warning: Vehicle 'veh2229' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-20.22, offset=10.63), time=1103.00.
+Warning: Teleporting vehicle 'veh2274'; collision with vehicle 'veh2210', lane='E_GOR_W_NMR_H_s_1', gap=-3.80, time=1106.00, stage=move.
+Warning: Vehicle 'veh2274' ends teleporting on edge 'E_PNK_W_WZM', time=1109.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1110: Phase map is None at time 1110 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1140: Phase map is None at time 1140 - algorithm may have crashed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 1170: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1170: Phase map is None at time 1170 - algorithm may have crashed
+Warning: Vehicle 'veh1598' performs emergency braking on lane 'E_NMR_S_PNK_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=1170.00.
+Warning: Vehicle 'veh1598' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_1' because of a red traffic light (decel=-19.43, offset=2.57), time=1170.00.
+Warning: Vehicle 'veh2375' performs emergency braking on lane 'E_NMR_N_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=1192.00.
+Warning: Teleporting vehicle 'veh2380'; collision with vehicle 'veh2544', lane='E_GOR_W_NMR_H_s_1', gap=-6.81, time=1198.00, stage=move.
+Warning: Vehicle 'veh2380' ends teleporting on edge 'E_PNK_W_WZM_T', time=1198.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1200: Phase map is None at time 1200 - algorithm may have crashed
+Warning: Vehicle 'veh2541' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=1200.00.
+INFO:TrafficSimulator:Step 1200: 615 vehicles active
+Warning: Teleporting vehicle 'veh2416'; collision with vehicle 'veh2368', lane='E_GOR_W_NMR_H_s_1', gap=-6.79, time=1201.00, stage=move.
+Warning: Vehicle 'veh2416' ends teleporting on edge 'E_PNK_W_WZM', time=1204.00.
+Warning: Vehicle 'veh2447' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=1221.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1230: Phase map is None at time 1230 - algorithm may have crashed
+Warning: Vehicle 'veh2645' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=1240.00.
+Warning: Vehicle 'veh2645' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-23.44, offset=2.36), time=1240.00.
+Warning: Vehicle 'veh2101' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=1240.00.
+Warning: Teleporting vehicle 'veh2043'; collision with vehicle 'veh2101', lane='E_PNK_E_NMR_H_sr_0', gap=-0.40, time=1240.00, stage=move.
+Warning: Vehicle 'veh2043' ends teleporting on edge 'E_NMR_S_JBT', time=1240.00.
+Warning: Teleporting vehicle 'veh2637'; collision with vehicle 'veh2659', lane='E_GOR_W_NMR_H_s_1', gap=-1.87, time=1245.00, stage=move.
+Warning: Vehicle 'veh2637' ends teleporting on edge 'E_PNK_W_WZM_T', time=1245.00.
+Warning: Teleporting vehicle 'veh2718'; collision with vehicle 'veh2670', lane='E_GOR_W_NMR_H_s_1', gap=-1.15, time=1247.00, stage=move.
+Warning: Vehicle 'veh2718' ends teleporting on edge 'E_PNK_W_WZM_T', time=1247.00.
+Warning: Teleporting vehicle 'veh2713'; collision with vehicle 'veh2783', lane='E_GOR_W_NMR_H_s_1', gap=-7.05, time=1251.00, stage=move.
+Warning: Vehicle 'veh2713' ends teleporting on edge 'E_PNK_W_WZM_T', time=1251.00.
+Warning: Teleporting vehicle 'veh2791'; collision with vehicle 'veh2786', lane='E_GOR_W_NMR_H_s_1', gap=-6.80, time=1254.00, stage=move.
+Warning: Vehicle 'veh2791' ends teleporting on edge 'E_PNK_W_WZM_T', time=1254.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 1260: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1260: Phase map is None at time 1260 - algorithm may have crashed
+Warning: Vehicle 'veh2904' performs emergency braking on lane 'E_NMR_S_PNK_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=1288.00.
+Warning: Vehicle 'veh2772' performs emergency braking on lane 'E_NMR_S_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=1288.00.
+Warning: Vehicle 'veh2772' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_1' because of a red traffic light (decel=-15.77, offset=1.21), time=1288.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1290: Phase map is None at time 1290 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh2607'; collision with vehicle 'veh2720', lane='E_GOR_W_NMR_H_s_1', gap=-7.40, time=1295.00, stage=move.
+Warning: Vehicle 'veh2607' ends teleporting on edge 'E_PNK_W_WZM_T', time=1295.00.
+Warning: Teleporting vehicle 'veh2741'; collision with vehicle 'veh2675', lane='E_GOR_W_NMR_H_s_1', gap=-3.91, time=1298.00, stage=move.
+INFO:TrafficSimulator:Step 1300: 616 vehicles active
+Warning: Vehicle 'veh2741' ends teleporting on edge 'E_PNK_W_WZM', time=1301.00.
+Warning: Vehicle 'veh2742' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=1311.00.
+Warning: Vehicle 'veh2742' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-17.32, offset=0.38), time=1311.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1320: Phase map is None at time 1320 - algorithm may have crashed
+Warning: Vehicle 'veh2429' performs emergency braking on lane 'E_NMR_S_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=1320.00.
+Warning: Vehicle 'veh2663' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=1325.00.
+Warning: Vehicle 'veh2663' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-15.47, offset=3.62), time=1325.00.
+Warning: Vehicle 'veh2923' performs emergency braking on lane ':J31_3_1' with decel=9.00, wished=4.50, severity=1.00, time=1336.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 1350: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1350: Phase map is None at time 1350 - algorithm may have crashed
+Warning: Vehicle 'veh3021' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_1' with decel=9.00, wished=4.50, severity=1.00, time=1350.00.
+Warning: Vehicle 'veh3021' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_1' because of a red traffic light (decel=-10.88, offset=1.82), time=1350.00.
+Warning: Vehicle 'veh3031' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_1' with decel=9.00, wished=4.50, severity=1.00, time=1351.00.
+Warning: Teleporting vehicle 'veh3031'; collision with vehicle 'veh3021', lane='E_AYA_N_HLC_H_rl_1', gap=-0.06, time=1351.00, stage=move.
+Warning: Vehicle 'veh3031' ends teleporting on edge 'E_HLC_W_AYA', time=1351.00.
+Warning: Vehicle 'veh2675' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=1374.00.
+Warning: Vehicle 'veh2675' performs emergency stop at the end of lane 'E_PNK_W_WZM_H_sl_0' because of a red traffic light (decel=-12.42, offset=0.08), time=1374.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1380: Phase map is None at time 1380 - algorithm may have crashed
+Warning: Vehicle 'veh2772' performs emergency braking on lane 'E_NMR_S_JBT_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=1380.00.
+Warning: Teleporting vehicle 'veh2836'; collision with vehicle 'veh2927', lane='E_GOR_W_NMR_H_s_1', gap=-6.74, time=1389.00, stage=move.
+Warning: Vehicle 'veh2836' ends teleporting on edge 'E_PNK_W_WZM', time=1392.00.
+INFO:TrafficSimulator:Step 1400: 633 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1410: Phase map is None at time 1410 - algorithm may have crashed
+Warning: Vehicle 'veh3055' performs emergency braking on lane 'E_GOR_W_NMR_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=1423.00.
+Warning: Vehicle 'veh3055' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_0' because of a red traffic light (decel=-16.24, offset=5.08), time=1423.00.
+Warning: Vehicle 'veh3242' performs emergency braking on lane 'E_AYA_N_GRN_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=1423.00.
+Warning: Vehicle 'veh3242' performs emergency stop at the end of lane 'E_AYA_N_GRN_H_l_0' because of a red traffic light (decel=-16.85, offset=0.78), time=1423.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 1440: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1440: Phase map is None at time 1440 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1470: Phase map is None at time 1470 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1500: Phase map is None at time 1500 - algorithm may have crashed
+INFO:TrafficSimulator:Step 1500: 620 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 1530: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1530: Phase map is None at time 1530 - algorithm may have crashed
+Warning: Vehicle 'veh3539' performs emergency braking on lane 'E_AYA_N_GRN_H_r_0' with decel=9.00, wished=4.50, severity=1.00, time=1530.00.
+Warning: Vehicle 'veh3539' performs emergency stop at the end of lane 'E_AYA_N_GRN_H_r_0' because of a red traffic light (decel=-11.02, offset=0.55), time=1530.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1560: Phase map is None at time 1560 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh3402'; collision with vehicle 'veh3475', lane='E_GOR_W_NMR_H_s_1', gap=-7.45, time=1569.00, stage=move.
+Warning: Vehicle 'veh3402' ends teleporting on edge 'E_PNK_W_WZM_T', time=1569.00.
+Warning: Vehicle 'veh3299' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=1571.00.
+Warning: Vehicle 'veh3299' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_1' because of a red traffic light (decel=-16.75, offset=7.62), time=1571.00.
+Warning: Vehicle 'veh3420' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=1581.00.
+Warning: Teleporting vehicle 'veh3581'; junction collision with vehicle 'veh3572', lane=':J_NMR_PNK_2_0', gap=-1.67, time=1583.00, stage=move.
+Warning: Vehicle 'veh3581' ends teleporting on edge 'E_PNK_W_WZM_T', time=1584.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1590: Phase map is None at time 1590 - algorithm may have crashed
+INFO:TrafficSimulator:Step 1600: 632 vehicles active
+Warning: Teleporting vehicle 'veh3601'; collision with vehicle 'veh3630', lane='E_GOR_W_NMR_H_s_1', gap=-1.54, time=1604.00, stage=move.
+Warning: Vehicle 'veh3601' ends teleporting on edge 'E_PNK_W_WZM_T', time=1604.00.
+Warning: Vehicle 'veh3674' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=1605.00.
+Warning: Vehicle 'veh3674' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-10.01, offset=0.02), time=1606.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 1620: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1620: Phase map is None at time 1620 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh3526'; collision with vehicle 'veh3570', lane='E_GOR_W_NMR_H_s_1', gap=-6.91, time=1641.00, stage=move.
+Warning: Vehicle 'veh3526' ends teleporting on edge 'E_PNK_W_WZM_T', time=1641.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1650: Phase map is None at time 1650 - algorithm may have crashed
+Warning: Vehicle 'veh2163' performs emergency braking on lane 'E_NMR_S_JBT_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=1650.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1680: Phase map is None at time 1680 - algorithm may have crashed
+Warning: Vehicle 'veh3802' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=1699.00.
+Warning: Vehicle 'veh3802' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_1' because of a red traffic light (decel=-15.92, offset=3.44), time=1699.00.
+INFO:TrafficSimulator:Step 1700: 619 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 1710: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1710: Phase map is None at time 1710 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1740: Phase map is None at time 1740 - algorithm may have crashed
+Warning: Vehicle 'veh3884' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=1744.00.
+Warning: Vehicle 'veh3884' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-18.34, offset=8.31), time=1744.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1770: Phase map is None at time 1770 - algorithm may have crashed
+Warning: Vehicle 'veh3781' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=1775.00.
+Warning: Vehicle 'veh4008' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=1789.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 1800: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 1800: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1800: Phase map is None at time 1800 - algorithm may have crashed
+INFO:TrafficSimulator:Step 1800: 610 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1830: Phase map is None at time 1830 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1860: Phase map is None at time 1860 - algorithm may have crashed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 1890: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1890: Phase map is None at time 1890 - algorithm may have crashed
+INFO:TrafficSimulator:Step 1900: 587 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1920: Phase map is None at time 1920 - algorithm may have crashed
+Warning: Vehicle 'veh3087' performs emergency braking on lane 'E_NMR_S_JBT_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=1920.00.
+Warning: Teleporting vehicle 'veh4369'; collision with vehicle 'veh4304', lane='E_GOR_W_NMR_H_s_1', gap=-6.85, time=1923.00, stage=move.
+Warning: Vehicle 'veh4369' ends teleporting on edge 'E_PNK_W_WZM', time=1926.00.
+Warning: Vehicle 'veh2037' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=1941.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1950: Phase map is None at time 1950 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh4414'; collision with vehicle 'veh4413', lane='E_GOR_W_NMR_H_s_1', gap=-2.21, time=1960.00, stage=move.
+Warning: Vehicle 'veh4414' ends teleporting on edge 'E_PNK_W_WZM_T', time=1960.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 1980: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1980: Phase map is None at time 1980 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh4519'; collision with vehicle 'veh4594', lane='E_GOR_W_NMR_H_s_1', gap=-7.02, time=1999.00, stage=move.
+Warning: Vehicle 'veh4519' ends teleporting on edge 'E_PNK_W_WZM_T', time=1999.00.
+INFO:TrafficSimulator:Step 2000: 584 vehicles active
+Warning: Vehicle 'veh3185' performs emergency braking on lane 'E_NMR_S_PNK_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=2007.00.
+Warning: Vehicle 'veh3185' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_0' because of a red traffic light (decel=-13.03, offset=2.05), time=2007.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2010: Phase map is None at time 2010 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2040: Phase map is None at time 2040 - algorithm may have crashed
+Warning: Vehicle 'veh4548' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=2045.00.
+Warning: Vehicle 'veh4548' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-16.22, offset=2.58), time=2045.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 2070: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2070: Phase map is None at time 2070 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2100: Phase map is None at time 2100 - algorithm may have crashed
+INFO:TrafficSimulator:Step 2100: 580 vehicles active
+Warning: Teleporting vehicle 'veh4748'; collision with vehicle 'veh4770', lane='E_GOR_W_NMR_H_s_1', gap=-7.50, time=2103.00, stage=move.
+Warning: Vehicle 'veh4748' ends teleporting on edge 'E_PNK_W_WZM', time=2106.00.
+Warning: Vehicle 'veh4606' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=2108.00.
+Warning: Vehicle 'veh4606' performs emergency stop at the end of lane 'E_PNK_W_WZM_H_sl_1' because of a red traffic light (decel=-11.50, offset=0.62), time=2108.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2130: Phase map is None at time 2130 - algorithm may have crashed
+Warning: Vehicle 'veh4612' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2135.00.
+Warning: Vehicle 'veh4785' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=2135.00.
+Warning: Vehicle 'veh4785' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_0' because of a red traffic light (decel=-16.13, offset=5.59), time=2135.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 2160: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2160: Phase map is None at time 2160 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2190: Phase map is None at time 2190 - algorithm may have crashed
+Warning: Vehicle 'veh5220' performs emergency braking on lane 'E_BLK_W_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=2191.00.
+Warning: Vehicle 'veh5220' performs emergency stop at the end of lane 'E_BLK_W_AYA_H_s_0' because of a red traffic light (decel=-14.24, offset=0.27), time=2191.00.
+Warning: Teleporting vehicle 'veh5056'; collision with vehicle 'veh5050', lane='E_GOR_W_NMR_H_s_1', gap=-6.49, time=2192.00, stage=move.
+Warning: Vehicle 'veh5056' ends teleporting on edge 'E_PNK_W_WZM', time=2195.00.
+INFO:TrafficSimulator:Step 2200: 590 vehicles active
+Warning: Vehicle 'veh5033' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2211.00.
+Warning: Vehicle 'veh5033' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_1' because of a red traffic light (decel=-18.04, offset=0.40), time=2211.00.
+Warning: Vehicle 'veh4976' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=2211.00.
+Warning: Vehicle 'veh4976' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-16.76, offset=2.63), time=2211.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2220: Phase map is None at time 2220 - algorithm may have crashed
+Warning: Vehicle 'veh5048' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2225.00.
+Warning: Vehicle 'veh5048' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-16.41, offset=6.15), time=2225.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 2250: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2250: Phase map is None at time 2250 - algorithm may have crashed
+Warning: Vehicle 'veh5300' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_1' with decel=9.00, wished=4.50, severity=1.00, time=2250.00.
+Warning: Vehicle 'veh5300' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_1' because of a red traffic light (decel=-12.66, offset=3.39), time=2250.00.
+Warning: Vehicle 'veh5320' performs emergency braking on lane 'E_NMR_S_PNK_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=2273.00.
+Warning: Vehicle 'veh5331' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=2273.00.
+Warning: Vehicle 'veh5331' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_3' because of a red traffic light (decel=-13.39, offset=4.37), time=2273.00.
+Warning: Teleporting vehicle 'veh5237'; collision with vehicle 'veh5170', lane='E_GOR_W_NMR_H_s_1', gap=-7.10, time=2279.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2280: Phase map is None at time 2280 - algorithm may have crashed
+Warning: Vehicle 'veh5237' ends teleporting on edge 'E_PNK_W_WZM', time=2282.00.
+Warning: Teleporting vehicle 'veh5284'; collision with vehicle 'veh5220', lane='E_GOR_W_NMR_H_s_1', gap=-5.71, time=2287.00, stage=move.
+Warning: Vehicle 'veh5284' ends teleporting on edge 'E_PNK_W_WZM', time=2290.00.
+INFO:TrafficSimulator:Step 2300: 615 vehicles active
+Warning: Vehicle 'veh4884' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=2301.00.
+Warning: Vehicle 'veh4884' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-15.17, offset=2.81), time=2301.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2310: Phase map is None at time 2310 - algorithm may have crashed
+Warning: Vehicle 'veh5526' performs emergency braking on lane 'E_NMR_N_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2312.00.
+Warning: Vehicle 'veh5526' performs emergency stop at the end of lane 'E_NMR_N_JBT_H_s_1' because of a red traffic light (decel=-19.29, offset=5.03), time=2312.00.
+Warning: Vehicle 'veh5153' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2315.00.
+Warning: Vehicle 'veh5308' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=2315.00.
+Warning: Vehicle 'veh5308' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_0' because of a red traffic light (decel=-14.52, offset=2.89), time=2315.00.
+Warning: Vehicle 'veh5318' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=2324.00.
+Warning: Teleporting vehicle 'veh5318'; collision with vehicle 'veh5342', lane='E_GOR_W_NMR_H_s_1', gap=-0.13, time=2324.00, stage=move.
+Warning: Vehicle 'veh5318' ends teleporting on edge 'E_PNK_W_WZM_T', time=2324.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 2340: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2340: Phase map is None at time 2340 - algorithm may have crashed
+Warning: Vehicle 'veh3461' performs emergency braking on lane 'E_NMR_S_PNK_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=2340.00.
+Warning: Vehicle 'veh5599' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=2340.00.
+Warning: Vehicle 'veh5599' performs emergency stop at the end of lane 'E_JBT_E_NMR_H_sl_0' because of a red traffic light (decel=-15.19, offset=5.53), time=2340.00.
+Warning: Vehicle 'veh3671' performs emergency braking on lane 'E_NMR_S_PNK_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=2363.00.
+Warning: Vehicle 'veh3671' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_2' because of a red traffic light (decel=-14.67, offset=2.92), time=2363.00.
+Warning: Vehicle 'veh3691' performs emergency braking on lane 'E_NMR_S_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2363.00.
+Warning: Teleporting vehicle 'veh5417'; collision with vehicle 'veh5311', lane='E_GOR_W_NMR_H_s_1', gap=-6.05, time=2369.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2370: Phase map is None at time 2370 - algorithm may have crashed
+Warning: Vehicle 'veh5417' ends teleporting on edge 'E_PNK_W_WZM', time=2372.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2400: Phase map is None at time 2400 - algorithm may have crashed
+INFO:TrafficSimulator:Step 2400: 590 vehicles active
+Warning: Vehicle 'veh5540' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=2411.00.
+Warning: Teleporting vehicle 'veh5540'; collision with vehicle 'veh5563', lane='E_GOR_W_NMR_H_s_1', gap=-3.43, time=2411.00, stage=move.
+Warning: Vehicle 'veh5540' ends teleporting on edge 'E_PNK_W_WZM_T', time=2411.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 2430: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2430: Phase map is None at time 2430 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2460: Phase map is None at time 2460 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2490: Phase map is None at time 2490 - algorithm may have crashed
+INFO:TrafficSimulator:Step 2500: 595 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 2520: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2520: Phase map is None at time 2520 - algorithm may have crashed
+Warning: Vehicle 'veh6040' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=2520.00.
+Warning: Vehicle 'veh6040' performs emergency stop at the end of lane 'E_JBT_E_NMR_H_sl_0' because of a red traffic light (decel=-15.24, offset=2.94), time=2520.00.
+Warning: Vehicle 'veh3901' performs emergency braking on lane 'E_NMR_S_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2540.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2550: Phase map is None at time 2550 - algorithm may have crashed
+Warning: Vehicle 'veh6111' performs emergency braking on lane 'E_PNK_E_NMR_T_0' with decel=9.00, wished=4.50, severity=1.00, time=2566.00.
+Warning: Vehicle 'veh6164' performs emergency braking on lane 'E_PNK_E_WZM_H_slr_0' with decel=9.00, wished=4.50, severity=1.00, time=2570.00.
+Warning: Vehicle 'veh6164' performs emergency stop at the end of lane 'E_PNK_E_WZM_H_slr_0' because of a red traffic light (decel=-13.99, offset=1.43), time=2570.00.
+Warning: Vehicle 'veh5895' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=2571.00.
+Warning: Vehicle 'veh5895' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_2' because of a red traffic light (decel=-9.43, offset=0.39), time=2572.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2580: Phase map is None at time 2580 - algorithm may have crashed
+Warning: Vehicle 'veh5829' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2585.00.
+Warning: Vehicle 'veh5829' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-12.96, offset=1.28), time=2585.00.
+Warning: Vehicle 'veh6157' performs emergency braking on lane ':J31_3_1' with decel=9.00, wished=4.50, severity=1.00, time=2597.00.
+INFO:TrafficSimulator:Step 2600: 609 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 2610: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2610: Phase map is None at time 2610 - algorithm may have crashed
+Warning: Vehicle 'veh5931' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=2631.00.
+Warning: Vehicle 'veh5952' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=2631.00.
+Warning: Vehicle 'veh5952' performs emergency stop at the end of lane 'E_PNK_W_WZM_H_sl_1' because of a red traffic light (decel=-11.31, offset=1.72), time=2631.00.
+Warning: Teleporting vehicle 'veh6110'; collision with vehicle 'veh6149', lane='E_GOR_W_NMR_H_s_1', gap=-6.16, time=2633.00, stage=move.
+Warning: Vehicle 'veh6110' ends teleporting on edge 'E_PNK_W_WZM_T', time=2633.00.
+Warning: Vehicle 'veh6023' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=2638.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2640: Phase map is None at time 2640 - algorithm may have crashed
+Warning: Vehicle 'veh6185' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2661.00.
+Warning: Vehicle 'veh6185' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_1' because of a red traffic light (decel=-18.12, offset=1.74), time=2661.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2670: Phase map is None at time 2670 - algorithm may have crashed
+Warning: Vehicle 'veh6072' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2675.00.
+Warning: Vehicle 'veh6087' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=2675.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 2700: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 2700: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2700: Phase map is None at time 2700 - algorithm may have crashed
+Warning: Vehicle 'veh6484' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=2700.00.
+Warning: Vehicle 'veh6484' performs emergency stop at the end of lane 'E_JBT_E_NMR_H_sl_0' because of a red traffic light (decel=-14.36, offset=2.47), time=2700.00.
+INFO:TrafficSimulator:Step 2700: 640 vehicles active
+Warning: Teleporting vehicle 'veh6227'; collision with vehicle 'veh6313', lane='E_GOR_W_NMR_H_s_1', gap=-7.33, time=2720.00, stage=move.
+Warning: Vehicle 'veh6227' ends teleporting on edge 'E_PNK_W_WZM_T', time=2721.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2730: Phase map is None at time 2730 - algorithm may have crashed
+Warning: Vehicle 'veh6574' performs emergency braking on lane 'E_DOR_W_NMR_H_r_1' with decel=9.00, wished=4.50, severity=1.00, time=2733.00.
+Warning: Vehicle 'veh6574' performs emergency stop at the end of lane 'E_DOR_W_NMR_H_r_1' because of a red traffic light (decel=-12.66, offset=1.90), time=2733.00.
+Warning: Vehicle 'veh3542' performs emergency braking on lane 'E_NMR_S_JBT_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=2733.00.
+Warning: Vehicle 'veh3542' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_l_0' because of a red traffic light (decel=-9.34, offset=0.09), time=2734.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2760: Phase map is None at time 2760 - algorithm may have crashed
+Warning: Vehicle 'veh4314' performs emergency braking on lane 'E_NMR_S_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2762.00.
+Warning: Vehicle 'veh4314' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_s_1' because of a red traffic light (decel=-21.77, offset=11.71), time=2762.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 2790: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2790: Phase map is None at time 2790 - algorithm may have crashed
+INFO:TrafficSimulator:Step 2800: 645 vehicles active
+Warning: Vehicle 'veh6651' performs emergency braking on lane 'E_NMR_S_PNK_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=2816.00.
+Warning: Vehicle 'veh6651' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_2' because of a red traffic light (decel=-19.45, offset=10.18), time=2816.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2820: Phase map is None at time 2820 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh6473'; collision with vehicle 'veh6507', lane='E_GOR_W_NMR_H_s_1', gap=-7.32, time=2824.00, stage=move.
+Warning: Teleporting vehicle 'veh6522'; collision with vehicle 'veh6615', lane='E_GOR_W_NMR_H_s_1', gap=-7.27, time=2827.00, stage=move.
+Warning: Vehicle 'veh6473' ends teleporting on edge 'E_PNK_W_WZM', time=2827.00.
+Warning: Vehicle 'veh6522' ends teleporting on edge 'E_PNK_W_WZM_T', time=2828.00.
+Warning: Vehicle 'veh3071' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=2841.00.
+Warning: Vehicle 'veh3071' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_2' because of a red traffic light (decel=-22.16, offset=1.79), time=2841.00.
+Warning: Vehicle 'veh3047' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2841.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2850: Phase map is None at time 2850 - algorithm may have crashed
+Warning: Vehicle 'veh6647' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=2864.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 2880: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2880: Phase map is None at time 2880 - algorithm may have crashed
+INFO:TrafficSimulator:Step 2900: 667 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2910: Phase map is None at time 2910 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh6816'; collision with vehicle 'veh6757', lane='E_GOR_W_NMR_H_s_1', gap=-3.68, time=2920.00, stage=move.
+Warning: Vehicle 'veh6816' ends teleporting on edge 'E_PNK_W_WZM', time=2923.00.
+Warning: Vehicle 'veh6683' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2931.00.
+Warning: Vehicle 'veh6683' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_1' because of a red traffic light (decel=-20.09, offset=4.40), time=2931.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2940: Phase map is None at time 2940 - algorithm may have crashed
+Warning: Vehicle 'veh7115' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=2942.00.
+Warning: Vehicle 'veh7115' performs emergency stop at the end of lane 'E_NMR_N_JBT_H_s_0' because of a red traffic light (decel=-10.34, offset=1.09), time=2943.00.
+Warning: Vehicle 'veh7107' performs emergency braking on lane 'E_AYA_N_GRN_H_l_2' with decel=9.00, wished=4.50, severity=1.00, time=2953.00.
+Warning: Vehicle 'veh7107' performs emergency stop at the end of lane 'E_AYA_N_GRN_H_l_2' because of a red traffic light (decel=-18.41, offset=9.40), time=2953.00.
+Warning: Vehicle 'veh6960' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2959.00.
+Warning: Vehicle 'veh6960' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_1' because of a red traffic light (decel=-18.97, offset=4.79), time=2959.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 2970: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2970: Phase map is None at time 2970 - algorithm may have crashed
+Warning: Vehicle 'veh7121' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_2' with decel=9.00, wished=4.50, severity=1.00, time=2970.00.
+Warning: Vehicle 'veh7121' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_2' because of a red traffic light (decel=-10.85, offset=0.86), time=2970.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3000: Phase map is None at time 3000 - algorithm may have crashed
+INFO:TrafficSimulator:Step 3000: 671 vehicles active
+Warning: Teleporting vehicle 'veh7093'; collision with vehicle 'veh7071', lane='E_GOR_W_NMR_H_s_1', gap=-7.50, time=3013.00, stage=move.
+Warning: Vehicle 'veh7093' ends teleporting on edge 'E_PNK_W_WZM_T', time=3014.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3030: Phase map is None at time 3030 - algorithm may have crashed
+Warning: Vehicle 'veh6864' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=3035.00.
+Warning: Vehicle 'veh6864' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_0' because of a red traffic light (decel=-16.94, offset=2.36), time=3035.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 3060: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3060: Phase map is None at time 3060 - algorithm may have crashed
+Warning: Vehicle 'veh7104' performs emergency braking on lane 'E_NMR_S_PNK_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=3060.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3090: Phase map is None at time 3090 - algorithm may have crashed
+INFO:TrafficSimulator:Step 3100: 637 vehicles active
+Warning: Teleporting vehicle 'veh7246'; collision with vehicle 'veh7270', lane='E_GOR_W_NMR_H_s_1', gap=-7.24, time=3111.00, stage=move.
+Warning: Teleporting vehicle 'veh7282'; collision with vehicle 'veh7362', lane='E_GOR_W_NMR_H_s_1', gap=-5.94, time=3114.00, stage=move.
+Warning: Vehicle 'veh7246' ends teleporting on edge 'E_PNK_W_WZM', time=3114.00.
+Warning: Vehicle 'veh7282' ends teleporting on edge 'E_PNK_W_WZM', time=3117.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3120: Phase map is None at time 3120 - algorithm may have crashed
+Warning: Vehicle 'veh7244' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=3125.00.
+Warning: Vehicle 'veh7244' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-16.37, offset=4.58), time=3125.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 3150: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3150: Phase map is None at time 3150 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh7420'; collision with vehicle 'veh7459', lane='E_GOR_W_NMR_H_s_1', gap=-1.95, time=3169.00, stage=move.
+Warning: Vehicle 'veh7420' ends teleporting on edge 'E_PNK_W_WZM_T', time=3169.00.
+Warning: Teleporting vehicle 'veh7447'; collision with vehicle 'veh7525', lane='E_GOR_W_NMR_H_s_1', gap=-7.41, time=3176.00, stage=move.
+Warning: Vehicle 'veh7447' ends teleporting on edge 'E_PNK_W_WZM_T', time=3176.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3180: Phase map is None at time 3180 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh7509'; collision with vehicle 'veh7518', lane='E_GOR_W_NMR_H_s_1', gap=-6.15, time=3194.00, stage=move.
+Warning: Vehicle 'veh7509' ends teleporting on edge 'E_PNK_W_WZM', time=3197.00.
+INFO:TrafficSimulator:Step 3200: 613 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3210: Phase map is None at time 3210 - algorithm may have crashed
+Warning: Vehicle 'veh7804' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=3212.00.
+Warning: Vehicle 'veh7804' performs emergency stop at the end of lane 'E_NMR_N_JBT_H_s_0' because of a red traffic light (decel=-10.99, offset=1.86), time=3213.00.
+Warning: Vehicle 'veh7605' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=3215.00.
+Warning: Teleporting vehicle 'veh7561'; collision with vehicle 'veh7573', lane='E_GOR_W_NMR_H_s_1', gap=-4.32, time=3221.00, stage=move.
+Warning: Vehicle 'veh7561' ends teleporting on edge 'E_PNK_W_WZM_T', time=3221.00.
+Warning: Teleporting vehicle 'veh7615'; collision with vehicle 'veh7614', lane='E_GOR_W_NMR_H_s_1', gap=-5.29, time=3224.00, stage=move.
+Warning: Vehicle 'veh7615' ends teleporting on edge 'E_PNK_W_WZM_T', time=3224.00.
+Warning: Teleporting vehicle 'veh7681'; collision with vehicle 'veh7663', lane='E_GOR_W_NMR_H_s_1', gap=-7.31, time=3234.00, stage=move.
+Warning: Vehicle 'veh7681' ends teleporting on edge 'E_PNK_W_WZM_T', time=3234.00.
+Warning: Teleporting vehicle 'veh7717'; collision with vehicle 'veh7710', lane='E_GOR_W_NMR_H_s_1', gap=-7.00, time=3238.00, stage=move.
+Warning: Vehicle 'veh7717' ends teleporting on edge 'E_PNK_W_WZM_T', time=3238.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 3240: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3240: Phase map is None at time 3240 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3270: Phase map is None at time 3270 - algorithm may have crashed
+Warning: Vehicle 'veh7977' performs emergency braking on lane 'E_DOR_W_NMR_H_r_1' with decel=9.00, wished=4.50, severity=1.00, time=3273.00.
+Warning: Vehicle 'veh7977' performs emergency stop at the end of lane 'E_DOR_W_NMR_H_r_1' because of a red traffic light (decel=-12.30, offset=0.85), time=3273.00.
+Warning: Teleporting vehicle 'veh7634'; collision with vehicle 'veh7785', lane='E_GOR_W_NMR_H_s_1', gap=-7.42, time=3277.00, stage=move.
+Warning: Vehicle 'veh7634' ends teleporting on edge 'E_PNK_W_WZM_T', time=3277.00.
+Warning: Teleporting vehicle 'veh7657'; collision with vehicle 'veh7622', lane='E_GOR_W_NMR_H_s_1', gap=-6.46, time=3282.00, stage=move.
+Warning: Vehicle 'veh6932' performs emergency braking on lane ':J_WZM_PNK_12_2' with decel=9.00, wished=4.50, severity=1.00, time=3284.00.
+Warning: Vehicle 'veh7657' ends teleporting on edge 'E_PNK_W_WZM', time=3285.00.
+Warning: Teleporting vehicle 'veh7794'; collision with vehicle 'veh7715', lane='E_GOR_W_NMR_H_s_1', gap=-2.32, time=3288.00, stage=move.
+Warning: Vehicle 'veh7794' ends teleporting on edge 'E_PNK_W_WZM_T', time=3290.00.
+Warning: Vehicle 'veh3701' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=3291.00.
+Warning: Vehicle 'veh3701' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_1' because of a red traffic light (decel=-22.89, offset=6.65), time=3291.00.
+Warning: Vehicle 'veh7155' performs emergency braking on lane 'E_PNK_E_WZM_H_slr_1' with decel=9.00, wished=4.50, severity=1.00, time=3293.00.
+Warning: Vehicle 'veh7155' performs emergency stop at the end of lane 'E_PNK_E_WZM_H_slr_1' because of a red traffic light (decel=-11.98, offset=2.69), time=3293.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3300: Phase map is None at time 3300 - algorithm may have crashed
+INFO:TrafficSimulator:Step 3300: 578 vehicles active
+Warning: Vehicle 'veh7897' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=3301.00.
+Warning: Vehicle 'veh7659' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=3304.00.
+Warning: Vehicle 'veh7659' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_0' because of a red traffic light (decel=-12.67, offset=3.27), time=3304.00.
+Warning: Vehicle 'veh8048' performs emergency braking on lane 'E_AYA_N_GRN_H_l_2' with decel=9.00, wished=4.50, severity=1.00, time=3313.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 3330: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3330: Phase map is None at time 3330 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3360: Phase map is None at time 3360 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh7996'; collision with vehicle 'veh8002', lane='E_GOR_W_NMR_H_s_1', gap=-3.55, time=3367.00, stage=move.
+Warning: Vehicle 'veh7996' ends teleporting on edge 'E_PNK_W_WZM', time=3370.00.
+Warning: Teleporting vehicle 'veh7957'; collision with vehicle 'veh7986', lane='E_GOR_W_NMR_H_s_1', gap=-5.46, time=3372.00, stage=move.
+Warning: Vehicle 'veh7957' ends teleporting on edge 'E_PNK_W_WZM', time=3375.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3390: Phase map is None at time 3390 - algorithm may have crashed
+Warning: Vehicle 'veh8273' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=3390.00.
+INFO:TrafficSimulator:Step 3400: 603 vehicles active
+Warning: Vehicle 'veh8129' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=3409.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 3420: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3420: Phase map is None at time 3420 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3450: Phase map is None at time 3450 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh8174'; collision with vehicle 'veh8219', lane='E_GOR_W_NMR_H_s_1', gap=-7.40, time=3450.00, stage=move.
+Warning: Teleporting vehicle 'veh8151'; collision with vehicle 'veh8136', lane='E_GOR_W_NMR_H_s_1', gap=-6.21, time=3453.00, stage=move.
+Warning: Vehicle 'veh8174' ends teleporting on edge 'E_PNK_W_WZM', time=3453.00.
+Warning: Vehicle 'veh8151' ends teleporting on edge 'E_PNK_W_WZM', time=3456.00.
+Warning: Vehicle 'veh8180' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=3471.00.
+Warning: Vehicle 'veh8180' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_2' because of a red traffic light (decel=-22.27, offset=2.10), time=3471.00.
+Warning: Vehicle 'veh8494' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=3474.00.
+Warning: Vehicle 'veh8494' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_1' because of a red traffic light (decel=-16.53, offset=4.22), time=3474.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3480: Phase map is None at time 3480 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh8385'; collision with vehicle 'veh8368', lane='E_GOR_W_NMR_H_s_1', gap=-4.32, time=3493.00, stage=move.
+Warning: Vehicle 'veh8385' ends teleporting on edge 'E_PNK_W_WZM_T', time=3493.00.
+INFO:TrafficSimulator:Step 3500: 622 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 3510: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3510: Phase map is None at time 3510 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh8313'; collision with vehicle 'veh8307', lane='E_GOR_W_NMR_H_s_1', gap=-6.53, time=3537.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3540: Phase map is None at time 3540 - algorithm may have crashed
+Warning: Vehicle 'veh8313' ends teleporting on edge 'E_PNK_W_WZM', time=3541.00.
+Warning: Vehicle 'veh8486' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=3552.00.
+Warning: Vehicle 'veh8716' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=3559.00.
+Warning: Vehicle 'veh8716' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_0' because of a red traffic light (decel=-19.93, offset=2.18), time=3559.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3570: Phase map is None at time 3570 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh8579'; collision with vehicle 'veh8535', lane='E_GOR_W_NMR_H_s_1', gap=-7.30, time=3589.00, stage=move.
+Warning: Vehicle 'veh8579' ends teleporting on edge 'E_PNK_W_WZM_T', time=3589.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 3600: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 3600: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3600: Phase map is None at time 3600 - algorithm may have crashed
+Warning: Vehicle 'veh7775' performs emergency braking on lane 'E_HZG_W_NMR_H_slr_1' with decel=9.00, wished=4.50, severity=1.00, time=3600.00.
+INFO:TrafficSimulator:Step 3600: 621 vehicles active
+Warning: Teleporting vehicle 'veh8626'; collision with vehicle 'veh8576', lane='E_GOR_W_NMR_H_s_1', gap=-6.98, time=3624.00, stage=move.
+Warning: Teleporting vehicle 'veh8542'; collision with vehicle 'veh8560', lane='E_GOR_W_NMR_H_s_1', gap=-3.09, time=3627.00, stage=move.
+Warning: Vehicle 'veh8626' ends teleporting on edge 'E_PNK_W_WZM', time=3627.00.
+Warning: Vehicle 'veh8542' ends teleporting on edge 'E_PNK_W_WZM_T', time=3629.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3630: Phase map is None at time 3630 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh8645'; collision with vehicle 'veh8602', lane='E_GOR_W_NMR_H_s_1', gap=-7.31, time=3631.00, stage=move.
+Warning: Vehicle 'veh8645' ends teleporting on edge 'E_PNK_W_WZM_T', time=3631.00.
+Warning: Vehicle 'veh8894' performs emergency braking on lane 'E_DOR_W_NMR_H_r_1' with decel=9.00, wished=4.50, severity=1.00, time=3633.00.
+Warning: Vehicle 'veh8894' performs emergency stop at the end of lane 'E_DOR_W_NMR_H_r_1' because of a red traffic light (decel=-10.49, offset=0.49), time=3633.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3660: Phase map is None at time 3660 - algorithm may have crashed
+Warning: Vehicle 'veh8961' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=3662.00.
+Warning: Vehicle 'veh3766' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=3665.00.
+Warning: Vehicle 'veh3766' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-18.50, offset=0.77), time=3665.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 3690: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3690: Phase map is None at time 3690 - algorithm may have crashed
+INFO:TrafficSimulator:Step 3700: 625 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3720: Phase map is None at time 3720 - algorithm may have crashed
+Warning: Vehicle 'veh9123' performs emergency braking on lane 'E_DOR_W_NMR_H_r_1' with decel=9.00, wished=4.50, severity=1.00, time=3723.00.
+Warning: Vehicle 'veh9123' performs emergency stop at the end of lane 'E_DOR_W_NMR_H_r_1' because of a red traffic light (decel=-11.55, offset=1.83), time=3723.00.
+Warning: Vehicle 'veh6017' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=3741.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3750: Phase map is None at time 3750 - algorithm may have crashed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 3780: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3780: Phase map is None at time 3780 - algorithm may have crashed
+Warning: Vehicle 'veh9225' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_2' with decel=9.00, wished=4.50, severity=1.00, time=3780.00.
+Warning: Vehicle 'veh9225' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_2' because of a red traffic light (decel=-13.97, offset=4.80), time=3780.00.
+INFO:TrafficSimulator:Step 3800: 625 vehicles active
+Warning: Teleporting vehicle 'veh9148'; collision with vehicle 'veh9132', lane='E_GOR_W_NMR_H_s_1', gap=-7.21, time=3805.00, stage=move.
+Warning: Vehicle 'veh9148' ends teleporting on edge 'E_PNK_W_WZM', time=3809.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3810: Phase map is None at time 3810 - algorithm may have crashed
+Warning: Vehicle 'veh9378' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=3812.00.
+Warning: Vehicle 'veh9378' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_0' because of a red traffic light (decel=-22.77, offset=13.01), time=3812.00.
+Warning: Vehicle 'veh9085' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=3812.00.
+Warning: Vehicle 'veh9085' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_1' because of a red traffic light (decel=-16.88, offset=5.05), time=3812.00.
+Warning: Vehicle 'veh9134' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=3831.00.
+Warning: Vehicle 'veh9134' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-18.54, offset=0.88), time=3831.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3840: Phase map is None at time 3840 - algorithm may have crashed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 3870: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3870: Phase map is None at time 3870 - algorithm may have crashed
+Warning: Vehicle 'veh9523' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=3870.00.
+Warning: Vehicle 'veh9523' performs emergency stop at the end of lane 'E_JBT_E_NMR_H_sl_0' because of a red traffic light (decel=-13.59, offset=0.57), time=3870.00.
+Warning: Teleporting vehicle 'veh9341'; collision with vehicle 'veh9373', lane='E_GOR_W_NMR_H_s_1', gap=-7.11, time=3895.00, stage=move.
+Warning: Teleporting vehicle 'veh9340'; collision with vehicle 'veh9410', lane='E_GOR_W_NMR_H_s_1', gap=-6.51, time=3898.00, stage=move.
+Warning: Vehicle 'veh9341' ends teleporting on edge 'E_PNK_W_WZM', time=3898.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3900: Phase map is None at time 3900 - algorithm may have crashed
+INFO:TrafficSimulator:Step 3900: 620 vehicles active
+Warning: Vehicle 'veh9340' ends teleporting on edge 'E_PNK_W_WZM', time=3901.00.
+Warning: Teleporting vehicle 'veh9408'; collision with vehicle 'veh9412', lane='E_GOR_W_NMR_H_s_1', gap=-5.12, time=3906.00, stage=move.
+Warning: Vehicle 'veh9408' ends teleporting on edge 'E_PNK_W_WZM_T', time=3906.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3930: Phase map is None at time 3930 - algorithm may have crashed
+Warning: Vehicle 'veh9329' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=3935.00.
+Warning: Vehicle 'veh3984' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=3935.00.
+Warning: Vehicle 'veh3984' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_1' because of a red traffic light (decel=-15.80, offset=6.76), time=3935.00.
+Warning: Teleporting vehicle 'veh9623'; collision with vehicle 'veh9524', lane='E_GOR_W_NMR_H_s_1', gap=-0.61, time=3947.00, stage=move.
+Warning: Vehicle 'veh9623' ends teleporting on edge 'E_PNK_W_WZM_T', time=3947.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 3960: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3960: Phase map is None at time 3960 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3990: Phase map is None at time 3990 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh9471'; junction collision with vehicle 'veh9472', lane=':J_NMR_PNK_2_0', gap=-0.05, time=3990.00, stage=move.
+Warning: Vehicle 'veh9471' ends teleporting on edge 'E_PNK_W_WZM_T', time=3990.00.
+Warning: Vehicle 'veh9849' performs emergency braking on lane 'E_DOR_W_NMR_H_r_1' with decel=9.00, wished=4.50, severity=1.00, time=3993.00.
+Warning: Vehicle 'veh9849' performs emergency stop at the end of lane 'E_DOR_W_NMR_H_r_1' because of a red traffic light (decel=-10.87, offset=0.95), time=3993.00.
+Warning: Teleporting vehicle 'veh9610'; collision with vehicle 'veh9576', lane='E_GOR_W_NMR_H_s_1', gap=-5.52, time=3994.00, stage=move.
+Warning: Vehicle 'veh9610' ends teleporting on edge 'E_PNK_W_WZM_T', time=3995.00.
+INFO:TrafficSimulator:Step 4000: 635 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4020: Phase map is None at time 4020 - algorithm may have crashed
+Warning: Vehicle 'veh9917' performs emergency braking on lane 'E_AYA_N_GRN_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=4033.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 4050: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4050: Phase map is None at time 4050 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4080: Phase map is None at time 4080 - algorithm may have crashed
+Warning: Vehicle 'veh10101' performs emergency braking on lane 'E_DOR_W_NMR_H_r_0' with decel=9.00, wished=4.50, severity=1.00, time=4086.00.
+Warning: Vehicle 'veh10101' performs emergency stop at the end of lane 'E_DOR_W_NMR_H_r_0' because of a red traffic light (decel=-11.60, offset=0.22), time=4086.00.
+Warning: Vehicle 'veh9609' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=4090.00.
+Warning: Vehicle 'veh9609' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_1' because of a red traffic light (decel=-16.48, offset=5.02), time=4090.00.
+Warning: Teleporting vehicle 'veh9741'; collision with vehicle 'veh9781', lane='E_GOR_W_NMR_H_s_1', gap=-6.17, time=4094.00, stage=move.
+Warning: Teleporting vehicle 'veh9804'; collision with vehicle 'veh9800', lane='E_GOR_W_NMR_H_s_1', gap=-4.56, time=4097.00, stage=move.
+Warning: Vehicle 'veh9741' ends teleporting on edge 'E_PNK_W_WZM', time=4097.00.
+Warning: Vehicle 'veh9804' ends teleporting on edge 'E_PNK_W_WZM', time=4100.00.
+INFO:TrafficSimulator:Step 4100: 612 vehicles active
+Warning: Teleporting vehicle 'veh9822'; collision with vehicle 'veh9905', lane='E_GOR_W_NMR_H_s_1', gap=-2.83, time=4101.00, stage=move.
+Warning: Vehicle 'veh9822' ends teleporting on edge 'E_PNK_W_WZM', time=4104.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4110: Phase map is None at time 4110 - algorithm may have crashed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 4140: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4140: Phase map is None at time 4140 - algorithm may have crashed
+Warning: Vehicle 'veh10176' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_0' with decel=9.00, wished=4.50, severity=1.00, time=4140.00.
+Warning: Vehicle 'veh10176' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_0' because of a red traffic light (decel=-9.98, offset=0.41), time=4140.00.
+Warning: Vehicle 'veh9985' performs emergency braking on lane ':J31_3_1' with decel=9.00, wished=4.50, severity=1.00, time=4152.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4170: Phase map is None at time 4170 - algorithm may have crashed
+Warning: Vehicle 'veh8937' performs emergency braking on lane 'E_PNK_E_WZM_H_slr_0' with decel=9.00, wished=4.50, severity=1.00, time=4187.00.
+Warning: Vehicle 'veh8937' performs emergency stop at the end of lane 'E_PNK_E_WZM_H_slr_0' because of a red traffic light (decel=-9.50, offset=0.34), time=4187.00.
+Warning: Teleporting vehicle 'veh10054'; collision with vehicle 'veh9985', lane='E_GOR_W_NMR_H_s_1', gap=-6.86, time=4188.00, stage=move.
+Warning: Vehicle 'veh10054' ends teleporting on edge 'E_PNK_W_WZM_T', time=4188.00.
+Warning: Teleporting vehicle 'veh10157'; collision with vehicle 'veh10056', lane='E_GOR_W_NMR_H_s_1', gap=-7.04, time=4192.00, stage=move.
+Warning: Vehicle 'veh10157' ends teleporting on edge 'E_PNK_W_WZM', time=4195.00.
+Warning: Teleporting vehicle 'veh10132'; collision with vehicle 'veh10193', lane='E_GOR_W_NMR_H_s_1', gap=-6.48, time=4199.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4200: Phase map is None at time 4200 - algorithm may have crashed
+INFO:TrafficSimulator:Step 4200: 613 vehicles active
+Warning: Vehicle 'veh10132' ends teleporting on edge 'E_PNK_W_WZM_T', time=4201.00.
+Warning: Vehicle 'veh10130' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=4205.00.
+Warning: Vehicle 'veh10130' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-15.71, offset=4.31), time=4205.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 4230: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4230: Phase map is None at time 4230 - algorithm may have crashed
+Warning: Vehicle 'veh10420' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_1' with decel=9.00, wished=4.50, severity=1.00, time=4230.00.
+Warning: Vehicle 'veh10420' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_1' because of a red traffic light (decel=-15.15, offset=1.44), time=4230.00.
+Warning: Vehicle 'veh10250' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=4253.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4260: Phase map is None at time 4260 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh10349'; collision with vehicle 'veh10358', lane='E_GOR_W_NMR_H_s_1', gap=-6.55, time=4273.00, stage=move.
+Warning: Vehicle 'veh10349' ends teleporting on edge 'E_PNK_W_WZM_T', time=4273.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4290: Phase map is None at time 4290 - algorithm may have crashed
+INFO:TrafficSimulator:Step 4300: 633 vehicles active
+Warning: Vehicle 'veh10504' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=4302.00.
+Warning: Vehicle 'veh10504' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-18.74, offset=6.74), time=4302.00.
+Warning: Vehicle 'veh10637' performs emergency braking on lane 'E_AYA_N_GRN_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=4303.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 4320: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4320: Phase map is None at time 4320 - algorithm may have crashed
+Warning: Vehicle 'veh4371' performs emergency braking on lane 'E_NMR_S_PNK_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=4320.00.
+Warning: Vehicle 'veh4371' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_1' because of a red traffic light (decel=-12.89, offset=1.00), time=4320.00.
+Warning: Vehicle 'veh10641' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_2' with decel=9.00, wished=4.50, severity=1.00, time=4320.00.
+Warning: Vehicle 'veh10641' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_2' because of a red traffic light (decel=-14.94, offset=5.24), time=4320.00.
+Warning: Vehicle 'veh4412' performs emergency braking on lane 'E_NMR_S_PNK_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=4320.00.
+Warning: Vehicle 'veh4412' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_0' because of a red traffic light (decel=-11.39, offset=2.00), time=4320.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4350: Phase map is None at time 4350 - algorithm may have crashed
+Warning: Vehicle 'veh10810' performs emergency braking on lane 'E_DOR_W_NMR_H_r_1' with decel=9.00, wished=4.50, severity=1.00, time=4356.00.
+Warning: Vehicle 'veh10522' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=4366.00.
+Warning: Vehicle 'veh10522' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-10.47, offset=0.24), time=4366.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4380: Phase map is None at time 4380 - algorithm may have crashed
+Warning: Vehicle 'veh10616' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=4385.00.
+Warning: Vehicle 'veh10762' performs emergency braking on lane ':J31_3_1' with decel=9.00, wished=4.50, severity=1.00, time=4399.00.
+Warning: Teleporting vehicle 'veh10762'; collision with vehicle 'veh10723', lane='E_GOR_W_NMR_H_s_1', gap=-2.45, time=4399.00, stage=move.
+Warning: Vehicle 'veh10762' ends teleporting on edge 'E_PNK_W_WZM_T', time=4399.00.
+INFO:TrafficSimulator:Step 4400: 657 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 4410: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4410: Phase map is None at time 4410 - algorithm may have crashed
+Warning: Vehicle 'veh10909' performs emergency braking on lane 'E_AYA_N_GRN_H_r_0' with decel=9.00, wished=4.50, severity=1.00, time=4410.00.
+Warning: Vehicle 'veh10909' performs emergency stop at the end of lane 'E_AYA_N_GRN_H_r_0' because of a red traffic light (decel=-10.66, offset=1.63), time=4410.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4440: Phase map is None at time 4440 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh10701'; collision with vehicle 'veh10698', lane='E_GOR_W_NMR_H_s_1', gap=-7.24, time=4444.00, stage=move.
+Warning: Vehicle 'veh10701' ends teleporting on edge 'E_PNK_W_WZM_T', time=4444.00.
+Warning: Vehicle 'veh7466' performs emergency braking on lane 'E_NMR_S_JBT_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=4446.00.
+Warning: Vehicle 'veh7466' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_l_0' because of a red traffic light (decel=-19.74, offset=6.15), time=4446.00.
+Warning: Teleporting vehicle 'veh10685'; collision with vehicle 'veh10784', lane='E_GOR_W_NMR_H_s_1', gap=-6.31, time=4447.00, stage=move.
+Warning: Vehicle 'veh10685' ends teleporting on edge 'E_PNK_W_WZM_T', time=4450.00.
+Warning: Vehicle 'veh10922' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=4454.00.
+Warning: Vehicle 'veh10922' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-18.15, offset=5.99), time=4454.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4470: Phase map is None at time 4470 - algorithm may have crashed
+Warning: Vehicle 'veh10697' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4475.00.
+Warning: Vehicle 'veh10697' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-18.07, offset=1.09), time=4475.00.
+Warning: Vehicle 'veh9762' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=4475.00.
+Warning: Vehicle 'veh9762' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_1' because of a red traffic light (decel=-12.27, offset=1.57), time=4475.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 4500: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 4500: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4500: Phase map is None at time 4500 - algorithm may have crashed
+Warning: Vehicle 'veh11137' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_2' with decel=9.00, wished=4.50, severity=1.00, time=4500.00.
+Warning: Vehicle 'veh11137' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_2' because of a red traffic light (decel=-14.40, offset=0.84), time=4500.00.
+INFO:TrafficSimulator:Step 4500: 676 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4530: Phase map is None at time 4530 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh11061'; collision with vehicle 'veh11130', lane='E_GOR_W_NMR_H_s_1', gap=-3.88, time=4539.00, stage=move.
+Warning: Vehicle 'veh11061' ends teleporting on edge 'E_PNK_W_WZM_T', time=4539.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4560: Phase map is None at time 4560 - algorithm may have crashed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 4590: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4590: Phase map is None at time 4590 - algorithm may have crashed
+INFO:TrafficSimulator:Step 4600: 682 vehicles active
+Warning: Teleporting vehicle 'veh11315'; collision with vehicle 'veh11234', lane='E_GOR_W_NMR_H_s_1', gap=-7.02, time=4616.00, stage=move.
+Warning: Vehicle 'veh11315' ends teleporting on edge 'E_PNK_W_WZM_T', time=4618.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4620: Phase map is None at time 4620 - algorithm may have crashed
+Warning: Vehicle 'veh11544' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=4626.00.
+Warning: Vehicle 'veh11196' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=4626.00.
+Warning: Vehicle 'veh11539' performs emergency braking on lane 'E_DOR_W_NMR_H_r_1' with decel=9.00, wished=4.50, severity=1.00, time=4626.00.
+Warning: Vehicle 'veh11539' performs emergency stop at the end of lane 'E_DOR_W_NMR_H_r_1' because of a red traffic light (decel=-10.89, offset=1.00), time=4626.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4650: Phase map is None at time 4650 - algorithm may have crashed
+Warning: Vehicle 'veh11312' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=4650.00.
+Warning: Vehicle 'veh7944' performs emergency braking on lane 'E_NMR_S_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=4654.00.
+Warning: Vehicle 'veh7944' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_s_0' because of a red traffic light (decel=-16.60, offset=0.21), time=4654.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 4680: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4680: Phase map is None at time 4680 - algorithm may have crashed
+INFO:TrafficSimulator:Step 4700: 707 vehicles active
+Warning: Teleporting vehicle 'veh11434'; collision with vehicle 'veh11456', lane='E_GOR_W_NMR_H_s_1', gap=-7.49, time=4703.00, stage=move.
+Warning: Vehicle 'veh11434' ends teleporting on edge 'E_PNK_W_WZM', time=4706.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4710: Phase map is None at time 4710 - algorithm may have crashed
+Warning: Vehicle 'veh4779' performs emergency braking on lane 'E_NMR_S_JBT_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=4716.00.
+Warning: Vehicle 'veh4779' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_l_0' because of a red traffic light (decel=-18.15, offset=8.02), time=4716.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4740: Phase map is None at time 4740 - algorithm may have crashed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 4770: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4770: Phase map is None at time 4770 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4800: Phase map is None at time 4800 - algorithm may have crashed
+INFO:TrafficSimulator:Step 4800: 674 vehicles active
+Warning: Vehicle 'veh11777' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=4802.00.
+Warning: Teleporting vehicle 'veh10948'; collision with vehicle 'veh10978', lane='E_PNK_E_NMR_T_0', gap=-1.69, time=4823.00, stage=move.
+Warning: Vehicle 'veh10948' ends teleporting on edge 'E_PNK_E_NMR', time=4823.00.
+Warning: Vehicle 'veh11658' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=4829.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4830: Phase map is None at time 4830 - algorithm may have crashed
+Warning: Vehicle 'veh12091' performs emergency braking on lane 'E_NMR_N_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4834.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 4860: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4860: Phase map is None at time 4860 - algorithm may have crashed
+Warning: Vehicle 'veh11824' performs emergency braking on lane 'E_NMR_N_PNK_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=4880.00.
+Warning: Vehicle 'veh11926' performs emergency braking on lane 'E_NMR_N_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4880.00.
+Warning: Vehicle 'veh11926' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_1' because of a red traffic light (decel=-13.53, offset=3.29), time=4880.00.
+Warning: Teleporting vehicle 'veh11992'; collision with vehicle 'veh11961', lane='E_GOR_W_NMR_H_s_1', gap=-7.35, time=4887.00, stage=move.
+Warning: Vehicle 'veh11992' ends teleporting on edge 'E_PNK_W_WZM_T', time=4888.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4890: Phase map is None at time 4890 - algorithm may have crashed
+Warning: Vehicle 'veh11745' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=4890.00.
+Warning: Vehicle 'veh11990' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=4890.00.
+Warning: Vehicle 'veh11990' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-14.99, offset=3.02), time=4890.00.
+Warning: Teleporting vehicle 'veh11972'; collision with vehicle 'veh11823', lane='E_GOR_W_NMR_H_s_1', gap=-7.33, time=4896.00, stage=move.
+Warning: Vehicle 'veh11972' ends teleporting on edge 'E_PNK_W_WZM_T', time=4896.00.
+INFO:TrafficSimulator:Step 4900: 675 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4920: Phase map is None at time 4920 - algorithm may have crashed
+Warning: Vehicle 'veh8495' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4925.00.
+Warning: Vehicle 'veh8495' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-21.00, offset=6.25), time=4925.00.
+Warning: Teleporting vehicle 'veh12078'; collision with vehicle 'veh12128', lane='E_GOR_W_NMR_H_s_1', gap=-2.30, time=4942.00, stage=move.
+Warning: Vehicle 'veh12078' ends teleporting on edge 'E_PNK_W_WZM_T', time=4942.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 4950: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4950: Phase map is None at time 4950 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4980: Phase map is None at time 4980 - algorithm may have crashed
+Warning: Vehicle 'veh12030' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=4989.00.
+INFO:TrafficSimulator:Step 5000: 658 vehicles active
+Warning: Vehicle 'veh11432' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=5009.00.
+Warning: Vehicle 'veh11432' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-18.35, offset=1.56), time=5009.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5010: Phase map is None at time 5010 - algorithm may have crashed
+Warning: Vehicle 'veh12223' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5015.00.
+Warning: Vehicle 'veh12223' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-20.77, offset=11.07), time=5015.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 5040: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5040: Phase map is None at time 5040 - algorithm may have crashed
+Warning: Vehicle 'veh12551' performs emergency braking on lane 'E_NMR_N_PNK_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=5063.00.
+Warning: Vehicle 'veh12528' performs emergency braking on lane 'E_NMR_S_PNK_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5063.00.
+Warning: Vehicle 'veh12528' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_2' because of a red traffic light (decel=-11.43, offset=0.18), time=5064.00.
+Warning: Teleporting vehicle 'veh12414'; collision with vehicle 'veh12548', lane='E_GOR_W_NMR_H_s_1', gap=-6.70, time=5069.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5070: Phase map is None at time 5070 - algorithm may have crashed
+Warning: Vehicle 'veh12414' ends teleporting on edge 'E_PNK_W_WZM', time=5072.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5100: Phase map is None at time 5100 - algorithm may have crashed
+INFO:TrafficSimulator:Step 5100: 642 vehicles active
+Warning: Vehicle 'veh12804' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=5104.00.
+Warning: Vehicle 'veh12102' performs emergency braking on lane 'E_PNK_E_WZM_H_slr_0' with decel=9.00, wished=4.50, severity=1.00, time=5104.00.
+Warning: Vehicle 'veh12102' performs emergency stop at the end of lane 'E_PNK_E_WZM_H_slr_0' because of a red traffic light (decel=-13.11, offset=4.08), time=5104.00.
+Warning: Vehicle 'veh11691' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=5105.00.
+Warning: Vehicle 'veh12363' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=5105.00.
+Warning: Vehicle 'veh12363' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_0' because of a red traffic light (decel=-14.26, offset=2.38), time=5105.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 5130: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5130: Phase map is None at time 5130 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh12705'; collision with vehicle 'veh12718', lane='E_GOR_W_NMR_H_s_1', gap=-7.14, time=5159.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5160: Phase map is None at time 5160 - algorithm may have crashed
+Warning: Vehicle 'veh12705' ends teleporting on edge 'E_PNK_W_WZM', time=5162.00.
+Warning: Vehicle 'veh12756' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5189.00.
+Warning: Vehicle 'veh12756' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_1' because of a red traffic light (decel=-19.00, offset=4.37), time=5189.00.
+Warning: Vehicle 'veh5346' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5189.00.
+Warning: Vehicle 'veh5346' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_2' because of a red traffic light (decel=-19.23, offset=5.42), time=5189.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5190: Phase map is None at time 5190 - algorithm may have crashed
+INFO:TrafficSimulator:Step 5200: 647 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 5220: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5220: Phase map is None at time 5220 - algorithm may have crashed
+Warning: Vehicle 'veh12952' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_2' with decel=9.00, wished=4.50, severity=1.00, time=5220.00.
+Warning: Vehicle 'veh12952' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_2' because of a red traffic light (decel=-10.45, offset=1.30), time=5220.00.
+Warning: Vehicle 'veh13028' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_2' with decel=9.00, wished=4.50, severity=1.00, time=5221.00.
+Warning: Teleporting vehicle 'veh13028'; collision with vehicle 'veh12952', lane='E_AYA_N_HLC_H_rl_2', gap=-0.38, time=5221.00, stage=move.
+Warning: Vehicle 'veh13028' ends teleporting on edge 'E_HLC_W_AYA', time=5221.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5250: Phase map is None at time 5250 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh12862'; collision with vehicle 'veh12946', lane='E_GOR_W_NMR_H_s_1', gap=-6.73, time=5252.00, stage=move.
+Warning: Vehicle 'veh12862' ends teleporting on edge 'E_PNK_W_WZM_T', time=5253.00.
+Warning: Vehicle 'veh13000' performs emergency braking on lane 'E_NMR_S_JBT_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=5256.00.
+Warning: Vehicle 'veh13000' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_l_0' because of a red traffic light (decel=-14.40, offset=4.83), time=5256.00.
+Warning: Vehicle 'veh12428' performs emergency braking on lane ':J_WZM_PNK_12_2' with decel=9.00, wished=4.50, severity=1.00, time=5263.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5280: Phase map is None at time 5280 - algorithm may have crashed
+INFO:TrafficSimulator:Step 5300: 654 vehicles active
+Warning: Teleporting vehicle 'veh13234'; collision with vehicle 'veh13191', lane='E_GOR_W_NMR_H_s_1', gap=-7.46, time=5304.00, stage=move.
+Warning: Vehicle 'veh13234' ends teleporting on edge 'E_PNK_W_WZM_T', time=5304.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 5310: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5310: Phase map is None at time 5310 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh13190'; collision with vehicle 'veh13158', lane='E_GOR_W_NMR_H_s_1', gap=-7.12, time=5337.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5340: Phase map is None at time 5340 - algorithm may have crashed
+Warning: Vehicle 'veh13190' ends teleporting on edge 'E_PNK_W_WZM', time=5340.00.
+Warning: Teleporting vehicle 'veh13255'; collision with vehicle 'veh13205', lane='E_GOR_W_NMR_H_s_1', gap=-7.31, time=5341.00, stage=move.
+Warning: Vehicle 'veh13255' ends teleporting on edge 'E_PNK_W_WZM_T', time=5341.00.
+Warning: Vehicle 'veh13484' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=5353.00.
+Warning: Vehicle 'veh13482' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=5353.00.
+Warning: Vehicle 'veh13482' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_0' because of a red traffic light (decel=-17.45, offset=6.07), time=5353.00.
+Warning: Vehicle 'veh12988' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=5353.00.
+Warning: Vehicle 'veh12319' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5367.00.
+Warning: Vehicle 'veh12319' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-11.75, offset=1.01), time=5368.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5370: Phase map is None at time 5370 - algorithm may have crashed
+Warning: Vehicle 'veh13534' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=5374.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 5400: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 5400: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5400: Phase map is None at time 5400 - algorithm may have crashed
+INFO:TrafficSimulator:Step 5400: 662 vehicles active
+Warning: Teleporting vehicle 'veh13298'; collision with vehicle 'veh13421', lane='E_GOR_W_NMR_H_s_1', gap=-7.00, time=5428.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5430: Phase map is None at time 5430 - algorithm may have crashed
+Warning: Vehicle 'veh13298' ends teleporting on edge 'E_PNK_W_WZM', time=5431.00.
+Warning: Vehicle 'veh13505' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=5438.00.
+Warning: Vehicle 'veh13505' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-17.43, offset=6.86), time=5438.00.
+Warning: Teleporting vehicle 'veh13622'; junction collision with vehicle 'veh13643', lane=':J_NMR_PNK_2_0', gap=-1.32, time=5456.00, stage=move.
+Warning: Vehicle 'veh13622' ends teleporting on edge 'E_PNK_W_WZM_T', time=5456.00.
+Warning: Vehicle 'veh13476' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5459.00.
+Warning: Vehicle 'veh13476' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_2' because of a red traffic light (decel=-19.23, offset=3.86), time=5459.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5460: Phase map is None at time 5460 - algorithm may have crashed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 5490: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5490: Phase map is None at time 5490 - algorithm may have crashed
+Warning: Vehicle 'veh5761' performs emergency braking on lane 'E_NMR_S_PNK_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=5490.00.
+Warning: Vehicle 'veh5761' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_0' because of a red traffic light (decel=-13.78, offset=2.54), time=5490.00.
+INFO:TrafficSimulator:Step 5500: 665 vehicles active
+Warning: Vehicle 'veh13787' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=5511.00.
+Warning: Vehicle 'veh13787' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_3' because of a red traffic light (decel=-22.19, offset=11.34), time=5511.00.
+Warning: Teleporting vehicle 'veh13615'; collision with vehicle 'veh13626', lane='E_GOR_W_NMR_H_s_1', gap=-5.90, time=5518.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5520: Phase map is None at time 5520 - algorithm may have crashed
+Warning: Vehicle 'veh13615' ends teleporting on edge 'E_PNK_W_WZM', time=5521.00.
+Warning: Vehicle 'veh13974' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=5522.00.
+Warning: Vehicle 'veh13960' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=5522.00.
+Warning: Vehicle 'veh13960' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_1' because of a red traffic light (decel=-18.89, offset=4.96), time=5522.00.
+Warning: Vehicle 'veh13714' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=5522.00.
+Warning: Vehicle 'veh13974' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_2' because of a red traffic light (decel=-12.06, offset=1.29), time=5523.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5550: Phase map is None at time 5550 - algorithm may have crashed
+Warning: Vehicle 'veh13824' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=5573.00.
+Warning: Teleporting vehicle 'veh13824'; collision with vehicle 'veh13825', lane='E_GOR_W_NMR_H_s_1', gap=-0.96, time=5573.00, stage=move.
+Warning: Vehicle 'veh13824' ends teleporting on edge 'E_PNK_W_WZM_T', time=5573.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 5580: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5580: Phase map is None at time 5580 - algorithm may have crashed
+INFO:TrafficSimulator:Step 5600: 696 vehicles active
+Warning: Vehicle 'veh14121' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=5607.00.
+Warning: Vehicle 'veh13977' performs emergency braking on lane 'E_NMR_N_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5607.00.
+Warning: Vehicle 'veh13977' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_1' because of a red traffic light (decel=-15.24, offset=0.02), time=5607.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5610: Phase map is None at time 5610 - algorithm may have crashed
+Warning: Vehicle 'veh13869' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=5614.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5640: Phase map is None at time 5640 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh14255'; collision with vehicle 'veh14192', lane='E_GOR_W_NMR_H_s_1', gap=-5.16, time=5667.00, stage=move.
+Warning: Vehicle 'veh14255' ends teleporting on edge 'E_PNK_W_WZM_T', time=5667.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 5670: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5670: Phase map is None at time 5670 - algorithm may have crashed
+Warning: Vehicle 'veh5905' performs emergency braking on lane 'E_NMR_S_PNK_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=5670.00.
+Warning: Vehicle 'veh5905' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_0' because of a red traffic light (decel=-13.99, offset=4.52), time=5670.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5700: Phase map is None at time 5700 - algorithm may have crashed
+INFO:TrafficSimulator:Step 5700: 714 vehicles active
+Warning: Teleporting vehicle 'veh14057'; collision with vehicle 'veh14048', lane='E_GOR_W_NMR_H_s_1', gap=-6.75, time=5703.00, stage=move.
+Warning: Vehicle 'veh14057' ends teleporting on edge 'E_PNK_W_WZM_T', time=5705.00.
+Warning: Vehicle 'veh5912' performs emergency braking on lane 'E_NMR_S_JBT_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=5706.00.
+Warning: Teleporting vehicle 'veh14171'; collision with vehicle 'veh14075', lane='E_GOR_W_NMR_H_s_1', gap=-5.89, time=5707.00, stage=move.
+Warning: Vehicle 'veh14095' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=5708.00.
+Warning: Vehicle 'veh14095' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-18.23, offset=5.20), time=5708.00.
+Warning: Vehicle 'veh14092' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=5708.00.
+Warning: Vehicle 'veh14092' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_1' because of a red traffic light (decel=-15.30, offset=1.53), time=5708.00.
+Warning: Vehicle 'veh14171' ends teleporting on edge 'E_PNK_W_WZM', time=5710.00.
+Warning: Vehicle 'veh13739' performs emergency braking on lane 'E_PNK_E_WZM_H_slr_1' with decel=9.00, wished=4.50, severity=1.00, time=5725.00.
+Warning: Vehicle 'veh14218' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5729.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5730: Phase map is None at time 5730 - algorithm may have crashed
+Warning: Vehicle 'veh14571' performs emergency braking on lane 'E_AYA_N_GRN_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=5747.00.
+Warning: Vehicle 'veh14571' performs emergency stop at the end of lane 'E_AYA_N_GRN_H_l_1' because of a red traffic light (decel=-11.95, offset=1.15), time=5747.00.
+Warning: Vehicle 'veh14326' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=5753.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 5760: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5760: Phase map is None at time 5760 - algorithm may have crashed
+Warning: Vehicle 'veh6049' performs emergency braking on lane 'E_NMR_S_PNK_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=5760.00.
+Warning: Vehicle 'veh6049' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_0' because of a red traffic light (decel=-15.48, offset=5.31), time=5760.00.
+Warning: Vehicle 'veh14550' performs emergency braking on lane 'E_NMR_S_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5787.00.
+Warning: Vehicle 'veh14550' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_1' because of a red traffic light (decel=-18.79, offset=2.99), time=5787.00.
+Warning: Vehicle 'veh14524' performs emergency braking on lane 'E_NMR_S_PNK_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=5787.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5790: Phase map is None at time 5790 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh14347'; collision with vehicle 'veh14542', lane='E_GOR_W_NMR_H_s_1', gap=-5.21, time=5797.00, stage=move.
+Warning: Vehicle 'veh14347' ends teleporting on edge 'E_PNK_W_WZM_T', time=5798.00.
+INFO:TrafficSimulator:Step 5800: 765 vehicles active
+Warning: Teleporting vehicle 'veh14473'; collision with vehicle 'veh14456', lane='E_GOR_W_NMR_H_s_1', gap=-5.74, time=5801.00, stage=move.
+Warning: Teleporting vehicle 'veh14489'; collision with vehicle 'veh14432', lane='E_GOR_W_NMR_H_s_1', gap=-6.19, time=5804.00, stage=move.
+Warning: Vehicle 'veh14473' ends teleporting on edge 'E_PNK_W_WZM_T', time=5804.00.
+Warning: Vehicle 'veh14489' ends teleporting on edge 'E_PNK_W_WZM_T', time=5806.00.
+Warning: Teleporting vehicle 'veh14543'; collision with vehicle 'veh14584', lane='E_GOR_W_NMR_H_s_1', gap=-5.68, time=5808.00, stage=move.
+Warning: Vehicle 'veh14543' ends teleporting on edge 'E_PNK_W_WZM_T', time=5808.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5820: Phase map is None at time 5820 - algorithm may have crashed
+Warning: Vehicle 'veh14851' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=5827.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 5850: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5850: Phase map is None at time 5850 - algorithm may have crashed
+Warning: Vehicle 'veh14859' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_2' with decel=9.00, wished=4.50, severity=1.00, time=5850.00.
+Warning: Vehicle 'veh14863' performs emergency braking on lane 'E_AYA_N_GRN_H_r_0' with decel=9.00, wished=4.50, severity=1.00, time=5850.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5880: Phase map is None at time 5880 - algorithm may have crashed
+Warning: Vehicle 'veh14857' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=5880.00.
+Warning: Teleporting vehicle 'veh14803'; collision with vehicle 'veh14807', lane='E_GOR_W_NMR_H_s_1', gap=-6.74, time=5886.00, stage=move.
+Warning: Vehicle 'veh14803' ends teleporting on edge 'E_PNK_W_WZM', time=5889.00.
+INFO:TrafficSimulator:Step 5900: 784 vehicles active
+Warning: Teleporting vehicle 'veh14890'; collision with vehicle 'veh14925', lane='E_GOR_W_NMR_H_s_1', gap=-6.96, time=5902.00, stage=move.
+Warning: Vehicle 'veh14890' ends teleporting on edge 'E_PNK_W_WZM_T', time=5902.00.
+Warning: Vehicle 'veh10307' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5909.00.
+Warning: Vehicle 'veh10307' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_2' because of a red traffic light (decel=-19.50, offset=6.68), time=5909.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5910: Phase map is None at time 5910 - algorithm may have crashed
+Warning: Vehicle 'veh15102' performs emergency braking on lane 'E_AYA_N_GRN_H_l_2' with decel=9.00, wished=4.50, severity=1.00, time=5927.00.
+Warning: Vehicle 'veh15102' performs emergency stop at the end of lane 'E_AYA_N_GRN_H_l_2' because of a red traffic light (decel=-13.26, offset=1.43), time=5927.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 5940: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5940: Phase map is None at time 5940 - algorithm may have crashed
+Warning: Vehicle 'veh15053' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=5966.00.
+Warning: Vehicle 'veh15053' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_3' because of a red traffic light (decel=-14.79, offset=3.19), time=5966.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5970: Phase map is None at time 5970 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh14961'; collision with vehicle 'veh15019', lane='E_GOR_W_NMR_H_s_1', gap=-5.97, time=5972.00, stage=move.
+Warning: Teleporting vehicle 'veh14893'; collision with vehicle 'veh15033', lane='E_GOR_W_NMR_H_s_1', gap=-5.54, time=5975.00, stage=move.
+Warning: Vehicle 'veh14961' ends teleporting on edge 'E_PNK_W_WZM', time=5975.00.
+Warning: Teleporting vehicle 'veh14897'; junction collision with vehicle 'veh15019', lane=':J_NMR_PNK_2_0', gap=-0.57, time=5978.00, stage=move.
+Warning: Vehicle 'veh14893' ends teleporting on edge 'E_PNK_W_WZM', time=5978.00.
+Warning: Teleporting vehicle 'veh14945'; collision with vehicle 'veh14953', lane='E_GOR_W_NMR_H_s_1', gap=-6.04, time=5979.00, stage=move.
+Warning: Vehicle 'veh14897' ends teleporting on edge 'E_PNK_W_WZM_T', time=5979.00.
+Warning: Teleporting vehicle 'veh15046'; collision with vehicle 'veh15004', lane='E_GOR_W_NMR_H_s_1', gap=-7.16, time=5981.00, stage=move.
+Warning: Vehicle 'veh14945' ends teleporting on edge 'E_PNK_W_WZM_T', time=5981.00.
+Warning: Vehicle 'veh15046' ends teleporting on edge 'E_PNK_W_WZM_T', time=5983.00.
+Warning: Teleporting vehicle 'veh15019'; collision with vehicle 'veh15046', lane='E_PNK_W_WZM_T_0', gap=-1.85, time=5984.00, stage=move.
+Warning: Vehicle 'veh15019' ends teleporting on edge 'E_PNK_W_WZM', time=5984.00.
+Warning: Vehicle 'veh15365' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=5995.00.
+Warning: Vehicle 'veh15366' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=5995.00.
+Warning: Vehicle 'veh15366' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_1' because of a red traffic light (decel=-23.00, offset=8.69), time=5995.00.
+Warning: Vehicle 'veh14997' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=5997.00.
+Warning: Vehicle 'veh14997' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-17.50, offset=3.38), time=5997.00.
+Warning: Vehicle 'veh14999' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5999.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6000: Phase map is None at time 6000 - algorithm may have crashed
+INFO:TrafficSimulator:Step 6000: 780 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 6030: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6030: Phase map is None at time 6030 - algorithm may have crashed
+Warning: Vehicle 'veh15392' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_2' with decel=9.00, wished=4.50, severity=1.00, time=6030.00.
+Warning: Vehicle 'veh15392' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_2' because of a red traffic light (decel=-15.17, offset=1.26), time=6030.00.
+Warning: Vehicle 'veh15441' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=6030.00.
+Warning: Vehicle 'veh15441' performs emergency stop at the end of lane 'E_JBT_E_NMR_H_sl_1' because of a red traffic light (decel=-11.22, offset=0.99), time=6030.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6060: Phase map is None at time 6060 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh15317'; collision with vehicle 'veh15273', lane='E_GOR_W_NMR_H_s_1', gap=-7.46, time=6060.00, stage=move.
+Warning: Vehicle 'veh15317' ends teleporting on edge 'E_PNK_W_WZM', time=6063.00.
+Warning: Teleporting vehicle 'veh15261'; junction collision with vehicle 'veh15273', lane=':J_NMR_PNK_2_0', gap=-0.28, time=6067.00, stage=move.
+Warning: Vehicle 'veh15261' ends teleporting on edge 'E_PNK_W_WZM_T', time=6067.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6090: Phase map is None at time 6090 - algorithm may have crashed
+INFO:TrafficSimulator:Step 6100: 797 vehicles active
+Warning: Vehicle 'veh15009' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=6110.00.
+Warning: Vehicle 'veh15009' performs emergency stop at the end of lane 'E_PNK_E_NMR_H_sr_1' because of a red traffic light (decel=-12.93, offset=1.83), time=6110.00.
+Warning: Vehicle 'veh15515' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=6119.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 6120: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6120: Phase map is None at time 6120 - algorithm may have crashed
+Warning: Vehicle 'veh15707' performs emergency braking on lane 'E_NMR_S_PNK_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6148.00.
+Warning: Vehicle 'veh15707' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_0' because of a red traffic light (decel=-16.34, offset=2.85), time=6148.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6150: Phase map is None at time 6150 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh15541'; collision with vehicle 'veh15529', lane='E_GOR_W_NMR_H_s_1', gap=-6.15, time=6155.00, stage=move.
+Warning: Teleporting vehicle 'veh15588'; collision with vehicle 'veh15568', lane='E_GOR_W_NMR_H_s_1', gap=-7.33, time=6158.00, stage=move.
+Warning: Vehicle 'veh15541' ends teleporting on edge 'E_PNK_W_WZM', time=6158.00.
+Warning: Vehicle 'veh15588' ends teleporting on edge 'E_PNK_W_WZM', time=6161.00.
+Warning: Teleporting vehicle 'veh15499'; collision with vehicle 'veh15443', lane='E_GOR_W_NMR_H_s_1', gap=-5.77, time=6165.00, stage=move.
+Warning: Vehicle 'veh15499' ends teleporting on edge 'E_PNK_W_WZM', time=6168.00.
+Warning: Teleporting vehicle 'veh15594'; collision with vehicle 'veh15612', lane='E_GOR_W_NMR_H_s_1', gap=-3.79, time=6170.00, stage=move.
+Warning: Teleporting vehicle 'veh15642'; collision with vehicle 'veh15681', lane='E_GOR_W_NMR_H_s_1', gap=-6.86, time=6172.00, stage=move.
+Warning: Vehicle 'veh15594' ends teleporting on edge 'E_PNK_W_WZM_T', time=6172.00.
+Warning: Vehicle 'veh15642' ends teleporting on edge 'E_PNK_W_WZM_T', time=6174.00.
+Warning: Teleporting vehicle 'veh15514'; collision with vehicle 'veh15642', lane='E_PNK_W_WZM_T_0', gap=-1.55, time=6175.00, stage=move.
+Warning: Vehicle 'veh15514' ends teleporting on edge 'E_PNK_W_WZM', time=6175.00.
+Warning: Vehicle 'veh15688' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6179.00.
+Warning: Vehicle 'veh15688' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-17.85, offset=2.42), time=6179.00.
+Warning: Vehicle 'veh15524' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=6179.00.
+Warning: Vehicle 'veh15524' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_1' because of a red traffic light (decel=-18.10, offset=4.95), time=6179.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6180: Phase map is None at time 6180 - algorithm may have crashed
+Warning: Vehicle 'veh15325' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=6200.00.
+Warning: Vehicle 'veh15325' performs emergency stop at the end of lane 'E_PNK_E_NMR_H_sr_1' because of a red traffic light (decel=-15.38, offset=0.34), time=6200.00.
+INFO:TrafficSimulator:Step 6200: 800 vehicles active
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 6210: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6210: Phase map is None at time 6210 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6240: Phase map is None at time 6240 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh15837'; collision with vehicle 'veh15800', lane='E_GOR_W_NMR_H_s_1', gap=-6.15, time=6247.00, stage=move.
+Warning: Vehicle 'veh15837' ends teleporting on edge 'E_PNK_W_WZM_T', time=6248.00.
+Warning: Vehicle 'veh15830' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=6269.00.
+Warning: Vehicle 'veh15830' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_2' because of a red traffic light (decel=-20.45, offset=2.09), time=6269.00.
+Warning: Vehicle 'veh15711' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=6269.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6270: Phase map is None at time 6270 - algorithm may have crashed
+Warning: Vehicle 'veh15511' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=6278.00.
+Warning: Vehicle 'veh15511' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_1' because of a red traffic light (decel=-14.28, offset=5.21), time=6278.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 6300: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 6300: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6300: Phase map is None at time 6300 - algorithm may have crashed
+INFO:TrafficSimulator:Step 6300: 771 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6330: Phase map is None at time 6330 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh15917'; collision with vehicle 'veh15867', lane='E_GOR_W_NMR_H_s_1', gap=-6.97, time=6336.00, stage=move.
+Warning: Vehicle 'veh15917' ends teleporting on edge 'E_PNK_W_WZM_T', time=6336.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6360: Phase map is None at time 6360 - algorithm may have crashed
+Warning: Vehicle 'veh16424' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6367.00.
+Warning: Vehicle 'veh16407' performs emergency braking on lane 'E_AYA_N_GRN_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=6377.00.
+Warning: Vehicle 'veh16407' performs emergency stop at the end of lane 'E_AYA_N_GRN_H_l_0' because of a red traffic light (decel=-13.07, offset=3.32), time=6377.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 6390: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6390: Phase map is None at time 6390 - algorithm may have crashed
+INFO:TrafficSimulator:Step 6400: 764 vehicles active
+Warning: Vehicle 'veh16409' performs emergency braking on lane 'E_NMR_N_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=6410.00.
+Warning: Vehicle 'veh16409' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_1' because of a red traffic light (decel=-13.33, offset=0.07), time=6410.00.
+Warning: Vehicle 'veh16358' performs emergency braking on lane 'E_NMR_N_PNK_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6410.00.
+Warning: Vehicle 'veh16358' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_0' because of a red traffic light (decel=-13.61, offset=4.14), time=6410.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6420: Phase map is None at time 6420 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh16324'; collision with vehicle 'veh16326', lane='E_GOR_W_NMR_H_s_1', gap=-6.99, time=6428.00, stage=move.
+Warning: Vehicle 'veh16324' ends teleporting on edge 'E_PNK_W_WZM_T', time=6428.00.
+Warning: Vehicle 'veh16301' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=6442.00.
+Warning: Vehicle 'veh16301' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-22.32, offset=2.86), time=6442.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6450: Phase map is None at time 6450 - algorithm may have crashed
+Warning: Vehicle 'veh16687' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6457.00.
+Warning: Vehicle 'veh16671' performs emergency braking on lane 'E_AYA_N_GRN_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=6467.00.
+Warning: Vehicle 'veh16669' performs emergency braking on lane 'E_AYA_N_GRN_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=6467.00.
+Warning: Vehicle 'veh16669' performs emergency stop at the end of lane 'E_AYA_N_GRN_H_l_0' because of a red traffic light (decel=-15.24, offset=1.09), time=6467.00.
+Warning: Teleporting vehicle 'veh16518'; collision with vehicle 'veh16494', lane='E_GOR_W_NMR_H_s_1', gap=-6.54, time=6474.00, stage=move.
+Warning: Vehicle 'veh16518' ends teleporting on edge 'E_PNK_W_WZM_T', time=6474.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 6480: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6480: Phase map is None at time 6480 - algorithm may have crashed
+Warning: Vehicle 'veh8855' performs emergency braking on lane 'E_NMR_S_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=6500.00.
+Warning: Vehicle 'veh8855' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_1' because of a red traffic light (decel=-19.17, offset=3.39), time=6500.00.
+INFO:TrafficSimulator:Step 6500: 727 vehicles active
+Warning: Teleporting vehicle 'veh16376'; collision with vehicle 'veh16438', lane='E_GOR_W_NMR_H_s_1', gap=-6.68, time=6506.00, stage=move.
+Warning: Vehicle 'veh16376' ends teleporting on edge 'E_PNK_W_WZM', time=6509.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6510: Phase map is None at time 6510 - algorithm may have crashed
+Warning: Vehicle 'veh16878' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=6526.00.
+Warning: Vehicle 'veh16878' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_0' because of a red traffic light (decel=-19.16, offset=8.03), time=6526.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6540: Phase map is None at time 6540 - algorithm may have crashed
+Warning: Vehicle 'veh11019' performs emergency braking on lane 'E_NMR_S_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6547.00.
+Warning: Vehicle 'veh11019' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_s_0' because of a red traffic light (decel=-11.47, offset=0.67), time=6548.00.
+Warning: Vehicle 'veh16916' performs emergency braking on lane 'E_AYA_N_GRN_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=6557.00.
+Warning: Vehicle 'veh16916' performs emergency stop at the end of lane 'E_AYA_N_GRN_H_l_1' because of a red traffic light (decel=-15.46, offset=0.84), time=6557.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 6570: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6570: Phase map is None at time 6570 - algorithm may have crashed
+Warning: Vehicle 'veh16878' performs emergency braking on lane 'E_NMR_S_PNK_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6593.00.
+Warning: Vehicle 'veh16878' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_0' because of a red traffic light (decel=-18.98, offset=8.46), time=6593.00.
+Warning: Teleporting vehicle 'veh16803'; collision with vehicle 'veh16809', lane='E_GOR_W_NMR_H_s_1', gap=-7.32, time=6599.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6600: Phase map is None at time 6600 - algorithm may have crashed
+INFO:TrafficSimulator:Step 6600: 742 vehicles active
+Warning: Teleporting vehicle 'veh16679'; collision with vehicle 'veh16648', lane='E_GOR_W_NMR_H_s_1', gap=-5.10, time=6602.00, stage=move.
+Warning: Vehicle 'veh16679' ends teleporting on edge 'E_PNK_W_WZM_T', time=6602.00.
+Warning: Vehicle 'veh16803' ends teleporting on edge 'E_PNK_W_WZM', time=6602.00.
+Warning: Vehicle 'veh16379' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6629.00.
+Warning: Vehicle 'veh16379' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-16.74, offset=4.96), time=6629.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6630: Phase map is None at time 6630 - algorithm may have crashed
+Warning: Vehicle 'veh17162' performs emergency braking on lane 'E_AYA_N_GRN_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=6647.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 6660: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6660: Phase map is None at time 6660 - algorithm may have crashed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6690: Phase map is None at time 6690 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh16988'; collision with vehicle 'veh16966', lane='E_GOR_W_NMR_H_s_1', gap=-7.29, time=6690.00, stage=move.
+Warning: Vehicle 'veh16988' ends teleporting on edge 'E_PNK_W_WZM_T', time=6690.00.
+INFO:TrafficSimulator:Step 6700: 749 vehicles active
+Warning: Vehicle 'veh17381' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=6704.00.
+Warning: Vehicle 'veh17381' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_2' because of a red traffic light (decel=-18.84, offset=3.82), time=6704.00.
+Warning: Vehicle 'veh16872' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=6704.00.
+Warning: Vehicle 'veh16872' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-13.22, offset=3.39), time=6704.00.
+Warning: Vehicle 'veh11243' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=6719.00.
+Warning: Vehicle 'veh11243' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_2' because of a red traffic light (decel=-16.98, offset=6.37), time=6719.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6720: Phase map is None at time 6720 - algorithm may have crashed
+Warning: Vehicle 'veh17425' performs emergency braking on lane 'E_AYA_N_GRN_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=6737.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 6750: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6750: Phase map is None at time 6750 - algorithm may have crashed
+Warning: Vehicle 'veh17330' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=6752.00.
+Warning: Vehicle 'veh17390' performs emergency braking on lane 'E_NMR_N_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=6773.00.
+Warning: Vehicle 'veh17390' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_1' because of a red traffic light (decel=-18.24, offset=0.26), time=6773.00.
+Warning: Teleporting vehicle 'veh17330'; collision with vehicle 'veh17357', lane='E_GOR_W_NMR_H_s_1', gap=-5.90, time=6779.00, stage=move.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6780: Phase map is None at time 6780 - algorithm may have crashed
+Warning: Vehicle 'veh17330' ends teleporting on edge 'E_PNK_W_WZM', time=6782.00.
+INFO:TrafficSimulator:Step 6800: 746 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6810: Phase map is None at time 6810 - algorithm may have crashed
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 6840: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6840: Phase map is None at time 6840 - algorithm may have crashed
+Warning: Vehicle 'veh17503' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=6863.00.
+Warning: Teleporting vehicle 'veh17503'; collision with vehicle 'veh17524', lane='E_GOR_W_NMR_H_s_1', gap=-0.15, time=6863.00, stage=move.
+Warning: Vehicle 'veh17503' ends teleporting on edge 'E_PNK_W_WZM_T', time=6863.00.
+Warning: Vehicle 'veh17374' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=6866.00.
+Warning: Vehicle 'veh17374' performs emergency stop at the end of lane 'E_PNK_W_WZM_H_sl_1' because of a red traffic light (decel=-11.20, offset=1.21), time=6866.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6870: Phase map is None at time 6870 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh17746'; collision with vehicle 'veh17733', lane='E_GOR_W_NMR_H_s_1', gap=-3.82, time=6889.00, stage=move.
+Warning: Vehicle 'veh17746' ends teleporting on edge 'E_PNK_W_WZM_T', time=6889.00.
+Warning: Vehicle 'veh17901' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=6892.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6900: Phase map is None at time 6900 - algorithm may have crashed
+INFO:TrafficSimulator:Step 6900: 746 vehicles active
+Warning: Vehicle 'veh17921' performs emergency braking on lane 'E_AYA_N_GRN_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=6917.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 6930: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6930: Phase map is None at time 6930 - algorithm may have crashed
+Warning: Vehicle 'veh17962' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=6930.00.
+Warning: Vehicle 'veh17962' performs emergency stop at the end of lane 'E_JBT_E_NMR_H_sl_0' because of a red traffic light (decel=-12.14, offset=0.51), time=6930.00.
+Warning: Vehicle 'veh17928' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_1' with decel=9.00, wished=4.50, severity=1.00, time=6930.00.
+Warning: Vehicle 'veh17704' performs emergency braking on lane 'E_NMR_N_PNK_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6953.00.
+Warning: Vehicle 'veh17704' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_0' because of a red traffic light (decel=-12.87, offset=3.83), time=6953.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6960: Phase map is None at time 6960 - algorithm may have crashed
+Warning: Vehicle 'veh17907' performs emergency braking on lane 'E_PNK_E_NMR_T_0' with decel=9.00, wished=4.50, severity=1.00, time=6974.00.
+Warning: Vehicle 'veh17864' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=6989.00.
+Warning: Vehicle 'veh17864' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_1' because of a red traffic light (decel=-20.64, offset=10.75), time=6989.00.
+Warning: Vehicle 'veh17762' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6989.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6990: Phase map is None at time 6990 - algorithm may have crashed
+Warning: Vehicle 'veh17981' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=6991.00.
+Warning: Vehicle 'veh17981' performs emergency stop at the end of lane 'E_PNK_E_NMR_H_sr_1' because of a red traffic light (decel=-13.42, offset=2.82), time=6991.00.
+Warning: Teleporting vehicle 'veh17946'; collision with vehicle 'veh17981', lane='E_PNK_E_NMR_H_sr_1', gap=-3.47, time=6991.00, stage=move.
+Warning: Vehicle 'veh17946' ends teleporting on edge 'E_GOR_E_AYA_T', time=6991.00.
+INFO:TrafficSimulator:Step 7000: 743 vehicles active
+Warning: Vehicle 'veh18026' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=7017.00.
+Warning: Teleporting vehicle 'veh18026'; collision with vehicle 'veh18043', lane='E_GOR_W_NMR_H_s_1', gap=-0.42, time=7017.00, stage=move.
+Warning: Vehicle 'veh18026' ends teleporting on edge 'E_PNK_W_WZM_T', time=7017.00.
+Warning: Teleporting vehicle 'veh18094'; collision with vehicle 'veh18052', lane='E_GOR_W_NMR_H_s_1', gap=-7.37, time=7019.00, stage=move.
+Warning: Vehicle 'veh18094' ends teleporting on edge 'E_PNK_W_WZM_T', time=7019.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 7020: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7020: Phase map is None at time 7020 - algorithm may have crashed
+Warning: Vehicle 'veh18241' performs emergency braking on lane 'E_NMR_S_PNK_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=7046.00.
+Warning: Vehicle 'veh18241' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_2' because of a red traffic light (decel=-17.81, offset=8.33), time=7046.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7050: Phase map is None at time 7050 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh18168'; collision with vehicle 'veh18171', lane='E_GOR_W_NMR_H_s_1', gap=-3.90, time=7056.00, stage=move.
+Warning: Vehicle 'veh18168' ends teleporting on edge 'E_PNK_W_WZM', time=7059.00.
+Warning: Vehicle 'veh18359' performs emergency braking on lane 'E_DOR_W_NMR_H_r_1' with decel=9.00, wished=4.50, severity=1.00, time=7060.00.
+Warning: Vehicle 'veh18359' performs emergency stop at the end of lane 'E_DOR_W_NMR_H_r_1' because of a red traffic light (decel=-11.64, offset=0.87), time=7060.00.
+Warning: Vehicle 'veh18390' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=7069.00.
+Warning: Vehicle 'veh18390' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_0' because of a red traffic light (decel=-16.96, offset=7.76), time=7069.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7080: Phase map is None at time 7080 - algorithm may have crashed
+Warning: Vehicle 'veh17839' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=7088.00.
+Warning: Vehicle 'veh17839' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-14.96, offset=3.63), time=7088.00.
+INFO:TrafficSimulator:Step 7100: 724 vehicles active
+Warning: Teleporting vehicle 'veh18231'; collision with vehicle 'veh18233', lane='E_GOR_W_NMR_H_s_1', gap=-3.70, time=7101.00, stage=move.
+Warning: Vehicle 'veh18231' ends teleporting on edge 'E_PNK_W_WZM_T', time=7101.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 7110: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7110: Phase map is None at time 7110 - algorithm may have crashed
+Warning: Vehicle 'veh18448' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_1' with decel=9.00, wished=4.50, severity=1.00, time=7110.00.
+Warning: Vehicle 'veh18448' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_1' because of a red traffic light (decel=-12.59, offset=2.91), time=7110.00.
+Warning: Vehicle 'veh18514' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=7110.00.
+Warning: Vehicle 'veh18514' performs emergency stop at the end of lane 'E_JBT_E_NMR_H_sl_0' because of a red traffic light (decel=-14.47, offset=2.89), time=7110.00.
+Warning: Vehicle 'veh18408' performs emergency braking on lane 'E_NMR_S_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=7139.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7140: Phase map is None at time 7140 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh18304'; collision with vehicle 'veh18351', lane='E_GOR_W_NMR_H_s_1', gap=-4.21, time=7148.00, stage=move.
+Warning: Vehicle 'veh18304' ends teleporting on edge 'E_PNK_W_WZM_T', time=7148.00.
+Warning: Vehicle 'veh9364' performs emergency braking on lane 'E_NMR_S_JBT_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=7150.00.
+Warning: Teleporting vehicle 'veh18355'; collision with vehicle 'veh18375', lane='E_GOR_W_NMR_H_s_1', gap=-7.28, time=7150.00, stage=move.
+Warning: Vehicle 'veh18355' ends teleporting on edge 'E_PNK_W_WZM_T', time=7150.00.
+Warning: Vehicle 'veh9364' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_l_0' because of a red traffic light (decel=-10.58, offset=0.64), time=7151.00.
+Warning: Teleporting vehicle 'veh18278'; collision with vehicle 'veh18355', lane='E_PNK_W_WZM_T_0', gap=-2.03, time=7151.00, stage=move.
+Warning: Vehicle 'veh18278' ends teleporting on edge 'E_PNK_W_WZM', time=7151.00.
+Warning: Vehicle 'veh18266' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=7153.00.
+Warning: Vehicle 'veh18266' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_1' because of a red traffic light (decel=-16.07, offset=5.61), time=7153.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7170: Phase map is None at time 7170 - algorithm may have crashed
+Warning: Vehicle 'veh18187' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=7178.00.
+Warning: Vehicle 'veh18187' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-12.93, offset=3.31), time=7178.00.
+Warning: Teleporting vehicle 'veh18512'; collision with vehicle 'veh18485', lane='E_GOR_W_NMR_H_s_1', gap=-4.07, time=7194.00, stage=move.
+Warning: Vehicle 'veh18512' ends teleporting on edge 'E_PNK_W_WZM_T', time=7194.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 7200: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 7200: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7200: Phase map is None at time 7200 - algorithm may have crashed
+INFO:TrafficSimulator:Step 7200: 737 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7230: Phase map is None at time 7230 - algorithm may have crashed
+Warning: Teleporting vehicle 'veh18458'; collision with vehicle 'veh18450', lane='E_GOR_W_NMR_H_s_1', gap=-6.35, time=7236.00, stage=move.
+Warning: Vehicle 'veh18563' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=7237.00.
+Warning: Vehicle 'veh18563' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-16.62, offset=5.78), time=7237.00.
+Warning: Teleporting vehicle 'veh18477'; collision with vehicle 'veh18473', lane='E_GOR_W_NMR_H_s_1', gap=-6.03, time=7239.00, stage=move.
+Warning: Vehicle 'veh18458' ends teleporting on edge 'E_PNK_W_WZM', time=7239.00.
+Warning: Vehicle 'veh18797' performs emergency braking on lane ':J_WZM_PNK_12_2' with decel=9.00, wished=4.50, severity=1.00, time=7240.00.
+Warning: Teleporting vehicle 'veh18464'; collision with vehicle 'veh18494', lane='E_GOR_W_NMR_H_s_1', gap=-6.93, time=7241.00, stage=move.
+Warning: Vehicle 'veh18464' ends teleporting on edge 'E_PNK_W_WZM_T', time=7242.00.
+Warning: Vehicle 'veh18477' ends teleporting on edge 'E_PNK_W_WZM', time=7242.00.
+Warning: Vehicle 'veh18802' performs emergency braking on lane 'E_PNK_E_WZM_H_slr_1' with decel=9.00, wished=4.50, severity=1.00, time=7243.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7260: Phase map is None at time 7260 - algorithm may have crashed
+Warning: Vehicle 'veh18640' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=7268.00.
+Warning: Vehicle 'veh18451' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=7268.00.
+Warning: Vehicle 'veh18451' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-12.60, offset=3.45), time=7268.00.
+ERROR:TreeMethodController:Tree Method traffic light update ERROR at step 7290: 'list' object has no attribute 'keys'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 169, in update
+    for node_id in list(self.graph.tl_node_ids.keys())[:2]:  # Log first 2 nodes only
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'keys'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7290: Phase map is None at time 7290 - algorithm may have crashed
+INFO:TrafficSimulator:=== SIMULATION METRICS ===
+INFO:TrafficSimulator:Total simulation steps: 7300
+INFO:TrafficSimulator:Total vehicles: 800
+INFO:TrafficSimulator:Completed vehicles: 245
+INFO:TrafficSimulator:Completion rate: 30.6%
+INFO:TrafficSimulator:Traffic control method: tree_method
+INFO:TreeMethodController:=== TREE METHOD CLEANUP STARTED ===
+INFO:TreeMethodController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
+INFO:TreeMethodController:Ended vehicles count: 16308
+INFO:TreeMethodController:Vehicle total time: 4415053
+INFO:TreeMethodController:=== TREE METHOD STATISTICS ===
+INFO:TreeMethodController:Tree Method - Vehicles completed: 16308
+INFO:TreeMethodController:Tree Method - Total driving time: 4415053
+INFO:TreeMethodController:Tree Method - Average duration: 270.73 steps
+INFO:TreeMethodController:Tree Method - Individual durations collected: 16308
+Simulation ended at time: 7300.00.
+Reason: TraCI requested termination.
+Performance:
+ Duration: 76.66s
+ TraCI-Duration: 56.76s
+ Real time factor: 95.2219
+ UPS: 60347.364439
+Vehicles:
+ Inserted: 16787 (Loaded: 18825)
+ Running: 555
+ Waiting: 2038
+ Teleports: 144 (Collisions: 144)
+ Emergency Stops: 182
+ Emergency Braking: 296
+Statistics (avg of 16232):
+ RouteLength: 1455.77
+ Speed: 7.12
+ Duration: 271.98
+ WaitingTime: 113.93
+ TimeLoss: 166.40
+ DepartDelay: 132.20
+DijkstraRouter answered 90426 queries and explored 22.88 edges on average.
+DijkstraRouter spent 0.17s answering queries (0.00ms on average).
+INFO:TrafficSimulator:Simulation completed successfully!
+INFO:SamplePipeline:=== SAMPLE SIMULATION COMPLETED ===
+INFO:SamplePipeline:total_simulation_steps: 7300
+INFO:SamplePipeline:total_vehicles: 800
+INFO:SamplePipeline:completed_vehicles: 245
+INFO:SamplePipeline:traffic_control_method: tree_method
+INFO:SamplePipeline:completion_rate: 30.625000000000004
+INFO:__main__:Pipeline execution completed successfully

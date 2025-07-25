@@ -61,7 +61,7 @@ fi
 echo "Simulation duration: $END_TIME seconds"
 
 # Set seed for reproducible results (base + run number)
-SEED=$((234456 + 2))
+SEED=234517
 echo "Using seed: $SEED"
 
 # Run Tree Method

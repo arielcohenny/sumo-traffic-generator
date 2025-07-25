@@ -9,9 +9,67 @@ Provides comprehensive statistical analysis and validation against original resu
 import os
 import json
 import glob
+import subprocess
+import sys
 from pathlib import Path
 from datetime import datetime
 import statistics
+
+def regenerate_run_analyses(experiment_dir):
+    """Automatically run individual analyze_results.py scripts to ensure all JSON files are up-to-date"""
+    print("Regenerating analysis results for all completed runs...")
+    
+    regenerated_count = 0
+    skipped_count = 0
+    
+    for run in range(1, 21):
+        run_dir = experiment_dir / str(run)
+        results_dir = run_dir / "results"
+        analyze_script = run_dir / "analyze_results.py"
+        
+        # Check if this run has simulation results and an analysis script
+        if not analyze_script.exists():
+            continue
+            
+        # Check if any simulation logs exist (tree_method, actuated, or fixed)
+        has_results = False
+        for method in ['tree_method', 'actuated', 'fixed']:
+            log_file = results_dir / method / "simulation.log"
+            if log_file.exists() and log_file.stat().st_size > 0:
+                has_results = True
+                break
+        
+        if not has_results:
+            skipped_count += 1
+            continue
+            
+        # Run the individual analysis script
+        try:
+            print(f"  Analyzing run {run}...")
+            # Change to run directory and execute the script
+            result = subprocess.run(
+                [sys.executable, str(analyze_script)], 
+                cwd=str(run_dir),
+                capture_output=True, 
+                text=True,
+                timeout=60  # 60 second timeout per analysis
+            )
+            
+            if result.returncode == 0:
+                regenerated_count += 1
+            else:
+                print(f"    Warning: Analysis failed for run {run}: {result.stderr.strip()}")
+                skipped_count += 1
+                
+        except subprocess.TimeoutExpired:
+            print(f"    Warning: Analysis timed out for run {run}")
+            skipped_count += 1
+        except Exception as e:
+            print(f"    Warning: Could not analyze run {run}: {e}")
+            skipped_count += 1
+    
+    print(f"Analysis regeneration complete: {regenerated_count} runs analyzed, {skipped_count} runs skipped")
+    print()
 
 def load_run_results(experiment_dir):
     """Load results from all runs using the new analysis_results.json files"""
@@ -80,6 +138,10 @@ def analyze_experiment():
     print(f"EXPERIMENT-LEVEL ANALYSIS")
     print(f"Experiment: {experiment_name}")
     print("=" * 80)
+    print()
+    
+    # Automatically regenerate analysis results from simulation logs
+    regenerate_run_analyses(experiment_dir)
     
     # Load results from all runs
     all_results, original_results = load_run_results(experiment_dir)

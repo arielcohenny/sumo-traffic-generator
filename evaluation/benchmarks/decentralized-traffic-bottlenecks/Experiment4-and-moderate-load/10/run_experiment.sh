@@ -48,7 +48,7 @@ END_TIME=$(grep -o 'end value="[0-9]*"' "$DATASET_PATH/simulation.sumocfg.xml" |
 echo "Simulation duration: $END_TIME seconds"
 
 # Set seed for reproducible results (base + run number)
-SEED=$((234456 + 10))
+SEED=234525
 echo "Using seed: $SEED"
 
 # Run Tree Method

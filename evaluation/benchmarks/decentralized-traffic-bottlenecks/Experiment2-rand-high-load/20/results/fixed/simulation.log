@@ -1,0 +1,1446 @@
+INFO:SamplePipeline:Prepared output directory: workspace
+INFO:SamplePipeline:Tree Method Sample Mode: Using pre-built network from /Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/evaluation/datasets/decentralized_traffic_bottleneck/Experiment2-rand-high-load/20
+INFO:SamplePipeline:Skipping Steps 1-8, going directly to Step 9 (Dynamic Simulation)
+INFO:SamplePipeline:Copied network.net.xml -> workspace/grid.net.xml
+INFO:SamplePipeline:Copied vehicles.trips.xml -> workspace/vehicles.rou.xml
+INFO:SamplePipeline:Copied simulation.sumocfg.xml -> workspace/grid.sumocfg
+INFO:SamplePipeline:Updated SUMO config file paths
+INFO:SamplePipeline:Found SUMO config end time: 7300 seconds
+INFO:SamplePipeline:CLI end time was: 7300 seconds
+INFO:SamplePipeline:Overriding end time to match SUMO config: 7300 seconds
+INFO:SamplePipeline:--- Step 9: Dynamic Simulation (Tree Method Sample) ---
+WARNING:SamplePipeline:Tree Method samples optimized for tree_method control
+WARNING:SamplePipeline:Proceeding with: fixed
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: fixed
+INFO:TrafficSimulator:QA: Controller type: FixedController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+***Starting server on port 62984 ***
+Loading net-file from 'workspace/grid.net.xml' ... done (27ms).
+Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 7 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 4 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 0 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_HLC_AYA', program '0' for tl-index 0 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_HLC_AYA', program '0' for tl-index 7 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_HLC_AYA', program '0' for tl-index 3 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_JBT', program '0' for tl-index 0 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_JBT', program '0' for tl-index 5 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_JBT', program '0' for tl-index 10 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_PNK', program '0' for tl-index 5 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_PNK', program '0' for tl-index 2 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_PNK', program '0' for tl-index 0 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_YMK', program '0' for tl-index 0 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_YMK', program '0' for tl-index 13 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_NMR_YMK', program '0' for tl-index 5 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_PNK', program '0' for tl-index 4 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_PNK', program '0' for tl-index 11 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_PNK', program '0' for tl-index 0 when switching to phase 3.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_PNK', program '0' for tl-index 8 when switching to phase 0.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_YMK', program '0' for tl-index 0 when switching to phase 1.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_YMK', program '0' for tl-index 5 when switching to phase 2.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_YMK', program '0' for tl-index 8 when switching to phase 3.
+Warning: Missing yellow phase in tlLogic 'tl_WZM_YMK', program '0' for tl-index 12 when switching to phase 0.
+Loading route-files incrementally from 'workspace/vehicles.rou.xml'
+Loading done.
+Simulation version 1.22.0 started with time: 0.00.
+INFO:FixedController:=== FIXED CONTROLLER INITIALIZATION ===
+INFO:FixedController:QA: FIXED - Initialized vehicle tracking system
+INFO:FixedController:QA: FIXED - Found 7 traffic lights
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:355: UserWarning: Call to deprecated function getAllProgramLogics, use getCompleteRedYellowGreenDefinition instead.
+  complete_def = traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0]
+INFO:FixedController:QA: FIXED tl_GRN_ALN - 3 phases, 90s cycle, durations: [35, 30, 25]
+INFO:FixedController:QA: FIXED tl_HLC_AYA - 3 phases, 90s cycle, durations: [35, 20, 35]
+INFO:FixedController:QA: FIXED tl_NMR_JBT - 3 phases, 90s cycle, durations: [30, 30, 30]
+INFO:FixedController:QA: FIXED tl_NMR_PNK - 3 phases, 90s cycle, durations: [35, 25, 30]
+INFO:FixedController:QA: FIXED tl_NMR_YMK - 3 phases, 90s cycle, durations: [40, 25, 25]
+INFO:FixedController:QA: FIXED tl_WZM_PNK - 4 phases, 90s cycle, durations: [25, 25, 20, 20]
+INFO:FixedController:QA: FIXED tl_WZM_YMK - 4 phases, 90s cycle, durations: [25, 20, 20, 25]
+INFO:FixedController:QA: FIXED - Initialization complete, will use setPhase + setPhaseDuration
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+INFO:TrafficSimulator:Step 0: 4 vehicles active
+Warning: Vehicle 'veh112' performs emergency braking on lane 'E_NMR_N_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=60.00.
+Warning: Vehicle 'veh14' performs emergency braking on lane 'E_GOR_W_NMR_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=60.00.
+INFO:TrafficSimulator:Step 100: 294 vehicles active
+Warning: Vehicle 'veh19' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=115.00.
+Warning: Vehicle 'veh19' performs emergency stop at the end of lane 'E_PNK_W_WZM_H_sl_1' because of a red traffic light (decel=-14.39, offset=5.10), time=115.00.
+Warning: Vehicle 'veh311' performs emergency braking on lane 'E_DOR_W_NMR_H_r_0' with decel=9.00, wished=4.50, severity=1.00, time=120.00.
+Warning: Vehicle 'veh311' performs emergency stop at the end of lane 'E_DOR_W_NMR_H_r_0' because of a red traffic light (decel=-11.28, offset=1.71), time=120.00.
+Warning: Vehicle 'veh0' performs emergency braking on lane 'E_NMR_S_JBT_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=120.00.
+Warning: Vehicle 'veh0' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_l_0' because of a red traffic light (decel=-19.05, offset=7.11), time=120.00.
+Warning: Vehicle 'veh346' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=130.00.
+Warning: Vehicle 'veh346' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_1' because of a red traffic light (decel=-20.86, offset=3.49), time=130.00.
+Warning: Vehicle 'veh197' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=132.00.
+Warning: Vehicle 'veh300' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=145.00.
+Warning: Vehicle 'veh300' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-20.45, offset=8.67), time=145.00.
+Warning: Teleporting vehicle 'veh236'; collision with vehicle 'veh202', lane='E_GOR_W_NMR_H_s_1', gap=-7.16, time=154.00, stage=move.
+Warning: Vehicle 'veh236' ends teleporting on edge 'E_PNK_W_WZM_T', time=154.00.
+INFO:TrafficSimulator:Step 200: 502 vehicles active
+Warning: Vehicle 'veh632' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_3' with decel=9.00, wished=4.50, severity=1.00, time=220.00.
+Warning: Vehicle 'veh632' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_3' because of a red traffic light (decel=-14.45, offset=2.95), time=221.00.
+Warning: Teleporting vehicle 'veh359'; collision with vehicle 'veh331', lane='E_GOR_W_NMR_H_s_1', gap=-6.97, time=221.00, stage=move.
+Warning: Vehicle 'veh359' ends teleporting on edge 'E_PNK_W_WZM', time=224.00.
+Warning: Vehicle 'veh573' performs emergency braking on lane ':J_WZM_PNK_12_1' with decel=9.00, wished=4.50, severity=1.00, time=228.00.
+Warning: Vehicle 'veh268' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=235.00.
+Warning: Vehicle 'veh268' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_0' because of a red traffic light (decel=-17.84, offset=6.23), time=235.00.
+Warning: Vehicle 'veh377' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=238.00.
+Warning: Vehicle 'veh470' performs emergency braking on lane 'E_NMR_S_JBT_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=240.00.
+Warning: Vehicle 'veh653' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=240.00.
+Warning: Vehicle 'veh413' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=243.00.
+Warning: Teleporting vehicle 'veh521'; collision with vehicle 'veh413', lane='E_GOR_W_NMR_H_s_1', gap=-6.71, time=245.00, stage=move.
+Warning: Vehicle 'veh521' ends teleporting on edge 'E_PNK_W_WZM_T', time=245.00.
+Warning: Vehicle 'veh384' performs emergency braking on lane 'E_NMR_S_PNK_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=270.00.
+Warning: Vehicle 'veh384' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_1' because of a red traffic light (decel=-19.28, offset=1.50), time=270.00.
+Warning: Vehicle 'veh692' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_1' with decel=9.00, wished=4.50, severity=1.00, time=270.00.
+Warning: Vehicle 'veh692' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_1' because of a red traffic light (decel=-15.07, offset=3.94), time=270.00.
+INFO:TrafficSimulator:Step 300: 594 vehicles active
+Warning: Vehicle 'veh809' performs emergency braking on lane 'E_NMR_S_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=305.00.
+Warning: Vehicle 'veh99' performs emergency braking on lane 'E_GOR_E_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=305.00.
+Warning: Vehicle 'veh99' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_2' because of a red traffic light (decel=-18.04, offset=5.52), time=305.00.
+Warning: Teleporting vehicle 'veh564'; collision with vehicle 'veh587', lane='E_GOR_W_NMR_H_s_1', gap=-6.48, time=311.00, stage=move.
+Warning: Vehicle 'veh564' ends teleporting on edge 'E_PNK_W_WZM', time=314.00.
+Warning: Teleporting vehicle 'veh599'; collision with vehicle 'veh648', lane='E_GOR_W_NMR_H_s_1', gap=-2.87, time=322.00, stage=move.
+Warning: Vehicle 'veh599' ends teleporting on edge 'E_PNK_W_WZM_T', time=322.00.
+Warning: Vehicle 'veh703' performs emergency braking on lane 'E_NMR_S_PNK_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=360.00.
+Warning: Vehicle 'veh703' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_1' because of a red traffic light (decel=-18.29, offset=9.18), time=360.00.
+Warning: Vehicle 'veh1023' performs emergency braking on lane 'E_NMR_S_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=395.00.
+Warning: Vehicle 'veh1023' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_1' because of a red traffic light (decel=-16.23, offset=3.23), time=395.00.
+INFO:TrafficSimulator:Step 400: 673 vehicles active
+Warning: Teleporting vehicle 'veh659'; collision with vehicle 'veh723', lane='E_GOR_W_NMR_H_s_1', gap=-7.35, time=401.00, stage=move.
+Warning: Vehicle 'veh659' ends teleporting on edge 'E_PNK_W_WZM_T', time=402.00.
+Warning: Teleporting vehicle 'veh772'; collision with vehicle 'veh627', lane='E_PNK_W_WZM_T_0', gap=-2.01, time=403.00, stage=move.
+Warning: Vehicle 'veh772' ends teleporting on edge 'E_PNK_W_WZM', time=403.00.
+Warning: Vehicle 'veh1038' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=420.00.
+Warning: Vehicle 'veh1038' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-17.50, offset=2.07), time=420.00.
+INFO:TrafficSimulator:Step 500: 734 vehicles active
+Warning: Vehicle 'veh731' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=505.00.
+Warning: Vehicle 'veh731' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_1' because of a red traffic light (decel=-9.71, offset=0.36), time=505.00.
+Warning: Vehicle 'veh1453' performs emergency braking on lane 'E_AYA_N_GRN_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=515.00.
+Warning: Vehicle 'veh1453' performs emergency stop at the end of lane 'E_AYA_N_GRN_H_l_1' because of a red traffic light (decel=-16.06, offset=5.00), time=515.00.
+Warning: Vehicle 'veh1150' performs emergency braking on lane 'E_NMR_S_PNK_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=540.00.
+Warning: Vehicle 'veh1150' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_0' because of a red traffic light (decel=-17.45, offset=2.29), time=540.00.
+Warning: Vehicle 'veh1047' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=565.00.
+Warning: Vehicle 'veh1047' performs emergency stop at the end of lane 'E_PNK_W_WZM_H_sl_1' because of a red traffic light (decel=-9.64, offset=0.48), time=565.00.
+Warning: Vehicle 'veh1426' performs emergency braking on lane 'E_NMR_N_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=575.00.
+Warning: Teleporting vehicle 'veh1354'; collision with vehicle 'veh1349', lane='E_GOR_W_NMR_H_s_1', gap=-6.87, time=582.00, stage=move.
+Warning: Vehicle 'veh1354' ends teleporting on edge 'E_PNK_W_WZM', time=586.00.
+INFO:TrafficSimulator:Step 600: 816 vehicles active
+Warning: Vehicle 'veh1735' performs emergency braking on lane 'E_AYA_N_GRN_H_l_2' with decel=9.00, wished=4.50, severity=1.00, time=605.00.
+Warning: Vehicle 'veh1901' performs emergency braking on lane 'E_HLC_W_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=665.00.
+Warning: Vehicle 'veh1901' performs emergency stop at the end of lane 'E_HLC_W_AYA_H_s_0' because of a red traffic light (decel=-17.20, offset=2.24), time=665.00.
+Warning: Vehicle 'veh1985' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_0' with decel=9.00, wished=4.50, severity=1.00, time=670.00.
+Warning: Vehicle 'veh1985' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_0' because of a red traffic light (decel=-17.89, offset=4.65), time=670.00.
+Warning: Teleporting vehicle 'veh1531'; collision with vehicle 'veh1671', lane='E_GOR_W_NMR_H_s_1', gap=-7.11, time=688.00, stage=move.
+Warning: Vehicle 'veh1765' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=690.00.
+Warning: Vehicle 'veh1625' performs emergency braking on lane 'E_GOR_W_NMR_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=690.00.
+Warning: Vehicle 'veh1625' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_0' because of a red traffic light (decel=-12.88, offset=2.53), time=690.00.
+INFO:TrafficSimulator:Step 700: 905 vehicles active
+Warning: Vehicle 'veh1645' performs emergency braking on lane 'E_NMR_S_PNK_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=720.00.
+Warning: Vehicle 'veh1645' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_1' because of a red traffic light (decel=-16.16, offset=2.20), time=720.00.
+Warning: Vehicle 'veh1531' teleports beyond arrival edge 'E_WZM_S', time=751.00.
+Warning: Vehicle 'veh1976' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=755.00.
+Warning: Vehicle 'veh2271' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=760.00.
+Warning: Teleporting vehicle 'veh1806'; collision with vehicle 'veh1793', lane='E_GOR_W_NMR_H_s_1', gap=-6.81, time=772.00, stage=move.
+Warning: Vehicle 'veh811' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=775.00.
+Warning: Teleporting vehicle 'veh1840'; collision with vehicle 'veh2048', lane='E_GOR_W_NMR_H_s_1', gap=-3.66, time=778.00, stage=move.
+Warning: Vehicle 'veh2005' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=780.00.
+Warning: Vehicle 'veh1715' performs emergency braking on lane 'E_GOR_W_NMR_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=780.00.
+Warning: Vehicle 'veh1840' ends teleporting on edge 'E_PNK_W_WZM', time=782.00.
+Warning: Vehicle 'veh1929' performs emergency braking on lane ':J31_3_1' with decel=9.00, wished=4.50, severity=1.00, time=783.00.
+Warning: Teleporting vehicle 'veh1929'; collision with vehicle 'veh2026', lane='E_GOR_W_NMR_H_s_1', gap=-1.71, time=783.00, stage=move.
+Warning: Vehicle 'veh1929' ends teleporting on edge 'E_PNK_W_WZM_T', time=784.00.
+INFO:TrafficSimulator:Step 800: 971 vehicles active
+Warning: Vehicle 'veh1908' performs emergency braking on lane 'E_NMR_S_PNK_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=810.00.
+Warning: Teleporting vehicle 'veh1053'; waited too long (yield), lane='E_WZM_N_PNK_H_sl_0', time=825.00.
+Warning: Vehicle 'veh1053' ends teleporting on edge 'E_WZM_N_YMK_T', time=825.00.
+Warning: Teleporting vehicle 'veh1163'; waited too long (jam), lane=':J79_1_0', time=833.00.
+Warning: Vehicle 'veh1163' ends teleporting on edge 'E_WZM_N_PNK_H_sl', time=833.00.
+Warning: Vehicle 'veh1806' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=842.00.
+Warning: Vehicle 'veh2272' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=845.00.
+Warning: Vehicle 'veh2272' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_3' because of a red traffic light (decel=-20.04, offset=6.85), time=845.00.
+Warning: Vehicle 'veh2442' performs emergency braking on lane 'E_HLC_W_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=845.00.
+Warning: Vehicle 'veh2442' performs emergency stop at the end of lane 'E_HLC_W_AYA_H_s_1' because of a red traffic light (decel=-16.90, offset=7.80), time=845.00.
+Warning: Vehicle 'veh2537' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=850.00.
+Warning: Vehicle 'veh2537' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_2' because of a red traffic light (decel=-21.82, offset=12.77), time=850.00.
+Warning: Teleporting vehicle 'veh2094'; collision with vehicle 'veh2021', lane='E_GOR_W_NMR_H_s_1', gap=-7.27, time=854.00, stage=move.
+Warning: Vehicle 'veh2094' ends teleporting on edge 'E_PNK_W_WZM_T', time=854.00.
+Warning: Vehicle 'veh2562' performs emergency braking on lane 'E_PNK_E_WZM_H_slr_0' with decel=9.00, wished=4.50, severity=1.00, time=860.00.
+Warning: Vehicle 'veh2562' performs emergency stop at the end of lane 'E_PNK_E_WZM_H_slr_0' because of a red traffic light (decel=-14.39, offset=0.89), time=860.00.
+Warning: Vehicle 'veh1619' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=865.00.
+Warning: Vehicle 'veh2111' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=870.00.
+Warning: Vehicle 'veh2111' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-12.70, offset=2.31), time=870.00.
+INFO:TrafficSimulator:Step 900: 1031 vehicles active
+Warning: Vehicle 'veh1742' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=925.00.
+Warning: Vehicle 'veh1742' performs emergency stop at the end of lane 'E_PNK_W_WZM_H_sl_1' because of a red traffic light (decel=-11.89, offset=0.00), time=925.00.
+Warning: Teleporting vehicle 'veh2328'; collision with vehicle 'veh2213', lane='E_GOR_W_NMR_H_s_1', gap=-6.71, time=941.00, stage=move.
+Warning: Vehicle 'veh2328' ends teleporting on edge 'E_PNK_W_WZM_T', time=942.00.
+Warning: Teleporting vehicle 'veh2341'; collision with vehicle 'veh2376', lane='E_GOR_W_NMR_H_s_1', gap=-3.37, time=952.00, stage=move.
+Warning: Vehicle 'veh2341' ends teleporting on edge 'E_PNK_W_WZM_T', time=953.00.
+Warning: Teleporting vehicle 'veh2520'; collision with vehicle 'veh2415', lane='E_GOR_W_NMR_H_s_1', gap=-6.12, time=954.00, stage=move.
+Warning: Vehicle 'veh2520' ends teleporting on edge 'E_PNK_W_WZM', time=960.00.
+INFO:TrafficSimulator:Step 1000: 1125 vehicles active
+Warning: Teleporting vehicle 'veh2523'; collision with vehicle 'veh2593', lane='E_GOR_W_NMR_H_s_1', gap=-6.35, time=1031.00, stage=move.
+Warning: Vehicle 'veh2523' ends teleporting on edge 'E_PNK_W_WZM_T', time=1031.00.
+Warning: Vehicle 'veh1427' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=1045.00.
+Warning: Vehicle 'veh1427' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-10.72, offset=0.14), time=1045.00.
+Warning: Vehicle 'veh3248' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=1080.00.
+Warning: Vehicle 'veh3186' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_1' with decel=9.00, wished=4.50, severity=1.00, time=1080.00.
+Warning: Vehicle 'veh3186' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_1' because of a red traffic light (decel=-10.59, offset=1.55), time=1080.00.
+Warning: Vehicle 'veh3112' performs emergency braking on lane 'E_NMR_N_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=1096.00.
+INFO:TrafficSimulator:Step 1100: 1198 vehicles active
+Warning: Vehicle 'veh2828' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=1120.00.
+Warning: Vehicle 'veh2828' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-10.91, offset=1.18), time=1121.00.
+Warning: Teleporting vehicle 'veh2879'; collision with vehicle 'veh2637', lane='E_GOR_W_NMR_H_s_1', gap=-6.54, time=1121.00, stage=move.
+Warning: Vehicle 'veh2879' ends teleporting on edge 'E_PNK_W_WZM', time=1126.00.
+Warning: Vehicle 'veh2973' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=1140.00.
+Warning: Vehicle 'veh2973' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_1' because of a red traffic light (decel=-14.94, offset=4.43), time=1140.00.
+Warning: Teleporting vehicle 'veh3091'; collision with vehicle 'veh3220', lane='E_GOR_W_NMR_H_s_1', gap=-7.31, time=1150.00, stage=move.
+Warning: Vehicle 'veh3091' ends teleporting on edge 'E_PNK_W_WZM_T', time=1150.00.
+Warning: Teleporting vehicle 'veh1694'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=1165.00.
+Warning: Vehicle 'veh1694' ends teleporting on edge 'E_PNK_W_WZM_T', time=1165.00.
+Warning: Teleporting vehicle 'veh1810'; waited too long (jam), lane=':J31_1_0', time=1174.00.
+Warning: Teleporting vehicle 'veh1850'; waited too long (jam), lane='E_GOR_W_NMR_0', time=1178.00.
+INFO:TrafficSimulator:Step 1200: 1273 vehicles active
+Warning: Vehicle 'veh1810' ends teleporting on edge 'E_PNK_W_WZM_T', time=1201.00.
+Warning: Vehicle 'veh1966' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=1205.00.
+Warning: Vehicle 'veh1966' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-16.78, offset=0.82), time=1205.00.
+Warning: Vehicle 'veh1850' ends teleporting on edge 'E_PNK_W_WZM_T', time=1205.00.
+Warning: Vehicle 'veh3398' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=1210.00.
+Warning: Vehicle 'veh3398' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-16.83, offset=7.22), time=1210.00.
+Warning: Vehicle 'veh2643' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=1225.00.
+Warning: Teleporting vehicle 'veh3142'; collision with vehicle 'veh3342', lane='E_GOR_W_NMR_H_s_1', gap=-6.39, time=1229.00, stage=move.
+Warning: Vehicle 'veh3142' ends teleporting on edge 'E_PNK_W_WZM_T', time=1229.00.
+Warning: Vehicle 'veh3356' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=1230.00.
+Warning: Teleporting vehicle 'veh2451'; waited too long (yield), lane='E_HLC_W_AYA_H_s_0', time=1230.00.
+Warning: Vehicle 'veh2451' ends teleporting on edge 'E_GOR_W_NMR', time=1230.00.
+Warning: Teleporting vehicle 'veh3186'; collision with vehicle 'veh3360', lane='E_GOR_W_NMR_H_s_1', gap=-6.93, time=1239.00, stage=move.
+Warning: Vehicle 'veh3186' ends teleporting on edge 'E_PNK_W_WZM_T', time=1239.00.
+Warning: Vehicle 'veh3895' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=1260.00.
+Warning: Vehicle 'veh3895' performs emergency stop at the end of lane 'E_JBT_E_NMR_H_sl_0' because of a red traffic light (decel=-13.72, offset=2.45), time=1260.00.
+Warning: Teleporting vehicle 'veh2747'; waited too long (jam), lane=':J_NMR_PNK_13_1', time=1264.00.
+Warning: Vehicle 'veh2747' ends teleporting on edge 'E_NMR_S_JBT', time=1264.00.
+Warning: Teleporting vehicle 'veh2783'; waited too long (jam), lane=':J_NMR_PNK_13_0', time=1265.00.
+Warning: Vehicle 'veh2783' ends teleporting on edge 'E_NMR_S_JBT', time=1265.00.
+Warning: Teleporting vehicle 'veh2785'; waited too long (jam), lane=':J_NMR_PNK_13_2', time=1266.00.
+Warning: Vehicle 'veh2785' ends teleporting on edge 'E_NMR_S_JBT', time=1266.00.
+Warning: Teleporting vehicle 'veh2281'; waited too long (jam), lane=':J_NMR_PNK_0_1', time=1267.00.
+Warning: Vehicle 'veh2281' ends teleporting on edge 'E_GOR_E_AYA_T', time=1267.00.
+Warning: Teleporting vehicle 'veh2068'; waited too long (jam), lane=':J_NMR_PNK_0_0', time=1268.00.
+Warning: Teleporting vehicle 'veh2372'; waited too long (yield), lane='E_NMR_S_PNK_H_l_0', time=1268.00.
+Warning: Vehicle 'veh2068' ends teleporting on edge 'E_GOR_E_AYA_T', time=1268.00.
+Warning: Vehicle 'veh2372' ends teleporting on edge 'E_GOR_E_AYA_T', time=1268.00.
+Warning: Teleporting vehicle 'veh1081'; waited too long (yield), lane='E_WZM_N_PNK_H_sl_0', time=1278.00.
+Warning: Vehicle 'veh1081' ends teleporting on edge 'E_WZM_N_YMK_T', time=1278.00.
+INFO:TrafficSimulator:Step 1300: 1357 vehicles active
+Warning: Vehicle 'veh3223' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=1385.00.
+Warning: Vehicle 'veh3223' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-14.53, offset=4.53), time=1385.00.
+INFO:TrafficSimulator:Step 1400: 1458 vehicles active
+Warning: Teleporting vehicle 'veh1721'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=1469.00.
+Warning: Vehicle 'veh1721' ends teleporting on edge 'E_PNK_W_WZM_T', time=1469.00.
+Warning: Teleporting vehicle 'veh3572'; collision with vehicle 'veh3451', lane='E_GOR_W_NMR_H_s_1', gap=-5.34, time=1488.00, stage=move.
+Warning: Vehicle 'veh3572' ends teleporting on edge 'E_PNK_W_WZM_T', time=1488.00.
+INFO:TrafficSimulator:Step 1500: 1573 vehicles active
+Warning: Teleporting vehicle 'veh3698'; waited too long (yield), lane='E_AYA_N_GRN_H_l_0', time=1529.00.
+Warning: Teleporting vehicle 'veh2533'; waited too long (yield), lane='E_HLC_W_AYA_H_s_0', time=1566.00.
+Warning: Teleporting vehicle 'veh385'; waited too long (jam), lane=':J_NMR_PNK_13_1', time=1569.00.
+Warning: Vehicle 'veh385' ends teleporting on edge 'E_NMR_S_JBT', time=1569.00.
+Warning: Vehicle 'veh3411' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=1570.00.
+Warning: Teleporting vehicle 'veh603'; waited too long (jam), lane=':J_NMR_PNK_13_0', time=1570.00.
+Warning: Vehicle 'veh603' ends teleporting on edge 'E_NMR_S_JBT', time=1570.00.
+Warning: Teleporting vehicle 'veh354'; waited too long (jam), lane=':J_NMR_PNK_13_2', time=1572.00.
+Warning: Vehicle 'veh354' ends teleporting on edge 'E_NMR_S_JBT', time=1572.00.
+Warning: Teleporting vehicle 'veh3896'; waited too long (jam), lane='E_AYA_N_GRN_2', time=1579.00.
+Warning: Teleporting vehicle 'veh2709'; waited too long (jam), lane=':cluster_J44_J9_0_0', time=1580.00.
+Warning: Teleporting vehicle 'veh1086'; waited too long (yield), lane='E_WZM_N_PNK_H_sl_0', time=1582.00.
+Warning: Vehicle 'veh1086' ends teleporting on edge 'E_WZM_N_YMK_T', time=1582.00.
+Warning: Teleporting vehicle 'veh2541'; waited too long (jam), lane='E_HLC_W_AYA_H_s_0', time=1595.00.
+Warning: Vehicle 'veh2533' ends teleporting on edge 'E_GOR_W_NMR', time=1595.00.
+INFO:TrafficSimulator:Step 1600: 1664 vehicles active
+Warning: Vehicle 'veh2709' ends teleporting on edge 'E_HLC_W_AYA_H_s', time=1623.00.
+Warning: Teleporting vehicle 'veh2603'; waited too long (jam), lane=':J_NMR_PNK_0_0', time=1625.00.
+Warning: Vehicle 'veh2603' ends teleporting on edge 'E_GOR_E_AYA_T', time=1625.00.
+Warning: Teleporting vehicle 'veh2374'; waited too long (jam), lane=':J_NMR_PNK_0_1', time=1629.00.
+Warning: Vehicle 'veh2374' ends teleporting on edge 'E_GOR_E_AYA_T', time=1629.00.
+Warning: Teleporting vehicle 'veh4033'; waited too long (yield), lane='E_AYA_N_GRN_H_l_1', time=1632.00.
+Warning: Teleporting vehicle 'veh3205'; waited too long (yield), lane='E_BLK_W_AYA_H_s_0', time=1658.00.
+Warning: Vehicle 'veh3205' ends teleporting on edge 'E_HLC_W_AYA', time=1659.00.
+Warning: Vehicle 'veh3896' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=1662.00.
+Warning: Vehicle 'veh4018' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=1680.00.
+Warning: Vehicle 'veh4018' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-15.69, offset=1.57), time=1680.00.
+INFO:TrafficSimulator:Step 1700: 1809 vehicles active
+Warning: Vehicle 'veh4033' ends teleporting on edge 'E_GOR_W_NMR', time=1702.00.
+Warning: Teleporting vehicle 'veh2397'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_1', time=1770.00.
+Warning: Vehicle 'veh2397' ends teleporting on edge 'E_WZM_S_PNK', time=1770.00.
+Warning: Vehicle 'veh3698' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=1771.00.
+Warning: Teleporting vehicle 'veh2371'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_2', time=1772.00.
+Warning: Vehicle 'veh2371' ends teleporting on edge 'E_WZM_S_PNK', time=1772.00.
+Warning: Teleporting vehicle 'veh1771'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=1773.00.
+Warning: Vehicle 'veh1771' ends teleporting on edge 'E_PNK_W_WZM_T', time=1773.00.
+Warning: Teleporting vehicle 'veh3068'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=1774.00.
+Warning: Vehicle 'veh3068' ends teleporting on edge 'E_WZM_S_PNK', time=1774.00.
+Warning: Teleporting vehicle 'veh4620'; waited too long (yield), lane='E_BLK_W_AYA_H_s_1', time=1780.00.
+Warning: Vehicle 'veh4620' ends teleporting on edge 'E_HLC_W_AYA', time=1780.00.
+INFO:TrafficSimulator:Step 1800: 1858 vehicles active
+Warning: Teleporting vehicle 'veh3745'; waited too long (yield), lane='E_AYA_N_GRN_H_l_0', time=1833.00.
+Warning: Teleporting vehicle 'veh3412'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=1833.00.
+Warning: Vehicle 'veh3412' ends teleporting on edge 'E_YMK_W_WZM', time=1833.00.
+Warning: Vehicle 'veh2541' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=1837.00.
+Warning: Vehicle 'veh4976' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=1840.00.
+Warning: Vehicle 'veh4976' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-15.70, offset=1.80), time=1840.00.
+Warning: Teleporting vehicle 'veh4291'; waited too long (jam), lane='E_AYA_N_GRN_2', time=1845.00.
+Warning: Teleporting vehicle 'veh3709'; collision with vehicle 'veh3606', lane='E_GOR_W_NMR_H_s_1', gap=-6.77, time=1847.00, stage=move.
+Warning: Vehicle 'veh3709' ends teleporting on edge 'E_PNK_W_WZM_T', time=1848.00.
+Warning: Teleporting vehicle 'veh3713'; collision with vehicle 'veh3795', lane='E_GOR_W_NMR_H_s_1', gap=-6.05, time=1851.00, stage=move.
+Warning: Vehicle 'veh3713' ends teleporting on edge 'E_PNK_W_WZM_T', time=1851.00.
+Warning: Vehicle 'veh3745' ends teleporting on edge 'E_GOR_W_NMR', time=1851.00.
+Warning: Vehicle 'veh3575' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=1860.00.
+Warning: Vehicle 'veh3575' performs emergency stop at the end of lane 'E_PNK_E_NMR_H_sr_1' because of a red traffic light (decel=-13.86, offset=4.74), time=1860.00.
+Warning: Teleporting vehicle 'veh3473'; collision with vehicle 'veh3607', lane='E_GOR_W_NMR_H_s_1', gap=-7.42, time=1864.00, stage=move.
+Warning: Vehicle 'veh3473' ends teleporting on edge 'E_PNK_W_WZM_T', time=1864.00.
+Warning: Teleporting vehicle 'veh4084'; waited too long (yield), lane='E_AYA_N_GRN_H_l_1', time=1870.00.
+Warning: Vehicle 'veh4084' ends teleporting on edge 'E_GOR_W_NMR', time=1870.00.
+Warning: Teleporting vehicle 'veh542'; waited too long (jam), lane=':J_NMR_PNK_13_1', time=1895.00.
+Warning: Vehicle 'veh542' ends teleporting on edge 'E_NMR_S_JBT', time=1895.00.
+Warning: Teleporting vehicle 'veh2447'; waited too long (jam), lane=':J_NMR_PNK_13_2', time=1896.00.
+Warning: Teleporting vehicle 'veh2504'; waited too long (jam), lane=':J_NMR_PNK_13_0', time=1896.00.
+Warning: Vehicle 'veh2447' ends teleporting on edge 'E_NMR_S_JBT', time=1896.00.
+Warning: Vehicle 'veh2504' ends teleporting on edge 'E_NMR_S_JBT', time=1896.00.
+INFO:TrafficSimulator:Step 1900: 1886 vehicles active
+Warning: Teleporting vehicle 'veh4063'; waited too long (jam), lane='E_HLC_W_AYA_H_s_0', time=1901.00.
+Warning: Teleporting vehicle 'veh1229'; waited too long (yield), lane='E_WZM_N_PNK_H_sl_0', time=1909.00.
+Warning: Vehicle 'veh1229' ends teleporting on edge 'E_WZM_N_YMK_T', time=1909.00.
+Warning: Vehicle 'veh5234' performs emergency braking on lane ':J_WZM_PNK_12_1' with decel=9.00, wished=4.50, severity=1.00, time=1924.00.
+Warning: Vehicle 'veh4291' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=1928.00.
+Warning: Vehicle 'veh4043' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=1930.00.
+Warning: Teleporting vehicle 'veh4126'; waited too long (jam), lane='E_AYA_N_GRN_H_l_1', time=1936.00.
+Warning: Vehicle 'veh4126' ends teleporting on edge 'E_GOR_W_NMR', time=1939.00.
+Warning: Vehicle 'veh4126' performs emergency braking on lane ':J31_3_1' with decel=9.00, wished=4.50, severity=1.00, time=1941.00.
+Warning: Teleporting vehicle 'veh3567'; collision with vehicle 'veh3582', lane='E_GOR_W_NMR_H_s_1', gap=-5.61, time=1944.00, stage=move.
+Warning: Vehicle 'veh4619' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=1950.00.
+Warning: Vehicle 'veh4619' performs emergency stop at the end of lane 'E_PNK_E_NMR_H_sr_1' because of a red traffic light (decel=-12.14, offset=1.73), time=1950.00.
+Warning: Teleporting vehicle 'veh2713'; waited too long (jam), lane=':cluster_J44_J9_0_0', time=1957.00.
+Warning: Vehicle 'veh2713' ends teleporting on edge 'E_HLC_W_AYA_H_s', time=1957.00.
+Warning: Teleporting vehicle 'veh3208'; waited too long (yield), lane='E_BLK_W_AYA_H_s_0', time=1963.00.
+Warning: Vehicle 'veh3208' ends teleporting on edge 'E_HLC_W_AYA', time=1963.00.
+Warning: Vehicle 'veh3567' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=1986.00.
+Warning: Teleporting vehicle 'veh2644'; waited too long (jam), lane=':J_NMR_PNK_0_0', time=1987.00.
+Warning: Vehicle 'veh2644' ends teleporting on edge 'E_GOR_E_AYA_T', time=1987.00.
+INFO:TrafficSimulator:Step 2000: 1949 vehicles active
+Warning: Teleporting vehicle 'veh3907'; collision with vehicle 'veh4181', lane='E_GOR_W_NMR_H_s_1', gap=-7.46, time=2021.00, stage=move.
+Warning: Vehicle 'veh3907' ends teleporting on edge 'E_PNK_W_WZM_T', time=2021.00.
+Warning: Teleporting vehicle 'veh3825'; collision with vehicle 'veh3881', lane='E_GOR_W_NMR_H_s_1', gap=-6.99, time=2030.00, stage=move.
+Warning: Teleporting vehicle 'veh2795'; waited too long (jam), lane='E_HLC_W_AYA_0', time=2032.00.
+Warning: Vehicle 'veh2795' ends teleporting on edge 'E_HLC_W_AYA_H_s', time=2032.00.
+Warning: Teleporting vehicle 'veh3637'; collision with vehicle 'veh4084', lane='E_GOR_W_NMR_H_s_1', gap=-4.36, time=2034.00, stage=move.
+Warning: Vehicle 'veh4996' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2035.00.
+Warning: Vehicle 'veh4996' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-17.03, offset=6.55), time=2035.00.
+Warning: Vehicle 'veh3637' ends teleporting on edge 'E_PNK_W_WZM_T', time=2035.00.
+Warning: Vehicle 'veh4296' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=2040.00.
+Warning: Vehicle 'veh4296' performs emergency stop at the end of lane 'E_PNK_E_NMR_H_sr_1' because of a red traffic light (decel=-13.13, offset=0.96), time=2040.00.
+Warning: Vehicle 'veh4507' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2040.00.
+Warning: Vehicle 'veh4507' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_1' because of a red traffic light (decel=-13.50, offset=1.00), time=2040.00.
+Warning: Vehicle 'veh5016' performs emergency braking on lane 'E_AYA_N_GRN_H_l_2' with decel=9.00, wished=4.50, severity=1.00, time=2045.00.
+Warning: Vehicle 'veh5016' performs emergency stop at the end of lane 'E_AYA_N_GRN_H_l_2' because of a red traffic light (decel=-12.17, offset=1.01), time=2045.00.
+Warning: Vehicle 'veh3825' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=2074.00.
+Warning: Teleporting vehicle 'veh3074'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=2079.00.
+Warning: Teleporting vehicle 'veh1695'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=2081.00.
+Warning: Vehicle 'veh1695' ends teleporting on edge 'E_PNK_W_WZM_T', time=2081.00.
+Warning: Vehicle 'veh3074' ends teleporting on edge 'E_WZM_S_PNK', time=2092.00.
+Warning: Teleporting vehicle 'veh2285'; waited too long (yield), lane='E_YMK_E_WZM_H_slr_0', time=2098.00.
+Warning: Vehicle 'veh2285' ends teleporting on edge 'E_WZM_S_PNK', time=2098.00.
+INFO:TrafficSimulator:Step 2100: 1988 vehicles active
+Warning: Teleporting vehicle 'veh2435'; waited too long (jam), lane=':J_NMR_PNK_0_1', time=2101.00.
+Warning: Vehicle 'veh2435' ends teleporting on edge 'E_GOR_E_AYA_T', time=2101.00.
+Warning: Teleporting vehicle 'veh4111'; waited too long (jam), lane='E_AYA_N_GRN_H_l_0', time=2109.00.
+Warning: Vehicle 'veh5842' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=2110.00.
+Warning: Vehicle 'veh5842' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-16.10, offset=6.92), time=2110.00.
+Warning: Teleporting vehicle 'veh4466'; collision with vehicle 'veh4664', lane='E_GOR_W_NMR_H_s_1', gap=-7.45, time=2115.00, stage=move.
+Warning: Vehicle 'veh4466' ends teleporting on edge 'E_PNK_W_WZM_T', time=2115.00.
+Warning: Vehicle 'veh4063' ends teleporting on edge 'E_GOR_W_NMR', time=2121.00.
+Warning: Teleporting vehicle 'veh3786'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_0', time=2137.00.
+Warning: Teleporting vehicle 'veh3435'; waited too long (jam), lane='E_HZG_W_NMR_H_slr_0', time=2138.00.
+Warning: Teleporting vehicle 'veh4674'; waited too long (jam), lane='E_HLC_W_AYA_H_s_0', time=2141.00.
+Warning: Teleporting vehicle 'veh4367'; waited too long (jam), lane=':cluster_J44_J9_0_0', time=2142.00.
+Warning: Teleporting vehicle 'veh2713'; collision with vehicle 'veh4212', lane='E_GOR_W_NMR_H_s_1', gap=-7.47, time=2142.00, stage=move.
+Warning: Vehicle 'veh2713' ends teleporting on edge 'E_PNK_W_WZM_T', time=2142.00.
+Warning: Vehicle 'veh4367' ends teleporting on edge 'E_HLC_W_AYA_H_s', time=2149.00.
+Warning: Vehicle 'veh4111' ends teleporting on edge 'E_GOR_W_NMR', time=2152.00.
+Warning: Vehicle 'veh3435' ends teleporting on edge 'E_YMK_W_WZM', time=2154.00.
+Warning: Vehicle 'veh3786' ends teleporting on edge 'E_YMK_W_WZM', time=2160.00.
+Warning: Teleporting vehicle 'veh3479'; waited too long (jam), lane='E_HZG_W_NMR_0', time=2170.00.
+Warning: Vehicle 'veh4674' ends teleporting on edge 'E_GOR_W_NMR', time=2192.00.
+INFO:TrafficSimulator:Step 2200: 2024 vehicles active
+Warning: Teleporting vehicle 'veh2607'; waited too long (jam), lane=':J_NMR_PNK_13_2', time=2201.00.
+Warning: Teleporting vehicle 'veh2517'; waited too long (jam), lane=':J_NMR_PNK_13_1', time=2201.00.
+Warning: Vehicle 'veh2517' ends teleporting on edge 'E_NMR_S_JBT', time=2201.00.
+Warning: Vehicle 'veh2607' ends teleporting on edge 'E_NMR_S_JBT', time=2201.00.
+Warning: Teleporting vehicle 'veh2837'; waited too long (jam), lane=':J_NMR_PNK_13_0', time=2203.00.
+Warning: Vehicle 'veh2837' ends teleporting on edge 'E_NMR_S_JBT', time=2203.00.
+Warning: Vehicle 'veh7131' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=2220.00.
+Warning: Vehicle 'veh2457' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_2' with decel=9.00, wished=4.50, severity=1.00, time=2275.00.
+Warning: Teleporting vehicle 'veh4648'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=2282.00.
+INFO:TrafficSimulator:Step 2300: 2115 vehicles active
+Warning: Vehicle 'veh4648' ends teleporting on edge 'E_NMR_S_PNK', time=2303.00.
+Warning: Vehicle 'veh4763' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=2305.00.
+Warning: Teleporting vehicle 'veh1845'; waited too long (yield), lane='E_WZM_S_PNK_H_slr_2', time=2344.00.
+Warning: Teleporting vehicle 'veh2650'; waited too long (jam), lane=':J_NMR_PNK_0_0', time=2345.00.
+Warning: Vehicle 'veh2650' ends teleporting on edge 'E_GOR_E_AYA_T', time=2345.00.
+Warning: Teleporting vehicle 'veh2617'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_1', time=2378.00.
+Warning: Teleporting vehicle 'veh2704'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_2', time=2382.00.
+Warning: Vehicle 'veh1845' ends teleporting on edge 'E_PNK_E_NMR', time=2384.00.
+INFO:TrafficSimulator:Step 2400: 2181 vehicles active
+Warning: Teleporting vehicle 'veh3439'; waited too long (jam), lane='E_HZG_W_NMR_H_slr_0', time=2405.00.
+Warning: Teleporting vehicle 'veh3132'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=2406.00.
+Warning: Vehicle 'veh3479' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=2406.00.
+Warning: Teleporting vehicle 'veh4335'; waited too long (yield), lane='E_AYA_N_GRN_H_l_0', time=2413.00.
+Warning: Teleporting vehicle 'veh2969'; waited too long (jam), lane='E_YMK_W_WZM_0', time=2415.00.
+Warning: Teleporting vehicle 'veh1768'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=2416.00.
+Warning: Vehicle 'veh1768' ends teleporting on edge 'E_PNK_W_WZM_T', time=2416.00.
+Warning: Teleporting vehicle 'veh1907'; waited too long (jam), lane=':J31_1_0', time=2422.00.
+Warning: Vehicle 'veh7832' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_0' with decel=9.00, wished=4.50, severity=1.00, time=2430.00.
+Warning: Vehicle 'veh7832' performs emergency stop at the end of lane 'E_JBT_E_NMR_H_sl_0' because of a red traffic light (decel=-14.12, offset=0.84), time=2430.00.
+Warning: Teleporting vehicle 'veh4072'; waited too long (jam), lane=':J_GRN_ALN_4_0', time=2432.00.
+Warning: Teleporting vehicle 'veh5068'; waited too long (jam), lane=':J_GRN_ALN_0_1', time=2441.00.
+Warning: Vehicle 'veh5068' ends teleporting on edge 'E_AYA_S_T', time=2441.00.
+Warning: Teleporting vehicle 'veh5239'; waited too long (jam), lane=':J_GRN_ALN_0_1', time=2443.00.
+Warning: Vehicle 'veh5239' ends teleporting on edge 'E_AYA_S_T', time=2443.00.
+Warning: Teleporting vehicle 'veh3983'; waited too long (jam), lane='E_AYA_N_GRN_2', time=2445.00.
+Warning: Vehicle 'veh1907' ends teleporting on edge 'E_PNK_W_WZM_T', time=2449.00.
+Warning: Teleporting vehicle 'veh4540'; waited too long (jam), lane=':J31_3_0', time=2452.00.
+Warning: Teleporting vehicle 'veh4478'; waited too long (jam), lane='E_AYA_N_GRN_2', time=2454.00.
+Warning: Vehicle 'veh2969' ends teleporting on edge 'E_YMK_W', time=2456.00.
+Warning: Teleporting vehicle 'veh5095'; waited too long (jam), lane=':J_GRN_ALN_4_2', time=2459.00.
+Warning: Vehicle 'veh5095' ends teleporting on edge 'E_GOR_W_NMR', time=2459.00.
+Warning: Teleporting vehicle 'veh3959'; waited too long (jam), lane='E_GOR_W_NMR_1', time=2461.00.
+Warning: Vehicle 'veh3959' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=2461.00.
+Warning: Vehicle 'veh3439' ends teleporting on edge 'E_YMK_W_WZM', time=2464.00.
+Warning: Vehicle 'veh5815' performs emergency braking on lane 'E_HLC_W_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=2465.00.
+Warning: Vehicle 'veh5815' performs emergency stop at the end of lane 'E_HLC_W_AYA_H_s_2' because of a red traffic light (decel=-14.51, offset=0.21), time=2465.00.
+Warning: Teleporting vehicle 'veh2795'; waited too long (jam), lane='E_GOR_W_NMR_H_s_1', time=2465.00.
+Warning: Vehicle 'veh2795' ends teleporting on edge 'E_PNK_W_WZM_T', time=2465.00.
+Warning: Vehicle 'veh4540' ends teleporting on edge 'E_GOR_W_NMR_H_s', time=2466.00.
+Warning: Teleporting vehicle 'veh3645'; waited too long (jam), lane=':J_GRN_ALN_7_0', time=2467.00.
+Warning: Vehicle 'veh3645' ends teleporting on edge 'E_HLC_E_AYA', time=2467.00.
+Warning: Teleporting vehicle 'veh4022'; waited too long (jam), lane=':J_GRN_ALN_7_0', time=2468.00.
+Warning: Vehicle 'veh4022' ends teleporting on edge 'E_HLC_E_AYA', time=2468.00.
+Warning: Teleporting vehicle 'veh4212'; waited too long (jam), lane='E_GOR_W_NMR_H_s_1', time=2473.00.
+Warning: Vehicle 'veh4212' ends teleporting on edge 'E_PNK_W_WZM_T', time=2473.00.
+Warning: Teleporting vehicle 'veh4511'; collision with vehicle 'veh5289', lane='E_GOR_W_NMR_H_s_1', gap=-7.45, time=2475.00, stage=move.
+Warning: Vehicle 'veh4511' ends teleporting on edge 'E_PNK_W_WZM_T', time=2475.00.
+Warning: Teleporting vehicle 'veh5191'; collision with vehicle 'veh4579', lane='E_GOR_W_NMR_H_s_1', gap=-5.37, time=2478.00, stage=move.
+Warning: Vehicle 'veh5191' ends teleporting on edge 'E_PNK_W_WZM_T', time=2478.00.
+Warning: Teleporting vehicle 'veh2579'; waited too long (yield), lane='E_HLC_W_AYA_H_s_0', time=2492.00.
+Warning: Vehicle 'veh2579' ends teleporting on edge 'E_GOR_W_NMR', time=2492.00.
+INFO:TrafficSimulator:Step 2500: 2206 vehicles active
+Warning: Teleporting vehicle 'veh5162'; waited too long (jam), lane=':J_GRN_ALN_4_1', time=2501.00.
+Warning: Teleporting vehicle 'veh5153'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_2', time=2501.00.
+Warning: Vehicle 'veh5153' ends teleporting on edge 'E_NMR_S_PNK', time=2501.00.
+Warning: Vehicle 'veh5162' ends teleporting on edge 'E_GOR_W_NMR', time=2501.00.
+Warning: Teleporting vehicle 'veh4884'; waited too long (jam), lane=':J_GRN_ALN_0_0', time=2502.00.
+Warning: Vehicle 'veh4884' ends teleporting on edge 'E_AYA_S_T', time=2502.00.
+Warning: Teleporting vehicle 'veh5201'; waited too long (jam), lane=':J_GRN_ALN_4_1', time=2504.00.
+Warning: Vehicle 'veh5201' ends teleporting on edge 'E_GOR_W_NMR', time=2504.00.
+Warning: Teleporting vehicle 'veh5394'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_2', time=2505.00.
+Warning: Teleporting vehicle 'veh5789'; waited too long (wrong lane), lane='E_GOR_E_AYA_0', time=2509.00.
+Warning: Teleporting vehicle 'veh5303'; waited too long (jam), lane=':J_GRN_ALN_0_0', time=2514.00.
+Warning: Vehicle 'veh5303' ends teleporting on edge 'E_AYA_S_T', time=2514.00.
+Warning: Teleporting vehicle 'veh5898'; waited too long (jam), lane='E_NMR_S_YMK_3', time=2516.00.
+Warning: Teleporting vehicle 'veh4281'; waited too long (jam), lane=':J_GRN_ALN_7_2', time=2519.00.
+Warning: Vehicle 'veh4281' ends teleporting on edge 'E_HLC_E_AYA', time=2519.00.
+Warning: Vehicle 'veh6711' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_2' with decel=9.00, wished=4.50, severity=1.00, time=2520.00.
+Warning: Vehicle 'veh5394' ends teleporting on edge 'E_NMR_S_PNK', time=2522.00.
+Warning: Teleporting vehicle 'veh5123'; waited too long (yield), lane='E_AYA_N_GRN_H_l_0', time=2526.00.
+Warning: Vehicle 'veh5123' ends teleporting on edge 'E_GOR_W_NMR', time=2526.00.
+Warning: Vehicle 'veh3983' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=2528.00.
+Warning: Vehicle 'veh4478' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=2537.00.
+Warning: Teleporting vehicle 'veh4394'; waited too long (jam), lane=':cluster_J44_J9_0_0', time=2556.00.
+Warning: Vehicle 'veh7198' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=2560.00.
+Warning: Vehicle 'veh7198' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-16.13, offset=6.37), time=2560.00.
+Warning: Teleporting vehicle 'veh2998'; waited too long (jam), lane='E_HLC_W_AYA_0', time=2565.00.
+Warning: Vehicle 'veh2998' ends teleporting on edge 'E_HLC_W_AYA_H_s', time=2566.00.
+Warning: Vehicle 'veh5789' ends teleporting on edge 'E_HLC_E_AYA', time=2567.00.
+Warning: Teleporting vehicle 'veh5176'; waited too long (yield), lane='E_DOR_W_NMR_H_r_0', time=2584.00.
+Warning: Vehicle 'veh2617' ends teleporting on edge 'E_WZM_S_PNK', time=2587.00.
+Warning: Teleporting vehicle 'veh5952'; waited too long (yield), lane='E_PNK_E_WZM_H_slr_0', time=2591.00.
+INFO:TrafficSimulator:Step 2600: 2246 vehicles active
+Warning: Teleporting vehicle 'veh7153'; waited too long (yield), lane='E_NMR_N_JBT_H_s_0', time=2606.00.
+Warning: Vehicle 'veh5810' performs emergency braking on lane ':J_GRN_ALN_0_1' with decel=9.00, wished=4.50, severity=1.00, time=2611.00.
+Warning: Teleporting vehicle 'veh2787'; waited too long (yield), lane='E_NMR_S_PNK_H_l_0', time=2650.00.
+Warning: Vehicle 'veh2787' ends teleporting on edge 'E_GOR_E_AYA_T', time=2653.00.
+Warning: Vehicle 'veh4335' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=2655.00.
+Warning: Teleporting vehicle 'veh2510'; waited too long (jam), lane=':cluster_J11_J26_4_0', time=2656.00.
+Warning: Teleporting vehicle 'veh2555'; waited too long (jam), lane='E_NMR_S_PNK_2', time=2659.00.
+Warning: Teleporting vehicle 'veh1369'; waited too long (jam), lane=':J67_0_2', time=2666.00.
+Warning: Vehicle 'veh1369' ends teleporting on edge 'E_WZM_S_PNK_H_slr', time=2666.00.
+Warning: Vehicle 'veh4394' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=2668.00.
+Warning: Vehicle 'veh5176' ends teleporting on edge 'E_NMR_N_PNK', time=2672.00.
+Warning: Vehicle 'veh4072' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=2674.00.
+Warning: Vehicle 'veh2510' ends teleporting on edge 'E_GOR_E_AYA_T', time=2682.00.
+Warning: Teleporting vehicle 'veh2669'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_1', time=2683.00.
+Warning: Vehicle 'veh2555' ends teleporting on edge 'E_GOR_E_AYA_T', time=2685.00.
+Warning: Teleporting vehicle 'veh2718'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_1', time=2687.00.
+INFO:TrafficSimulator:Step 2700: 2271 vehicles active
+Warning: Teleporting vehicle 'veh4260'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=2703.00.
+Warning: Vehicle 'veh3132' ends teleporting on edge 'E_WZM_S_PNK_H_slr', time=2703.00.
+Warning: Vehicle 'veh4260' ends teleporting on edge 'E_PNK_W_WZM_T', time=2703.00.
+Warning: Teleporting vehicle 'veh3479'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=2707.00.
+Warning: Teleporting vehicle 'veh5095'; collision with vehicle 'veh2579', lane='E_GOR_W_NMR_H_s_1', gap=-7.41, time=2709.00, stage=move.
+Warning: Vehicle 'veh5095' ends teleporting on edge 'E_PNK_W_WZM_T', time=2709.00.
+Warning: Teleporting vehicle 'veh3464'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=2711.00.
+Warning: Teleporting vehicle 'veh5224'; waited too long (yield), lane='E_AYA_N_GRN_H_l_0', time=2717.00.
+Warning: Vehicle 'veh5224' ends teleporting on edge 'E_GOR_W_NMR', time=2719.00.
+Warning: Vehicle 'veh5040' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2735.00.
+Warning: Vehicle 'veh5040' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_1' because of a red traffic light (decel=-17.25, offset=7.60), time=2735.00.
+Warning: Vehicle 'veh6140' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=2735.00.
+Warning: Teleporting vehicle 'veh6366'; collision with vehicle 'veh5040', lane='E_GOR_E_AYA_H_s_1', gap=-0.15, time=2735.00, stage=move.
+Warning: Vehicle 'veh6366' ends teleporting on edge 'E_HLC_E_AYA', time=2737.00.
+Warning: Teleporting vehicle 'veh4547'; waited too long (jam), lane='E_AYA_N_GRN_2', time=2751.00.
+Warning: Teleporting vehicle 'veh5933'; collision with vehicle 'veh4968', lane='E_GOR_W_NMR_H_s_1', gap=-7.18, time=2751.00, stage=move.
+Warning: Vehicle 'veh5933' ends teleporting on edge 'E_PNK_W_WZM_T', time=2751.00.
+Warning: Teleporting vehicle 'veh5531'; collision with vehicle 'veh5157', lane='E_GOR_W_NMR_H_s_1', gap=-5.92, time=2760.00, stage=move.
+Warning: Vehicle 'veh5531' ends teleporting on edge 'E_PNK_W_WZM_T', time=2760.00.
+Warning: Teleporting vehicle 'veh5676'; waited too long (jam), lane='E_HLC_W_AYA_H_s_0', time=2768.00.
+Warning: Vehicle 'veh5676' ends teleporting on edge 'E_GOR_W_NMR', time=2768.00.
+Warning: Teleporting vehicle 'veh1856'; waited too long (wrong lane), lane='E_WZM_S_PNK_H_slr_1', time=2787.00.
+Warning: Teleporting vehicle 'veh1254'; waited too long (yield), lane='E_WZM_S_PNK_H_slr_2', time=2788.00.
+Warning: Vehicle 'veh2704' ends teleporting on edge 'E_WZM_S_PNK_H_slr', time=2788.00.
+Warning: Vehicle 'veh4547' ends teleporting on edge 'E_GOR_W_NMR', time=2792.00.
+Warning: Teleporting vehicle 'veh3377'; waited too long (jam), lane=':J_NMR_PNK_13_0', time=2793.00.
+Warning: Vehicle 'veh3377' ends teleporting on edge 'E_NMR_S_JBT', time=2793.00.
+Warning: Vehicle 'veh1254' ends teleporting on edge 'E_PNK_E_NMR_T', time=2795.00.
+Warning: Vehicle 'veh1856' ends teleporting on edge 'E_PNK_E_NMR_T', time=2795.00.
+Warning: Teleporting vehicle 'veh3266'; waited too long (jam), lane=':J_NMR_PNK_13_1', time=2796.00.
+Warning: Teleporting vehicle 'veh3099'; waited too long (jam), lane=':J_NMR_PNK_13_2', time=2796.00.
+Warning: Vehicle 'veh3099' ends teleporting on edge 'E_NMR_S_JBT', time=2796.00.
+Warning: Vehicle 'veh3266' ends teleporting on edge 'E_NMR_S_JBT', time=2796.00.
+INFO:TrafficSimulator:Step 2800: 2279 vehicles active
+Warning: Teleporting vehicle 'veh3803'; waited too long (jam), lane='E_NMR_S_YMK_H_sr_0', time=2825.00.
+Warning: Teleporting vehicle 'veh6300'; waited too long (jam), lane=':cluster_J44_J9_0_0', time=2842.00.
+Warning: Vehicle 'veh7153' ends teleporting on edge 'E_NMR_N_PNK', time=2843.00.
+Warning: Vehicle 'veh2669' ends teleporting on edge 'E_WZM_S_PNK', time=2850.00.
+Warning: Teleporting vehicle 'veh3032'; waited too long (jam), lane='E_HLC_W_AYA_0', time=2870.00.
+Warning: Teleporting vehicle 'veh4474'; waited too long (yield), lane='E_AYA_N_GRN_H_l_0', time=2880.00.
+Warning: Vehicle 'veh2718' ends teleporting on edge 'E_WZM_S_PNK', time=2880.00.
+Warning: Vehicle 'veh3479' ends teleporting on edge 'E_WZM_S_PNK', time=2884.00.
+Warning: Teleporting vehicle 'veh5927'; waited too long (jam), lane='E_AYA_N_GRN_3', time=2889.00.
+Warning: Teleporting vehicle 'veh2392'; waited too long (jam), lane=':J_WZM_YMK_12_0', time=2892.00.
+Warning: Teleporting vehicle 'veh2404'; waited too long (yield), lane='E_YMK_E_WZM_H_slr_0', time=2893.00.
+Warning: Teleporting vehicle 'veh5314'; waited too long (jam), lane='E_HLC_W_AYA_H_s_0', time=2893.00.
+Warning: Vehicle 'veh2392' ends teleporting on edge 'E_WZM_S_PNK', time=2893.00.
+Warning: Vehicle 'veh2404' ends teleporting on edge 'E_WZM_S_PNK', time=2895.00.
+Warning: Vehicle 'veh5898' ends teleporting on edge 'E_GOR_E_AYA_T', time=2897.00.
+INFO:TrafficSimulator:Step 2900: 2268 vehicles active
+Warning: Teleporting vehicle 'veh6085'; collision with vehicle 'veh6131', lane='E_PNK_E_NMR_T_0', gap=-0.26, time=2915.00, stage=move.
+Warning: Teleporting vehicle 'veh3341'; waited too long (yield), lane='E_BLK_W_AYA_H_s_0', time=2916.00.
+Warning: Vehicle 'veh3341' ends teleporting on edge 'E_HLC_W_AYA', time=2916.00.
+Warning: Vehicle 'veh6085' ends teleporting on edge 'E_PNK_E_NMR', time=2920.00.
+Warning: Vehicle 'veh5927' ends teleporting on edge 'E_GOR_W_NMR', time=2939.00.
+Warning: Vehicle 'veh5952' ends teleporting on edge 'E_NMR_S_JBT', time=2964.00.
+Warning: Vehicle 'veh6300' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=2969.00.
+Warning: Vehicle 'veh2931' performs emergency braking on lane 'E_NMR_S_PNK_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=2970.00.
+Warning: Vehicle 'veh2931' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_1' because of a red traffic light (decel=-14.23, offset=2.92), time=2970.00.
+Warning: Vehicle 'veh3032' ends teleporting on edge 'E_GOR_W_NMR', time=2977.00.
+Warning: Teleporting vehicle 'veh2695'; waited too long (jam), lane='E_WZM_S_YMK_H_slr_2', time=2988.00.
+Warning: Vehicle 'veh2695' ends teleporting on edge 'E_WZM_S_PNK', time=2988.00.
+Warning: Teleporting vehicle 'veh2672'; waited too long (jam), lane='E_WZM_S_YMK_H_slr_1', time=2993.00.
+Warning: Vehicle 'veh2672' ends teleporting on edge 'E_WZM_S_PNK', time=2993.00.
+INFO:TrafficSimulator:Step 3000: 2295 vehicles active
+Warning: Teleporting vehicle 'veh6727'; waited too long (jam), lane=':J_HLC_AYA_5_0', time=3005.00.
+Warning: Vehicle 'veh6727' ends teleporting on edge 'E_HLC_W_AYA', time=3005.00.
+Warning: Teleporting vehicle 'veh5518'; waited too long (jam), lane=':J_HLC_AYA_0_0', time=3010.00.
+Warning: Teleporting vehicle 'veh3260'; waited too long (jam), lane='E_GOR_W_NMR_H_s_0', time=3013.00.
+Warning: Vehicle 'veh3260' ends teleporting on edge 'E_PNK_W_WZM_T', time=3015.00.
+Warning: Vehicle 'veh5518' ends teleporting on edge 'E_HLC_W_AYA', time=3018.00.
+Warning: Teleporting vehicle 'veh5326'; collision with vehicle 'veh4963', lane='E_GOR_W_NMR_H_s_1', gap=-7.37, time=3019.00, stage=move.
+Warning: Teleporting vehicle 'veh5395'; waited too long (jam), lane='E_AYA_N_GRN_H_l_0', time=3022.00.
+Warning: Vehicle 'veh3097' performs emergency braking on lane 'E_NMR_S_JBT_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=3030.00.
+Warning: Teleporting vehicle 'veh2881'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=3030.00.
+Warning: Vehicle 'veh5395' ends teleporting on edge 'E_GOR_W_NMR', time=3030.00.
+Warning: Teleporting vehicle 'veh6233'; collision with vehicle 'veh6594', lane='E_GOR_W_NMR_H_s_1', gap=-7.16, time=3039.00, stage=move.
+Warning: Vehicle 'veh6233' ends teleporting on edge 'E_PNK_W_WZM_T', time=3039.00.
+Warning: Vehicle 'veh2881' ends teleporting on edge 'E_WZM_S_PNK', time=3050.00.
+Warning: Teleporting vehicle 'veh4201'; waited too long (jam), lane='E_AYA_N_GRN_2', time=3056.00.
+Warning: Teleporting vehicle 'veh6043'; waited too long (jam), lane='E_HLC_W_AYA_H_s_0', time=3072.00.
+Warning: Vehicle 'veh5326' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=3072.00.
+Warning: Vehicle 'veh3803' ends teleporting on edge 'E_YMK_W_WZM', time=3088.00.
+Warning: Vehicle 'veh7394' performs emergency braking on lane 'E_HLC_W_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=3095.00.
+Warning: Vehicle 'veh7394' performs emergency stop at the end of lane 'E_HLC_W_AYA_H_s_2' because of a red traffic light (decel=-16.11, offset=3.99), time=3095.00.
+Warning: Teleporting vehicle 'veh5324'; waited too long (yield), lane='E_WZM_N_PNK_H_sl_1', time=3097.00.
+Warning: Vehicle 'veh4201' ends teleporting on edge 'E_AYA_N_GRN_H_l', time=3097.00.
+Warning: Vehicle 'veh5324' ends teleporting on edge 'E_WZM_N_YMK_T', time=3097.00.
+INFO:TrafficSimulator:Step 3100: 2305 vehicles active
+Warning: Teleporting vehicle 'veh6260'; collision with vehicle 'veh6455', lane='E_GOR_W_NMR_H_s_1', gap=-5.72, time=3104.00, stage=move.
+Warning: Teleporting vehicle 'veh7093'; collision with vehicle 'veh5410', lane='E_GOR_W_NMR_H_s_1', gap=-6.44, time=3106.00, stage=move.
+Warning: Vehicle 'veh6260' ends teleporting on edge 'E_PNK_W_WZM_T', time=3107.00.
+Warning: Vehicle 'veh7093' ends teleporting on edge 'E_PNK_W_WZM', time=3111.00.
+Warning: Teleporting vehicle 'veh7232'; collision with vehicle 'veh6328', lane='E_GOR_W_NMR_H_s_1', gap=-6.20, time=3113.00, stage=move.
+Warning: Vehicle 'veh7232' ends teleporting on edge 'E_PNK_W_WZM', time=3119.00.
+Warning: Vehicle 'veh5676' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=3120.00.
+Warning: Vehicle 'veh5676' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_1' because of a red traffic light (decel=-15.93, offset=4.53), time=3120.00.
+Warning: Vehicle 'veh4474' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=3122.00.
+Warning: Vehicle 'veh6042' performs emergency braking on lane ':J31_3_1' with decel=9.00, wished=4.50, severity=1.00, time=3123.00.
+Warning: Teleporting vehicle 'veh6191'; waited too long (jam), lane=':cluster_J44_J9_0_0', time=3123.00.
+Warning: Vehicle 'veh6191' ends teleporting on edge 'E_HLC_W_AYA_H_s', time=3123.00.
+Warning: Vehicle 'veh3032' performs emergency braking on lane ':J31_3_1' with decel=9.00, wished=4.50, severity=1.00, time=3128.00.
+Warning: Teleporting vehicle 'veh3032'; collision with vehicle 'veh6477', lane='E_GOR_W_NMR_H_s_1', gap=-1.87, time=3128.00, stage=move.
+Warning: Vehicle 'veh3032' ends teleporting on edge 'E_PNK_W_WZM_T', time=3128.00.
+Warning: Vehicle 'veh5314' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=3136.00.
+Warning: Teleporting vehicle 'veh5569'; waited too long (yield), lane='E_AYA_N_GRN_H_l_0', time=3184.00.
+Warning: Vehicle 'veh5569' ends teleporting on edge 'E_GOR_W_NMR', time=3184.00.
+Warning: Vehicle 'veh7647' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=3190.00.
+Warning: Vehicle 'veh7647' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-18.40, offset=1.22), time=3190.00.
+Warning: Teleporting vehicle 'veh6091'; waited too long (jam), lane='E_AYA_N_GRN_3', time=3193.00.
+Warning: Vehicle 'veh6091' ends teleporting on edge 'E_AYA_N_GRN_H_l', time=3196.00.
+Warning: Teleporting vehicle 'veh2411'; waited too long (yield), lane='E_YMK_E_WZM_H_slr_0', time=3199.00.
+Warning: Vehicle 'veh2411' ends teleporting on edge 'E_WZM_S_PNK', time=3199.00.
+Warning: Teleporting vehicle 'veh6028'; collision with vehicle 'veh5171', lane='E_GOR_W_NMR_H_s_1', gap=-7.49, time=3200.00, stage=move.
+Warning: Vehicle 'veh6028' ends teleporting on edge 'E_PNK_W_WZM_T', time=3200.00.
+INFO:TrafficSimulator:Step 3200: 2326 vehicles active
+Warning: Vehicle 'veh6043' ends teleporting on edge 'E_GOR_W_NMR', time=3203.00.
+Warning: Teleporting vehicle 'veh3767'; waited too long (jam), lane='E_AYA_N_GRN_H_l_0', time=3207.00.
+Warning: Vehicle 'veh7343' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=3210.00.
+Warning: Vehicle 'veh3767' ends teleporting on edge 'E_GOR_W_NMR', time=3214.00.
+Warning: Teleporting vehicle 'veh3374'; waited too long (yield), lane='E_BLK_W_AYA_H_s_0', time=3221.00.
+Warning: Vehicle 'veh3374' ends teleporting on edge 'E_HLC_W_AYA', time=3256.00.
+Warning: Teleporting vehicle 'veh3548'; waited too long (jam), lane='E_HZG_W_NMR_0', time=3272.00.
+Warning: Vehicle 'veh10678' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=3295.00.
+Warning: Vehicle 'veh10678' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_0' because of a red traffic light (decel=-16.21, offset=1.00), time=3295.00.
+INFO:TrafficSimulator:Step 3300: 2305 vehicles active
+Warning: Teleporting vehicle 'veh1761'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=3321.00.
+Warning: Vehicle 'veh1761' ends teleporting on edge 'E_PNK_W_WZM_T', time=3321.00.
+Warning: Teleporting vehicle 'veh1901'; waited too long (jam), lane=':J31_1_0', time=3328.00.
+Warning: Teleporting vehicle 'veh8527'; waited too long (yield), lane='E_NMR_N_JBT_H_s_0', time=3333.00.
+Warning: Teleporting vehicle 'veh4950'; waited too long (jam), lane=':J_NMR_PNK_13_2', time=3335.00.
+Warning: Teleporting vehicle 'veh4831'; waited too long (jam), lane=':J_NMR_PNK_13_1', time=3335.00.
+Warning: Vehicle 'veh4831' ends teleporting on edge 'E_NMR_S_JBT', time=3335.00.
+Warning: Vehicle 'veh4950' ends teleporting on edge 'E_NMR_S_JBT', time=3335.00.
+Warning: Teleporting vehicle 'veh4636'; waited too long (jam), lane=':J_NMR_PNK_13_0', time=3337.00.
+Warning: Teleporting vehicle 'veh3006'; waited too long (jam), lane=':J_NMR_PNK_0_0', time=3337.00.
+Warning: Vehicle 'veh3006' ends teleporting on edge 'E_GOR_E_AYA_T', time=3337.00.
+Warning: Vehicle 'veh4636' ends teleporting on edge 'E_NMR_S_JBT', time=3337.00.
+Warning: Vehicle 'veh1901' ends teleporting on edge 'E_PNK_W_WZM_T', time=3355.00.
+Warning: Teleporting vehicle 'veh6228'; waited too long (jam), lane='E_HLC_W_AYA_H_s_0', time=3359.00.
+Warning: Teleporting vehicle 'veh4926'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=3363.00.
+Warning: Teleporting vehicle 'veh6015'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_3', time=3372.00.
+Warning: Teleporting vehicle 'veh5065'; waited too long (jam), lane='E_HZG_W_NMR_0', time=3372.00.
+Warning: Teleporting vehicle 'veh5832'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_2', time=3374.00.
+Warning: Teleporting vehicle 'veh5596'; waited too long (yield), lane='E_DOR_W_NMR_H_r_0', time=3375.00.
+Warning: Teleporting vehicle 'veh2931'; waited too long (jam), lane=':J_NMR_PNK_0_1', time=3376.00.
+Warning: Vehicle 'veh2931' ends teleporting on edge 'E_GOR_E_AYA_T', time=3376.00.
+Warning: Vehicle 'veh5832' ends teleporting on edge 'E_NMR_S_PNK', time=3390.00.
+Warning: Vehicle 'veh6228' ends teleporting on edge 'E_GOR_W_NMR', time=3392.00.
+Warning: Teleporting vehicle 'veh3481'; waited too long (jam), lane='E_HZG_W_NMR_H_slr_0', time=3395.00.
+Warning: Vehicle 'veh5596' ends teleporting on edge 'E_NMR_N_PNK', time=3395.00.
+Warning: Vehicle 'veh6015' ends teleporting on edge 'E_NMR_S_PNK', time=3395.00.
+Warning: Teleporting vehicle 'veh2975'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=3396.00.
+Warning: Vehicle 'veh2975' ends teleporting on edge 'E_WZM_S_PNK', time=3396.00.
+Warning: Vehicle 'veh3464' ends teleporting on edge 'E_WZM_S_PNK', time=3396.00.
+Warning: Vehicle 'veh3548' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=3396.00.
+Warning: Vehicle 'veh4926' ends teleporting on edge 'E_NMR_S_PNK', time=3400.00.
+INFO:TrafficSimulator:Step 3400: 2346 vehicles active
+Warning: Teleporting vehicle 'veh5060'; waited too long (wrong lane), lane='E_GOR_E_AYA_0', time=3403.00.
+Warning: Teleporting vehicle 'veh3538'; waited too long (jam), lane='E_YMK_W_WZM_0', time=3407.00.
+Warning: Teleporting vehicle 'veh2645'; waited too long (jam), lane='E_HLC_W_AYA_H_s_0', time=3416.00.
+Warning: Teleporting vehicle 'veh2957'; waited too long (jam), lane=':cluster_J44_J9_0_0', time=3428.00.
+Warning: Vehicle 'veh2645' ends teleporting on edge 'E_GOR_W_NMR', time=3428.00.
+Warning: Vehicle 'veh2957' ends teleporting on edge 'E_HLC_W_AYA_H_s', time=3428.00.
+Warning: Teleporting vehicle 'veh3040'; waited too long (jam), lane='E_HLC_W_AYA_0', time=3431.00.
+Warning: Teleporting vehicle 'veh3483'; waited too long (jam), lane='E_YMK_W_WZM_H_slr_0', time=3445.00.
+Warning: Vehicle 'veh3538' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=3446.00.
+Warning: Vehicle 'veh3483' ends teleporting on edge 'E_WZM_S_PNK', time=3449.00.
+Warning: Teleporting vehicle 'veh6194'; waited too long (jam), lane=':cluster_J44_J9_0_0', time=3450.00.
+Warning: Vehicle 'veh3481' ends teleporting on edge 'E_YMK_W_WZM', time=3457.00.
+Warning: Vehicle 'veh5060' ends teleporting on edge 'E_HLC_E_AYA', time=3461.00.
+Warning: Teleporting vehicle 'veh2813'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_2', time=3462.00.
+Warning: Vehicle 'veh2813' ends teleporting on edge 'E_WZM_S_PNK', time=3462.00.
+Warning: Teleporting vehicle 'veh2768'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_1', time=3466.00.
+Warning: Vehicle 'veh8418' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=3475.00.
+Warning: Vehicle 'veh8418' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-11.62, offset=0.15), time=3475.00.
+Warning: Vehicle 'veh5065' ends teleporting on edge 'E_NMR_S_PNK_H_r', time=3499.00.
+INFO:TrafficSimulator:Step 3500: 2407 vehicles active
+Warning: Teleporting vehicle 'veh6403'; waited too long (jam), lane=':J_GRN_ALN_4_0', time=3512.00.
+Warning: Teleporting vehicle 'veh7373'; waited too long (jam), lane='E_WZM_N_PNK_H_r_0', time=3513.00.
+Warning: Teleporting vehicle 'veh3823'; waited too long (yield), lane='E_AYA_N_GRN_H_l_0', time=3514.00.
+Warning: Teleporting vehicle 'veh2404'; waited too long (wrong lane), lane='E_WZM_S_PNK_H_slr_1', time=3521.00.
+Warning: Teleporting vehicle 'veh2047'; waited too long (wrong lane), lane='E_WZM_S_PNK_H_slr_1', time=3522.00.
+Warning: Teleporting vehicle 'veh9193'; waited too long (jam), lane=':J_NMR_PNK_5_0', time=3546.00.
+Warning: Teleporting vehicle 'veh2963'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_0', time=3546.00.
+Warning: Vehicle 'veh9193' ends teleporting on edge 'E_NMR_N_YMK_T', time=3546.00.
+Warning: Teleporting vehicle 'veh9294'; waited too long (jam), lane=':J_NMR_PNK_5_1', time=3548.00.
+Warning: Vehicle 'veh9294' ends teleporting on edge 'E_NMR_N_YMK_T', time=3548.00.
+Warning: Teleporting vehicle 'veh6778'; collision with vehicle 'veh6137', lane='E_GOR_W_NMR_H_s_1', gap=-7.46, time=3567.00, stage=move.
+Warning: Vehicle 'veh6778' ends teleporting on edge 'E_PNK_W_WZM_T', time=3567.00.
+Warning: Vehicle 'veh3040' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=3570.00.
+Warning: Teleporting vehicle 'veh7129'; waited too long (yield), lane='E_PNK_E_WZM_H_slr_0', time=3571.00.
+Warning: Vehicle 'veh3823' ends teleporting on edge 'E_GOR_W_NMR', time=3575.00.
+Warning: Teleporting vehicle 'veh7189'; waited too long (yield), lane='E_AYA_N_GRN_H_l_2', time=3576.00.
+Warning: Vehicle 'veh6194' ends teleporting on edge 'E_GOR_W_NMR', time=3576.00.
+Warning: Vehicle 'veh6403' ends teleporting on edge 'E_GOR_W_NMR', time=3586.00.
+Warning: Vehicle 'veh7189' ends teleporting on edge 'E_GOR_W_NMR', time=3589.00.
+Warning: Vehicle 'veh7373' ends teleporting on edge 'E_PNK_E_NMR', time=3600.00.
+INFO:TrafficSimulator:Step 3600: 2426 vehicles active
+Warning: Vehicle 'veh7129' ends teleporting on edge 'E_PNK_E_NMR', time=3607.00.
+Warning: Vehicle 'veh8146' performs emergency braking on lane 'E_GOR_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=3635.00.
+Warning: Teleporting vehicle 'veh8612'; waited too long (jam), lane='E_NMR_N_JBT_H_s_0', time=3639.00.
+Warning: Vehicle 'veh8527' ends teleporting on edge 'E_NMR_N_PNK', time=3641.00.
+Warning: Teleporting vehicle 'veh7326'; collision with vehicle 'veh6565', lane='E_GOR_W_NMR_H_s_1', gap=-7.27, time=3643.00, stage=move.
+Warning: Vehicle 'veh7326' ends teleporting on edge 'E_PNK_W_WZM_T', time=3643.00.
+Warning: Teleporting vehicle 'veh7394'; collision with vehicle 'veh6826', lane='E_GOR_W_NMR_H_s_1', gap=-7.17, time=3646.00, stage=move.
+Warning: Vehicle 'veh2047' ends teleporting on edge 'E_PNK_E_NMR_H_sr', time=3647.00.
+Warning: Teleporting vehicle 'veh6303'; collision with vehicle 'veh7004', lane='E_GOR_W_NMR_H_s_1', gap=-5.88, time=3648.00, stage=move.
+Warning: Vehicle 'veh6303' ends teleporting on edge 'E_PNK_W_WZM_T', time=3648.00.
+Warning: Vehicle 'veh2404' ends teleporting on edge 'E_PNK_E_NMR_H_sr', time=3649.00.
+Warning: Vehicle 'veh7394' ends teleporting on edge 'E_PNK_W_WZM', time=3651.00.
+Warning: Teleporting vehicle 'veh7189'; collision with vehicle 'veh7095', lane='E_GOR_W_NMR_H_s_1', gap=-1.85, time=3659.00, stage=move.
+Warning: Vehicle 'veh7189' ends teleporting on edge 'E_PNK_W_WZM_T', time=3660.00.
+Warning: Teleporting vehicle 'veh4977'; waited too long (jam), lane='E_HZG_W_NMR_H_slr_0', time=3667.00.
+Warning: Vehicle 'veh4977' ends teleporting on edge 'E_NMR_S_PNK', time=3671.00.
+Warning: Teleporting vehicle 'veh6050'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_2', time=3678.00.
+Warning: Vehicle 'veh6050' ends teleporting on edge 'E_NMR_S_PNK', time=3678.00.
+Warning: Teleporting vehicle 'veh5607'; waited too long (yield), lane='E_DOR_W_NMR_H_r_0', time=3680.00.
+Warning: Teleporting vehicle 'veh1836'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=3680.00.
+Warning: Vehicle 'veh1836' ends teleporting on edge 'E_PNK_W_WZM_T', time=3680.00.
+Warning: Teleporting vehicle 'veh1819'; waited too long (jam), lane=':J31_1_0', time=3686.00.
+Warning: Teleporting vehicle 'veh5801'; waited too long (jam), lane='E_DOR_W_NMR_0', time=3689.00.
+INFO:TrafficSimulator:Step 3700: 2366 vehicles active
+Warning: Vehicle 'veh5607' ends teleporting on edge 'E_NMR_N_PNK', time=3712.00.
+Warning: Vehicle 'veh1819' ends teleporting on edge 'E_PNK_W_WZM_T', time=3713.00.
+Warning: Vehicle 'veh8612' ends teleporting on edge 'E_NMR_N_PNK', time=3713.00.
+Warning: Teleporting vehicle 'veh11120'; waited too long (yield), lane='E_JBT_E_NMR_H_sl_0', time=3719.00.
+Warning: Teleporting vehicle 'veh3374'; waited too long (jam), lane='E_HLC_W_AYA_H_s_0', time=3722.00.
+Warning: Vehicle 'veh11120' ends teleporting on edge 'E_NMR_N_PNK', time=3722.00.
+Warning: Vehicle 'veh7385' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=3725.00.
+Warning: Vehicle 'veh3374' ends teleporting on edge 'E_GOR_W_NMR', time=3729.00.
+Warning: Teleporting vehicle 'veh2957'; waited too long (yield), lane='E_HLC_W_AYA_H_s_0', time=3731.00.
+Warning: Vehicle 'veh5801' ends teleporting on edge 'E_NMR_N_PNK', time=3733.00.
+Warning: Vehicle 'veh6643' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=3745.00.
+Warning: Vehicle 'veh6643' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_0' because of a red traffic light (decel=-16.71, offset=0.89), time=3745.00.
+Warning: Vehicle 'veh2285' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=3750.00.
+Warning: Vehicle 'veh2285' performs emergency stop at the end of lane 'E_PNK_E_NMR_H_sr_1' because of a red traffic light (decel=-13.83, offset=2.16), time=3750.00.
+Warning: Teleporting vehicle 'veh3490'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=3755.00.
+Warning: Vehicle 'veh2768' ends teleporting on edge 'E_WZM_S_PNK_H_slr', time=3763.00.
+Warning: Teleporting vehicle 'veh2847'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_2', time=3766.00.
+Warning: Teleporting vehicle 'veh7733'; waited too long (jam), lane=':cluster_J44_J9_0_0', time=3768.00.
+Warning: Vehicle 'veh2957' ends teleporting on edge 'E_GOR_W_NMR', time=3769.00.
+Warning: Teleporting vehicle 'veh11165'; waited too long (jam), lane='E_JBT_E_NMR_H_sl_0', time=3770.00.
+Warning: Vehicle 'veh11165' ends teleporting on edge 'E_DOR_E_T', time=3770.00.
+Warning: Teleporting vehicle 'veh2834'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_1', time=3771.00.
+Warning: Vehicle 'veh2834' ends teleporting on edge 'E_WZM_S_PNK', time=3772.00.
+Warning: Teleporting vehicle 'veh6127'; waited too long (jam), lane='E_DOR_W_NMR_H_r_0', time=3790.00.
+Warning: Vehicle 'veh6127' ends teleporting on edge 'E_NMR_N_PNK', time=3790.00.
+INFO:TrafficSimulator:Step 3800: 2334 vehicles active
+Warning: Vehicle 'veh7733' ends teleporting on edge 'E_HLC_W_AYA_H_s', time=3801.00.
+Warning: Teleporting vehicle 'veh2546'; waited too long (yield), lane='E_YMK_E_WZM_H_slr_0', time=3808.00.
+Warning: Teleporting vehicle 'veh3406'; waited too long (yield), lane='E_BLK_W_AYA_H_s_0', time=3817.00.
+Warning: Vehicle 'veh3406' ends teleporting on edge 'E_HLC_W_AYA', time=3818.00.
+Warning: Teleporting vehicle 'veh4574'; waited too long (jam), lane='E_AYA_N_GRN_H_l_0', time=3819.00.
+Warning: Teleporting vehicle 'veh3496'; waited too long (jam), lane=':J9_1_0', time=3824.00.
+Warning: Vehicle 'veh7634' performs emergency braking on lane 'E_NMR_S_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=3840.00.
+Warning: Vehicle 'veh7880' performs emergency braking on lane 'E_NMR_S_JBT_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=3840.00.
+Warning: Vehicle 'veh7880' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_s_2' because of a red traffic light (decel=-17.15, offset=6.58), time=3840.00.
+Warning: Vehicle 'veh12581' performs emergency braking on lane 'E_NMR_N_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=3840.00.
+Warning: Vehicle 'veh2963' ends teleporting on edge 'E_WZM_S_PNK_H_slr', time=3843.00.
+Warning: Teleporting vehicle 'veh6359'; waited too long (yield), lane='E_BLK_W_AYA_H_s_0', time=3849.00.
+Warning: Teleporting vehicle 'veh5635'; waited too long (yield), lane='E_AYA_N_GRN_H_l_1', time=3861.00.
+Warning: Vehicle 'veh2546' ends teleporting on edge 'E_WZM_S_PNK', time=3864.00.
+Warning: Teleporting vehicle 'veh4709'; waited too long (jam), lane='E_AYA_N_GRN_2', time=3877.00.
+INFO:TrafficSimulator:Step 3900: 2307 vehicles active
+Warning: Teleporting vehicle 'veh7566'; collision with vehicle 'veh8814', lane='E_PNK_E_NMR_T_0', gap=-0.05, time=3902.00, stage=move.
+Warning: Vehicle 'veh7566' ends teleporting on edge 'E_PNK_E_NMR', time=3905.00.
+Warning: Teleporting vehicle 'veh2971'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_0', time=3906.00.
+Warning: Vehicle 'veh2847' ends teleporting on edge 'E_WZM_S_PNK', time=3910.00.
+Warning: Vehicle 'veh6359' ends teleporting on edge 'E_HLC_W_AYA', time=3914.00.
+Warning: Teleporting vehicle 'veh6880'; collision with vehicle 'veh7086', lane='E_GOR_W_NMR_H_s_1', gap=-6.20, time=3931.00, stage=move.
+Warning: Vehicle 'veh6880' ends teleporting on edge 'E_PNK_W_WZM_T', time=3931.00.
+Warning: Vehicle 'veh4709' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=3960.00.
+Warning: Vehicle 'veh2971' ends teleporting on edge 'E_WZM_S_PNK', time=3961.00.
+Warning: Vehicle 'veh5635' ends teleporting on edge 'E_GOR_W_NMR', time=3961.00.
+Warning: Vehicle 'veh3490' ends teleporting on edge 'E_WZM_S_PNK', time=3974.00.
+Warning: Teleporting vehicle 'veh3506'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=3978.00.
+Warning: Teleporting vehicle 'veh2039'; waited too long (yield), lane='E_WZM_N_PNK_H_sl_0', time=3980.00.
+Warning: Vehicle 'veh2039' ends teleporting on edge 'E_WZM_N_YMK_T', time=3982.00.
+Warning: Teleporting vehicle 'veh3594'; waited too long (jam), lane='E_HZG_W_NMR_0', time=3986.00.
+Warning: Teleporting vehicle 'veh6715'; waited too long (yield), lane='E_WZM_N_PNK_H_sl_0', time=3991.00.
+Warning: Vehicle 'veh6715' ends teleporting on edge 'E_WZM_N_YMK_T', time=3991.00.
+INFO:TrafficSimulator:Step 4000: 2288 vehicles active
+Warning: Vehicle 'veh11812' performs emergency braking on lane 'E_NMR_S_JBT_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=4020.00.
+Warning: Teleporting vehicle 'veh6335'; collision with vehicle 'veh8061', lane='E_GOR_W_NMR_H_s_1', gap=-7.41, time=4022.00, stage=move.
+Warning: Vehicle 'veh6335' ends teleporting on edge 'E_PNK_W_WZM_T', time=4022.00.
+Warning: Teleporting vehicle 'veh3510'; waited too long (jam), lane='E_HZG_W_NMR_H_slr_0', time=4025.00.
+Warning: Teleporting vehicle 'veh8190'; waited too long (jam), lane='E_HLC_W_AYA_H_s_0', time=4026.00.
+Warning: Teleporting vehicle 'veh8271'; waited too long (jam), lane='E_HLC_W_AYA_H_s_1', time=4036.00.
+Warning: Vehicle 'veh8190' ends teleporting on edge 'E_GOR_W_NMR', time=4052.00.
+Warning: Teleporting vehicle 'veh3498'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=4060.00.
+Warning: Vehicle 'veh3594' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=4060.00.
+Warning: Vehicle 'veh4574' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=4061.00.
+Warning: Vehicle 'veh3496' ends teleporting on edge 'E_GOR_W_NMR', time=4063.00.
+Warning: Vehicle 'veh8271' ends teleporting on edge 'E_GOR_W_NMR', time=4063.00.
+Warning: Teleporting vehicle 'veh3554'; waited too long (jam), lane='E_YMK_W_WZM_0', time=4070.00.
+Warning: Teleporting vehicle 'veh2848'; waited too long (jam), lane='E_WZM_S_YMK_H_slr_2', time=4071.00.
+Warning: Teleporting vehicle 'veh7705'; waited too long (jam), lane=':cluster_J44_J9_0_0', time=4072.00.
+Warning: Teleporting vehicle 'veh2882'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_1', time=4077.00.
+Warning: Vehicle 'veh11480' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=4085.00.
+Warning: Vehicle 'veh11480' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-15.99, offset=0.44), time=4085.00.
+Warning: Vehicle 'veh7705' ends teleporting on edge 'E_HLC_W_AYA_H_s', time=4085.00.
+Warning: Vehicle 'veh8592' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_3' with decel=9.00, wished=4.50, severity=1.00, time=4090.00.
+Warning: Teleporting vehicle 'veh5635'; collision with vehicle 'veh7454', lane='E_GOR_W_NMR_H_s_1', gap=-7.11, time=4091.00, stage=move.
+Warning: Vehicle 'veh5635' ends teleporting on edge 'E_PNK_W_WZM_T', time=4092.00.
+INFO:TrafficSimulator:Step 4100: 2234 vehicles active
+Warning: Teleporting vehicle 'veh6398'; waited too long (yield), lane='E_BLK_W_AYA_H_s_2', time=4109.00.
+Warning: Vehicle 'veh6398' ends teleporting on edge 'E_HLC_W_AYA', time=4109.00.
+Warning: Teleporting vehicle 'veh2568'; waited too long (yield), lane='E_YMK_E_WZM_H_slr_0', time=4113.00.
+Warning: Vehicle 'veh8772' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=4114.00.
+Warning: Teleporting vehicle 'veh8772'; collision with vehicle 'veh7521', lane='E_GOR_W_NMR_H_s_1', gap=-0.05, time=4114.00, stage=move.
+Warning: Vehicle 'veh8772' ends teleporting on edge 'E_PNK_W_WZM_T', time=4115.00.
+Warning: Vehicle 'veh3506' ends teleporting on edge 'E_YMK_W_WZM', time=4118.00.
+Warning: Teleporting vehicle 'veh3915'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_0', time=4121.00.
+Warning: Teleporting vehicle 'veh6429'; waited too long (yield), lane='E_BLK_W_AYA_H_s_1', time=4122.00.
+Warning: Vehicle 'veh6429' ends teleporting on edge 'E_HLC_W_AYA', time=4122.00.
+Warning: Teleporting vehicle 'veh3851'; waited too long (yield), lane='E_AYA_N_GRN_H_l_0', time=4124.00.
+Warning: Vehicle 'veh3554' ends teleporting on edge 'E_WZM_S_PNK_H_slr', time=4151.00.
+Warning: Teleporting vehicle 'veh3407'; waited too long (jam), lane='E_BLK_W_AYA_H_s_0', time=4155.00.
+Warning: Vehicle 'veh3851' ends teleporting on edge 'E_GOR_W_NMR', time=4158.00.
+Warning: Vehicle 'veh3407' ends teleporting on edge 'E_HLC_W_AYA', time=4179.00.
+Warning: Vehicle 'veh12617' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=4180.00.
+Warning: Vehicle 'veh12617' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-16.35, offset=2.51), time=4180.00.
+Warning: Teleporting vehicle 'veh8079'; collision with vehicle 'veh8066', lane='E_GOR_W_NMR_H_s_1', gap=-7.25, time=4181.00, stage=move.
+Warning: Vehicle 'veh8079' ends teleporting on edge 'E_PNK_W_WZM_T', time=4182.00.
+Warning: Vehicle 'veh9553' performs emergency braking on lane ':J_WZM_PNK_12_2' with decel=9.00, wished=4.50, severity=1.00, time=4183.00.
+Warning: Teleporting vehicle 'veh8259'; collision with vehicle 'veh8271', lane='E_GOR_W_NMR_H_s_1', gap=-5.88, time=4188.00, stage=move.
+Warning: Vehicle 'veh8399' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4195.00.
+Warning: Vehicle 'veh8399' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-18.36, offset=7.65), time=4195.00.
+Warning: Vehicle 'veh3254' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=4195.00.
+Warning: Vehicle 'veh3254' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-11.79, offset=2.64), time=4195.00.
+Warning: Vehicle 'veh8992' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=4200.00.
+Warning: Vehicle 'veh8992' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-14.67, offset=0.52), time=4200.00.
+INFO:TrafficSimulator:Step 4200: 2167 vehicles active
+Warning: Vehicle 'veh8259' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=4233.00.
+Warning: Vehicle 'veh2568' ends teleporting on edge 'E_WZM_S_PNK', time=4251.00.
+Warning: Teleporting vehicle 'veh8797'; collision with vehicle 'veh8505', lane='E_GOR_W_NMR_H_s_1', gap=-7.29, time=4271.00, stage=move.
+Warning: Vehicle 'veh8797' ends teleporting on edge 'E_PNK_W_WZM_T', time=4271.00.
+Warning: Teleporting vehicle 'veh7308'; collision with vehicle 'veh8636', lane='E_GOR_W_NMR_H_s_1', gap=-6.24, time=4283.00, stage=move.
+Warning: Teleporting vehicle 'veh8867'; collision with vehicle 'veh8486', lane='E_GOR_W_NMR_H_s_1', gap=-6.86, time=4286.00, stage=move.
+Warning: Vehicle 'veh7308' ends teleporting on edge 'E_PNK_W_WZM_T', time=4286.00.
+Warning: Teleporting vehicle 'veh9034'; collision with vehicle 'veh8190', lane='E_GOR_W_NMR_H_s_1', gap=-7.20, time=4288.00, stage=move.
+Warning: Vehicle 'veh8867' ends teleporting on edge 'E_PNK_W_WZM', time=4291.00.
+Warning: Vehicle 'veh9034' ends teleporting on edge 'E_PNK_W_WZM', time=4294.00.
+Warning: Teleporting vehicle 'veh9835'; waited too long (yield), lane='E_NMR_N_JBT_H_s_0', time=4295.00.
+INFO:TrafficSimulator:Step 4300: 2170 vehicles active
+Warning: Vehicle 'veh9835' ends teleporting on edge 'E_NMR_N_PNK', time=4305.00.
+Warning: Teleporting vehicle 'veh1937'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=4312.00.
+Warning: Vehicle 'veh1937' ends teleporting on edge 'E_PNK_W_WZM_T', time=4312.00.
+Warning: Teleporting vehicle 'veh8806'; collision with vehicle 'veh7705', lane='E_GOR_W_NMR_H_s_1', gap=-7.49, time=4318.00, stage=move.
+Warning: Vehicle 'veh8806' ends teleporting on edge 'E_PNK_W_WZM_T', time=4318.00.
+Warning: Teleporting vehicle 'veh1892'; waited too long (jam), lane=':J31_1_0', time=4327.00.
+Warning: Teleporting vehicle 'veh3546'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=4333.00.
+Warning: Teleporting vehicle 'veh3616'; waited too long (jam), lane='E_HZG_W_NMR_0', time=4340.00.
+Warning: Vehicle 'veh1892' ends teleporting on edge 'E_PNK_W_WZM_T', time=4354.00.
+Warning: Vehicle 'veh10190' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=4360.00.
+Warning: Vehicle 'veh10219' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=4360.00.
+Warning: Vehicle 'veh10219' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_1' because of a red traffic light (decel=-16.99, offset=4.41), time=4360.00.
+Warning: Teleporting vehicle 'veh3594'; waited too long (jam), lane='E_YMK_W_WZM_H_slr_0', time=4361.00.
+Warning: Teleporting vehicle 'veh7498'; collision with vehicle 'veh9460', lane='E_GOR_W_NMR_H_s_1', gap=-6.15, time=4361.00, stage=move.
+Warning: Vehicle 'veh2848' ends teleporting on edge 'E_WZM_S_PNK', time=4361.00.
+Warning: Vehicle 'veh2882' ends teleporting on edge 'E_WZM_S_PNK', time=4361.00.
+Warning: Vehicle 'veh3407' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=4367.00.
+Warning: Teleporting vehicle 'veh3407'; collision with vehicle 'veh4916', lane='E_GOR_W_NMR_H_s_1', gap=-4.26, time=4370.00, stage=move.
+Warning: Teleporting vehicle 'veh5082'; collision with vehicle 'veh9267', lane='E_GOR_W_NMR_H_s_1', gap=-4.39, time=4376.00, stage=move.
+Warning: Vehicle 'veh14121' performs emergency braking on lane 'E_NMR_N_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4380.00.
+Warning: Teleporting vehicle 'veh2930'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_2', time=4380.00.
+Warning: Teleporting vehicle 'veh2911'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_1', time=4382.00.
+Warning: Vehicle 'veh5082' ends teleporting on edge 'E_PNK_W_WZM', time=4384.00.
+Warning: Vehicle 'veh9318' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=4385.00.
+Warning: Teleporting vehicle 'veh9318'; collision with vehicle 'veh9905', lane='E_GOR_W_NMR_H_s_1', gap=-2.04, time=4385.00, stage=move.
+Warning: Vehicle 'veh9318' ends teleporting on edge 'E_PNK_W_WZM_T', time=4385.00.
+INFO:TrafficSimulator:Step 4400: 2158 vehicles active
+Warning: Teleporting vehicle 'veh2575'; waited too long (yield), lane='E_YMK_E_WZM_H_slr_0', time=4417.00.
+Warning: Vehicle 'veh3546' ends teleporting on edge 'E_YMK_W_WZM', time=4417.00.
+Warning: Vehicle 'veh3407' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=4420.00.
+Warning: Vehicle 'veh7498' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=4429.00.
+Warning: Teleporting vehicle 'veh3533'; collision with vehicle 'veh7498', lane='E_PNK_W_WZM_H_r_0', gap=-1.04, time=4430.00, stage=move.
+Warning: Vehicle 'veh3533' ends teleporting on edge 'E_WZM_N_YMK', time=4430.00.
+Warning: Vehicle 'veh11174' performs emergency braking on lane 'E_HLC_W_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4445.00.
+Warning: Vehicle 'veh11174' performs emergency stop at the end of lane 'E_HLC_W_AYA_H_s_1' because of a red traffic light (decel=-15.28, offset=1.10), time=4445.00.
+Warning: Vehicle 'veh10170' performs emergency braking on lane ':J_WZM_PNK_12_2' with decel=9.00, wished=4.50, severity=1.00, time=4447.00.
+Warning: Vehicle 'veh10186' performs emergency braking on lane ':J_WZM_PNK_12_1' with decel=9.00, wished=4.50, severity=1.00, time=4447.00.
+Warning: Teleporting vehicle 'veh3939'; waited too long (jam), lane='E_NMR_S_YMK_H_sr_0', time=4447.00.
+Warning: Teleporting vehicle 'veh5102'; collision with vehicle 'veh4754', lane='E_GOR_W_NMR_H_s_1', gap=-7.24, time=4454.00, stage=move.
+Warning: Vehicle 'veh5102' ends teleporting on edge 'E_PNK_W_WZM_T', time=4454.00.
+Warning: Teleporting vehicle 'veh10490'; collision with vehicle 'veh5133', lane='E_GOR_W_NMR_H_s_1', gap=-7.28, time=4459.00, stage=move.
+Warning: Vehicle 'veh10490' ends teleporting on edge 'E_PNK_W_WZM', time=4466.00.
+Warning: Vehicle 'veh14839' performs emergency braking on lane 'E_NMR_N_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4470.00.
+Warning: Vehicle 'veh10568' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4470.00.
+Warning: Vehicle 'veh10568' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_1' because of a red traffic light (decel=-12.32, offset=3.25), time=4470.00.
+Warning: Teleporting vehicle 'veh4472'; collision with vehicle 'veh10503', lane='E_GOR_W_NMR_H_s_1', gap=-1.27, time=4471.00, stage=move.
+Warning: Vehicle 'veh4472' ends teleporting on edge 'E_PNK_W_WZM_T', time=4474.00.
+Warning: Teleporting vehicle 'veh4284'; waited too long (yield), lane='E_AYA_N_GRN_H_l_0', time=4488.00.
+INFO:TrafficSimulator:Step 4500: 2182 vehicles active
+Warning: Teleporting vehicle 'veh9313'; waited too long (jam), lane=':J_NMR_PNK_13_1', time=4504.00.
+Warning: Teleporting vehicle 'veh9438'; waited too long (jam), lane=':J_NMR_PNK_13_0', time=4504.00.
+Warning: Teleporting vehicle 'veh5987'; waited too long (jam), lane=':J_NMR_PNK_0_1', time=4504.00.
+Warning: Vehicle 'veh5987' ends teleporting on edge 'E_GOR_E_AYA_T', time=4504.00.
+Warning: Vehicle 'veh9313' ends teleporting on edge 'E_NMR_S_JBT', time=4504.00.
+Warning: Vehicle 'veh9438' ends teleporting on edge 'E_NMR_S_JBT', time=4504.00.
+Warning: Teleporting vehicle 'veh9260'; waited too long (jam), lane=':J_NMR_PNK_13_2', time=4506.00.
+Warning: Teleporting vehicle 'veh6451'; waited too long (jam), lane=':J_NMR_PNK_0_0', time=4506.00.
+Warning: Vehicle 'veh6451' ends teleporting on edge 'E_GOR_E_AYA_T', time=4506.00.
+Warning: Vehicle 'veh9260' ends teleporting on edge 'E_NMR_S_JBT', time=4506.00.
+Warning: Vehicle 'veh4284' ends teleporting on edge 'E_GOR_W_NMR', time=4521.00.
+Warning: Vehicle 'veh7842' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=4525.00.
+Warning: Vehicle 'veh7842' performs emergency stop at the end of lane 'E_PNK_W_WZM_H_sl_1' because of a red traffic light (decel=-13.52, offset=4.07), time=4525.00.
+Warning: Teleporting vehicle 'veh5816'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=4534.00.
+Warning: Vehicle 'veh5816' ends teleporting on edge 'E_NMR_S_PNK', time=4534.00.
+Warning: Vehicle 'veh9461' performs emergency braking on lane 'E_BLK_W_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=4535.00.
+Warning: Vehicle 'veh9461' performs emergency stop at the end of lane 'E_BLK_W_AYA_H_s_2' because of a red traffic light (decel=-14.15, offset=3.45), time=4535.00.
+Warning: Teleporting vehicle 'veh4805'; waited too long (jam), lane='E_AYA_N_GRN_H_l_0', time=4542.00.
+Warning: Teleporting vehicle 'veh5862'; waited too long (jam), lane='E_HZG_W_NMR_0', time=4543.00.
+Warning: Teleporting vehicle 'veh10007'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_3', time=4544.00.
+Warning: Teleporting vehicle 'veh8369'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_2', time=4548.00.
+Warning: Vehicle 'veh13186' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=4555.00.
+Warning: Vehicle 'veh8369' ends teleporting on edge 'E_NMR_S_PNK', time=4561.00.
+Warning: Teleporting vehicle 'veh8147'; collision with vehicle 'veh9816', lane='E_GOR_W_NMR_H_s_1', gap=-7.20, time=4562.00, stage=move.
+Warning: Vehicle 'veh8147' ends teleporting on edge 'E_PNK_W_WZM_T', time=4562.00.
+Warning: Teleporting vehicle 'veh3583'; waited too long (jam), lane='E_HZG_W_NMR_H_slr_0', time=4565.00.
+Warning: Vehicle 'veh10007' ends teleporting on edge 'E_NMR_S_PNK', time=4566.00.
+Warning: Vehicle 'veh5862' ends teleporting on edge 'E_NMR_S_PNK', time=4579.00.
+Warning: Teleporting vehicle 'veh8190'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=4593.00.
+Warning: Vehicle 'veh8190' ends teleporting on edge 'E_PNK_W_WZM_T', time=4593.00.
+Warning: Teleporting vehicle 'veh9829'; collision with vehicle 'veh10622', lane='E_GOR_W_NMR_H_s_1', gap=-7.34, time=4599.00, stage=move.
+Warning: Vehicle 'veh9829' ends teleporting on edge 'E_PNK_W_WZM_T', time=4600.00.
+INFO:TrafficSimulator:Step 4600: 2203 vehicles active
+Warning: Vehicle 'veh4805' ends teleporting on edge 'E_GOR_W_NMR', time=4636.00.
+Warning: Teleporting vehicle 'veh6458'; collision with vehicle 'veh9974', lane='E_GOR_W_NMR_H_s_1', gap=-6.68, time=4642.00, stage=move.
+Warning: Teleporting vehicle 'veh10432'; collision with vehicle 'veh10752', lane='E_GOR_W_NMR_H_s_1', gap=-7.32, time=4645.00, stage=move.
+Warning: Vehicle 'veh6458' ends teleporting on edge 'E_PNK_W_WZM_T', time=4646.00.
+Warning: Vehicle 'veh10432' ends teleporting on edge 'E_PNK_W_WZM_T', time=4648.00.
+Warning: Vehicle 'veh15492' performs emergency braking on lane 'E_NMR_N_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4650.00.
+Warning: Vehicle 'veh12641' performs emergency braking on lane 'E_NMR_N_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=4650.00.
+Warning: Vehicle 'veh12641' performs emergency stop at the end of lane 'E_NMR_N_JBT_H_s_0' because of a red traffic light (decel=-16.82, offset=6.76), time=4650.00.
+Warning: Teleporting vehicle 'veh10613'; collision with vehicle 'veh9856', lane='E_GOR_W_NMR_H_s_1', gap=-6.43, time=4654.00, stage=move.
+Warning: Vehicle 'veh10613' ends teleporting on edge 'E_PNK_W_WZM_T', time=4654.00.
+Warning: Teleporting vehicle 'veh3508'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=4666.00.
+Warning: Vehicle 'veh3510' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=4666.00.
+Warning: Vehicle 'veh2575' ends teleporting on edge 'E_WZM_S_PNK', time=4672.00.
+Warning: Teleporting vehicle 'veh3573'; waited too long (jam), lane='E_YMK_W_WZM_0', time=4676.00.
+Warning: Vehicle 'veh3498' ends teleporting on edge 'E_PNK_E_NMR_T', time=4682.00.
+Warning: Vehicle 'veh3508' ends teleporting on edge 'E_WZM_S_PNK', time=4682.00.
+Warning: Teleporting vehicle 'veh2994'; waited too long (jam), lane='E_WZM_S_YMK_H_slr_2', time=4686.00.
+Warning: Teleporting vehicle 'veh2958'; waited too long (jam), lane='E_WZM_S_YMK_H_slr_1', time=4687.00.
+INFO:TrafficSimulator:Step 4700: 2275 vehicles active
+Warning: Teleporting vehicle 'veh3531'; waited too long (jam), lane='E_YMK_W_WZM_H_slr_0', time=4705.00.
+Warning: Vehicle 'veh3573' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=4706.00.
+Warning: Teleporting vehicle 'veh2595'; waited too long (yield), lane='E_YMK_E_WZM_H_slr_0', time=4721.00.
+Warning: Teleporting vehicle 'veh8183'; collision with vehicle 'veh11015', lane='E_GOR_W_NMR_H_s_1', gap=-7.25, time=4724.00, stage=move.
+Warning: Vehicle 'veh8183' ends teleporting on edge 'E_PNK_W_WZM_T', time=4724.00.
+Warning: Vehicle 'veh3583' ends teleporting on edge 'E_YMK_W_WZM', time=4726.00.
+Warning: Teleporting vehicle 'veh9609'; collision with vehicle 'veh11612', lane='E_GOR_W_NMR_H_s_1', gap=-2.31, time=4739.00, stage=move.
+Warning: Vehicle 'veh13945' performs emergency braking on lane 'E_NMR_S_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=4740.00.
+Warning: Vehicle 'veh13945' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_s_0' because of a red traffic light (decel=-16.60, offset=1.23), time=4740.00.
+Warning: Teleporting vehicle 'veh3942'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_0', time=4752.00.
+Warning: Vehicle 'veh3939' ends teleporting on edge 'E_YMK_W_WZM', time=4759.00.
+Warning: Vehicle 'veh9609' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=4788.00.
+Warning: Teleporting vehicle 'veh9974'; collision with vehicle 'veh9609', lane='E_PNK_W_WZM_H_r_0', gap=-0.79, time=4789.00, stage=move.
+Warning: Vehicle 'veh9974' ends teleporting on edge 'E_WZM_N_YMK', time=4789.00.
+Warning: Teleporting vehicle 'veh2997'; waited too long (jam), lane=':cluster_J44_J9_0_0', time=4796.00.
+INFO:TrafficSimulator:Step 4800: 2301 vehicles active
+Warning: Vehicle 'veh2997' ends teleporting on edge 'E_HLC_W_AYA_H_s', time=4801.00.
+Warning: Vehicle 'veh8285' performs emergency braking on lane 'E_HLC_W_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4805.00.
+Warning: Vehicle 'veh8285' performs emergency stop at the end of lane 'E_HLC_W_AYA_H_s_1' because of a red traffic light (decel=-10.51, offset=0.62), time=4805.00.
+Warning: Teleporting vehicle 'veh3480'; waited too long (yield), lane='E_BLK_W_AYA_H_s_0', time=4805.00.
+Warning: Vehicle 'veh2595' ends teleporting on edge 'E_WZM_S_PNK', time=4805.00.
+Warning: Vehicle 'veh2958' ends teleporting on edge 'E_WZM_S_PNK', time=4805.00.
+Warning: Vehicle 'veh3480' ends teleporting on edge 'E_HLC_W_AYA', time=4805.00.
+Warning: Vehicle 'veh13724' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=4810.00.
+Warning: Vehicle 'veh13724' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-14.84, offset=2.52), time=4810.00.
+Warning: Teleporting vehicle 'veh10544'; collision with vehicle 'veh11680', lane='E_GOR_W_NMR_H_s_1', gap=-5.83, time=4813.00, stage=move.
+Warning: Teleporting vehicle 'veh10771'; collision with vehicle 'veh5404', lane='E_GOR_W_NMR_H_s_1', gap=-5.52, time=4825.00, stage=move.
+Warning: Vehicle 'veh2911' ends teleporting on edge 'E_WZM_S_PNK_H_slr', time=4826.00.
+Warning: Vehicle 'veh10771' ends teleporting on edge 'E_PNK_W_WZM_T', time=4826.00.
+Warning: Teleporting vehicle 'veh5482'; collision with vehicle 'veh5504', lane='E_GOR_W_NMR_H_s_1', gap=-4.12, time=4829.00, stage=move.
+Warning: Vehicle 'veh5556' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=4830.00.
+Warning: Vehicle 'veh5556' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-13.44, offset=3.90), time=4830.00.
+Warning: Vehicle 'veh10261' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4830.00.
+Warning: Vehicle 'veh10261' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_1' because of a red traffic light (decel=-12.28, offset=1.46), time=4830.00.
+Warning: Vehicle 'veh5482' ends teleporting on edge 'E_PNK_W_WZM_T', time=4832.00.
+Warning: Teleporting vehicle 'veh2624'; waited too long (yield), lane='E_HLC_W_AYA_H_s_0', time=4834.00.
+Warning: Vehicle 'veh10544' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=4862.00.
+Warning: Vehicle 'veh2624' ends teleporting on edge 'E_GOR_W_NMR', time=4868.00.
+Warning: Vehicle 'veh14564' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=4900.00.
+Warning: Vehicle 'veh14564' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-15.71, offset=3.66), time=4900.00.
+INFO:TrafficSimulator:Step 4900: 2336 vehicles active
+Warning: Teleporting vehicle 'veh11986'; collision with vehicle 'veh11746', lane='E_GOR_W_NMR_H_s_1', gap=-7.40, time=4901.00, stage=move.
+Warning: Vehicle 'veh11986' ends teleporting on edge 'E_PNK_W_WZM_T', time=4903.00.
+Warning: Vehicle 'veh2994' ends teleporting on edge 'E_WZM_S_PNK', time=4908.00.
+Warning: Teleporting vehicle 'veh5568'; collision with vehicle 'veh12395', lane='E_GOR_W_NMR_H_s_1', gap=-7.06, time=4910.00, stage=move.
+Warning: Teleporting vehicle 'veh5589'; collision with vehicle 'veh12342', lane='E_GOR_W_NMR_H_s_1', gap=-7.38, time=4912.00, stage=move.
+Warning: Vehicle 'veh5589' ends teleporting on edge 'E_PNK_W_WZM', time=4917.00.
+Warning: Vehicle 'veh12185' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4920.00.
+Warning: Vehicle 'veh12185' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_1' because of a red traffic light (decel=-16.42, offset=3.96), time=4920.00.
+Warning: Teleporting vehicle 'veh5003'; waited too long (yield), lane='E_AYA_N_GRN_H_l_0', time=4940.00.
+Warning: Teleporting vehicle 'veh4797'; waited too long (jam), lane='E_AYA_N_GRN_2', time=4949.00.
+Warning: Vehicle 'veh15806' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=4950.00.
+Warning: Vehicle 'veh5568' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=4968.00.
+Warning: Vehicle 'veh3594' ends teleporting on edge 'E_PNK_E_NMR_T', time=4971.00.
+Warning: Vehicle 'veh2930' ends teleporting on edge 'E_PNK_E_NMR_T', time=4975.00.
+Warning: Vehicle 'veh5003' ends teleporting on edge 'E_GOR_W_NMR', time=4981.00.
+Warning: Teleporting vehicle 'veh10526'; collision with vehicle 'veh10562', lane='E_GOR_W_NMR_H_s_1', gap=-7.35, time=4991.00, stage=move.
+Warning: Vehicle 'veh4797' ends teleporting on edge 'E_GOR_W_NMR', time=4992.00.
+Warning: Vehicle 'veh10526' ends teleporting on edge 'E_PNK_W_WZM_T', time=4993.00.
+Warning: Teleporting vehicle 'veh6854'; waited too long (yield), lane='E_DOR_W_NMR_H_r_0', time=4994.00.
+Warning: Teleporting vehicle 'veh8945'; collision with vehicle 'veh2997', lane='E_GOR_W_NMR_H_s_1', gap=-6.74, time=4995.00, stage=move.
+Warning: Vehicle 'veh8945' ends teleporting on edge 'E_PNK_W_WZM', time=4998.00.
+INFO:TrafficSimulator:Step 5000: 2259 vehicles active
+Warning: Teleporting vehicle 'veh4551'; waited too long (jam), lane='E_AYA_N_GRN_H_l_0', time=5003.00.
+Warning: Teleporting vehicle 'veh10730'; collision with vehicle 'veh10514', lane='E_GOR_W_NMR_H_s_1', gap=-5.24, time=5003.00, stage=move.
+Warning: Vehicle 'veh4551' ends teleporting on edge 'E_GOR_W_NMR', time=5003.00.
+Warning: Vehicle 'veh6032' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=5005.00.
+Warning: Vehicle 'veh6032' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_0' because of a red traffic light (decel=-16.08, offset=2.94), time=5005.00.
+Warning: Vehicle 'veh5854' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=5005.00.
+Warning: Vehicle 'veh10730' ends teleporting on edge 'E_PNK_W_WZM', time=5008.00.
+Warning: Teleporting vehicle 'veh3573'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=5009.00.
+Warning: Teleporting vehicle 'veh12683'; waited too long (yield), lane='E_NMR_N_JBT_H_s_0', time=5014.00.
+Warning: Vehicle 'veh8240' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=5017.00.
+Warning: Teleporting vehicle 'veh2604'; waited too long (jam), lane='E_YMK_E_WZM_H_slr_0', time=5025.00.
+Warning: Teleporting vehicle 'veh10290'; waited too long (yield), lane='E_PNK_E_NMR_H_sr_1', time=5044.00.
+Warning: Vehicle 'veh10290' ends teleporting on edge 'E_GOR_E_AYA_T', time=5045.00.
+Warning: Teleporting vehicle 'veh3584'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=5056.00.
+Warning: Teleporting vehicle 'veh3944'; waited too long (jam), lane='E_NMR_S_YMK_H_sr_0', time=5057.00.
+Warning: Vehicle 'veh3584' ends teleporting on edge 'E_YMK_W_WZM', time=5066.00.
+Warning: Vehicle 'veh6854' ends teleporting on edge 'E_NMR_N_PNK', time=5067.00.
+Warning: Vehicle 'veh2604' ends teleporting on edge 'E_WZM_S_PNK', time=5076.00.
+Warning: Vehicle 'veh12374' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=5080.00.
+Warning: Vehicle 'veh12374' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_1' because of a red traffic light (decel=-18.74, offset=0.02), time=5080.00.
+Warning: Vehicle 'veh5994' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5095.00.
+Warning: Vehicle 'veh5994' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-15.85, offset=4.00), time=5095.00.
+Warning: Vehicle 'veh13428' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=5095.00.
+INFO:TrafficSimulator:Step 5100: 2235 vehicles active
+Warning: Vehicle 'veh3616' ends teleporting on edge 'E_PNK_E_NMR_T', time=5103.00.
+Warning: Teleporting vehicle 'veh10452'; waited too long (yield), lane='E_PNK_E_WZM_H_slr_0', time=5121.00.
+Warning: Vehicle 'veh12683' ends teleporting on edge 'E_NMR_N_PNK', time=5126.00.
+Warning: Vehicle 'veh17256' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_0' with decel=9.00, wished=4.50, severity=1.00, time=5130.00.
+Warning: Vehicle 'veh17256' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_0' because of a red traffic light (decel=-10.25, offset=1.16), time=5130.00.
+Warning: Vehicle 'veh3915' ends teleporting on edge 'E_PNK_E_NMR_T', time=5143.00.
+Warning: Vehicle 'veh10452' ends teleporting on edge 'E_PNK_E_NMR_T', time=5143.00.
+Warning: Vehicle 'veh17417' performs emergency braking on lane 'E_NMR_S_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5165.00.
+Warning: Vehicle 'veh17417' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_s_1' because of a red traffic light (decel=-17.59, offset=3.75), time=5165.00.
+Warning: Teleporting vehicle 'veh11149'; collision with vehicle 'veh8240', lane='E_GOR_W_NMR_H_s_1', gap=-5.77, time=5172.00, stage=move.
+Warning: Vehicle 'veh11149' ends teleporting on edge 'E_PNK_W_WZM_T', time=5174.00.
+Warning: Vehicle 'veh10121' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5190.00.
+INFO:TrafficSimulator:Step 5200: 2213 vehicles active
+Warning: Vehicle 'veh12269' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_3' with decel=9.00, wished=4.50, severity=1.00, time=5260.00.
+Warning: Vehicle 'veh12269' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_3' because of a red traffic light (decel=-9.53, offset=0.31), time=5260.00.
+Warning: Teleporting vehicle 'veh12918'; collision with vehicle 'veh8382', lane='E_GOR_W_NMR_H_s_1', gap=-7.06, time=5261.00, stage=move.
+Warning: Vehicle 'veh12918' ends teleporting on edge 'E_PNK_W_WZM', time=5265.00.
+Warning: Vehicle 'veh3531' ends teleporting on edge 'E_WZM_S_PNK_H_slr', time=5273.00.
+Warning: Vehicle 'veh13294' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5280.00.
+Warning: Vehicle 'veh13294' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_1' because of a red traffic light (decel=-11.49, offset=0.74), time=5280.00.
+Warning: Teleporting vehicle 'veh12666'; collision with vehicle 'veh6013', lane='E_GOR_W_NMR_H_s_1', gap=-6.19, time=5281.00, stage=move.
+Warning: Vehicle 'veh12666' ends teleporting on edge 'E_PNK_W_WZM_T', time=5283.00.
+Warning: Teleporting vehicle 'veh6856'; waited too long (yield), lane='E_DOR_W_NMR_H_r_0', time=5300.00.
+INFO:TrafficSimulator:Step 5300: 2212 vehicles active
+Warning: Vehicle 'veh3573' ends teleporting on edge 'E_WZM_S_PNK_H_slr', time=5306.00.
+Warning: Vehicle 'veh17527' performs emergency braking on lane 'E_JBT_E_NMR_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=5310.00.
+Warning: Vehicle 'veh17527' performs emergency stop at the end of lane 'E_JBT_E_NMR_H_sl_1' because of a red traffic light (decel=-13.99, offset=4.14), time=5310.00.
+Warning: Teleporting vehicle 'veh3541'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=5314.00.
+Warning: Vehicle 'veh3942' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=5314.00.
+Warning: Teleporting vehicle 'veh12688'; waited too long (yield), lane='E_NMR_N_JBT_H_s_0', time=5318.00.
+Warning: Vehicle 'veh6856' ends teleporting on edge 'E_NMR_N_PNK', time=5318.00.
+Warning: Teleporting vehicle 'veh3143'; waited too long (jam), lane='E_YMK_W_WZM_0', time=5323.00.
+Warning: Vehicle 'veh12688' ends teleporting on edge 'E_NMR_N_PNK', time=5325.00.
+Warning: Teleporting vehicle 'veh2612'; waited too long (yield), lane='E_YMK_E_WZM_H_slr_0', time=5330.00.
+Warning: Vehicle 'veh7558' performs emergency braking on lane 'E_DOR_W_NMR_H_r_1' with decel=9.00, wished=4.50, severity=1.00, time=5340.00.
+Warning: Vehicle 'veh7558' performs emergency stop at the end of lane 'E_DOR_W_NMR_H_r_1' because of a red traffic light (decel=-13.17, offset=3.23), time=5340.00.
+Warning: Vehicle 'veh2612' ends teleporting on edge 'E_WZM_S_PNK', time=5343.00.
+Warning: Vehicle 'veh10264' performs emergency braking on lane 'E_HLC_W_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5345.00.
+Warning: Teleporting vehicle 'veh3574'; waited too long (yield), lane='E_BLK_W_AYA_H_s_0', time=5345.00.
+Warning: Vehicle 'veh3574' ends teleporting on edge 'E_HLC_W_AYA', time=5345.00.
+Warning: Vehicle 'veh16751' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=5350.00.
+Warning: Teleporting vehicle 'veh13390'; collision with vehicle 'veh13593', lane='E_GOR_W_NMR_H_s_1', gap=-6.59, time=5352.00, stage=move.
+Warning: Teleporting vehicle 'veh13617'; collision with vehicle 'veh13497', lane='E_GOR_W_NMR_H_s_1', gap=-7.18, time=5354.00, stage=move.
+Warning: Teleporting vehicle 'veh3249'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_1', time=5355.00.
+Warning: Vehicle 'veh13390' ends teleporting on edge 'E_PNK_W_WZM', time=5355.00.
+Warning: Vehicle 'veh13617' ends teleporting on edge 'E_PNK_W_WZM_T', time=5355.00.
+Warning: Teleporting vehicle 'veh9207'; collision with vehicle 'veh13371', lane='E_GOR_W_NMR_H_s_1', gap=-7.23, time=5357.00, stage=move.
+Warning: Teleporting vehicle 'veh3598'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=5361.00.
+Warning: Vehicle 'veh3143' ends teleporting on edge 'E_WZM_N', time=5364.00.
+Warning: Vehicle 'veh9907' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5370.00.
+Warning: Vehicle 'veh9907' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-13.91, offset=0.40), time=5370.00.
+Warning: Teleporting vehicle 'veh3630'; waited too long (jam), lane='E_HZG_W_NMR_0', time=5370.00.
+Warning: Teleporting vehicle 'veh3963'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_0', time=5371.00.
+Warning: Teleporting vehicle 'veh3603'; waited too long (jam), lane='E_HZG_W_NMR_H_slr_0', time=5375.00.
+Warning: Vehicle 'veh3249' ends teleporting on edge 'E_WZM_S_PNK', time=5394.00.
+Warning: Vehicle 'veh3541' ends teleporting on edge 'E_WZM_S_PNK', time=5398.00.
+INFO:TrafficSimulator:Step 5400: 2245 vehicles active
+Warning: Vehicle 'veh9207' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=5402.00.
+Warning: Vehicle 'veh16979' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=5440.00.
+Warning: Vehicle 'veh16979' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-17.19, offset=5.38), time=5440.00.
+Warning: Teleporting vehicle 'veh7480'; collision with vehicle 'veh12582', lane='E_GOR_W_NMR_H_s_1', gap=-7.38, time=5441.00, stage=move.
+Warning: Teleporting vehicle 'veh9571'; collision with vehicle 'veh9262', lane='E_GOR_W_NMR_H_s_1', gap=-6.93, time=5444.00, stage=move.
+Warning: Vehicle 'veh9571' ends teleporting on edge 'E_PNK_W_WZM', time=5449.00.
+Warning: Vehicle 'veh8786' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5460.00.
+Warning: Vehicle 'veh8786' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-14.67, offset=5.18), time=5460.00.
+Warning: Teleporting vehicle 'veh9937'; collision with vehicle 'veh10722', lane='E_GOR_W_NMR_H_s_1', gap=-6.75, time=5467.00, stage=move.
+Warning: Vehicle 'veh9937' ends teleporting on edge 'E_PNK_W_WZM_T', time=5467.00.
+Warning: Vehicle 'veh7480' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=5499.00.
+INFO:TrafficSimulator:Step 5500: 2257 vehicles active
+Warning: Vehicle 'veh11843' performs emergency braking on lane 'E_HLC_W_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5525.00.
+Warning: Teleporting vehicle 'veh12855'; collision with vehicle 'veh9705', lane='E_GOR_W_NMR_H_s_1', gap=-5.69, time=5535.00, stage=move.
+Warning: Vehicle 'veh12855' ends teleporting on edge 'E_PNK_W_WZM_T', time=5537.00.
+Warning: Teleporting vehicle 'veh9146'; collision with vehicle 'veh6226', lane='E_GOR_W_NMR_H_s_1', gap=-5.51, time=5538.00, stage=move.
+Warning: Teleporting vehicle 'veh9293'; collision with vehicle 'veh10103', lane='E_GOR_W_NMR_H_s_1', gap=-6.63, time=5540.00, stage=move.
+Warning: Teleporting vehicle 'veh9550'; collision with vehicle 'veh9230', lane='E_GOR_W_NMR_H_s_1', gap=-4.37, time=5542.00, stage=move.
+Warning: Vehicle 'veh9146' ends teleporting on edge 'E_PNK_W_WZM', time=5543.00.
+Warning: Vehicle 'veh9293' ends teleporting on edge 'E_PNK_W_WZM_T', time=5543.00.
+Warning: Vehicle 'veh9550' ends teleporting on edge 'E_PNK_W_WZM_T', time=5545.00.
+Warning: Vehicle 'veh13621' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5550.00.
+Warning: Vehicle 'veh13621' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-11.73, offset=0.49), time=5550.00.
+INFO:TrafficSimulator:Step 5600: 2234 vehicles active
+Warning: Vehicle 'veh18617' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=5615.00.
+Warning: Vehicle 'veh18617' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_3' because of a red traffic light (decel=-15.44, offset=5.48), time=5615.00.
+Warning: Teleporting vehicle 'veh3942'; waited too long (jam), lane='E_YMK_W_WZM_H_slr_0', time=5615.00.
+Warning: Vehicle 'veh3630' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=5615.00.
+Warning: Vehicle 'veh3942' ends teleporting on edge 'E_WZM_S_PNK', time=5617.00.
+Warning: Vehicle 'veh13441' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=5620.00.
+Warning: Teleporting vehicle 'veh10436'; collision with vehicle 'veh6293', lane='E_GOR_W_NMR_H_s_1', gap=-6.98, time=5621.00, stage=move.
+Warning: Teleporting vehicle 'veh12939'; waited too long (jam), lane='E_NMR_N_JBT_H_s_0', time=5622.00.
+Warning: Teleporting vehicle 'veh13989'; collision with vehicle 'veh6479', lane='E_GOR_W_NMR_H_s_1', gap=-1.75, time=5633.00, stage=move.
+Warning: Vehicle 'veh14312' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5640.00.
+Warning: Vehicle 'veh11792' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5640.00.
+Warning: Vehicle 'veh11792' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_1' because of a red traffic light (decel=-16.26, offset=5.90), time=5640.00.
+Warning: Teleporting vehicle 'veh3304'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_1', time=5662.00.
+Warning: Vehicle 'veh3304' ends teleporting on edge 'E_WZM_S_PNK', time=5664.00.
+Warning: Vehicle 'veh3598' ends teleporting on edge 'E_YMK_W_WZM', time=5671.00.
+Warning: Teleporting vehicle 'veh3984'; waited too long (jam), lane='E_NMR_S_YMK_H_sr_0', time=5675.00.
+Warning: Teleporting vehicle 'veh3618'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=5683.00.
+Warning: Vehicle 'veh10436' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=5684.00.
+Warning: Vehicle 'veh12939' ends teleporting on edge 'E_NMR_N_PNK', time=5685.00.
+Warning: Teleporting vehicle 'veh3714'; waited too long (jam), lane='E_HZG_W_NMR_0', time=5695.00.
+INFO:TrafficSimulator:Step 5700: 2226 vehicles active
+Warning: Teleporting vehicle 'veh6585'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_1', time=5703.00.
+Warning: Vehicle 'veh6585' ends teleporting on edge 'E_NMR_S_PNK', time=5703.00.
+Warning: Vehicle 'veh14012' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=5710.00.
+Warning: Vehicle 'veh14012' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-16.55, offset=6.07), time=5710.00.
+Warning: Teleporting vehicle 'veh4189'; waited too long (jam), lane='E_HZG_W_NMR_1', time=5710.00.
+Warning: Teleporting vehicle 'veh13267'; collision with vehicle 'veh6928', lane='E_GOR_W_NMR_H_s_1', gap=-6.80, time=5711.00, stage=move.
+Warning: Vehicle 'veh13267' ends teleporting on edge 'E_PNK_W_WZM_T', time=5711.00.
+Warning: Teleporting vehicle 'veh11200'; collision with vehicle 'veh11983', lane='E_GOR_W_NMR_H_s_1', gap=-6.71, time=5714.00, stage=move.
+Warning: Teleporting vehicle 'veh11284'; collision with vehicle 'veh11725', lane='E_GOR_W_NMR_H_s_1', gap=-7.19, time=5716.00, stage=move.
+Warning: Teleporting vehicle 'veh14419'; collision with vehicle 'veh7173', lane='E_GOR_W_NMR_H_s_1', gap=-6.99, time=5720.00, stage=move.
+Warning: Vehicle 'veh3944' ends teleporting on edge 'E_WZM_S_PNK', time=5742.00.
+Warning: Vehicle 'veh4189' ends teleporting on edge 'E_NMR_S_PNK', time=5746.00.
+Warning: Vehicle 'veh11995' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_1' with decel=9.00, wished=4.50, severity=1.00, time=5760.00.
+Warning: Vehicle 'veh14419' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=5762.00.
+Warning: Vehicle 'veh13989' teleports beyond arrival edge 'E_WZM_S', time=5777.00.
+Warning: Vehicle 'veh14830' performs emergency braking on lane 'E_BLK_W_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=5795.00.
+Warning: Vehicle 'veh14830' performs emergency stop at the end of lane 'E_BLK_W_AYA_H_s_2' because of a red traffic light (decel=-9.61, offset=0.60), time=5795.00.
+INFO:TrafficSimulator:Step 5800: 2220 vehicles active
+Warning: Teleporting vehicle 'veh14984'; collision with vehicle 'veh14883', lane='E_GOR_W_NMR_H_s_1', gap=-5.55, time=5801.00, stage=move.
+Warning: Vehicle 'veh14984' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=5806.00.
+Warning: Vehicle 'veh3334' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=5815.00.
+Warning: Vehicle 'veh3334' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_0' because of a red traffic light (decel=-17.58, offset=3.36), time=5815.00.
+Warning: Vehicle 'veh19616' performs emergency braking on lane 'E_NMR_S_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=5820.00.
+Warning: Vehicle 'veh19616' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_s_0' because of a red traffic light (decel=-18.95, offset=5.22), time=5820.00.
+Warning: Vehicle 'veh11200' ends teleporting on edge 'E_WZM_S', time=5848.00.
+Warning: Vehicle 'veh11284' teleports beyond arrival edge 'E_WZM_S', time=5864.00.
+Warning: Vehicle 'veh3858' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=5875.00.
+Warning: Vehicle 'veh3858' performs emergency stop at the end of lane 'E_PNK_W_WZM_H_sl_1' because of a red traffic light (decel=-11.19, offset=1.98), time=5875.00.
+Warning: Vehicle 'veh14964' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=5885.00.
+Warning: Vehicle 'veh14964' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_3' because of a red traffic light (decel=-17.37, offset=3.98), time=5885.00.
+Warning: Teleporting vehicle 'veh15477'; collision with vehicle 'veh11142', lane='E_GOR_W_NMR_H_s_1', gap=-7.45, time=5892.00, stage=move.
+Warning: Vehicle 'veh15477' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=5898.00.
+INFO:TrafficSimulator:Step 5900: 2240 vehicles active
+Warning: Teleporting vehicle 'veh6934'; waited too long (yield), lane='E_DOR_W_NMR_H_r_0', time=5908.00.
+Warning: Teleporting vehicle 'veh3550'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=5921.00.
+Warning: Vehicle 'veh3603' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=5921.00.
+Warning: Vehicle 'veh6934' ends teleporting on edge 'E_NMR_N_PNK', time=5926.00.
+Warning: Teleporting vehicle 'veh12948'; waited too long (yield), lane='E_NMR_N_JBT_H_s_0', time=5927.00.
+Warning: Teleporting vehicle 'veh3189'; waited too long (jam), lane='E_YMK_W_WZM_0', time=5931.00.
+Warning: Vehicle 'veh12948' ends teleporting on edge 'E_NMR_N_PNK', time=5931.00.
+Warning: Vehicle 'veh3550' ends teleporting on edge 'E_WZM_S_PNK', time=5934.00.
+Warning: Vehicle 'veh3189' ends teleporting on edge 'E_WZM_N', time=5972.00.
+Warning: Vehicle 'veh15332' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=5975.00.
+Warning: Vehicle 'veh15332' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_3' because of a red traffic light (decel=-16.73, offset=0.72), time=5975.00.
+Warning: Teleporting vehicle 'veh3986'; waited too long (jam), lane='E_NMR_S_YMK_H_sr_0', time=5979.00.
+Warning: Teleporting vehicle 'veh15930'; collision with vehicle 'veh8937', lane='E_GOR_W_NMR_H_s_1', gap=-7.14, time=5981.00, stage=move.
+Warning: Vehicle 'veh3618' ends teleporting on edge 'E_YMK_W_WZM', time=5981.00.
+Warning: Teleporting vehicle 'veh4790'; collision with vehicle 'veh14965', lane='E_GOR_W_NMR_H_s_1', gap=-5.90, time=5984.00, stage=move.
+Warning: Teleporting vehicle 'veh3619'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=5989.00.
+Warning: Vehicle 'veh13299' performs emergency braking on lane 'E_PNK_E_WZM_H_slr_2' with decel=9.00, wished=4.50, severity=1.00, time=5990.00.
+INFO:TrafficSimulator:Step 6000: 2233 vehicles active
+Warning: Vehicle 'veh4790' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6035.00.
+Warning: Vehicle 'veh15930' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6038.00.
+Warning: Vehicle 'veh3963' ends teleporting on edge 'E_WZM_S_PNK', time=6056.00.
+Warning: Teleporting vehicle 'veh3551'; waited too long (jam), lane='E_YMK_W_WZM_H_slr_0', time=6064.00.
+Warning: Vehicle 'veh3551' ends teleporting on edge 'E_WZM_S_PNK', time=6064.00.
+Warning: Vehicle 'veh3714' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=6065.00.
+Warning: Teleporting vehicle 'veh12317'; collision with vehicle 'veh12343', lane='E_GOR_W_NMR_H_s_1', gap=-7.39, time=6075.00, stage=move.
+Warning: Teleporting vehicle 'veh16005'; collision with vehicle 'veh15645', lane='E_GOR_W_NMR_H_s_1', gap=-7.27, time=6078.00, stage=move.
+Warning: Vehicle 'veh13613' performs emergency braking on lane 'E_PNK_E_WZM_H_slr_2' with decel=9.00, wished=4.50, severity=1.00, time=6080.00.
+Warning: Vehicle 'veh13613' performs emergency stop at the end of lane 'E_PNK_E_WZM_H_slr_2' because of a red traffic light (decel=-9.40, offset=0.11), time=6080.00.
+Warning: Vehicle 'veh11628' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=6085.00.
+Warning: Vehicle 'veh11628' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_s_1' because of a red traffic light (decel=-15.57, offset=5.42), time=6085.00.
+INFO:TrafficSimulator:Step 6100: 2245 vehicles active
+Warning: Vehicle 'veh3619' ends teleporting on edge 'E_YMK_W_WZM', time=6120.00.
+Warning: Vehicle 'veh16005' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6122.00.
+Warning: Teleporting vehicle 'veh2630'; waited too long (yield), lane='E_YMK_E_WZM_H_slr_0', time=6132.00.
+Warning: Vehicle 'veh11946' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6155.00.
+Warning: Vehicle 'veh11946' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-14.54, offset=5.05), time=6155.00.
+Warning: Vehicle 'veh19582' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=6160.00.
+Warning: Vehicle 'veh19582' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_1' because of a red traffic light (decel=-15.50, offset=0.55), time=6160.00.
+Warning: Teleporting vehicle 'veh16163'; collision with vehicle 'veh13159', lane='E_GOR_W_NMR_H_s_1', gap=-6.06, time=6162.00, stage=move.
+Warning: Teleporting vehicle 'veh13218'; collision with vehicle 'veh16338', lane='E_GOR_W_NMR_H_s_1', gap=-5.97, time=6166.00, stage=move.
+Warning: Vehicle 'veh21477' performs emergency braking on lane 'E_NMR_N_JBT_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=6180.00.
+Warning: Vehicle 'veh21477' performs emergency stop at the end of lane 'E_NMR_N_JBT_H_s_3' because of a red traffic light (decel=-20.66, offset=10.74), time=6180.00.
+Warning: Teleporting vehicle 'veh16370'; collision with vehicle 'veh16821', lane='E_GOR_W_NMR_H_s_1', gap=-7.40, time=6183.00, stage=move.
+Warning: Vehicle 'veh16370' ends teleporting on edge 'E_PNK_W_WZM_T', time=6189.00.
+Warning: Teleporting vehicle 'veh15238'; waited too long (yield), lane='E_AYA_N_GRN_H_l_2', time=6195.00.
+Warning: Vehicle 'veh15238' ends teleporting on edge 'E_GOR_W_NMR', time=6195.00.
+INFO:TrafficSimulator:Step 6200: 2252 vehicles active
+Warning: Vehicle 'veh2630' ends teleporting on edge 'E_WZM_S_PNK', time=6215.00.
+Warning: Vehicle 'veh16163' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6216.00.
+Warning: Vehicle 'veh14965' performs emergency braking on lane 'E_PNK_W_WZM_H_sl_1' with decel=9.00, wished=4.50, severity=1.00, time=6235.00.
+Warning: Vehicle 'veh14965' performs emergency stop at the end of lane 'E_PNK_W_WZM_H_sl_1' because of a red traffic light (decel=-11.44, offset=1.23), time=6235.00.
+Warning: Vehicle 'veh12317' ends teleporting on edge 'E_WZM_S', time=6244.00.
+Warning: Vehicle 'veh20380' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=6250.00.
+Warning: Vehicle 'veh20380' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-16.09, offset=4.75), time=6250.00.
+Warning: Teleporting vehicle 'veh17013'; collision with vehicle 'veh16500', lane='E_GOR_W_NMR_H_s_1', gap=-7.37, time=6251.00, stage=move.
+Warning: Vehicle 'veh17013' ends teleporting on edge 'E_PNK_W_WZM_T', time=6251.00.
+Warning: Teleporting vehicle 'veh16193'; collision with vehicle 'veh17281', lane='E_GOR_W_NMR_H_s_1', gap=-6.05, time=6258.00, stage=move.
+Warning: Vehicle 'veh4076' performs emergency braking on lane 'E_HLC_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6265.00.
+Warning: Vehicle 'veh18057' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=6265.00.
+Warning: Vehicle 'veh18057' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-12.24, offset=0.25), time=6265.00.
+Warning: Teleporting vehicle 'veh15087'; collision with vehicle 'veh15330', lane='E_GOR_W_NMR_H_s_1', gap=-7.13, time=6271.00, stage=move.
+Warning: Vehicle 'veh15087' ends teleporting on edge 'E_PNK_W_WZM_T', time=6273.00.
+Warning: Teleporting vehicle 'veh6986'; waited too long (yield), lane='E_DOR_W_NMR_H_r_0', time=6275.00.
+Warning: Teleporting vehicle 'veh13178'; waited too long (yield), lane='E_NMR_N_JBT_H_s_0', time=6276.00.
+Warning: Teleporting vehicle 'veh9292'; waited too long (yield), lane='E_AYA_N_GRN_H_l_1', time=6276.00.
+Warning: Vehicle 'veh9292' ends teleporting on edge 'E_GOR_W_NMR', time=6277.00.
+Warning: Teleporting vehicle 'veh3626'; waited too long (jam), lane='E_HZG_W_NMR_H_slr_0', time=6293.00.
+Warning: Vehicle 'veh6986' ends teleporting on edge 'E_NMR_N_PNK', time=6297.00.
+INFO:TrafficSimulator:Step 6300: 2246 vehicles active
+Warning: Vehicle 'veh13218' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6305.00.
+Warning: Vehicle 'veh13178' ends teleporting on edge 'E_NMR_N_PNK', time=6325.00.
+Warning: Vehicle 'veh20462' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=6335.00.
+Warning: Vehicle 'veh20462' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_3' because of a red traffic light (decel=-15.48, offset=1.08), time=6335.00.
+Warning: Teleporting vehicle 'veh9292'; collision with vehicle 'veh14830', lane='E_GOR_W_NMR_H_s_1', gap=-6.17, time=6342.00, stage=move.
+Warning: Teleporting vehicle 'veh17233'; collision with vehicle 'veh17656', lane='E_GOR_W_NMR_H_s_1', gap=-5.17, time=6358.00, stage=move.
+Warning: Vehicle 'veh13353' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=6360.00.
+Warning: Vehicle 'veh3984' ends teleporting on edge 'E_WZM_S_PNK', time=6360.00.
+Warning: Vehicle 'veh17233' ends teleporting on edge 'E_PNK_W_WZM_T', time=6368.00.
+Warning: Teleporting vehicle 'veh3714'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=6370.00.
+Warning: Vehicle 'veh3714' ends teleporting on edge 'E_WZM_S_PNK', time=6370.00.
+Warning: Vehicle 'veh3986' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=6370.00.
+Warning: Teleporting vehicle 'veh3589'; waited too long (jam), lane='E_YMK_W_WZM_0', time=6380.00.
+Warning: Vehicle 'veh11667' performs emergency braking on lane 'E_NMR_S_PNK_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=6390.00.
+Warning: Vehicle 'veh11667' performs emergency stop at the end of lane 'E_NMR_S_PNK_H_l_0' because of a red traffic light (decel=-13.49, offset=3.59), time=6390.00.
+Warning: Vehicle 'veh9292' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6392.00.
+Warning: Vehicle 'veh16193' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6395.00.
+INFO:TrafficSimulator:Step 6400: 2272 vehicles active
+Warning: Teleporting vehicle 'veh4015'; waited too long (jam), lane='E_NMR_S_YMK_H_sr_0', time=6424.00.
+Warning: Vehicle 'veh20422' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6425.00.
+Warning: Vehicle 'veh20422' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-14.41, offset=3.14), time=6425.00.
+Warning: Vehicle 'veh16419' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=6430.00.
+Warning: Teleporting vehicle 'veh17774'; collision with vehicle 'veh13835', lane='E_GOR_W_NMR_H_s_1', gap=-5.01, time=6434.00, stage=move.
+Warning: Teleporting vehicle 'veh2658'; waited too long (yield), lane='E_YMK_E_WZM_H_slr_0', time=6438.00.
+Warning: Vehicle 'veh22211' performs emergency braking on lane 'E_NMR_S_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=6450.00.
+Warning: Vehicle 'veh22211' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_s_1' because of a red traffic light (decel=-22.41, offset=0.06), time=6450.00.
+Warning: Vehicle 'veh22148' performs emergency braking on lane 'E_NMR_S_JBT_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6450.00.
+Warning: Vehicle 'veh22148' performs emergency stop at the end of lane 'E_NMR_S_JBT_H_s_0' because of a red traffic light (decel=-18.69, offset=3.47), time=6450.00.
+Warning: Vehicle 'veh18050' performs emergency braking on lane 'E_GOR_W_NMR_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=6450.00.
+Warning: Vehicle 'veh18050' performs emergency stop at the end of lane 'E_GOR_W_NMR_H_s_2' because of a red traffic light (decel=-12.34, offset=2.73), time=6450.00.
+Warning: Vehicle 'veh3589' ends teleporting on edge 'E_WZM_S_PNK_H_slr', time=6461.00.
+Warning: Vehicle 'veh2658' ends teleporting on edge 'E_WZM_S_PNK', time=6490.00.
+INFO:TrafficSimulator:Step 6500: 2268 vehicles active
+Warning: Vehicle 'veh17774' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6511.00.
+Warning: Teleporting vehicle 'veh17797'; collision with vehicle 'veh14124', lane='E_GOR_W_NMR_H_s_1', gap=-6.98, time=6521.00, stage=move.
+Warning: Teleporting vehicle 'veh16593'; collision with vehicle 'veh18118', lane='E_GOR_W_NMR_H_s_1', gap=-5.90, time=6538.00, stage=move.
+Warning: Vehicle 'veh16593' ends teleporting on edge 'E_PNK_W_WZM_T', time=6539.00.
+Warning: Vehicle 'veh17797' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6576.00.
+Warning: Teleporting vehicle 'veh13311'; waited too long (yield), lane='E_NMR_N_JBT_H_s_0', time=6581.00.
+Warning: Teleporting vehicle 'veh3664'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=6597.00.
+INFO:TrafficSimulator:Step 6600: 2246 vehicles active
+Warning: Teleporting vehicle 'veh3727'; waited too long (jam), lane='E_HZG_W_NMR_0', time=6605.00.
+Warning: Vehicle 'veh21503' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=6610.00.
+Warning: Teleporting vehicle 'veh19280'; collision with vehicle 'veh18280', lane='E_GOR_W_NMR_H_s_1', gap=-6.86, time=6612.00, stage=move.
+Warning: Vehicle 'veh13311' ends teleporting on edge 'E_NMR_N_PNK', time=6612.00.
+Warning: Teleporting vehicle 'veh19382'; collision with vehicle 'veh18152', lane='E_GOR_W_NMR_H_s_1', gap=-6.54, time=6614.00, stage=move.
+Warning: Teleporting vehicle 'veh19328'; collision with vehicle 'veh18322', lane='E_GOR_W_NMR_H_s_1', gap=-7.13, time=6623.00, stage=move.
+Warning: Vehicle 'veh19611' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=6625.00.
+Warning: Vehicle 'veh19611' performs emergency stop at the end of lane 'E_HLC_E_AYA_H_l_0' because of a red traffic light (decel=-11.35, offset=0.46), time=6625.00.
+Warning: Teleporting vehicle 'veh17222'; collision with vehicle 'veh18726', lane='E_GOR_W_NMR_H_s_1', gap=-7.20, time=6625.00, stage=move.
+Warning: Teleporting vehicle 'veh18855'; collision with vehicle 'veh18885', lane='E_GOR_W_NMR_H_s_1', gap=-6.91, time=6627.00, stage=move.
+Warning: Vehicle 'veh14010' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=6634.00.
+Warning: Teleporting vehicle 'veh14010'; collision with vehicle 'veh19011', lane='E_GOR_W_NMR_H_s_1', gap=-0.37, time=6634.00, stage=move.
+Warning: Teleporting vehicle 'veh3668'; waited too long (jam), lane='E_HZG_W_NMR_H_slr_0', time=6635.00.
+Warning: Vehicle 'veh14010' ends teleporting on edge 'E_PNK_W_WZM_T', time=6636.00.
+Warning: Vehicle 'veh14718' performs emergency braking on lane ':J31_3_0' with decel=9.00, wished=4.50, severity=1.00, time=6638.00.
+Warning: Vehicle 'veh19280' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6662.00.
+Warning: Vehicle 'veh19328' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6666.00.
+Warning: Vehicle 'veh19382' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6668.00.
+Warning: Teleporting vehicle 'veh3986'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=6671.00.
+Warning: Vehicle 'veh3626' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=6671.00.
+Warning: Vehicle 'veh3986' ends teleporting on edge 'E_WZM_S_PNK', time=6683.00.
+Warning: Teleporting vehicle 'veh3620'; waited too long (jam), lane='E_YMK_W_WZM_0', time=6685.00.
+Warning: Vehicle 'veh23021' performs emergency braking on lane 'E_NMR_N_PNK_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=6695.00.
+Warning: Vehicle 'veh23021' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_1' because of a red traffic light (decel=-18.47, offset=4.57), time=6695.00.
+Warning: Vehicle 'veh21591' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=6700.00.
+Warning: Vehicle 'veh21591' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-18.15, offset=0.73), time=6700.00.
+INFO:TrafficSimulator:Step 6700: 2240 vehicles active
+Warning: Teleporting vehicle 'veh7060'; waited too long (yield), lane='E_DOR_W_NMR_H_r_0', time=6711.00.
+Warning: Teleporting vehicle 'veh19532'; collision with vehicle 'veh9555', lane='E_GOR_W_NMR_H_s_1', gap=-6.91, time=6711.00, stage=move.
+Warning: Vehicle 'veh19532' ends teleporting on edge 'E_PNK_W_WZM_T', time=6711.00.
+Warning: Teleporting vehicle 'veh17142'; collision with vehicle 'veh14272', lane='E_GOR_W_NMR_H_s_1', gap=-4.57, time=6716.00, stage=move.
+Warning: Vehicle 'veh3620' ends teleporting on edge 'E_WZM_S_PNK', time=6726.00.
+Warning: Vehicle 'veh17142' ends teleporting on edge 'E_PNK_W_WZM', time=6726.00.
+Warning: Teleporting vehicle 'veh4026'; waited too long (yield), lane='E_NMR_S_YMK_H_sr_0', time=6729.00.
+Warning: Vehicle 'veh3664' ends teleporting on edge 'E_YMK_W_WZM', time=6733.00.
+Warning: Teleporting vehicle 'veh12950'; waited too long (yield), lane='E_WZM_N_YMK_H_slr_0', time=6747.00.
+Warning: Vehicle 'veh12950' ends teleporting on edge 'E_YMK_E_NMR', time=6747.00.
+Warning: Vehicle 'veh7060' ends teleporting on edge 'E_NMR_N_PNK', time=6755.00.
+Warning: Teleporting vehicle 'veh10562'; waited too long (jam), lane='E_WZM_N_YMK_0', time=6758.00.
+Warning: Vehicle 'veh12467' performs emergency braking on lane 'E_GOR_E_AYA_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=6785.00.
+Warning: Vehicle 'veh12467' performs emergency stop at the end of lane 'E_GOR_E_AYA_H_s_0' because of a red traffic light (decel=-16.25, offset=2.66), time=6785.00.
+Warning: Teleporting vehicle 'veh13038'; waited too long (jam), lane='E_WZM_N_YMK_H_slr_0', time=6795.00.
+Warning: Teleporting vehicle 'veh19629'; collision with vehicle 'veh20176', lane='E_GOR_W_NMR_H_s_1', gap=-3.46, time=6795.00, stage=move.
+Warning: Vehicle 'veh13038' ends teleporting on edge 'E_YMK_E_NMR', time=6795.00.
+Warning: Vehicle 'veh10562' ends teleporting on edge 'E_WZM_N_YMK_H_slr', time=6796.00.
+Warning: Teleporting vehicle 'veh19724'; collision with vehicle 'veh20317', lane='E_GOR_W_NMR_H_s_1', gap=-7.11, time=6799.00, stage=move.
+INFO:TrafficSimulator:Step 6800: 2215 vehicles active
+Warning: Teleporting vehicle 'veh19887'; collision with vehicle 'veh9629', lane='E_GOR_W_NMR_H_s_1', gap=-6.48, time=6801.00, stage=move.
+Warning: Teleporting vehicle 'veh17385'; collision with vehicle 'veh20196', lane='E_GOR_W_NMR_H_s_1', gap=-6.56, time=6803.00, stage=move.
+Warning: Teleporting vehicle 'veh14693'; collision with vehicle 'veh14347', lane='E_GOR_W_NMR_H_s_1', gap=-4.25, time=6805.00, stage=move.
+Warning: Teleporting vehicle 'veh14417'; collision with vehicle 'veh20447', lane='E_GOR_W_NMR_H_s_1', gap=-6.63, time=6809.00, stage=move.
+Warning: Vehicle 'veh14871' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=6810.00.
+Warning: Vehicle 'veh14693' ends teleporting on edge 'E_PNK_W_WZM', time=6814.00.
+Warning: Vehicle 'veh17385' ends teleporting on edge 'E_PNK_W_WZM', time=6818.00.
+Warning: Vehicle 'veh14417' ends teleporting on edge 'E_PNK_W_WZM_T', time=6819.00.
+Warning: Vehicle 'veh19629' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6842.00.
+Warning: Vehicle 'veh19724' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6848.00.
+Warning: Vehicle 'veh19887' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6850.00.
+Warning: Vehicle 'veh17222' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6865.00.
+Warning: Vehicle 'veh18855' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=6869.00.
+Warning: Vehicle 'veh22770' performs emergency braking on lane 'E_NMR_N_PNK_H_s_3' with decel=9.00, wished=4.50, severity=1.00, time=6875.00.
+Warning: Vehicle 'veh22770' performs emergency stop at the end of lane 'E_NMR_N_PNK_H_s_3' because of a red traffic light (decel=-16.39, offset=3.31), time=6875.00.
+Warning: Teleporting vehicle 'veh15015'; collision with vehicle 'veh20268', lane='E_GOR_W_NMR_H_s_1', gap=-6.73, time=6881.00, stage=move.
+Warning: Vehicle 'veh15015' ends teleporting on edge 'E_PNK_W_WZM_T', time=6881.00.
+Warning: Vehicle 'veh14447' performs emergency braking on lane 'E_HLC_E_AYA_H_l_1' with decel=9.00, wished=4.50, severity=1.00, time=6895.00.
+INFO:TrafficSimulator:Step 6900: 2219 vehicles active
+Warning: Teleporting vehicle 'veh11995'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=6910.00.
+Warning: Vehicle 'veh11995' ends teleporting on edge 'E_PNK_W_WZM_T', time=6910.00.
+Warning: Vehicle 'veh16417' performs emergency braking on lane 'E_AYA_N_HLC_H_rl_1' with decel=9.00, wished=4.50, severity=1.00, time=6930.00.
+Warning: Vehicle 'veh16417' performs emergency stop at the end of lane 'E_AYA_N_HLC_H_rl_1' because of a red traffic light (decel=-9.50, offset=0.46), time=6930.00.
+Warning: Teleporting vehicle 'veh3764'; waited too long (yield), lane='E_BLK_W_AYA_H_s_0', time=6967.00.
+Warning: Vehicle 'veh3764' ends teleporting on edge 'E_HLC_W_AYA', time=6967.00.
+Warning: Vehicle 'veh17940' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=6970.00.
+Warning: Vehicle 'veh17940' performs emergency stop at the end of lane 'E_NMR_N_YMK_H_sr_2' because of a red traffic light (decel=-17.74, offset=6.55), time=6970.00.
+Warning: Teleporting vehicle 'veh3626'; waited too long (jam), lane='E_YMK_W_WZM_H_slr_0', time=6972.00.
+Warning: Vehicle 'veh3626' ends teleporting on edge 'E_WZM_S_PNK', time=6972.00.
+Warning: Vehicle 'veh3727' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=6972.00.
+Warning: Teleporting vehicle 'veh14923'; collision with vehicle 'veh18029', lane='E_GOR_W_NMR_H_s_1', gap=-4.04, time=6980.00, stage=move.
+Warning: Teleporting vehicle 'veh14969'; collision with vehicle 'veh20665', lane='E_GOR_W_NMR_H_s_1', gap=-5.52, time=6986.00, stage=move.
+Warning: Vehicle 'veh20820' performs emergency braking on lane 'E_GOR_W_NMR_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=6990.00.
+Warning: Vehicle 'veh13272' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=6990.00.
+Warning: Vehicle 'veh13272' performs emergency stop at the end of lane 'E_PNK_E_NMR_H_sr_1' because of a red traffic light (decel=-11.16, offset=0.87), time=6990.00.
+Warning: Vehicle 'veh24357' performs emergency braking on lane 'E_NMR_N_JBT_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=6990.00.
+Warning: Vehicle 'veh24357' performs emergency stop at the end of lane 'E_NMR_N_JBT_H_s_1' because of a red traffic light (decel=-11.40, offset=1.98), time=6990.00.
+Warning: Teleporting vehicle 'veh21024'; collision with vehicle 'veh20811', lane='E_GOR_W_NMR_H_s_1', gap=-0.50, time=6992.00, stage=move.
+Warning: Teleporting vehicle 'veh20957'; collision with vehicle 'veh21024', lane='E_GOR_W_NMR_H_s_1', gap=-1.65, time=6992.00, stage=move.
+Warning: Vehicle 'veh20957' ends teleporting on edge 'E_PNK_W_WZM_T', time=6997.00.
+Warning: Vehicle 'veh21024' ends teleporting on edge 'E_PNK_W_WZM_T', time=6999.00.
+INFO:TrafficSimulator:Step 7000: 2264 vehicles active
+Warning: Teleporting vehicle 'veh15378'; waited too long (yield), lane='E_AYA_N_GRN_H_l_2', time=7005.00.
+Warning: Vehicle 'veh15378' ends teleporting on edge 'E_GOR_W_NMR', time=7005.00.
+Warning: Teleporting vehicle 'veh4040'; waited too long (jam), lane='E_NMR_S_YMK_H_sr_0', time=7034.00.
+Warning: Teleporting vehicle 'veh3723'; waited too long (yield), lane='E_HZG_W_NMR_H_slr_0', time=7042.00.
+Warning: Vehicle 'veh22829' performs emergency braking on lane 'E_HLC_W_AYA_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=7055.00.
+Warning: Teleporting vehicle 'veh20723'; collision with vehicle 'veh21642', lane='E_GOR_W_NMR_H_s_1', gap=-6.96, time=7061.00, stage=move.
+Warning: Teleporting vehicle 'veh21301'; collision with vehicle 'veh21481', lane='E_GOR_W_NMR_H_s_1', gap=-6.75, time=7068.00, stage=move.
+Warning: Teleporting vehicle 'veh15118'; collision with vehicle 'veh15111', lane='E_GOR_W_NMR_H_s_1', gap=-6.28, time=7071.00, stage=move.
+Warning: Vehicle 'veh21707' performs emergency braking on lane 'E_HLC_E_AYA_H_l_0' with decel=9.00, wished=4.50, severity=1.00, time=7075.00.
+Warning: Vehicle 'veh21301' ends teleporting on edge 'E_PNK_W_WZM', time=7079.00.
+Warning: Vehicle 'veh24845' performs emergency braking on lane 'E_NMR_N_JBT_H_s_2' with decel=9.00, wished=4.50, severity=1.00, time=7080.00.
+Warning: Vehicle 'veh24845' performs emergency stop at the end of lane 'E_NMR_N_JBT_H_s_2' because of a red traffic light (decel=-15.43, offset=2.55), time=7080.00.
+Warning: Vehicle 'veh15470' performs emergency braking on lane 'E_PNK_E_NMR_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=7080.00.
+Warning: Vehicle 'veh15470' performs emergency stop at the end of lane 'E_PNK_E_NMR_H_sr_2' because of a red traffic light (decel=-11.56, offset=0.87), time=7080.00.
+INFO:TrafficSimulator:Step 7100: 2253 vehicles active
+Warning: Vehicle 'veh4015' ends teleporting on edge 'E_WZM_S_PNK', time=7109.00.
+Warning: Vehicle 'veh20723' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=7112.00.
+Warning: Teleporting vehicle 'veh21778'; collision with vehicle 'veh22121', lane='E_GOR_W_NMR_H_s_1', gap=-7.24, time=7151.00, stage=move.
+Warning: Vehicle 'veh21778' ends teleporting on edge 'E_PNK_W_WZM_T', time=7151.00.
+Warning: Teleporting vehicle 'veh22102'; collision with vehicle 'veh21865', lane='E_GOR_W_NMR_H_s_1', gap=-7.03, time=7154.00, stage=move.
+Warning: Teleporting vehicle 'veh8314'; waited too long (wrong lane), lane='E_NMR_S_PNK_1', time=7162.00.
+Warning: Teleporting vehicle 'veh5902'; waited too long (yield), lane='E_WZM_S_YMK_H_slr_0', time=7166.00.
+Warning: Vehicle 'veh5902' ends teleporting on edge 'E_WZM_S_PNK', time=7166.00.
+Warning: Teleporting vehicle 'veh6473'; waited too long (jam), lane='E_PNK_W_WZM_H_r_0', time=7171.00.
+Warning: Vehicle 'veh6473' ends teleporting on edge 'E_WZM_N_YMK', time=7171.00.
+Warning: Vehicle 'veh14923' ends teleporting on edge 'E_PNK_W_WZM_H_r', time=7171.00.
+Warning: Teleporting vehicle 'veh3020'; waited too long (jam), lane='E_WZM_N_YMK_T_0', time=7174.00.
+Warning: Vehicle 'veh3020' ends teleporting on edge 'E_WZM_N_YMK', time=7174.00.
+Warning: Teleporting vehicle 'veh6760'; waited too long (jam), lane=':J24_0_0', time=7182.00.
+Warning: Vehicle 'veh25340' performs emergency braking on lane 'E_AYA_N_GRN_H_r_1' with decel=9.00, wished=4.50, severity=1.00, time=7200.00.
+INFO:TrafficSimulator:Step 7200: 2279 vehicles active
+Warning: Vehicle 'veh22102' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=7210.00.
+Warning: Teleporting vehicle 'veh4866'; waited too long (yield), lane='E_GOR_W_NMR_H_s_0', time=7214.00.
+Warning: Vehicle 'veh4866' ends teleporting on edge 'E_PNK_W_WZM_T', time=7214.00.
+Warning: Teleporting vehicle 'veh6648'; waited too long (jam), lane='E_PNK_W_WZM_H_r_0', time=7215.00.
+Warning: Vehicle 'veh6648' ends teleporting on edge 'E_WZM_N_YMK', time=7215.00.
+Warning: Vehicle 'veh6760' ends teleporting on edge 'E_WZM_N_YMK', time=7228.00.
+Warning: Vehicle 'veh20015' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=7240.00.
+Warning: Vehicle 'veh19577' performs emergency braking on lane 'E_NMR_N_YMK_H_sr_2' with decel=9.00, wished=4.50, severity=1.00, time=7240.00.
+Warning: Teleporting vehicle 'veh15378'; collision with vehicle 'veh15472', lane='E_GOR_W_NMR_H_s_1', gap=-7.48, time=7241.00, stage=move.
+Warning: Teleporting vehicle 'veh22659'; collision with vehicle 'veh22128', lane='E_GOR_W_NMR_H_s_1', gap=-6.16, time=7245.00, stage=move.
+Warning: Teleporting vehicle 'veh22159'; collision with vehicle 'veh16348', lane='E_GOR_W_NMR_H_s_1', gap=-7.29, time=7247.00, stage=move.
+Warning: Vehicle 'veh22159' ends teleporting on edge 'E_PNK_W_WZM_T', time=7249.00.
+Warning: Vehicle 'veh22659' ends teleporting on edge 'E_PNK_W_WZM_H_sl', time=7254.00.
+Warning: Teleporting vehicle 'veh15594'; collision with vehicle 'veh22309', lane='E_GOR_W_NMR_H_s_1', gap=-6.77, time=7257.00, stage=move.
+Warning: Teleporting vehicle 'veh7711'; waited too long (jam), lane='E_NMR_S_PNK_0', time=7269.00.
+Warning: Teleporting vehicle 'veh3561'; waited too long (yield), lane='E_YMK_W_WZM_H_slr_0', time=7278.00.
+Warning: Vehicle 'veh3668' ends teleporting on edge 'E_YMK_W_WZM_H_slr', time=7278.00.
+Warning: Teleporting vehicle 'veh3659'; waited too long (jam), lane='E_YMK_W_WZM_0', time=7287.00.
+INFO:TrafficSimulator:=== SIMULATION METRICS ===
+INFO:TrafficSimulator:Total simulation steps: 7300
+INFO:TrafficSimulator:Total vehicles: 2426
+INFO:TrafficSimulator:Completed vehicles: 136
+INFO:TrafficSimulator:Completion rate: 5.6%
+INFO:TrafficSimulator:Traffic control method: fixed
+INFO:FixedController:=== FIXED CLEANUP STARTED ===
+INFO:FixedController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
+INFO:FixedController:Ended vehicles count: 11630
+INFO:FixedController:Vehicle total time: 10721717
+INFO:FixedController:=== FIXED STATISTICS ===
+INFO:FixedController:Fixed - Vehicles completed: 11630
+INFO:FixedController:Fixed - Total driving time: 10721717
+INFO:FixedController:Fixed - Average duration: 921.90 steps
+INFO:FixedController:Fixed - Individual durations collected: 11630
+INFO:FixedController:QA: FIXED cleanup completed
+Simulation ended at time: 7300.00.
+Reason: TraCI requested termination.
+Performance:
+ Duration: 111.91s
+ TraCI-Duration: 23.10s
+ Real time factor: 65.2333
+ UPS: 126926.894000
+Vehicles:
+ Inserted: 13617 (Loaded: 25470)
+ Running: 2301
+ Waiting: 11853
+ Teleports: 476 (Collisions: 151, Jam: 170, Yield: 149, Wrong Lane: 6)
+ Emergency Stops: 122
+ Emergency Braking: 203
+Statistics (avg of 11316):
+ RouteLength: 1442.28
+ Speed: 3.70
+ Duration: 931.16
+ WaitingTime: 653.52
+ TimeLoss: 829.64
+ DepartDelay: 369.76
+DijkstraRouter answered 458894 queries and explored 21.31 edges on average.
+DijkstraRouter spent 0.69s answering queries (0.00ms on average).
+INFO:TrafficSimulator:Simulation completed successfully!
+INFO:SamplePipeline:=== SAMPLE SIMULATION COMPLETED ===
+INFO:SamplePipeline:total_simulation_steps: 7300
+INFO:SamplePipeline:total_vehicles: 2426
+INFO:SamplePipeline:completed_vehicles: 136
+INFO:SamplePipeline:traffic_control_method: fixed
+INFO:SamplePipeline:completion_rate: 5.605935696619951
+INFO:__main__:Pipeline execution completed successfully

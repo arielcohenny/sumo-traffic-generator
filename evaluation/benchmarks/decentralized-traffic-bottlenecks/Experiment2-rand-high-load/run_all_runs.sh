@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Run All Runs for Experiment1-realistic-high-load
+# Run All Runs for Experiment2-rand-high-load
 # Executes all 20 individual runs in sequence
 
 set -e

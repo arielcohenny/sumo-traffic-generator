@@ -133,12 +133,10 @@ class TrafficSimulator:
         """Collect simulation metrics at given step."""
         if step % 100 == 0:  # Log every 100 steps
             current_vehicles = len(traci.vehicle.getIDList())
-            # Track maximum vehicles throughout the simulation
-            self.total_vehicles = max(self.total_vehicles, current_vehicles)
             self.logger.info(f"Step {step}: {current_vehicles} vehicles active")
     
     def _calculate_final_metrics(self, final_step: int) -> Dict[str, Any]:
-        """Calculate final simulation metrics.
+        """Calculate basic simulation metrics.
         
         Args:
             final_step: Final simulation step
@@ -146,27 +144,19 @@ class TrafficSimulator:
         Returns:
             Dict containing simulation metrics
         """
-        final_vehicles = len(traci.vehicle.getIDList())
-        self.completed_vehicles = self.total_vehicles - final_vehicles
+        vehicles_running = len(traci.vehicle.getIDList())
         
         metrics = {
             'total_simulation_steps': final_step,
-            'total_vehicles': self.total_vehicles,
-            'completed_vehicles': self.completed_vehicles,
+            'vehicles_still_running': vehicles_running,
             'traffic_control_method': self.args.traffic_control
         }
         
-        if self.total_vehicles > 0:
-            metrics['completion_rate'] = (self.completed_vehicles / self.total_vehicles) * 100
-        else:
-            metrics['completion_rate'] = 0.0
-        
-        self.logger.info("=== SIMULATION METRICS ===")
+        self.logger.info("=== SIMULATION COMPLETED ===")
         self.logger.info(f"Total simulation steps: {final_step}")
-        self.logger.info(f"Total vehicles: {self.total_vehicles}")
-        self.logger.info(f"Completed vehicles: {self.completed_vehicles}")
-        self.logger.info(f"Completion rate: {metrics['completion_rate']:.1f}%")
+        self.logger.info(f"Vehicles still running: {vehicles_running}")
         self.logger.info(f"Traffic control method: {self.args.traffic_control}")
+        self.logger.info("Detailed statistics will be provided by SUMO output below:")
         
         return metrics
     
