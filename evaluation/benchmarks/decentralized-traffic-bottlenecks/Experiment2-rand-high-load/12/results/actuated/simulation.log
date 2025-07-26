@@ -16,8 +16,8 @@ INFO:TrafficSimulator:QA: Traffic control method selected: actuated
 INFO:TrafficSimulator:QA: Controller type: ActuatedController
 INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
  Retrying in 1 seconds
-***Starting server on port 60604 ***
-Loading net-file from 'workspace/grid.net.xml' ... done (25ms).
+***Starting server on port 63273 ***
+Loading net-file from 'workspace/grid.net.xml' ... done (12ms).
 Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 7 when switching to phase 1.
 Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 4 when switching to phase 2.
 Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 0 when switching to phase 0.
@@ -47,7 +47,7 @@ Simulation version 1.22.0 started with time: 0.00.
 INFO:ActuatedController:=== ACTUATED CONTROLLER INITIALIZATION ===
 INFO:ActuatedController:QA: ACTUATED - Initialized vehicle tracking system
 INFO:ActuatedController:QA: Found 7 traffic lights
-/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:264: UserWarning: Call to deprecated function getAllProgramLogics, use getCompleteRedYellowGreenDefinition instead.
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:259: UserWarning: Call to deprecated function getAllProgramLogics, use getCompleteRedYellowGreenDefinition instead.
   phase_count = len(traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0].phases)
 INFO:ActuatedController:QA: tl_GRN_ALN - program: 0, phases: 3
 INFO:ActuatedController:QA: tl_HLC_AYA - program: 0, phases: 3
@@ -1188,12 +1188,11 @@ Warning: Vehicle 'veh14707' ends teleporting on edge 'E_YMK_E_NMR', time=7291.00
 Warning: Teleporting vehicle 'veh7331'; waited too long (yield), lane='E_YMK_E_WZM_H_slr_0', time=7292.00.
 Warning: Vehicle 'veh7331' ends teleporting on edge 'E_YMK_E_NMR', time=7293.00.
 Warning: Vehicle 'veh16035' performs emergency braking on lane 'E_HLC_E_AYA_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=7299.00.
-INFO:TrafficSimulator:=== SIMULATION METRICS ===
+INFO:TrafficSimulator:=== SIMULATION COMPLETED ===
 INFO:TrafficSimulator:Total simulation steps: 7300
-INFO:TrafficSimulator:Total vehicles: 2298
-INFO:TrafficSimulator:Completed vehicles: 59
-INFO:TrafficSimulator:Completion rate: 2.6%
+INFO:TrafficSimulator:Vehicles still running: 2239
 INFO:TrafficSimulator:Traffic control method: actuated
+INFO:TrafficSimulator:Detailed statistics will be provided by SUMO output below:
 INFO:ActuatedController:=== ACTUATED CLEANUP STARTED ===
 INFO:ActuatedController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
 INFO:ActuatedController:Ended vehicles count: 14737
@@ -1207,10 +1206,10 @@ INFO:ActuatedController:QA: ACTUATED cleanup completed
 Simulation ended at time: 7300.00.
 Reason: TraCI requested termination.
 Performance:
- Duration: 92.61s
- TraCI-Duration: 15.62s
- Real time factor: 78.8252
- UPS: 144624.738149
+ Duration: 90.70s
+ TraCI-Duration: 15.78s
+ Real time factor: 80.4825
+ UPS: 147665.424517
 Vehicles:
  Inserted: 16780 (Loaded: 25470)
  Running: 2243
@@ -1226,12 +1225,7 @@ Statistics (avg of 14537):
  TimeLoss: 648.41
  DepartDelay: 363.08
 DijkstraRouter answered 300563 queries and explored 21.45 edges on average.
-DijkstraRouter spent 0.48s answering queries (0.00ms on average).
+DijkstraRouter spent 0.52s answering queries (0.00ms on average).
 INFO:TrafficSimulator:Simulation completed successfully!
 INFO:SamplePipeline:=== SAMPLE SIMULATION COMPLETED ===
-INFO:SamplePipeline:total_simulation_steps: 7300
-INFO:SamplePipeline:total_vehicles: 2298
-INFO:SamplePipeline:completed_vehicles: 59
-INFO:SamplePipeline:traffic_control_method: actuated
-INFO:SamplePipeline:completion_rate: 2.567449956483899
 INFO:__main__:Pipeline execution completed successfully

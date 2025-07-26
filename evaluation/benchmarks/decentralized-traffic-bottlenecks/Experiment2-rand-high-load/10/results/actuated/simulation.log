@@ -16,8 +16,8 @@ INFO:TrafficSimulator:QA: Traffic control method selected: actuated
 INFO:TrafficSimulator:QA: Controller type: ActuatedController
 INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
  Retrying in 1 seconds
-***Starting server on port 60114 ***
-Loading net-file from 'workspace/grid.net.xml' ... done (25ms).
+***Starting server on port 62242 ***
+Loading net-file from 'workspace/grid.net.xml' ... done (28ms).
 Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 7 when switching to phase 1.
 Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 4 when switching to phase 2.
 Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 0 when switching to phase 0.
@@ -47,7 +47,7 @@ Simulation version 1.22.0 started with time: 0.00.
 INFO:ActuatedController:=== ACTUATED CONTROLLER INITIALIZATION ===
 INFO:ActuatedController:QA: ACTUATED - Initialized vehicle tracking system
 INFO:ActuatedController:QA: Found 7 traffic lights
-/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:264: UserWarning: Call to deprecated function getAllProgramLogics, use getCompleteRedYellowGreenDefinition instead.
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:259: UserWarning: Call to deprecated function getAllProgramLogics, use getCompleteRedYellowGreenDefinition instead.
   phase_count = len(traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0].phases)
 INFO:ActuatedController:QA: tl_GRN_ALN - program: 0, phases: 3
 INFO:ActuatedController:QA: tl_HLC_AYA - program: 0, phases: 3
@@ -1692,12 +1692,11 @@ Warning: Vehicle 'veh23278' performs emergency braking on lane 'E_NMR_N_YMK_H_sr
 Warning: Vehicle 'veh8220' performs emergency braking on lane 'E_NMR_S_YMK_H_sr_1' with decel=9.00, wished=4.50, severity=1.00, time=7288.00.
 Warning: Vehicle 'veh8220' performs emergency stop at the end of lane 'E_NMR_S_YMK_H_sr_1' because of a red traffic light (decel=-17.01, offset=6.94), time=7288.00.
 Warning: Teleporting vehicle 'veh8452'; collision with vehicle 'veh12791', lane='E_GOR_W_NMR_H_s_1', gap=-4.47, time=7291.00, stage=move.
-INFO:TrafficSimulator:=== SIMULATION METRICS ===
+INFO:TrafficSimulator:=== SIMULATION COMPLETED ===
 INFO:TrafficSimulator:Total simulation steps: 7300
-INFO:TrafficSimulator:Total vehicles: 2411
-INFO:TrafficSimulator:Completed vehicles: 199
-INFO:TrafficSimulator:Completion rate: 8.3%
+INFO:TrafficSimulator:Vehicles still running: 2212
 INFO:TrafficSimulator:Traffic control method: actuated
+INFO:TrafficSimulator:Detailed statistics will be provided by SUMO output below:
 INFO:ActuatedController:=== ACTUATED CLEANUP STARTED ===
 INFO:ActuatedController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
 INFO:ActuatedController:Ended vehicles count: 13014
@@ -1711,10 +1710,10 @@ INFO:ActuatedController:QA: ACTUATED cleanup completed
 Simulation ended at time: 7300.00.
 Reason: TraCI requested termination.
 Performance:
- Duration: 97.14s
- TraCI-Duration: 16.07s
- Real time factor: 75.1469
- UPS: 141448.544929
+ Duration: 99.93s
+ TraCI-Duration: 16.63s
+ Real time factor: 73.0504
+ UPS: 137502.236543
 Vehicles:
  Inserted: 14872 (Loaded: 25470)
  Running: 2217
@@ -1730,12 +1729,7 @@ Statistics (avg of 12655):
  TimeLoss: 766.98
  DepartDelay: 311.17
 DijkstraRouter answered 359610 queries and explored 21.49 edges on average.
-DijkstraRouter spent 0.49s answering queries (0.00ms on average).
+DijkstraRouter spent 0.52s answering queries (0.00ms on average).
 INFO:TrafficSimulator:Simulation completed successfully!
 INFO:SamplePipeline:=== SAMPLE SIMULATION COMPLETED ===
-INFO:SamplePipeline:total_simulation_steps: 7300
-INFO:SamplePipeline:total_vehicles: 2411
-INFO:SamplePipeline:completed_vehicles: 199
-INFO:SamplePipeline:traffic_control_method: actuated
-INFO:SamplePipeline:completion_rate: 8.253836582330983
 INFO:__main__:Pipeline execution completed successfully

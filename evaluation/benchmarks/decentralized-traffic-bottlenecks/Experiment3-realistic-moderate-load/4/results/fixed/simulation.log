@@ -16,8 +16,8 @@ INFO:TrafficSimulator:QA: Traffic control method selected: fixed
 INFO:TrafficSimulator:QA: Controller type: FixedController
 INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
  Retrying in 1 seconds
-***Starting server on port 63600 ***
-Loading net-file from 'workspace/grid.net.xml' ... done (27ms).
+***Starting server on port 59835 ***
+Loading net-file from 'workspace/grid.net.xml' ... done (25ms).
 Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 7 when switching to phase 1.
 Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 4 when switching to phase 2.
 Warning: Missing yellow phase in tlLogic 'tl_GRN_ALN', program '0' for tl-index 0 when switching to phase 0.
@@ -47,7 +47,7 @@ Simulation version 1.22.0 started with time: 0.00.
 INFO:FixedController:=== FIXED CONTROLLER INITIALIZATION ===
 INFO:FixedController:QA: FIXED - Initialized vehicle tracking system
 INFO:FixedController:QA: FIXED - Found 7 traffic lights
-/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:355: UserWarning: Call to deprecated function getAllProgramLogics, use getCompleteRedYellowGreenDefinition instead.
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:350: UserWarning: Call to deprecated function getAllProgramLogics, use getCompleteRedYellowGreenDefinition instead.
   complete_def = traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0]
 INFO:FixedController:QA: FIXED tl_GRN_ALN - 3 phases, 90s cycle, durations: [35, 30, 25]
 INFO:FixedController:QA: FIXED tl_HLC_AYA - 3 phases, 90s cycle, durations: [35, 20, 35]
@@ -1441,12 +1441,11 @@ Warning: Vehicle 'veh9184' ends teleporting on edge 'E_WZM_S', time=7259.00.
 Warning: Vehicle 'veh11632' ends teleporting on edge 'E_WZM_S_PNK', time=7259.00.
 Warning: Vehicle 'veh9362' ends teleporting on edge 'E_PNK_W_WZM', time=7260.00.
 Warning: Vehicle 'veh10605' ends teleporting on edge 'E_GOR_W_NMR_H_r', time=7269.00.
-INFO:TrafficSimulator:=== SIMULATION METRICS ===
+INFO:TrafficSimulator:=== SIMULATION COMPLETED ===
 INFO:TrafficSimulator:Total simulation steps: 7300
-INFO:TrafficSimulator:Total vehicles: 2206
-INFO:TrafficSimulator:Completed vehicles: 73
-INFO:TrafficSimulator:Completion rate: 3.3%
+INFO:TrafficSimulator:Vehicles still running: 2133
 INFO:TrafficSimulator:Traffic control method: fixed
+INFO:TrafficSimulator:Detailed statistics will be provided by SUMO output below:
 INFO:FixedController:=== FIXED CLEANUP STARTED ===
 INFO:FixedController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
 INFO:FixedController:Ended vehicles count: 11863
@@ -1460,10 +1459,10 @@ INFO:FixedController:QA: FIXED cleanup completed
 Simulation ended at time: 7300.00.
 Reason: TraCI requested termination.
 Performance:
- Duration: 71.63s
- TraCI-Duration: 17.07s
- Real time factor: 101.914
- UPS: 146944.826816
+ Duration: 70.38s
+ TraCI-Duration: 17.45s
+ Real time factor: 103.717
+ UPS: 149544.086724
 Vehicles:
  Inserted: 13723 (Loaded: 18825)
  Running: 2138
@@ -1482,9 +1481,4 @@ DijkstraRouter answered 194553 queries and explored 16.29 edges on average.
 DijkstraRouter spent 0.26s answering queries (0.00ms on average).
 INFO:TrafficSimulator:Simulation completed successfully!
 INFO:SamplePipeline:=== SAMPLE SIMULATION COMPLETED ===
-INFO:SamplePipeline:total_simulation_steps: 7300
-INFO:SamplePipeline:total_vehicles: 2206
-INFO:SamplePipeline:completed_vehicles: 73
-INFO:SamplePipeline:traffic_control_method: fixed
-INFO:SamplePipeline:completion_rate: 3.309156844968268
 INFO:__main__:Pipeline execution completed successfully
