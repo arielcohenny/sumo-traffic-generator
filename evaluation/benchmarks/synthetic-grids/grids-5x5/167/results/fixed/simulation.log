@@ -1,0 +1,1740 @@
+INFO:StandardPipeline:Prepared output directory: workspace
+INFO:StandardPipeline:--- Step 1: Network Generation ---
+INFO:NetworkGenerationStep:Starting NetworkGenerationStep
+INFO:NetworkGenerationStep:Generating SUMO orthogonal grid network...
+INFO:NetworkGenerationStep:Using seed: 82
+Success.
+INFO:NetworkGenerationStep:Generated grid successfully
+INFO:NetworkGenerationStep:Completed NetworkGenerationStep successfully
+INFO:StandardPipeline:--- Step 2: Zone Generation ---
+INFO:ZoneGenerationStep:Starting ZoneGenerationStep
+INFO:ZoneGenerationStep:Generating synthetic network zones using traditional method...
+INFO:pyogrio._io:Created 1,024 records
+INFO:ZoneGenerationStep:Extracted land use zones successfully using traditional method with 25.0m blocks
+INFO:ZoneGenerationStep:Completed ZoneGenerationStep successfully
+INFO:StandardPipeline:--- Step 3: Integrated Edge Splitting with Lane Assignment ---
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+INFO:StandardPipeline:Successfully completed integrated edge splitting with lane assignment
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 76 edges validated successfully
+INFO:StandardPipeline:Split edges validation passed successfully
+INFO:StandardPipeline:--- Step 4: Network Rebuild ---
+Network conversion completed successfully.
+INFO:StandardPipeline:Rebuilt the network successfully
+INFO:StandardPipeline:--- Step 6: Edge Attractiveness Assignment ---
+INFO:StandardPipeline:Assigned edge attractiveness successfully
+INFO:StandardPipeline:--- Step 7: Vehicle Route Generation ---
+Using routing strategies: {'shortest': 80.0, 'realtime': 20.0}
+Using vehicle types: {'passenger': 50.0, 'commercial': 30.0, 'public': 20.0}
+Wrote 800 vehicles → workspace/vehicles.rou.xml
+INFO:StandardPipeline:Generated vehicle routes successfully
+INFO:StandardPipeline:--- Step 8: SUMO Configuration Generation ---
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+INFO:StandardPipeline:Generated SUMO configuration file successfully
+INFO:StandardPipeline:--- Step 9: Dynamic Simulation ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: fixed
+INFO:TrafficSimulator:QA: Controller type: FixedController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+INFO:FixedController:=== FIXED CONTROLLER INITIALIZATION ===
+INFO:FixedController:QA: FIXED - Initialized vehicle tracking system
+INFO:FixedController:QA: FIXED - Found 24 traffic lights
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:350: UserWarning: Call to deprecated function getCompleteRedYellowGreenDefinition, use getAllProgramLogics instead.
+  complete_def = traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0]
+INFO:FixedController:QA: FIXED A0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED - Initialization complete, will use setPhase + setPhaseDuration
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+INFO:TrafficSimulator:Step 0: 0 vehicles active
+INFO:TrafficSimulator:Step 100: 0 vehicles active
+INFO:TrafficSimulator:Step 200: 0 vehicles active
+INFO:TrafficSimulator:Step 300: 0 vehicles active
+INFO:TrafficSimulator:Step 400: 0 vehicles active
+INFO:TrafficSimulator:Step 500: 0 vehicles active
+INFO:TrafficSimulator:Step 600: 0 vehicles active
+INFO:TrafficSimulator:Step 700: 0 vehicles active
+INFO:TrafficSimulator:Step 800: 0 vehicles active
+INFO:TrafficSimulator:Step 900: 0 vehicles active
+INFO:TrafficSimulator:Step 1000: 0 vehicles active
+INFO:TrafficSimulator:Step 1100: 0 vehicles active
+INFO:TrafficSimulator:Step 1200: 0 vehicles active
+INFO:TrafficSimulator:Step 1300: 0 vehicles active
+INFO:TrafficSimulator:Step 1400: 0 vehicles active
+INFO:TrafficSimulator:Step 1500: 0 vehicles active
+INFO:TrafficSimulator:Step 1600: 0 vehicles active
+INFO:TrafficSimulator:Step 1700: 0 vehicles active
+INFO:TrafficSimulator:Step 1800: 0 vehicles active
+INFO:TrafficSimulator:Step 1900: 0 vehicles active
+INFO:TrafficSimulator:Step 2000: 0 vehicles active
+INFO:TrafficSimulator:Step 2100: 0 vehicles active
+INFO:TrafficSimulator:Step 2200: 0 vehicles active
+INFO:TrafficSimulator:Step 2300: 0 vehicles active
+INFO:TrafficSimulator:Step 2400: 0 vehicles active
+INFO:TrafficSimulator:Step 2500: 0 vehicles active
+INFO:TrafficSimulator:Step 2600: 0 vehicles active
+INFO:TrafficSimulator:Step 2700: 0 vehicles active
+INFO:TrafficSimulator:Step 2800: 0 vehicles active
+INFO:TrafficSimulator:Step 2900: 0 vehicles active
+INFO:TrafficSimulator:Step 3000: 0 vehicles active
+INFO:TrafficSimulator:Step 3100: 0 vehicles active
+INFO:TrafficSimulator:Step 3200: 0 vehicles active
+INFO:TrafficSimulator:Step 3300: 0 vehicles active
+INFO:TrafficSimulator:Step 3400: 0 vehicles active
+INFO:TrafficSimulator:Step 3500: 0 vehicles active
+INFO:TrafficSimulator:Step 3600: 0 vehicles active
+INFO:TrafficSimulator:Step 3700: 0 vehicles active
+INFO:TrafficSimulator:Step 3800: 0 vehicles active
+INFO:TrafficSimulator:Step 3900: 0 vehicles active
+INFO:TrafficSimulator:Step 4000: 0 vehicles active
+INFO:TrafficSimulator:Step 4100: 0 vehicles active
+INFO:TrafficSimulator:Step 4200: 0 vehicles active
+INFO:TrafficSimulator:Step 4300: 0 vehicles active
+INFO:TrafficSimulator:Step 4400: 0 vehicles active
+INFO:TrafficSimulator:Step 4500: 0 vehicles active
+INFO:TrafficSimulator:Step 4600: 0 vehicles active
+INFO:TrafficSimulator:Step 4700: 0 vehicles active
+INFO:TrafficSimulator:Step 4800: 0 vehicles active
+INFO:TrafficSimulator:Step 4900: 0 vehicles active
+INFO:TrafficSimulator:Step 5000: 0 vehicles active
+INFO:TrafficSimulator:Step 5100: 0 vehicles active
+INFO:TrafficSimulator:Step 5200: 0 vehicles active
+INFO:TrafficSimulator:Step 5300: 0 vehicles active
+INFO:TrafficSimulator:Step 5400: 0 vehicles active
+INFO:TrafficSimulator:Step 5500: 0 vehicles active
+INFO:TrafficSimulator:Step 5600: 0 vehicles active
+INFO:TrafficSimulator:Step 5700: 0 vehicles active
+INFO:TrafficSimulator:Step 5800: 0 vehicles active
+INFO:TrafficSimulator:Step 5900: 0 vehicles active
+INFO:TrafficSimulator:Step 6000: 0 vehicles active
+INFO:TrafficSimulator:Step 6100: 0 vehicles active
+INFO:TrafficSimulator:Step 6200: 0 vehicles active
+INFO:TrafficSimulator:Step 6300: 0 vehicles active
+INFO:TrafficSimulator:Step 6400: 0 vehicles active
+INFO:TrafficSimulator:Step 6500: 0 vehicles active
+INFO:TrafficSimulator:Step 6600: 0 vehicles active
+INFO:TrafficSimulator:Step 6700: 0 vehicles active
+INFO:TrafficSimulator:Step 6800: 0 vehicles active
+INFO:TrafficSimulator:Step 6900: 0 vehicles active
+INFO:TrafficSimulator:Step 7000: 0 vehicles active
+INFO:TrafficSimulator:Step 7100: 0 vehicles active
+INFO:TrafficSimulator:Step 7200: 0 vehicles active
+INFO:TrafficSimulator:Step 7300: 0 vehicles active
+INFO:TrafficSimulator:Step 7400: 0 vehicles active
+INFO:TrafficSimulator:Step 7500: 0 vehicles active
+INFO:TrafficSimulator:Step 7600: 0 vehicles active
+INFO:TrafficSimulator:Step 7700: 0 vehicles active
+INFO:TrafficSimulator:Step 7800: 0 vehicles active
+INFO:TrafficSimulator:Step 7900: 0 vehicles active
+INFO:TrafficSimulator:Step 8000: 0 vehicles active
+INFO:TrafficSimulator:Step 8100: 0 vehicles active
+INFO:TrafficSimulator:Step 8200: 0 vehicles active
+INFO:TrafficSimulator:Step 8300: 0 vehicles active
+INFO:TrafficSimulator:Step 8400: 0 vehicles active
+INFO:TrafficSimulator:Step 8500: 0 vehicles active
+INFO:TrafficSimulator:Step 8600: 0 vehicles active
+INFO:TrafficSimulator:Step 8700: 0 vehicles active
+INFO:TrafficSimulator:Step 8800: 0 vehicles active
+INFO:TrafficSimulator:Step 8900: 0 vehicles active
+INFO:TrafficSimulator:Step 9000: 0 vehicles active
+INFO:TrafficSimulator:Step 9100: 0 vehicles active
+INFO:TrafficSimulator:Step 9200: 0 vehicles active
+INFO:TrafficSimulator:Step 9300: 0 vehicles active
+INFO:TrafficSimulator:Step 9400: 0 vehicles active
+INFO:TrafficSimulator:Step 9500: 0 vehicles active
+INFO:TrafficSimulator:Step 9600: 0 vehicles active
+INFO:TrafficSimulator:Step 9700: 0 vehicles active
+INFO:TrafficSimulator:Step 9800: 0 vehicles active
+INFO:TrafficSimulator:Step 9900: 0 vehicles active
+INFO:TrafficSimulator:Step 10000: 0 vehicles active
+INFO:TrafficSimulator:Step 10100: 0 vehicles active
+INFO:TrafficSimulator:Step 10200: 0 vehicles active
+INFO:TrafficSimulator:Step 10300: 0 vehicles active
+INFO:TrafficSimulator:Step 10400: 0 vehicles active
+INFO:TrafficSimulator:Step 10500: 0 vehicles active
+INFO:TrafficSimulator:Step 10600: 0 vehicles active
+INFO:TrafficSimulator:Step 10700: 0 vehicles active
+INFO:TrafficSimulator:Step 10800: 0 vehicles active
+INFO:TrafficSimulator:Step 10900: 0 vehicles active
+INFO:TrafficSimulator:Step 11000: 0 vehicles active
+INFO:TrafficSimulator:Step 11100: 1 vehicles active
+INFO:TrafficSimulator:Step 11200: 0 vehicles active
+INFO:TrafficSimulator:Step 11300: 0 vehicles active
+INFO:TrafficSimulator:Step 11400: 0 vehicles active
+INFO:TrafficSimulator:Step 11500: 0 vehicles active
+INFO:TrafficSimulator:Step 11600: 0 vehicles active
+INFO:TrafficSimulator:Step 11700: 0 vehicles active
+INFO:TrafficSimulator:Step 11800: 0 vehicles active
+INFO:TrafficSimulator:Step 11900: 0 vehicles active
+INFO:TrafficSimulator:Step 12000: 0 vehicles active
+INFO:TrafficSimulator:Step 12100: 0 vehicles active
+INFO:TrafficSimulator:Step 12200: 0 vehicles active
+INFO:TrafficSimulator:Step 12300: 0 vehicles active
+INFO:TrafficSimulator:Step 12400: 0 vehicles active
+INFO:TrafficSimulator:Step 12500: 0 vehicles active
+INFO:TrafficSimulator:Step 12600: 0 vehicles active
+INFO:TrafficSimulator:Step 12700: 0 vehicles active
+INFO:TrafficSimulator:Step 12800: 0 vehicles active
+INFO:TrafficSimulator:Step 12900: 0 vehicles active
+INFO:TrafficSimulator:Step 13000: 0 vehicles active
+INFO:TrafficSimulator:Step 13100: 0 vehicles active
+INFO:TrafficSimulator:Step 13200: 0 vehicles active
+INFO:TrafficSimulator:Step 13300: 0 vehicles active
+INFO:TrafficSimulator:Step 13400: 0 vehicles active
+INFO:TrafficSimulator:Step 13500: 0 vehicles active
+INFO:TrafficSimulator:Step 13600: 0 vehicles active
+INFO:TrafficSimulator:Step 13700: 0 vehicles active
+INFO:TrafficSimulator:Step 13800: 0 vehicles active
+INFO:TrafficSimulator:Step 13900: 0 vehicles active
+INFO:TrafficSimulator:Step 14000: 0 vehicles active
+INFO:TrafficSimulator:Step 14100: 0 vehicles active
+INFO:TrafficSimulator:Step 14200: 1 vehicles active
+INFO:TrafficSimulator:Step 14300: 0 vehicles active
+INFO:TrafficSimulator:Step 14400: 0 vehicles active
+INFO:TrafficSimulator:Step 14500: 0 vehicles active
+INFO:TrafficSimulator:Step 14600: 0 vehicles active
+INFO:TrafficSimulator:Step 14700: 0 vehicles active
+INFO:TrafficSimulator:Step 14800: 0 vehicles active
+INFO:TrafficSimulator:Step 14900: 0 vehicles active
+INFO:TrafficSimulator:Step 15000: 0 vehicles active
+INFO:TrafficSimulator:Step 15100: 0 vehicles active
+INFO:TrafficSimulator:Step 15200: 0 vehicles active
+INFO:TrafficSimulator:Step 15300: 0 vehicles active
+INFO:TrafficSimulator:Step 15400: 0 vehicles active
+INFO:TrafficSimulator:Step 15500: 0 vehicles active
+INFO:TrafficSimulator:Step 15600: 0 vehicles active
+INFO:TrafficSimulator:Step 15700: 1 vehicles active
+INFO:TrafficSimulator:Step 15800: 0 vehicles active
+INFO:TrafficSimulator:Step 15900: 0 vehicles active
+INFO:TrafficSimulator:Step 16000: 0 vehicles active
+INFO:TrafficSimulator:Step 16100: 0 vehicles active
+INFO:TrafficSimulator:Step 16200: 0 vehicles active
+INFO:TrafficSimulator:Step 16300: 0 vehicles active
+INFO:TrafficSimulator:Step 16400: 0 vehicles active
+INFO:TrafficSimulator:Step 16500: 0 vehicles active
+INFO:TrafficSimulator:Step 16600: 0 vehicles active
+INFO:TrafficSimulator:Step 16700: 0 vehicles active
+INFO:TrafficSimulator:Step 16800: 0 vehicles active
+INFO:TrafficSimulator:Step 16900: 0 vehicles active
+INFO:TrafficSimulator:Step 17000: 0 vehicles active
+INFO:TrafficSimulator:Step 17100: 0 vehicles active
+INFO:TrafficSimulator:Step 17200: 0 vehicles active
+INFO:TrafficSimulator:Step 17300: 0 vehicles active
+INFO:TrafficSimulator:Step 17400: 0 vehicles active
+INFO:TrafficSimulator:Step 17500: 0 vehicles active
+INFO:TrafficSimulator:Step 17600: 0 vehicles active
+INFO:TrafficSimulator:Step 17700: 0 vehicles active
+INFO:TrafficSimulator:Step 17800: 0 vehicles active
+INFO:TrafficSimulator:Step 17900: 0 vehicles active
+Step #0.00 (0ms ?*RT. ?UPS, TraCI: 14ms, vehicles TOT 0 ACT 0 BUF 0)                      
+Step #100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #1000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #1100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #1200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #1300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #1400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #1500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #1600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #1700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #1800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #1900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #2000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #2100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #2200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #2300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #2400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #2500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #2600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #2700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #2800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #2900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #3000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #3100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #3200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #3300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #3400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #3500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #3600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #3700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #3800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #3900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #4000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #4100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #4200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #4300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #4400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #4500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #4600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #4700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #4800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #4900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #5000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #5100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #5200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #5300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #5400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #5500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #5600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #5700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #5800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #5900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #6000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #6100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #6200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #6300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #6400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #6500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #6600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #6700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #6800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #6900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #7000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #7100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #7200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #7300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #7400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #7500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #7600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #7700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #7800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #7900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #8000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #8100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #8200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #8300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #8400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #8500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #8600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #8700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #8800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #8900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #9000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #9100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #9200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #9300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #9400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #9500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #9600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #9700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #9800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #9900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                    
+Step #10000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                   
+Step #10100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                   
+Step #10200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                   
+Step #10300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                   
+Step #10400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                   
+Step #10500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                   
+Step #10600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                   
+Step #10700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                   
+Step #10800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                   
+Step #10900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                   
+Step #11000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                   
+Step #11100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1 ACT 1 BUF 0)                   
+Step #11200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #11300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #11400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #11500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #11600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #11700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #11800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #11900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #12000.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #12100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #12200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #12300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #12400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #12500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #12600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #12700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #12800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #12900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #13000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #13100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #13200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #13300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #13400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #13500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #13600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #13700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #13800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #13900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #14000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #14100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 0 BUF 0)                   
+Step #14200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 2 ACT 1 BUF 0)                   
+Step #14300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #14400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #14500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #14600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #14700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #14800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #14900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #15000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #15100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #15200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #15300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #15400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #15500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #15600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 2 ACT 0 BUF 0)                   
+Step #15700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 1 BUF 0)                   
+Step #15800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #15900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #16000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #16100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #16200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #16300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #16400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #16500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #16600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #16700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #16800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #16900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #17000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #17100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #17200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #17300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #17400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #17500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #17600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #17700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #17800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #17900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+StepINFO:TrafficSimulator:Step 18000: 0 vehicles active
+INFO:TrafficSimulator:Step 18100: 0 vehicles active
+INFO:TrafficSimulator:Step 18200: 0 vehicles active
+INFO:TrafficSimulator:Step 18300: 0 vehicles active
+INFO:TrafficSimulator:Step 18400: 0 vehicles active
+INFO:TrafficSimulator:Step 18500: 0 vehicles active
+INFO:TrafficSimulator:Step 18600: 0 vehicles active
+INFO:TrafficSimulator:Step 18700: 0 vehicles active
+INFO:TrafficSimulator:Step 18800: 0 vehicles active
+INFO:TrafficSimulator:Step 18900: 0 vehicles active
+INFO:TrafficSimulator:Step 19000: 0 vehicles active
+INFO:TrafficSimulator:Step 19100: 0 vehicles active
+INFO:TrafficSimulator:Step 19200: 0 vehicles active
+INFO:TrafficSimulator:Step 19300: 0 vehicles active
+INFO:TrafficSimulator:Step 19400: 0 vehicles active
+INFO:TrafficSimulator:Step 19500: 0 vehicles active
+INFO:TrafficSimulator:Step 19600: 0 vehicles active
+INFO:TrafficSimulator:Step 19700: 0 vehicles active
+INFO:TrafficSimulator:Step 19800: 1 vehicles active
+INFO:TrafficSimulator:Step 19900: 1 vehicles active
+INFO:TrafficSimulator:Step 20000: 0 vehicles active
+INFO:TrafficSimulator:Step 20100: 0 vehicles active
+INFO:TrafficSimulator:Step 20200: 0 vehicles active
+INFO:TrafficSimulator:Step 20300: 1 vehicles active
+INFO:TrafficSimulator:Step 20400: 1 vehicles active
+INFO:TrafficSimulator:Step 20500: 0 vehicles active
+INFO:TrafficSimulator:Step 20600: 0 vehicles active
+INFO:TrafficSimulator:Step 20700: 0 vehicles active
+INFO:TrafficSimulator:Step 20800: 0 vehicles active
+INFO:TrafficSimulator:Step 20900: 0 vehicles active
+INFO:TrafficSimulator:Step 21000: 0 vehicles active
+INFO:TrafficSimulator:Step 21100: 0 vehicles active
+INFO:TrafficSimulator:Step 21200: 0 vehicles active
+INFO:TrafficSimulator:Step 21300: 0 vehicles active
+INFO:TrafficSimulator:Step 21400: 0 vehicles active
+INFO:TrafficSimulator:Step 21500: 0 vehicles active
+INFO:TrafficSimulator:Step 21600: 0 vehicles active
+INFO:TrafficSimulator:Step 21700: 1 vehicles active
+INFO:TrafficSimulator:Step 21800: 1 vehicles active
+INFO:TrafficSimulator:Step 21900: 1 vehicles active
+INFO:TrafficSimulator:Step 22000: 0 vehicles active
+INFO:TrafficSimulator:Step 22100: 0 vehicles active
+INFO:TrafficSimulator:Step 22200: 0 vehicles active
+INFO:TrafficSimulator:Step 22300: 2 vehicles active
+INFO:TrafficSimulator:Step 22400: 2 vehicles active
+INFO:TrafficSimulator:Step 22500: 0 vehicles active
+INFO:TrafficSimulator:Step 22600: 0 vehicles active
+INFO:TrafficSimulator:Step 22700: 0 vehicles active
+INFO:TrafficSimulator:Step 22800: 0 vehicles active
+INFO:TrafficSimulator:Step 22900: 0 vehicles active
+INFO:TrafficSimulator:Step 23000: 0 vehicles active
+INFO:TrafficSimulator:Step 23100: 1 vehicles active
+INFO:TrafficSimulator:Step 23200: 0 vehicles active
+INFO:TrafficSimulator:Step 23300: 1 vehicles active
+INFO:TrafficSimulator:Step 23400: 3 vehicles active
+INFO:TrafficSimulator:Step 23500: 4 vehicles active
+INFO:TrafficSimulator:Step 23600: 3 vehicles active
+INFO:TrafficSimulator:Step 23700: 3 vehicles active
+INFO:TrafficSimulator:Step 23800: 2 vehicles active
+INFO:TrafficSimulator:Step 23900: 1 vehicles active
+INFO:TrafficSimulator:Step 24000: 0 vehicles active
+INFO:TrafficSimulator:Step 24100: 2 vehicles active
+INFO:TrafficSimulator:Step 24200: 1 vehicles active
+INFO:TrafficSimulator:Step 24300: 2 vehicles active
+INFO:TrafficSimulator:Step 24400: 2 vehicles active
+INFO:TrafficSimulator:Step 24500: 0 vehicles active
+INFO:TrafficSimulator:Step 24600: 0 vehicles active
+INFO:TrafficSimulator:Step 24700: 2 vehicles active
+INFO:TrafficSimulator:Step 24800: 0 vehicles active
+INFO:TrafficSimulator:Step 24900: 0 vehicles active
+INFO:TrafficSimulator:Step 25000: 0 vehicles active
+INFO:TrafficSimulator:Step 25100: 0 vehicles active
+INFO:TrafficSimulator:Step 25200: 1 vehicles active
+INFO:TrafficSimulator:Step 25300: 2 vehicles active
+INFO:TrafficSimulator:Step 25400: 5 vehicles active
+INFO:TrafficSimulator:Step 25500: 4 vehicles active
+INFO:TrafficSimulator:Step 25600: 4 vehicles active
+INFO:TrafficSimulator:Step 25700: 1 vehicles active
+INFO:TrafficSimulator:Step 25800: 1 vehicles active
+INFO:TrafficSimulator:Step 25900: 1 vehicles active
+INFO:TrafficSimulator:Step 26000: 1 vehicles active
+INFO:TrafficSimulator:Step 26100: 4 vehicles active
+INFO:TrafficSimulator:Step 26200: 2 vehicles active
+INFO:TrafficSimulator:Step 26300: 2 vehicles active
+INFO:TrafficSimulator:Step 26400: 1 vehicles active
+INFO:TrafficSimulator:Step 26500: 0 vehicles active
+INFO:TrafficSimulator:Step 26600: 1 vehicles active
+INFO:TrafficSimulator:Step 26700: 2 vehicles active
+INFO:TrafficSimulator:Step 26800: 1 vehicles active
+INFO:TrafficSimulator:Step 26900: 1 vehicles active
+INFO:TrafficSimulator:Step 27000: 1 vehicles active
+INFO:TrafficSimulator:Step 27100: 3 vehicles active
+INFO:TrafficSimulator:Step 27200: 5 vehicles active
+INFO:TrafficSimulator:Step 27300: 5 vehicles active
+INFO:TrafficSimulator:Step 27400: 7 vehicles active
+INFO:TrafficSimulator:Step 27500: 6 vehicles active
+INFO:TrafficSimulator:Step 27600: 6 vehicles active
+INFO:TrafficSimulator:Step 27700: 7 vehicles active
+INFO:TrafficSimulator:Step 27800: 5 vehicles active
+INFO:TrafficSimulator:Step 27900: 11 vehicles active
+INFO:TrafficSimulator:Step 28000: 7 vehicles active
+INFO:TrafficSimulator:Step 28100: 6 vehicles active
+INFO:TrafficSimulator:Step 28200: 9 vehicles active
+INFO:TrafficSimulator:Step 28300: 9 vehicles active
+INFO:TrafficSimulator:Step 28400: 13 vehicles active
+INFO:TrafficSimulator:Step 28500: 11 vehicles active
+INFO:TrafficSimulator:Step 28600: 14 vehicles active
+INFO:TrafficSimulator:Step 28700: 11 vehicles active
+INFO:TrafficSimulator:Step 28800: 13 vehicles active
+INFO:TrafficSimulator:Step 28900: 10 vehicles active
+INFO:TrafficSimulator:Step 29000: 10 vehicles active
+INFO:TrafficSimulator:Step 29100: 8 vehicles active
+INFO:TrafficSimulator:Step 29200: 9 vehicles active
+INFO:TrafficSimulator:Step 29300: 5 vehicles active
+INFO:TrafficSimulator:Step 29400: 5 vehicles active
+INFO:TrafficSimulator:Step 29500: 6 vehicles active
+INFO:TrafficSimulator:Step 29600: 8 vehicles active
+INFO:TrafficSimulator:Step 29700: 6 vehicles active
+INFO:TrafficSimulator:Step 29800: 6 vehicles active
+INFO:TrafficSimulator:Step 29900: 6 vehicles active
+INFO:TrafficSimulator:Step 30000: 6 vehicles active
+INFO:TrafficSimulator:Step 30100: 9 vehicles active
+INFO:TrafficSimulator:Step 30200: 7 vehicles active
+INFO:TrafficSimulator:Step 30300: 6 vehicles active
+INFO:TrafficSimulator:Step 30400: 7 vehicles active
+INFO:TrafficSimulator:Step 30500: 10 vehicles active
+INFO:TrafficSimulator:Step 30600: 8 vehicles active
+INFO:TrafficSimulator:Step 30700: 6 vehicles active
+INFO:TrafficSimulator:Step 30800: 6 vehicles active
+INFO:TrafficSimulator:Step 30900: 6 vehicles active
+INFO:TrafficSimulator:Step 31000: 4 vehicles active
+INFO:TrafficSimulator:Step 31100: 7 vehicles active
+INFO:TrafficSimulator:Step 31200: 7 vehicles active
+INFO:TrafficSimulator:Step 31300: 4 vehicles active
+INFO:TrafficSimulator:Step 31400: 3 vehicles active
+INFO:TrafficSimulator:Step 31500: 6 vehicles active
+INFO:TrafficSimulator:Step 31600: 6 vehicles active
+INFO:TrafficSimulator:Step 31700: 8 vehicles active
+INFO:TrafficSimulator:Step 31800: 8 vehicles active
+INFO:TrafficSimulator:Step 31900: 5 vehicles active
+INFO:TrafficSimulator:Step 32000: 4 vehicles active
+INFO:TrafficSimulator:Step 32100: 7 vehicles active
+INFO:TrafficSimulator:Step 32200: 6 vehicles active
+INFO:TrafficSimulator:Step 32300: 6 vehicles active
+INFO:TrafficSimulator:Step 32400: 8 vehicles active
+INFO:TrafficSimulator:Step 32500: 8 vehicles active
+INFO:TrafficSimulator:Step 32600: 7 vehicles active
+INFO:TrafficSimulator:Step 32700: 5 vehicles active
+INFO:TrafficSimulator:Step 32800: 8 vehicles active
+INFO:TrafficSimulator:Step 32900: 8 vehicles active
+INFO:TrafficSimulator:Step 33000: 8 vehicles active
+INFO:TrafficSimulator:Step 33100: 7 vehicles active
+INFO:TrafficSimulator:Step 33200: 7 vehicles active
+INFO:TrafficSimulator:Step 33300: 6 vehicles active
+INFO:TrafficSimulator:Step 33400: 6 vehicles active
+INFO:TrafficSimulator:Step 33500: 6 vehicles active
+INFO:TrafficSimulator:Step 33600: 7 vehicles active
+INFO:TrafficSimulator:Step 33700: 11 vehicles active
+INFO:TrafficSimulator:Step 33800: 8 vehicles active
+INFO:TrafficSimulator:Step 33900: 6 vehicles active
+INFO:TrafficSimulator:Step 34000: 6 vehicles active
+INFO:TrafficSimulator:Step 34100: 5 vehicles active
+INFO:TrafficSimulator:Step 34200: 9 vehicles active
+INFO:TrafficSimulator:Step 34300: 8 vehicles active
+INFO:TrafficSimulator:Step 34400: 5 vehicles active
+INFO:TrafficSimulator:Step 34500: 0 vehicles active
+INFO:TrafficSimulator:Step 34600: 3 vehicles active
+INFO:TrafficSimulator:Step 34700: 1 vehicles active
+INFO:TrafficSimulator:Step 34800: 0 vehicles active
+INFO:TrafficSimulator:Step 34900: 1 vehicles active
+INFO:TrafficSimulator:Step 35000: 0 vehicles active
+INFO:TrafficSimulator:Step 35100: 2 vehicles active
+INFO:TrafficSimulator:Step 35200: 1 vehicles active
+INFO:TrafficSimulator:Step 35300: 0 vehicles active
+INFO:TrafficSimulator:Step 35400: 0 vehicles active
+INFO:TrafficSimulator:Step 35500: 1 vehicles active
+INFO:TrafficSimulator:Step 35600: 1 vehicles active
+INFO:TrafficSimulator:Step 35700: 1 vehicles active
+INFO:TrafficSimulator:Step 35800: 0 vehicles active
+INFO:TrafficSimulator:Step 35900: 1 vehicles active
+ #18000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #18100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #18200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #18300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #18400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #18500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #18600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #18700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #18800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #18900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #19000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #19100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #19200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #19300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #19400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #19500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #19600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #19700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 0 BUF 0)                   
+Step #19800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 4 ACT 1 BUF 0)                   
+Step #19900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 4 ACT 1 BUF 0)                   
+Step #20000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 4 ACT 0 BUF 0)                   
+Step #20100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 4 ACT 0 BUF 0)                   
+Step #20200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 4 ACT 0 BUF 0)                   
+Step #20300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 5 ACT 1 BUF 0)                   
+Step #20400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 5 ACT 1 BUF 0)                   
+Step #20500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #20600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #20700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #20800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #20900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #21000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #21100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #21200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #21300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #21400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #21500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #21600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 5 ACT 0 BUF 0)                   
+Step #21700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 6 ACT 1 BUF 0)                   
+Step #21800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 7 ACT 1 BUF 0)                   
+Step #21900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 7 ACT 1 BUF 0)                   
+Step #22000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 7 ACT 0 BUF 0)                   
+Step #22100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 7 ACT 0 BUF 0)                   
+Step #22200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 7 ACT 0 BUF 0)                   
+Step #22300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 9 ACT 2 BUF 0)                   
+Step #22400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 9 ACT 2 BUF 0)                   
+Step #22500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 9 ACT 0 BUF 0)                   
+Step #22600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 9 ACT 0 BUF 0)                   
+Step #22700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 9 ACT 0 BUF 0)                   
+Step #22800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 9 ACT 0 BUF 0)                   
+Step #22900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 9 ACT 0 BUF 0)                   
+Step #23000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 9 ACT 0 BUF 0)                   
+Step #23100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 10 ACT 1 BUF 0)                  
+Step #23200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 10 ACT 0 BUF 0)                  
+Step #23300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 11 ACT 1 BUF 0)                  
+Step #23400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 13 ACT 3 BUF 0)                  
+Step #23500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 15 ACT 4 BUF 0)                  
+Step #23600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 16 ACT 3 BUF 0)                  
+Step #23700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 17 ACT 3 BUF 0)                  
+Step #23800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 17 ACT 2 BUF 0)                  
+Step #23900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 17 ACT 1 BUF 0)                  
+Step #24000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 17 ACT 0 BUF 0)                  
+Step #24100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 19 ACT 2 BUF 0)                  
+Step #24200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 19 ACT 1 BUF 0)                  
+Step #24300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 20 ACT 2 BUF 0)                  
+Step #24400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 20 ACT 2 BUF 0)                  
+Step #24500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 20 ACT 0 BUF 0)                  
+Step #24600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 20 ACT 0 BUF 0)                  
+Step #24700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 22 ACT 2 BUF 0)                  
+Step #24800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 22 ACT 0 BUF 0)                  
+Step #24900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 22 ACT 0 BUF 0)                  
+Step #25000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 22 ACT 0 BUF 0)                  
+Step #25100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 22 ACT 0 BUF 0)                  
+Step #25200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 23 ACT 1 BUF 0)                  
+Step #25300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 24 ACT 2 BUF 0)                  
+Step #25400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 27 ACT 5 BUF 0)                  
+Step #25500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 28 ACT 4 BUF 0)                  
+Step #25600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 29 ACT 4 BUF 0)                  
+Step #25700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 30 ACT 1 BUF 0)                  
+Step #25800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 30 ACT 1 BUF 0)                  
+Step #25900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 30 ACT 1 BUF 0)                  
+Step #26000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 31 ACT 1 BUF 0)                  
+Step #26100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 34 ACT 4 BUF 0)                  
+Step #26200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 34 ACT 2 BUF 0)                  
+Step #26300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 35 ACT 2 BUF 0)                  
+Step #26400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 35 ACT 1 BUF 0)                  
+Step #26500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 35 ACT 0 BUF 0)                  
+Step #26600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 36 ACT 1 BUF 0)                  
+Step #26700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 37 ACT 2 BUF 0)                  
+Step #26800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 38 ACT 1 BUF 0)                  
+Step #26900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 38 ACT 1 BUF 0)                  
+Step #27000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 39 ACT 1 BUF 0)                  
+Step #27100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 41 ACT 3 BUF 0)                  
+Step #27200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 44 ACT 5 BUF 0)                  
+Step #27300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 45 ACT 5 BUF 0)                  
+Step #27400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 50 ACT 7 BUF 0)                  
+Step #27500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 54 ACT 6 BUF 0)                  
+Step #27600.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 59 ACT 6 BUF 0)                  
+Step #27700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 63 ACT 7 BUF 0)                  
+Step #27800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 66 ACT 5 BUF 0)                  
+Step #27900.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 73 ACT 11 BUF 0)                 
+Step #28000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 74 ACT 7 BUF 0)                  
+Step #28100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 76 ACT 6 BUF 0)                  
+Step #28200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 83 ACT 9 BUF 0)                  
+Step #28300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 86 ACT 9 BUF 0)                  
+Step #28400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 92 ACT 13 BUF 1)                 
+Step #28500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 98 ACT 11 BUF 0)                 
+Step #28600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 107 ACT 14 BUF 0)                
+Step #28700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 114 ACT 11 BUF 0)                
+Step #28800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 120 ACT 13 BUF 0)                
+Step #28900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 123 ACT 10 BUF 0)                
+Step #29000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 127 ACT 10 BUF 0)                
+Step #29100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 133 ACT 8 BUF 0)                 
+Step #29200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 136 ACT 9 BUF 0)                 
+Step #29300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 139 ACT 5 BUF 0)                 
+Step #29400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 142 ACT 5 BUF 0)                 
+Step #29500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 144 ACT 6 BUF 0)                 
+Step #29600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 150 ACT 8 BUF 0)                 
+Step #29700.00 (1ms ~= 1000.00*RT, ~6000.00UPS, TraCI: 1ms, vehicles TOT 153 ACT 6 BUF 0) 
+Step #29800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 156 ACT 6 BUF 0)                 
+Step #29900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 158 ACT 6 BUF 0)                 
+Step #30000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 161 ACT 6 BUF 0)                 
+Step #30100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 168 ACT 9 BUF 0)                 
+Step #30200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 171 ACT 7 BUF 0)                 
+Step #30300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 174 ACT 6 BUF 0)                 
+Step #30400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 180 ACT 7 BUF 0)                 
+Step #30500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 184 ACT 10 BUF 0)                
+Step #30600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 186 ACT 8 BUF 0)                 
+Step #30700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 189 ACT 6 BUF 0)                 
+Step #30800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 193 ACT 6 BUF 0)                 
+Step #30900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 196 ACT 6 BUF 0)                 
+Step #31000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 198 ACT 4 BUF 0)                 
+Step #31100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 205 ACT 7 BUF 0)                 
+Step #31200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 209 ACT 7 BUF 0)                 
+Step #31300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 212 ACT 4 BUF 0)                 
+Step #31400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 213 ACT 3 BUF 0)                 
+Step #31500.00 (1ms ~= 1000.00*RT, ~6000.00UPS, TraCI: 1ms, vehicles TOT 217 ACT 6 BUF 0) 
+Step #31600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 221 ACT 6 BUF 0)                 
+Step #31700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 225 ACT 8 BUF 0)                 
+Step #31800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 227 ACT 8 BUF 0)                 
+Step #31900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 228 ACT 5 BUF 0)                 
+Step #32000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 231 ACT 4 BUF 0)                 
+Step #32100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 235 ACT 7 BUF 0)                 
+Step #32200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 239 ACT 6 BUF 0)                 
+Step #32300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 243 ACT 6 BUF 0)                 
+Step #32400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 246 ACT 8 BUF 0)                 
+Step #32500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 248 ACT 8 BUF 0)                 
+Step #32600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 251 ACT 7 BUF 0)                 
+Step #32700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 253 ACT 5 BUF 0)                 
+Step #32800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 258 ACT 8 BUF 0)                 
+Step #32900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 265 ACT 8 BUF 0)                 
+Step #33000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 268 ACT 8 BUF 0)                 
+Step #33100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 269 ACT 7 BUF 0)                 
+Step #33200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 274 ACT 7 BUF 0)                 
+Step #33300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 275 ACT 6 BUF 0)                 
+Step #33400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 279 ACT 6 BUF 0)                 
+Step #33500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 282 ACT 6 BUF 0)                 
+Step #33600.00 (1ms ~= 1000.00*RT, ~7000.00UPS, TraCI: 2ms, vehicles TOT 287 ACT 7 BUF 0) 
+Step #33700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 292 ACT 11 BUF 0)                
+Step #33800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 295 ACT 8 BUF 0)                 
+Step #33900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 299 ACT 6 BUF 0)                 
+Step #34000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 300 ACT 6 BUF 0)                 
+Step #34100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 302 ACT 5 BUF 0)                 
+Step #34200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 309 ACT 9 BUF 0)                 
+Step #34300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 311 ACT 8 BUF 0)                 
+Step #34400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 311 ACT 5 BUF 0)                 
+Step #34500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 311 ACT 0 BUF 0)                 
+Step #34600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 314 ACT 3 BUF 0)                 
+Step #34700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 314 ACT 1 BUF 0)                 
+Step #34800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 314 ACT 0 BUF 0)                 
+Step #34900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 315 ACT 1 BUF 0)                 
+Step #35000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 315 ACT 0 BUF 0)                 
+Step #35100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 317 ACT 2 BUF 0)                 
+Step #35200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 317 ACT 1 BUF 0)                 
+Step #35300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 317 ACT 0 BUF 0)                 
+Step #35400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 317 ACT 0 BUF 0)                 
+Step #35500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 319 ACT 1 BUF 0)                 
+Step #35600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 319 ACT 1 BUF 0)                 
+Step #35700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 319 ACT 1 BUF 0)                 
+Step #35800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 319 ACT 0 BUF 0)                 
+Step #35900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 320 ACT 1 BUF 0)                 
+Step #36INFO:TrafficSimulator:Step 36000: 1 vehicles active
+INFO:TrafficSimulator:Step 36100: 1 vehicles active
+INFO:TrafficSimulator:Step 36200: 3 vehicles active
+INFO:TrafficSimulator:Step 36300: 3 vehicles active
+INFO:TrafficSimulator:Step 36400: 2 vehicles active
+INFO:TrafficSimulator:Step 36500: 0 vehicles active
+INFO:TrafficSimulator:Step 36600: 2 vehicles active
+INFO:TrafficSimulator:Step 36700: 4 vehicles active
+INFO:TrafficSimulator:Step 36800: 1 vehicles active
+INFO:TrafficSimulator:Step 36900: 3 vehicles active
+INFO:TrafficSimulator:Step 37000: 2 vehicles active
+INFO:TrafficSimulator:Step 37100: 4 vehicles active
+INFO:TrafficSimulator:Step 37200: 1 vehicles active
+INFO:TrafficSimulator:Step 37300: 1 vehicles active
+INFO:TrafficSimulator:Step 37400: 0 vehicles active
+INFO:TrafficSimulator:Step 37500: 1 vehicles active
+INFO:TrafficSimulator:Step 37600: 3 vehicles active
+INFO:TrafficSimulator:Step 37700: 4 vehicles active
+INFO:TrafficSimulator:Step 37800: 2 vehicles active
+INFO:TrafficSimulator:Step 37900: 3 vehicles active
+INFO:TrafficSimulator:Step 38000: 2 vehicles active
+INFO:TrafficSimulator:Step 38100: 3 vehicles active
+INFO:TrafficSimulator:Step 38200: 3 vehicles active
+INFO:TrafficSimulator:Step 38300: 4 vehicles active
+INFO:TrafficSimulator:Step 38400: 3 vehicles active
+INFO:TrafficSimulator:Step 38500: 1 vehicles active
+INFO:TrafficSimulator:Step 38600: 1 vehicles active
+INFO:TrafficSimulator:Step 38700: 1 vehicles active
+INFO:TrafficSimulator:Step 38800: 1 vehicles active
+INFO:TrafficSimulator:Step 38900: 0 vehicles active
+INFO:TrafficSimulator:Step 39000: 0 vehicles active
+INFO:TrafficSimulator:Step 39100: 1 vehicles active
+INFO:TrafficSimulator:Step 39200: 0 vehicles active
+INFO:TrafficSimulator:Step 39300: 1 vehicles active
+INFO:TrafficSimulator:Step 39400: 1 vehicles active
+INFO:TrafficSimulator:Step 39500: 1 vehicles active
+INFO:TrafficSimulator:Step 39600: 4 vehicles active
+INFO:TrafficSimulator:Step 39700: 4 vehicles active
+INFO:TrafficSimulator:Step 39800: 1 vehicles active
+INFO:TrafficSimulator:Step 39900: 1 vehicles active
+INFO:TrafficSimulator:Step 40000: 1 vehicles active
+INFO:TrafficSimulator:Step 40100: 1 vehicles active
+INFO:TrafficSimulator:Step 40200: 1 vehicles active
+INFO:TrafficSimulator:Step 40300: 1 vehicles active
+INFO:TrafficSimulator:Step 40400: 1 vehicles active
+INFO:TrafficSimulator:Step 40500: 0 vehicles active
+INFO:TrafficSimulator:Step 40600: 0 vehicles active
+INFO:TrafficSimulator:Step 40700: 1 vehicles active
+INFO:TrafficSimulator:Step 40800: 2 vehicles active
+INFO:TrafficSimulator:Step 40900: 2 vehicles active
+INFO:TrafficSimulator:Step 41000: 2 vehicles active
+INFO:TrafficSimulator:Step 41100: 2 vehicles active
+INFO:TrafficSimulator:Step 41200: 2 vehicles active
+INFO:TrafficSimulator:Step 41300: 3 vehicles active
+INFO:TrafficSimulator:Step 41400: 1 vehicles active
+INFO:TrafficSimulator:Step 41500: 3 vehicles active
+INFO:TrafficSimulator:Step 41600: 3 vehicles active
+INFO:TrafficSimulator:Step 41700: 4 vehicles active
+INFO:TrafficSimulator:Step 41800: 2 vehicles active
+INFO:TrafficSimulator:Step 41900: 3 vehicles active
+INFO:TrafficSimulator:Step 42000: 3 vehicles active
+INFO:TrafficSimulator:Step 42100: 2 vehicles active
+INFO:TrafficSimulator:Step 42200: 2 vehicles active
+INFO:TrafficSimulator:Step 42300: 2 vehicles active
+INFO:TrafficSimulator:Step 42400: 0 vehicles active
+INFO:TrafficSimulator:Step 42500: 2 vehicles active
+INFO:TrafficSimulator:Step 42600: 4 vehicles active
+INFO:TrafficSimulator:Step 42700: 3 vehicles active
+INFO:TrafficSimulator:Step 42800: 1 vehicles active
+INFO:TrafficSimulator:Step 42900: 1 vehicles active
+INFO:TrafficSimulator:Step 43000: 0 vehicles active
+INFO:TrafficSimulator:Step 43100: 1 vehicles active
+INFO:TrafficSimulator:Step 43200: 1 vehicles active
+INFO:TrafficSimulator:Step 43300: 2 vehicles active
+INFO:TrafficSimulator:Step 43400: 6 vehicles active
+INFO:TrafficSimulator:Step 43500: 5 vehicles active
+INFO:TrafficSimulator:Step 43600: 4 vehicles active
+INFO:TrafficSimulator:Step 43700: 1 vehicles active
+INFO:TrafficSimulator:Step 43800: 2 vehicles active
+INFO:TrafficSimulator:Step 43900: 2 vehicles active
+INFO:TrafficSimulator:Step 44000: 3 vehicles active
+INFO:TrafficSimulator:Step 44100: 3 vehicles active
+INFO:TrafficSimulator:Step 44200: 1 vehicles active
+INFO:TrafficSimulator:Step 44300: 0 vehicles active
+INFO:TrafficSimulator:Step 44400: 4 vehicles active
+INFO:TrafficSimulator:Step 44500: 3 vehicles active
+INFO:TrafficSimulator:Step 44600: 1 vehicles active
+INFO:TrafficSimulator:Step 44700: 2 vehicles active
+INFO:TrafficSimulator:Step 44800: 2 vehicles active
+INFO:TrafficSimulator:Step 44900: 3 vehicles active
+INFO:TrafficSimulator:Step 45000: 4 vehicles active
+INFO:TrafficSimulator:Step 45100: 3 vehicles active
+INFO:TrafficSimulator:Step 45200: 3 vehicles active
+INFO:TrafficSimulator:Step 45300: 3 vehicles active
+INFO:TrafficSimulator:Step 45400: 2 vehicles active
+INFO:TrafficSimulator:Step 45500: 3 vehicles active
+INFO:TrafficSimulator:Step 45600: 4 vehicles active
+INFO:TrafficSimulator:Step 45700: 2 vehicles active
+INFO:TrafficSimulator:Step 45800: 0 vehicles active
+INFO:TrafficSimulator:Step 45900: 2 vehicles active
+INFO:TrafficSimulator:Step 46000: 1 vehicles active
+INFO:TrafficSimulator:Step 46100: 1 vehicles active
+INFO:TrafficSimulator:Step 46200: 3 vehicles active
+INFO:TrafficSimulator:Step 46300: 4 vehicles active
+INFO:TrafficSimulator:Step 46400: 2 vehicles active
+INFO:TrafficSimulator:Step 46500: 1 vehicles active
+INFO:TrafficSimulator:Step 46600: 2 vehicles active
+INFO:TrafficSimulator:Step 46700: 0 vehicles active
+INFO:TrafficSimulator:Step 46800: 1 vehicles active
+INFO:TrafficSimulator:Step 46900: 2 vehicles active
+INFO:TrafficSimulator:Step 47000: 1 vehicles active
+INFO:TrafficSimulator:Step 47100: 1 vehicles active
+INFO:TrafficSimulator:Step 47200: 2 vehicles active
+INFO:TrafficSimulator:Step 47300: 1 vehicles active
+INFO:TrafficSimulator:Step 47400: 2 vehicles active
+INFO:TrafficSimulator:Step 47500: 2 vehicles active
+INFO:TrafficSimulator:Step 47600: 2 vehicles active
+INFO:TrafficSimulator:Step 47700: 1 vehicles active
+INFO:TrafficSimulator:Step 47800: 0 vehicles active
+INFO:TrafficSimulator:Step 47900: 1 vehicles active
+INFO:TrafficSimulator:Step 48000: 3 vehicles active
+INFO:TrafficSimulator:Step 48100: 4 vehicles active
+INFO:TrafficSimulator:Step 48200: 4 vehicles active
+INFO:TrafficSimulator:Step 48300: 5 vehicles active
+INFO:TrafficSimulator:Step 48400: 5 vehicles active
+INFO:TrafficSimulator:Step 48500: 3 vehicles active
+INFO:TrafficSimulator:Step 48600: 2 vehicles active
+INFO:TrafficSimulator:Step 48700: 1 vehicles active
+INFO:TrafficSimulator:Step 48800: 0 vehicles active
+INFO:TrafficSimulator:Step 48900: 0 vehicles active
+INFO:TrafficSimulator:Step 49000: 1 vehicles active
+INFO:TrafficSimulator:Step 49100: 1 vehicles active
+INFO:TrafficSimulator:Step 49200: 0 vehicles active
+INFO:TrafficSimulator:Step 49300: 1 vehicles active
+INFO:TrafficSimulator:Step 49400: 4 vehicles active
+INFO:TrafficSimulator:Step 49500: 2 vehicles active
+INFO:TrafficSimulator:Step 49600: 1 vehicles active
+INFO:TrafficSimulator:Step 49700: 2 vehicles active
+INFO:TrafficSimulator:Step 49800: 1 vehicles active
+INFO:TrafficSimulator:Step 49900: 2 vehicles active
+INFO:TrafficSimulator:Step 50000: 1 vehicles active
+INFO:TrafficSimulator:Step 50100: 1 vehicles active
+INFO:TrafficSimulator:Step 50200: 3 vehicles active
+INFO:TrafficSimulator:Step 50300: 3 vehicles active
+INFO:TrafficSimulator:Step 50400: 3 vehicles active
+INFO:TrafficSimulator:Step 50500: 3 vehicles active
+INFO:TrafficSimulator:Step 50600: 2 vehicles active
+INFO:TrafficSimulator:Step 50700: 2 vehicles active
+INFO:TrafficSimulator:Step 50800: 1 vehicles active
+INFO:TrafficSimulator:Step 50900: 3 vehicles active
+INFO:TrafficSimulator:Step 51000: 9 vehicles active
+INFO:TrafficSimulator:Step 51100: 5 vehicles active
+INFO:TrafficSimulator:Step 51200: 2 vehicles active
+INFO:TrafficSimulator:Step 51300: 3 vehicles active
+INFO:TrafficSimulator:Step 51400: 4 vehicles active
+INFO:TrafficSimulator:Step 51500: 2 vehicles active
+INFO:TrafficSimulator:Step 51600: 1 vehicles active
+INFO:TrafficSimulator:Step 51700: 0 vehicles active
+INFO:TrafficSimulator:Step 51800: 1 vehicles active
+INFO:TrafficSimulator:Step 51900: 2 vehicles active
+INFO:TrafficSimulator:Step 52000: 1 vehicles active
+INFO:TrafficSimulator:Step 52100: 4 vehicles active
+INFO:TrafficSimulator:Step 52200: 2 vehicles active
+INFO:TrafficSimulator:Step 52300: 3 vehicles active
+INFO:TrafficSimulator:Step 52400: 6 vehicles active
+INFO:TrafficSimulator:Step 52500: 2 vehicles active
+INFO:TrafficSimulator:Step 52600: 0 vehicles active
+INFO:TrafficSimulator:Step 52700: 2 vehicles active
+INFO:TrafficSimulator:Step 52800: 3 vehicles active
+INFO:TrafficSimulator:Step 52900: 2 vehicles active
+INFO:TrafficSimulator:Step 53000: 2 vehicles active
+INFO:TrafficSimulator:Step 53100: 2 vehicles active
+INFO:TrafficSimulator:Step 53200: 3 vehicles active
+INFO:TrafficSimulator:Step 53300: 1 vehicles active
+INFO:TrafficSimulator:Step 53400: 0 vehicles active
+INFO:TrafficSimulator:Step 53500: 2 vehicles active
+INFO:TrafficSimulator:Step 53600: 2 vehicles active
+INFO:TrafficSimulator:Step 53700: 2 vehicles active
+INFO:TrafficSimulator:Step 53800: 2 vehicles active
+INFO:TrafficSimulator:Step 53900: 2 vehicles active
+000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 320 ACT 1 BUF 0)                 
+Step #36100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 321 ACT 1 BUF 0)                 
+Step #36200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 323 ACT 3 BUF 0)                 
+Step #36300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 323 ACT 3 BUF 0)                 
+Step #36400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 324 ACT 2 BUF 0)                 
+Step #36500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 325 ACT 0 BUF 0)                 
+Step #36600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 327 ACT 2 BUF 0)                 
+Step #36700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 329 ACT 4 BUF 0)                 
+Step #36800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 329 ACT 1 BUF 0)                 
+Step #36900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 332 ACT 3 BUF 0)                 
+Step #37000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 332 ACT 2 BUF 0)                 
+Step #37100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 335 ACT 4 BUF 0)                 
+Step #37200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 336 ACT 1 BUF 0)                 
+Step #37300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 336 ACT 1 BUF 0)                 
+Step #37400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 337 ACT 0 BUF 0)                 
+Step #37500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 338 ACT 1 BUF 0)                 
+Step #37600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 340 ACT 3 BUF 0)                 
+Step #37700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 341 ACT 4 BUF 0)                 
+Step #37800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 341 ACT 2 BUF 0)                 
+Step #37900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 343 ACT 3 BUF 0)                 
+Step #38000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 343 ACT 2 BUF 0)                 
+Step #38100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 345 ACT 3 BUF 0)                 
+Step #38200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 346 ACT 3 BUF 0)                 
+Step #38300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 349 ACT 4 BUF 0)                 
+Step #38400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 349 ACT 3 BUF 0)                 
+Step #38500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 350 ACT 1 BUF 0)                 
+Step #38600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 351 ACT 1 BUF 0)                 
+Step #38700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 351 ACT 1 BUF 0)                 
+Step #38800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 352 ACT 1 BUF 0)                 
+Step #38900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 352 ACT 0 BUF 0)                 
+Step #39000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 352 ACT 0 BUF 0)                 
+Step #39100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 353 ACT 1 BUF 0)                 
+Step #39200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 353 ACT 0 BUF 0)                 
+Step #39300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 354 ACT 1 BUF 0)                 
+Step #39400.00 (1ms ~= 1000.00*RT, ~1000.00UPS, TraCI: 1ms, vehicles TOT 355 ACT 1 BUF 0) 
+Step #39500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 356 ACT 1 BUF 0)                 
+Step #39600.00 (1ms ~= 1000.00*RT, ~4000.00UPS, TraCI: 1ms, vehicles TOT 359 ACT 4 BUF 0) 
+Step #39700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 359 ACT 4 BUF 0)                 
+Step #39800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 361 ACT 1 BUF 0)                 
+Step #39900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 361 ACT 1 BUF 0)                 
+Step #40000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 361 ACT 1 BUF 0)                 
+Step #40100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 362 ACT 1 BUF 0)                 
+Step #40200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 362 ACT 1 BUF 0)                 
+Step #40300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 362 ACT 1 BUF 0)                 
+Step #40400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 362 ACT 1 BUF 0)                 
+Step #40500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 362 ACT 0 BUF 0)                 
+Step #40600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 362 ACT 0 BUF 0)                 
+Step #40700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 364 ACT 1 BUF 0)                 
+Step #40800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 365 ACT 2 BUF 0)                 
+Step #40900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 366 ACT 2 BUF 0)                 
+Step #41000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 366 ACT 2 BUF 0)                 
+Step #41100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 367 ACT 2 BUF 0)                 
+Step #41200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 368 ACT 2 BUF 0)                 
+Step #41300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 370 ACT 3 BUF 0)                 
+Step #41400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 370 ACT 1 BUF 0)                 
+Step #41500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 372 ACT 3 BUF 0)                 
+Step #41600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 374 ACT 3 BUF 0)                 
+Step #41700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 376 ACT 4 BUF 0)                 
+Step #41800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 376 ACT 2 BUF 0)                 
+Step #41900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 377 ACT 3 BUF 0)                 
+Step #42000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 378 ACT 3 BUF 0)                 
+Step #42100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 379 ACT 2 BUF 0)                 
+Step #42200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 379 ACT 2 BUF 0)                 
+Step #42300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 380 ACT 2 BUF 0)                 
+Step #42400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 380 ACT 0 BUF 0)                 
+Step #42500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 382 ACT 2 BUF 0)                 
+Step #42600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 384 ACT 4 BUF 0)                 
+Step #42700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 384 ACT 3 BUF 0)                 
+Step #42800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 386 ACT 1 BUF 0)                 
+Step #42900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 387 ACT 1 BUF 0)                 
+Step #43000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 387 ACT 0 BUF 0)                 
+Step #43100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 388 ACT 1 BUF 0)                 
+Step #43200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 389 ACT 1 BUF 0)                 
+Step #43300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 390 ACT 2 BUF 0)                 
+Step #43400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 394 ACT 6 BUF 0)                 
+Step #43500.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 395 ACT 5 BUF 0)                 
+Step #43600.00 (1ms ~= 1000.00*RT, ~4000.00UPS, TraCI: 1ms, vehicles TOT 397 ACT 4 BUF 0) 
+Step #43700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 397 ACT 1 BUF 0)                 
+Step #43800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 398 ACT 2 BUF 0)                 
+Step #43900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 399 ACT 2 BUF 0)                 
+Step #44000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 401 ACT 3 BUF 0)                 
+Step #44100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 402 ACT 3 BUF 0)                 
+Step #44200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 402 ACT 1 BUF 0)                 
+Step #44300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 402 ACT 0 BUF 0)                 
+Step #44400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 406 ACT 4 BUF 0)                 
+Step #44500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 406 ACT 3 BUF 0)                 
+Step #44600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 407 ACT 1 BUF 0)                 
+Step #44700.00 (1ms ~= 1000.00*RT, ~2000.00UPS, TraCI: 1ms, vehicles TOT 408 ACT 2 BUF 0) 
+Step #44800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 410 ACT 2 BUF 0)                 
+Step #44900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 412 ACT 3 BUF 0)                 
+Step #45000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 414 ACT 4 BUF 0)                 
+Step #45100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 415 ACT 3 BUF 0)                 
+Step #45200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 416 ACT 3 BUF 0)                 
+Step #45300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 418 ACT 3 BUF 0)                 
+Step #45400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 419 ACT 2 BUF 0)                 
+Step #45500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 420 ACT 3 BUF 0)                 
+Step #45600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 423 ACT 4 BUF 0)                 
+Step #45700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 424 ACT 2 BUF 0)                 
+Step #45800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 424 ACT 0 BUF 0)                 
+Step #45900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 426 ACT 2 BUF 0)                 
+Step #46000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 426 ACT 1 BUF 0)                 
+Step #46100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 426 ACT 1 BUF 0)                 
+Step #46200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 428 ACT 3 BUF 0)                 
+Step #46300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 429 ACT 4 BUF 0)                 
+Step #46400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 430 ACT 2 BUF 0)                 
+Step #46500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 430 ACT 1 BUF 0)                 
+Step #46600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 431 ACT 2 BUF 0)                 
+Step #46700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 431 ACT 0 BUF 0)                 
+Step #46800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 432 ACT 1 BUF 0)                 
+Step #46900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 433 ACT 2 BUF 0)                 
+Step #47000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 434 ACT 1 BUF 0)                 
+Step #47100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 435 ACT 1 BUF 0)                 
+Step #47200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 436 ACT 2 BUF 0)                 
+Step #47300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 437 ACT 1 BUF 0)                 
+Step #47400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 439 ACT 2 BUF 0)                 
+Step #47500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 440 ACT 2 BUF 0)                 
+Step #47600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 441 ACT 2 BUF 0)                 
+Step #47700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 441 ACT 1 BUF 0)                 
+Step #47800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 441 ACT 0 BUF 0)                 
+Step #47900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 442 ACT 1 BUF 0)                 
+Step #48000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 444 ACT 3 BUF 0)                 
+Step #48100.00 (1ms ~= 1000.00*RT, ~4000.00UPS, TraCI: 1ms, vehicles TOT 445 ACT 4 BUF 0) 
+Step #48200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 449 ACT 4 BUF 0)                 
+Step #48300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 452 ACT 5 BUF 0)                 
+Step #48400.00 (1ms ~= 1000.00*RT, ~5000.00UPS, TraCI: 1ms, vehicles TOT 453 ACT 5 BUF 0) 
+Step #48500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 453 ACT 3 BUF 0)                 
+Step #48600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 454 ACT 2 BUF 0)                 
+Step #48700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 454 ACT 1 BUF 0)                 
+Step #48800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 454 ACT 0 BUF 0)                 
+Step #48900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 454 ACT 0 BUF 0)                 
+Step #49000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 455 ACT 1 BUF 0)                 
+Step #49100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 455 ACT 1 BUF 0)                 
+Step #49200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 455 ACT 0 BUF 0)                 
+Step #49300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 456 ACT 1 BUF 0)                 
+Step #49400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 459 ACT 4 BUF 0)                 
+Step #49500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 459 ACT 2 BUF 0)                 
+Step #49600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 460 ACT 1 BUF 0)                 
+Step #49700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 462 ACT 2 BUF 0)                 
+Step #49800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 463 ACT 1 BUF 0)                 
+Step #49900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 464 ACT 2 BUF 0)                 
+Step #50000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 464 ACT 1 BUF 0)                 
+Step #50100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 465 ACT 1 BUF 0)                 
+Step #50200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 467 ACT 3 BUF 0)                 
+Step #50300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 469 ACT 3 BUF 0)                 
+Step #50400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 470 ACT 3 BUF 0)                 
+Step #50500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 472 ACT 3 BUF 0)                 
+Step #50600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 472 ACT 2 BUF 0)                 
+Step #50700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 473 ACT 2 BUF 0)                 
+Step #50800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 473 ACT 1 BUF 0)                 
+Step #50900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 475 ACT 3 BUF 0)                 
+Step #51000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 482 ACT 9 BUF 0)                 
+Step #51100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 482 ACT 5 BUF 0)                 
+Step #51200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 483 ACT 2 BUF 0)                 
+Step #51300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 486 ACT 3 BUF 0)                 
+Step #51400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 488 ACT 4 BUF 0)                 
+Step #51500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 491 ACT 2 BUF 0)                 
+Step #51600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 491 ACT 1 BUF 0)                 
+Step #51700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 491 ACT 0 BUF 0)                 
+Step #51800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 492 ACT 1 BUF 0)                 
+Step #51900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 493 ACT 2 BUF 0)                 
+Step #52000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 493 ACT 1 BUF 0)                 
+Step #52100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 497 ACT 4 BUF 0)                 
+Step #52200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 498 ACT 2 BUF 0)                 
+Step #52300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 500 ACT 3 BUF 0)                 
+Step #52400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 504 ACT 6 BUF 0)                 
+Step #52500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 504 ACT 2 BUF 0)                 
+Step #52600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 504 ACT 0 BUF 0)                 
+Step #52700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 506 ACT 2 BUF 0)                 
+Step #52800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 507 ACT 3 BUF 0)                 
+Step #52900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 508 ACT 2 BUF 0)                 
+Step #53000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 508 ACT 2 BUF 0)                 
+Step #53100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 509 ACT 2 BUF 0)                 
+Step #53200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 511 ACT 3 BUF 0)                 
+Step #53300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 512 ACT 1 BUF 0)                 
+Step #53400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 512 ACT 0 BUF 0)                 
+Step #53500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 514 ACT 2 BUF 0)                 
+Step #53600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 514 ACT 2 BUF 0)                 
+Step #53700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 515 ACT 2 BUF 0)                 
+Step #53800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 517 ACT 2 BUF 0)                 
+Step #53900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 518 ACT 2 BUF 0)                 
+Step #54000.INFO:TrafficSimulator:Step 54000: 2 vehicles active
+INFO:TrafficSimulator:Step 54100: 1 vehicles active
+INFO:TrafficSimulator:Step 54200: 1 vehicles active
+INFO:TrafficSimulator:Step 54300: 2 vehicles active
+INFO:TrafficSimulator:Step 54400: 2 vehicles active
+INFO:TrafficSimulator:Step 54500: 2 vehicles active
+INFO:TrafficSimulator:Step 54600: 3 vehicles active
+INFO:TrafficSimulator:Step 54700: 4 vehicles active
+INFO:TrafficSimulator:Step 54800: 1 vehicles active
+INFO:TrafficSimulator:Step 54900: 1 vehicles active
+INFO:TrafficSimulator:Step 55000: 2 vehicles active
+INFO:TrafficSimulator:Step 55100: 3 vehicles active
+INFO:TrafficSimulator:Step 55200: 2 vehicles active
+INFO:TrafficSimulator:Step 55300: 1 vehicles active
+INFO:TrafficSimulator:Step 55400: 2 vehicles active
+INFO:TrafficSimulator:Step 55500: 0 vehicles active
+INFO:TrafficSimulator:Step 55600: 2 vehicles active
+INFO:TrafficSimulator:Step 55700: 5 vehicles active
+INFO:TrafficSimulator:Step 55800: 4 vehicles active
+INFO:TrafficSimulator:Step 55900: 4 vehicles active
+INFO:TrafficSimulator:Step 56000: 3 vehicles active
+INFO:TrafficSimulator:Step 56100: 4 vehicles active
+INFO:TrafficSimulator:Step 56200: 2 vehicles active
+INFO:TrafficSimulator:Step 56300: 2 vehicles active
+INFO:TrafficSimulator:Step 56400: 1 vehicles active
+INFO:TrafficSimulator:Step 56500: 2 vehicles active
+INFO:TrafficSimulator:Step 56600: 2 vehicles active
+INFO:TrafficSimulator:Step 56700: 2 vehicles active
+INFO:TrafficSimulator:Step 56800: 4 vehicles active
+INFO:TrafficSimulator:Step 56900: 2 vehicles active
+INFO:TrafficSimulator:Step 57000: 1 vehicles active
+INFO:TrafficSimulator:Step 57100: 2 vehicles active
+INFO:TrafficSimulator:Step 57200: 4 vehicles active
+INFO:TrafficSimulator:Step 57300: 7 vehicles active
+INFO:TrafficSimulator:Step 57400: 4 vehicles active
+INFO:TrafficSimulator:Step 57500: 1 vehicles active
+INFO:TrafficSimulator:Step 57600: 2 vehicles active
+INFO:TrafficSimulator:Step 57700: 4 vehicles active
+INFO:TrafficSimulator:Step 57800: 4 vehicles active
+INFO:TrafficSimulator:Step 57900: 2 vehicles active
+INFO:TrafficSimulator:Step 58000: 1 vehicles active
+INFO:TrafficSimulator:Step 58100: 0 vehicles active
+INFO:TrafficSimulator:Step 58200: 1 vehicles active
+INFO:TrafficSimulator:Step 58300: 1 vehicles active
+INFO:TrafficSimulator:Step 58400: 0 vehicles active
+INFO:TrafficSimulator:Step 58500: 1 vehicles active
+INFO:TrafficSimulator:Step 58600: 2 vehicles active
+INFO:TrafficSimulator:Step 58700: 4 vehicles active
+INFO:TrafficSimulator:Step 58800: 3 vehicles active
+INFO:TrafficSimulator:Step 58900: 2 vehicles active
+INFO:TrafficSimulator:Step 59000: 1 vehicles active
+INFO:TrafficSimulator:Step 59100: 2 vehicles active
+INFO:TrafficSimulator:Step 59200: 2 vehicles active
+INFO:TrafficSimulator:Step 59300: 1 vehicles active
+INFO:TrafficSimulator:Step 59400: 1 vehicles active
+INFO:TrafficSimulator:Step 59500: 1 vehicles active
+INFO:TrafficSimulator:Step 59600: 1 vehicles active
+INFO:TrafficSimulator:Step 59700: 2 vehicles active
+INFO:TrafficSimulator:Step 59800: 3 vehicles active
+INFO:TrafficSimulator:Step 59900: 4 vehicles active
+INFO:TrafficSimulator:Step 60000: 3 vehicles active
+INFO:TrafficSimulator:Step 60100: 2 vehicles active
+INFO:TrafficSimulator:Step 60200: 1 vehicles active
+INFO:TrafficSimulator:Step 60300: 1 vehicles active
+INFO:TrafficSimulator:Step 60400: 0 vehicles active
+INFO:TrafficSimulator:Step 60500: 1 vehicles active
+INFO:TrafficSimulator:Step 60600: 2 vehicles active
+INFO:TrafficSimulator:Step 60700: 2 vehicles active
+INFO:TrafficSimulator:Step 60800: 1 vehicles active
+INFO:TrafficSimulator:Step 60900: 0 vehicles active
+INFO:TrafficSimulator:Step 61000: 1 vehicles active
+INFO:TrafficSimulator:Step 61100: 2 vehicles active
+INFO:TrafficSimulator:Step 61200: 4 vehicles active
+INFO:TrafficSimulator:Step 61300: 5 vehicles active
+INFO:TrafficSimulator:Step 61400: 3 vehicles active
+INFO:TrafficSimulator:Step 61500: 4 vehicles active
+INFO:TrafficSimulator:Step 61600: 3 vehicles active
+INFO:TrafficSimulator:Step 61700: 2 vehicles active
+INFO:TrafficSimulator:Step 61800: 5 vehicles active
+INFO:TrafficSimulator:Step 61900: 4 vehicles active
+INFO:TrafficSimulator:Step 62000: 3 vehicles active
+INFO:TrafficSimulator:Step 62100: 4 vehicles active
+INFO:TrafficSimulator:Step 62200: 6 vehicles active
+INFO:TrafficSimulator:Step 62300: 4 vehicles active
+INFO:TrafficSimulator:Step 62400: 3 vehicles active
+INFO:TrafficSimulator:Step 62500: 2 vehicles active
+INFO:TrafficSimulator:Step 62600: 2 vehicles active
+INFO:TrafficSimulator:Step 62700: 5 vehicles active
+INFO:TrafficSimulator:Step 62800: 7 vehicles active
+INFO:TrafficSimulator:Step 62900: 6 vehicles active
+INFO:TrafficSimulator:Step 63000: 7 vehicles active
+INFO:TrafficSimulator:Step 63100: 5 vehicles active
+INFO:TrafficSimulator:Step 63200: 4 vehicles active
+INFO:TrafficSimulator:Step 63300: 4 vehicles active
+INFO:TrafficSimulator:Step 63400: 5 vehicles active
+INFO:TrafficSimulator:Step 63500: 7 vehicles active
+INFO:TrafficSimulator:Step 63600: 5 vehicles active
+INFO:TrafficSimulator:Step 63700: 6 vehicles active
+INFO:TrafficSimulator:Step 63800: 3 vehicles active
+INFO:TrafficSimulator:Step 63900: 3 vehicles active
+INFO:TrafficSimulator:Step 64000: 4 vehicles active
+INFO:TrafficSimulator:Step 64100: 2 vehicles active
+INFO:TrafficSimulator:Step 64200: 3 vehicles active
+INFO:TrafficSimulator:Step 64300: 2 vehicles active
+INFO:TrafficSimulator:Step 64400: 5 vehicles active
+INFO:TrafficSimulator:Step 64500: 4 vehicles active
+INFO:TrafficSimulator:Step 64600: 6 vehicles active
+INFO:TrafficSimulator:Step 64700: 5 vehicles active
+INFO:TrafficSimulator:Step 64800: 3 vehicles active
+INFO:TrafficSimulator:Step 64900: 5 vehicles active
+INFO:TrafficSimulator:Step 65000: 3 vehicles active
+INFO:TrafficSimulator:Step 65100: 2 vehicles active
+INFO:TrafficSimulator:Step 65200: 3 vehicles active
+INFO:TrafficSimulator:Step 65300: 4 vehicles active
+INFO:TrafficSimulator:Step 65400: 4 vehicles active
+INFO:TrafficSimulator:Step 65500: 3 vehicles active
+INFO:TrafficSimulator:Step 65600: 4 vehicles active
+INFO:TrafficSimulator:Step 65700: 2 vehicles active
+INFO:TrafficSimulator:Step 65800: 2 vehicles active
+INFO:TrafficSimulator:Step 65900: 2 vehicles active
+INFO:TrafficSimulator:Step 66000: 4 vehicles active
+INFO:TrafficSimulator:Step 66100: 4 vehicles active
+INFO:TrafficSimulator:Step 66200: 6 vehicles active
+INFO:TrafficSimulator:Step 66300: 3 vehicles active
+INFO:TrafficSimulator:Step 66400: 3 vehicles active
+INFO:TrafficSimulator:Step 66500: 5 vehicles active
+INFO:TrafficSimulator:Step 66600: 8 vehicles active
+INFO:TrafficSimulator:Step 66700: 7 vehicles active
+INFO:TrafficSimulator:Step 66800: 3 vehicles active
+INFO:TrafficSimulator:Step 66900: 5 vehicles active
+INFO:TrafficSimulator:Step 67000: 7 vehicles active
+INFO:TrafficSimulator:Step 67100: 5 vehicles active
+INFO:TrafficSimulator:Step 67200: 7 vehicles active
+INFO:TrafficSimulator:Step 67300: 7 vehicles active
+INFO:TrafficSimulator:Step 67400: 4 vehicles active
+INFO:TrafficSimulator:Step 67500: 3 vehicles active
+INFO:TrafficSimulator:Step 67600: 2 vehicles active
+INFO:TrafficSimulator:Step 67700: 4 vehicles active
+INFO:TrafficSimulator:Step 67800: 6 vehicles active
+INFO:TrafficSimulator:Step 67900: 4 vehicles active
+INFO:TrafficSimulator:Step 68000: 4 vehicles active
+INFO:TrafficSimulator:Step 68100: 4 vehicles active
+INFO:TrafficSimulator:Step 68200: 9 vehicles active
+INFO:TrafficSimulator:Step 68300: 7 vehicles active
+INFO:TrafficSimulator:Step 68400: 4 vehicles active
+INFO:TrafficSimulator:Step 68500: 2 vehicles active
+INFO:TrafficSimulator:Step 68600: 0 vehicles active
+INFO:TrafficSimulator:Step 68700: 0 vehicles active
+INFO:TrafficSimulator:Step 68800: 1 vehicles active
+INFO:TrafficSimulator:Step 68900: 0 vehicles active
+INFO:TrafficSimulator:Step 69000: 0 vehicles active
+INFO:TrafficSimulator:Step 69100: 0 vehicles active
+INFO:TrafficSimulator:Step 69200: 1 vehicles active
+INFO:TrafficSimulator:Step 69300: 1 vehicles active
+INFO:TrafficSimulator:Step 69400: 1 vehicles active
+INFO:TrafficSimulator:Step 69500: 0 vehicles active
+INFO:TrafficSimulator:Step 69600: 0 vehicles active
+INFO:TrafficSimulator:Step 69700: 0 vehicles active
+INFO:TrafficSimulator:Step 69800: 0 vehicles active
+INFO:TrafficSimulator:Step 69900: 0 vehicles active
+INFO:TrafficSimulator:Step 70000: 2 vehicles active
+INFO:TrafficSimulator:Step 70100: 1 vehicles active
+INFO:TrafficSimulator:Step 70200: 1 vehicles active
+INFO:TrafficSimulator:Step 70300: 1 vehicles active
+INFO:TrafficSimulator:Step 70400: 0 vehicles active
+INFO:TrafficSimulator:Step 70500: 0 vehicles active
+INFO:TrafficSimulator:Step 70600: 0 vehicles active
+INFO:TrafficSimulator:Step 70700: 0 vehicles active
+INFO:TrafficSimulator:Step 70800: 1 vehicles active
+INFO:TrafficSimulator:Step 70900: 1 vehicles active
+INFO:TrafficSimulator:Step 71000: 0 vehicles active
+INFO:TrafficSimulator:Step 71100: 0 vehicles active
+INFO:TrafficSimulator:Step 71200: 1 vehicles active
+INFO:TrafficSimulator:Step 71300: 1 vehicles active
+INFO:TrafficSimulator:Step 71400: 0 vehicles active
+INFO:TrafficSimulator:Step 71500: 0 vehicles active
+INFO:TrafficSimulator:Step 71600: 2 vehicles active
+INFO:TrafficSimulator:Step 71700: 3 vehicles active
+INFO:TrafficSimulator:Step 71800: 3 vehicles active
+INFO:TrafficSimulator:Step 71900: 0 vehicles active
+00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 520 ACT 2 BUF 0)                 
+Step #54100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 520 ACT 1 BUF 0)                 
+Step #54200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 521 ACT 1 BUF 0)                 
+Step #54300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 523 ACT 2 BUF 0)                 
+Step #54400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 524 ACT 2 BUF 0)                 
+Step #54500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 525 ACT 2 BUF 0)                 
+Step #54600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 528 ACT 3 BUF 0)                 
+Step #54700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 530 ACT 4 BUF 0)                 
+Step #54800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 530 ACT 1 BUF 0)                 
+Step #54900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 532 ACT 1 BUF 0)                 
+Step #55000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 534 ACT 2 BUF 0)                 
+Step #55100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 536 ACT 3 BUF 0)                 
+Step #55200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 537 ACT 2 BUF 0)                 
+Step #55300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 537 ACT 1 BUF 0)                 
+Step #55400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 539 ACT 2 BUF 0)                 
+Step #55500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 539 ACT 0 BUF 0)                 
+Step #55600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 541 ACT 2 BUF 0)                 
+Step #55700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 544 ACT 5 BUF 0)                 
+Step #55800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 544 ACT 4 BUF 0)                 
+Step #55900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 547 ACT 4 BUF 0)                 
+Step #56000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 548 ACT 3 BUF 0)                 
+Step #56100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 549 ACT 4 BUF 0)                 
+Step #56200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 550 ACT 2 BUF 0)                 
+Step #56300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 551 ACT 2 BUF 0)                 
+Step #56400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 552 ACT 1 BUF 0)                 
+Step #56500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 553 ACT 2 BUF 0)                 
+Step #56600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 554 ACT 2 BUF 0)                 
+Step #56700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 555 ACT 2 BUF 0)                 
+Step #56800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 558 ACT 4 BUF 0)                 
+Step #56900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 558 ACT 2 BUF 0)                 
+Step #57000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 560 ACT 1 BUF 0)                 
+Step #57100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 561 ACT 2 BUF 0)                 
+Step #57200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 564 ACT 4 BUF 0)                 
+Step #57300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 568 ACT 7 BUF 0)                 
+Step #57400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 568 ACT 4 BUF 0)                 
+Step #57500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 569 ACT 1 BUF 0)                 
+Step #57600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 571 ACT 2 BUF 0)                 
+Step #57700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 574 ACT 4 BUF 0)                 
+Step #57800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 577 ACT 4 BUF 0)                 
+Step #57900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 577 ACT 2 BUF 0)                 
+Step #58000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 577 ACT 1 BUF 0)                 
+Step #58100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 578 ACT 0 BUF 0)                 
+Step #58200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 579 ACT 1 BUF 0)                 
+Step #58300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 579 ACT 1 BUF 0)                 
+Step #58400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 579 ACT 0 BUF 0)                 
+Step #58500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 581 ACT 1 BUF 0)                 
+Step #58600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 583 ACT 2 BUF 0)                 
+Step #58700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 585 ACT 4 BUF 0)                 
+Step #58800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 586 ACT 3 BUF 0)                 
+Step #58900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 587 ACT 2 BUF 0)                 
+Step #59000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 588 ACT 1 BUF 0)                 
+Step #59100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 590 ACT 2 BUF 0)                 
+Step #59200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 591 ACT 2 BUF 0)                 
+Step #59300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 591 ACT 1 BUF 0)                 
+Step #59400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 591 ACT 1 BUF 0)                 
+Step #59500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 592 ACT 1 BUF 0)                 
+Step #59600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 592 ACT 1 BUF 0)                 
+Step #59700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 594 ACT 2 BUF 0)                 
+Step #59800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 595 ACT 3 BUF 0)                 
+Step #59900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 597 ACT 4 BUF 0)                 
+Step #60000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 597 ACT 3 BUF 0)                 
+Step #60100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 598 ACT 2 BUF 0)                 
+Step #60200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 599 ACT 1 BUF 0)                 
+Step #60300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 599 ACT 1 BUF 0)                 
+Step #60400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 599 ACT 0 BUF 0)                 
+Step #60500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 600 ACT 1 BUF 0)                 
+Step #60600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 601 ACT 2 BUF 0)                 
+Step #60700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 602 ACT 2 BUF 0)                 
+Step #60800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 602 ACT 1 BUF 0)                 
+Step #60900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 602 ACT 0 BUF 0)                 
+Step #61000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 603 ACT 1 BUF 0)                 
+Step #61100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 604 ACT 2 BUF 0)                 
+Step #61200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 606 ACT 4 BUF 0)                 
+Step #61300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 610 ACT 5 BUF 0)                 
+Step #61400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 610 ACT 3 BUF 0)                 
+Step #61500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 611 ACT 4 BUF 0)                 
+Step #61600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 612 ACT 3 BUF 0)                 
+Step #61700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 612 ACT 2 BUF 0)                 
+Step #61800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 615 ACT 5 BUF 0)                 
+Step #61900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 618 ACT 4 BUF 0)                 
+Step #62000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 619 ACT 3 BUF 0)                 
+Step #62100.00 (1ms ~= 1000.00*RT, ~4000.00UPS, TraCI: 1ms, vehicles TOT 621 ACT 4 BUF 0) 
+Step #62200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 625 ACT 6 BUF 0)                 
+Step #62300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 626 ACT 4 BUF 0)                 
+Step #62400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 626 ACT 3 BUF 0)                 
+Step #62500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 628 ACT 2 BUF 0)                 
+Step #62600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 629 ACT 2 BUF 0)                 
+Step #62700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 633 ACT 5 BUF 0)                 
+Step #62800.00 (1ms ~= 1000.00*RT, ~7000.00UPS, TraCI: 1ms, vehicles TOT 638 ACT 7 BUF 0) 
+Step #62900.00 (1ms ~= 1000.00*RT, ~6000.00UPS, TraCI: 1ms, vehicles TOT 638 ACT 6 BUF 0) 
+Step #63000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 641 ACT 7 BUF 0)                 
+Step #63100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 643 ACT 5 BUF 0)                 
+Step #63200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 645 ACT 4 BUF 0)                 
+Step #63300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 647 ACT 4 BUF 0)                 
+Step #63400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 650 ACT 5 BUF 0)                 
+Step #63500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 653 ACT 7 BUF 0)                 
+Step #63600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 656 ACT 5 BUF 0)                 
+Step #63700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 658 ACT 6 BUF 0)                 
+Step #63800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 659 ACT 3 BUF 0)                 
+Step #63900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 660 ACT 3 BUF 0)                 
+Step #64000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 662 ACT 4 BUF 0)                 
+Step #64100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 664 ACT 2 BUF 0)                 
+Step #64200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 665 ACT 3 BUF 0)                 
+Step #64300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 665 ACT 2 BUF 0)                 
+Step #64400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 670 ACT 5 BUF 0)                 
+Step #64500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 671 ACT 4 BUF 0)                 
+Step #64600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 675 ACT 6 BUF 0)                 
+Step #64700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 676 ACT 5 BUF 0)                 
+Step #64800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 677 ACT 3 BUF 0)                 
+Step #64900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 680 ACT 5 BUF 0)                 
+Step #65000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 680 ACT 3 BUF 0)                 
+Step #65100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 681 ACT 2 BUF 0)                 
+Step #65200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 683 ACT 3 BUF 0)                 
+Step #65300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 687 ACT 4 BUF 0)                 
+Step #65400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 691 ACT 4 BUF 0)                 
+Step #65500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 691 ACT 3 BUF 0)                 
+Step #65600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 694 ACT 4 BUF 0)                 
+Step #65700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 695 ACT 2 BUF 0)                 
+Step #65800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 695 ACT 2 BUF 0)                 
+Step #65900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 697 ACT 2 BUF 0)                 
+Step #66000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 700 ACT 4 BUF 0)                 
+Step #66100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 702 ACT 4 BUF 0)                 
+Step #66200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 705 ACT 6 BUF 0)                 
+Step #66300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 706 ACT 3 BUF 0)                 
+Step #66400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 707 ACT 3 BUF 0)                 
+Step #66500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 710 ACT 5 BUF 0)                 
+Step #66600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 716 ACT 8 BUF 0)                 
+Step #66700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 718 ACT 7 BUF 0)                 
+Step #66800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 718 ACT 3 BUF 0)                 
+Step #66900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 722 ACT 5 BUF 0)                 
+Step #67000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 727 ACT 7 BUF 0)                 
+Step #67100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 729 ACT 5 BUF 0)                 
+Step #67200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 732 ACT 7 BUF 0)                 
+Step #67300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 736 ACT 7 BUF 0)                 
+Step #67400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 738 ACT 4 BUF 0)                 
+Step #67500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 739 ACT 3 BUF 0)                 
+Step #67600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 740 ACT 2 BUF 0)                 
+Step #67700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 744 ACT 4 BUF 1)                 
+Step #67800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 751 ACT 6 BUF 0)                 
+Step #67900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 752 ACT 4 BUF 0)                 
+Step #68000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 754 ACT 4 BUF 0)                 
+Step #68100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 756 ACT 4 BUF 0)                 
+Step #68200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 762 ACT 9 BUF 0)                 
+Step #68300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 763 ACT 7 BUF 0)                 
+Step #68400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 765 ACT 4 BUF 0)                 
+Step #68500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 765 ACT 2 BUF 0)                 
+Step #68600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 765 ACT 0 BUF 0)                 
+Step #68700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 765 ACT 0 BUF 0)                 
+Step #68800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 766 ACT 1 BUF 0)                 
+Step #68900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 766 ACT 0 BUF 0)                 
+Step #69000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 766 ACT 0 BUF 0)                 
+Step #69100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 766 ACT 0 BUF 0)                 
+Step #69200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 767 ACT 1 BUF 0)                 
+Step #69300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 768 ACT 1 BUF 0)                 
+Step #69400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 768 ACT 1 BUF 0)                 
+Step #69500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 768 ACT 0 BUF 0)                 
+Step #69600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 768 ACT 0 BUF 0)                 
+Step #69700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 768 ACT 0 BUF 0)                 
+Step #69800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 769 ACT 0 BUF 0)                 
+Step #69900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 769 ACT 0 BUF 0)                 
+Step #70000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 771 ACT 2 BUF 0)                 
+Step #70100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 771 ACT 1 BUF 0)                 
+Step #70200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 771 ACT 1 BUF 0)                 
+Step #70300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 771 ACT 1 BUF 0)                 
+Step #70400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 771 ACT 0 BUF 0)                 
+Step #70500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 771 ACT 0 BUF 0)                 
+Step #70600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 772 ACT 0 BUF 0)                 
+Step #70700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 772 ACT 0 BUF 0)                 
+Step #70800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 773 ACT 1 BUF 0)                 
+Step #70900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 773 ACT 1 BUF 0)                 
+Step #71000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 773 ACT 0 BUF 0)                 
+Step #71100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 773 ACT 0 BUF 0)                 
+Step #71200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 774 ACT 1 BUF 0)                 
+Step #71300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 774 ACT 1 BUF 0)                 
+Step #71400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 774 ACT 0 BUF 0)                 
+Step #71500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 774 ACT 0 BUF 0)                 
+Step #71600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 776 ACT 2 BUF 0)                 
+Step #71700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 777 ACT 3 BUF 0)                 
+Step #71800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 778 ACT 3 BUF 0)                 
+Step #71900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 778 ACT 0 BUF 0)                 
+Step #72000.00 (INFO:TrafficSimulator:Step 72000: 0 vehicles active
+INFO:TrafficSimulator:Step 72100: 0 vehicles active
+INFO:TrafficSimulator:Step 72200: 0 vehicles active
+INFO:TrafficSimulator:Step 72300: 0 vehicles active
+INFO:TrafficSimulator:Step 72400: 0 vehicles active
+INFO:TrafficSimulator:Step 72500: 0 vehicles active
+INFO:TrafficSimulator:Step 72600: 0 vehicles active
+INFO:TrafficSimulator:Step 72700: 1 vehicles active
+INFO:TrafficSimulator:Step 72800: 1 vehicles active
+INFO:TrafficSimulator:Step 72900: 1 vehicles active
+INFO:TrafficSimulator:Step 73000: 1 vehicles active
+INFO:TrafficSimulator:Step 73100: 0 vehicles active
+INFO:TrafficSimulator:Step 73200: 0 vehicles active
+INFO:TrafficSimulator:Step 73300: 0 vehicles active
+INFO:TrafficSimulator:Step 73400: 1 vehicles active
+INFO:TrafficSimulator:Step 73500: 1 vehicles active
+INFO:TrafficSimulator:Step 73600: 0 vehicles active
+INFO:TrafficSimulator:Step 73700: 0 vehicles active
+INFO:TrafficSimulator:Step 73800: 0 vehicles active
+INFO:TrafficSimulator:Step 73900: 0 vehicles active
+INFO:TrafficSimulator:Step 74000: 0 vehicles active
+INFO:TrafficSimulator:Step 74100: 0 vehicles active
+INFO:TrafficSimulator:Step 74200: 0 vehicles active
+INFO:TrafficSimulator:Step 74300: 1 vehicles active
+INFO:TrafficSimulator:Step 74400: 0 vehicles active
+INFO:TrafficSimulator:Step 74500: 0 vehicles active
+INFO:TrafficSimulator:Step 74600: 1 vehicles active
+INFO:TrafficSimulator:Step 74700: 2 vehicles active
+INFO:TrafficSimulator:Step 74800: 2 vehicles active
+INFO:TrafficSimulator:Step 74900: 0 vehicles active
+INFO:TrafficSimulator:Step 75000: 0 vehicles active
+INFO:TrafficSimulator:Step 75100: 0 vehicles active
+INFO:TrafficSimulator:Step 75200: 0 vehicles active
+INFO:TrafficSimulator:Step 75300: 0 vehicles active
+INFO:TrafficSimulator:Step 75400: 0 vehicles active
+INFO:TrafficSimulator:Step 75500: 1 vehicles active
+INFO:TrafficSimulator:Step 75600: 1 vehicles active
+INFO:TrafficSimulator:Step 75700: 1 vehicles active
+INFO:TrafficSimulator:Step 75800: 0 vehicles active
+INFO:TrafficSimulator:Step 75900: 0 vehicles active
+INFO:TrafficSimulator:Step 76000: 0 vehicles active
+INFO:TrafficSimulator:Step 76100: 0 vehicles active
+INFO:TrafficSimulator:Step 76200: 0 vehicles active
+INFO:TrafficSimulator:Step 76300: 0 vehicles active
+INFO:TrafficSimulator:Step 76400: 0 vehicles active
+INFO:TrafficSimulator:Step 76500: 0 vehicles active
+INFO:TrafficSimulator:Step 76600: 0 vehicles active
+INFO:TrafficSimulator:Step 76700: 0 vehicles active
+INFO:TrafficSimulator:Step 76800: 1 vehicles active
+INFO:TrafficSimulator:Step 76900: 1 vehicles active
+INFO:TrafficSimulator:Step 77000: 3 vehicles active
+INFO:TrafficSimulator:Step 77100: 2 vehicles active
+INFO:TrafficSimulator:Step 77200: 1 vehicles active
+INFO:TrafficSimulator:Step 77300: 1 vehicles active
+INFO:TrafficSimulator:Step 77400: 1 vehicles active
+INFO:TrafficSimulator:Step 77500: 1 vehicles active
+INFO:TrafficSimulator:Step 77600: 0 vehicles active
+INFO:TrafficSimulator:Step 77700: 0 vehicles active
+INFO:TrafficSimulator:Step 77800: 1 vehicles active
+INFO:TrafficSimulator:Step 77900: 2 vehicles active
+INFO:TrafficSimulator:Step 78000: 1 vehicles active
+INFO:TrafficSimulator:Step 78100: 1 vehicles active
+INFO:TrafficSimulator:Step 78200: 0 vehicles active
+INFO:TrafficSimulator:Step 78300: 0 vehicles active
+INFO:TrafficSimulator:Step 78400: 1 vehicles active
+INFO:TrafficSimulator:Step 78500: 0 vehicles active
+INFO:TrafficSimulator:Step 78600: 0 vehicles active
+INFO:TrafficSimulator:Step 78700: 2 vehicles active
+INFO:TrafficSimulator:Step 78800: 1 vehicles active
+INFO:TrafficSimulator:Step 78900: 1 vehicles active
+INFO:TrafficSimulator:Step 79000: 1 vehicles active
+INFO:TrafficSimulator:Step 79100: 1 vehicles active
+INFO:TrafficSimulator:Step 79200: 0 vehicles active
+INFO:TrafficSimulator:Step 79300: 1 vehicles active
+INFO:TrafficSimulator:Step 79400: 1 vehicles active
+INFO:TrafficSimulator:Step 79500: 1 vehicles active
+INFO:TrafficSimulator:Step 79600: 0 vehicles active
+INFO:TrafficSimulator:Step 79700: 0 vehicles active
+INFO:TrafficSimulator:Step 79800: 0 vehicles active
+INFO:TrafficSimulator:Step 79900: 0 vehicles active
+INFO:TrafficSimulator:Step 80000: 0 vehicles active
+INFO:TrafficSimulator:Step 80100: 0 vehicles active
+INFO:TrafficSimulator:Step 80200: 0 vehicles active
+INFO:TrafficSimulator:Step 80300: 0 vehicles active
+INFO:TrafficSimulator:Step 80400: 0 vehicles active
+INFO:TrafficSimulator:Step 80500: 0 vehicles active
+INFO:TrafficSimulator:Step 80600: 0 vehicles active
+INFO:TrafficSimulator:Step 80700: 0 vehicles active
+INFO:TrafficSimulator:Step 80800: 0 vehicles active
+INFO:TrafficSimulator:Step 80900: 0 vehicles active
+INFO:TrafficSimulator:Step 81000: 0 vehicles active
+INFO:TrafficSimulator:Step 81100: 0 vehicles active
+INFO:TrafficSimulator:Step 81200: 0 vehicles active
+INFO:TrafficSimulator:Step 81300: 0 vehicles active
+INFO:TrafficSimulator:Step 81400: 0 vehicles active
+INFO:TrafficSimulator:Step 81500: 0 vehicles active
+INFO:TrafficSimulator:Step 81600: 0 vehicles active
+INFO:TrafficSimulator:Step 81700: 0 vehicles active
+INFO:TrafficSimulator:Step 81800: 0 vehicles active
+INFO:TrafficSimulator:Step 81900: 0 vehicles active
+INFO:TrafficSimulator:Step 82000: 0 vehicles active
+INFO:TrafficSimulator:Step 82100: 1 vehicles active
+INFO:TrafficSimulator:Step 82200: 1 vehicles active
+INFO:TrafficSimulator:=== SIMULATION COMPLETED ===
+INFO:TrafficSimulator:Total simulation steps: 82280
+INFO:TrafficSimulator:Vehicles still running: 0
+INFO:TrafficSimulator:Traffic control method: fixed
+INFO:TrafficSimulator:Detailed statistics will be provided by SUMO output below:
+INFO:FixedController:=== FIXED CLEANUP STARTED ===
+INFO:FixedController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
+INFO:FixedController:Ended vehicles count: 799
+INFO:FixedController:Vehicle total time: 150449
+INFO:FixedController:=== FIXED STATISTICS ===
+INFO:FixedController:Fixed - Vehicles completed: 799
+INFO:FixedController:Fixed - Total driving time: 150449
+INFO:FixedController:Fixed - Average duration: 188.30 steps
+INFO:FixedController:Fixed - Individual durations collected: 799
+INFO:FixedController:QA: FIXED cleanup completed
+0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 778 ACT 0 BUF 0)                 
+Step #72100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 778 ACT 0 BUF 0)                 
+Step #72200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 778 ACT 0 BUF 0)                 
+Step #72300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 778 ACT 0 BUF 0)                 
+Step #72400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 778 ACT 0 BUF 0)                 
+Step #72500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 778 ACT 0 BUF 0)                 
+Step #72600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 778 ACT 0 BUF 0)                 
+Step #72700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 779 ACT 1 BUF 0)                 
+Step #72800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 779 ACT 1 BUF 0)                 
+Step #72900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 780 ACT 1 BUF 0)                 
+Step #73000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 780 ACT 1 BUF 0)                 
+Step #73100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 780 ACT 0 BUF 0)                 
+Step #73200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 780 ACT 0 BUF 0)                 
+Step #73300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 780 ACT 0 BUF 0)                 
+Step #73400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 781 ACT 1 BUF 0)                 
+Step #73500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 781 ACT 1 BUF 0)                 
+Step #73600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 781 ACT 0 BUF 0)                 
+Step #73700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 781 ACT 0 BUF 0)                 
+Step #73800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 781 ACT 0 BUF 0)                 
+Step #73900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 781 ACT 0 BUF 0)                 
+Step #74000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 781 ACT 0 BUF 0)                 
+Step #74100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 781 ACT 0 BUF 0)                 
+Step #74200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 781 ACT 0 BUF 0)                 
+Step #74300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 782 ACT 1 BUF 0)                 
+Step #74400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 782 ACT 0 BUF 0)                 
+Step #74500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 782 ACT 0 BUF 0)                 
+Step #74600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 783 ACT 1 BUF 0)                 
+Step #74700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 784 ACT 2 BUF 0)                 
+Step #74800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 784 ACT 2 BUF 0)                 
+Step #74900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 784 ACT 0 BUF 0)                 
+Step #75000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 785 ACT 0 BUF 0)                 
+Step #75100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 785 ACT 0 BUF 0)                 
+Step #75200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 785 ACT 0 BUF 0)                 
+Step #75300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 785 ACT 0 BUF 0)                 
+Step #75400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 785 ACT 0 BUF 0)                 
+Step #75500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 786 ACT 1 BUF 0)                 
+Step #75600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 786 ACT 1 BUF 0)                 
+Step #75700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 786 ACT 1 BUF 0)                 
+Step #75800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 786 ACT 0 BUF 0)                 
+Step #75900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 786 ACT 0 BUF 0)                 
+Step #76000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 786 ACT 0 BUF 0)                 
+Step #76100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 786 ACT 0 BUF 0)                 
+Step #76200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 786 ACT 0 BUF 0)                 
+Step #76300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 786 ACT 0 BUF 0)                 
+Step #76400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 786 ACT 0 BUF 0)                 
+Step #76500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 786 ACT 0 BUF 0)                 
+Step #76600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 786 ACT 0 BUF 0)                 
+Step #76700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 786 ACT 0 BUF 0)                 
+Step #76800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 787 ACT 1 BUF 0)                 
+Step #76900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 787 ACT 1 BUF 0)                 
+Step #77000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 789 ACT 3 BUF 0)                 
+Step #77100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 789 ACT 2 BUF 0)                 
+Step #77200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 789 ACT 1 BUF 0)                 
+Step #77300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 790 ACT 1 BUF 0)                 
+Step #77400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 790 ACT 1 BUF 0)                 
+Step #77500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 791 ACT 1 BUF 0)                 
+Step #77600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 791 ACT 0 BUF 0)                 
+Step #77700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 791 ACT 0 BUF 0)                 
+Step #77800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 792 ACT 1 BUF 0)                 
+Step #77900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 793 ACT 2 BUF 0)                 
+Step #78000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 793 ACT 1 BUF 0)                 
+Step #78100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 793 ACT 1 BUF 0)                 
+Step #78200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 793 ACT 0 BUF 0)                 
+Step #78300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 793 ACT 0 BUF 0)                 
+Step #78400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 794 ACT 1 BUF 0)                 
+Step #78500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 794 ACT 0 BUF 0)                 
+Step #78600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 794 ACT 0 BUF 0)                 
+Step #78700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 796 ACT 2 BUF 0)                 
+Step #78800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 796 ACT 1 BUF 0)                 
+Step #78900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 797 ACT 1 BUF 0)                 
+Step #79000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 798 ACT 1 BUF 0)                 
+Step #79100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 798 ACT 1 BUF 0)                 
+Step #79200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 798 ACT 0 BUF 0)                 
+Step #79300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 1 BUF 0)                 
+Step #79400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 1 BUF 0)                 
+Step #79500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 1 BUF 0)                 
+Step #79600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #79700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #79800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #79900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #80000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #80100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #80200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #80300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #80400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #80500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #80600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #80700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #80800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #80900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #81000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #81100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #81200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #81300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #81400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #81500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #81600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #81700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #81800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #81900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #82000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 799 ACT 0 BUF 0)                 
+Step #82100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 800 ACT 1 BUF 0)                 
+Step #82200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 800 ACT 1 BUF 0)                 
+Step #82280.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 800 ACT 0 BUF 0)                 
+INFO:TrafficSimulator:Simulation completed successfully!
+INFO:StandardPipeline:=== SIMULATION COMPLETED ===
+INFO:StandardPipeline:total_simulation_steps: 82280
+INFO:StandardPipeline:vehicles_still_running: 0
+INFO:StandardPipeline:traffic_control_method: fixed
+INFO:__main__:Pipeline execution completed successfully

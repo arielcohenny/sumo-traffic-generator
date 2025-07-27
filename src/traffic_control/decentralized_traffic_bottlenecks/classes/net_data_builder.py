@@ -193,7 +193,11 @@ class Junction:
             junction_string += '{"duration": %s, ' % phase.duration + '"heads": ['
             for head in phase.heads:
                 junction_string += '"%s", ' % head
-            junction_string = junction_string[:-2] + ']},'
+            # Fix: Only remove trailing comma if heads exist, otherwise close empty array
+            if len(phase.heads) > 0:
+                junction_string = junction_string[:-2] + ']},'
+            else:
+                junction_string = junction_string + ']},'
         return junction_string[:-1] + ']},'
 
 

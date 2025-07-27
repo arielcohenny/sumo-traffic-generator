@@ -364,7 +364,7 @@ def split_edges_at_head_distance(edg_root, edge_coords: Dict[str, Tuple[float, f
         }
 
         # Create head segment (from split point to end)
-        head_edge_id = f"{edge_id}_H"
+        head_edge_id = f"{edge_id}_H_s"
         head_segment = {
             'id': head_edge_id,
             'from': head_node_id,

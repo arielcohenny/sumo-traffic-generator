@@ -1,0 +1,102 @@
+INFO:StandardPipeline:Prepared output directory: workspace
+INFO:StandardPipeline:--- Step 1: Network Generation ---
+INFO:NetworkGenerationStep:Starting NetworkGenerationStep
+INFO:NetworkGenerationStep:Generating SUMO orthogonal grid network...
+INFO:NetworkGenerationStep:Using seed: 82
+Success.
+INFO:NetworkGenerationStep:Generated grid successfully
+INFO:NetworkGenerationStep:Completed NetworkGenerationStep successfully
+INFO:StandardPipeline:--- Step 2: Zone Generation ---
+INFO:ZoneGenerationStep:Starting ZoneGenerationStep
+INFO:ZoneGenerationStep:Generating synthetic network zones using traditional method...
+INFO:pyogrio._io:Created 1,024 records
+INFO:ZoneGenerationStep:Extracted land use zones successfully using traditional method with 25.0m blocks
+INFO:ZoneGenerationStep:Completed ZoneGenerationStep successfully
+INFO:StandardPipeline:--- Step 3: Integrated Edge Splitting with Lane Assignment ---
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+INFO:StandardPipeline:Successfully completed integrated edge splitting with lane assignment
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 76 edges validated successfully
+INFO:StandardPipeline:Split edges validation passed successfully
+INFO:StandardPipeline:--- Step 4: Network Rebuild ---
+Network conversion completed successfully.
+INFO:StandardPipeline:Rebuilt the network successfully
+INFO:StandardPipeline:--- Step 6: Edge Attractiveness Assignment ---
+INFO:StandardPipeline:Assigned edge attractiveness successfully
+INFO:StandardPipeline:--- Step 7: Vehicle Route Generation ---
+Using routing strategies: {'shortest': 30.0, 'realtime': 50.0, 'fastest': 20.0}
+Using vehicle types: {'passenger': 50.0, 'commercial': 30.0, 'public': 20.0}
+Wrote 800 vehicles → workspace/vehicles.rou.xml
+INFO:StandardPipeline:Generated vehicle routes successfully
+INFO:StandardPipeline:--- Step 8: SUMO Configuration Generation ---
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+INFO:StandardPipeline:Generated SUMO configuration file successfully
+INFO:StandardPipeline:--- Step 9: Dynamic Simulation ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: fixed
+INFO:TrafficSimulator:QA: Controller type: FixedController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+INFO:FixedController:=== FIXED CONTROLLER INITIALIZATION ===
+INFO:FixedController:QA: FIXED - Initialized vehicle tracking system
+INFO:FixedController:QA: FIXED - Found 24 traffic lights
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:350: UserWarning: Call to deprecated function getCompleteRedYellowGreenDefinition, use getAllProgramLogics instead.
+  complete_def = traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0]
+INFO:FixedController:QA: FIXED A0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED - Initialization complete, will use setPhase + setPhaseDuration
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+INFO:TrafficSimulator:Step 0: 0 vehicles active
+INFO:TrafficSimulator:Step 100: 0 vehicles active
+INFO:TrafficSimulator:Step 200: 0 vehicles active
+INFO:TrafficSimulator:Step 300: 0 vehicles active
+INFO:TrafficSimulator:Step 400: 0 vehicles active
+INFO:TrafficSimulator:Step 500: 0 vehicles active
+INFO:TrafficSimulator:Step 600: 0 vehicles active
+INFO:TrafficSimulator:Step 700: 0 vehicles active
+INFO:TrafficSimulator:Step 800: 0 vehicles active
+INFO:TrafficSimulator:Step 900: 0 vehicles active
+INFO:FixedController:=== FIXED CLEANUP STARTED ===
+INFO:FixedController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
+INFO:FixedController:Ended vehicles count: 0
+INFO:FixedController:Vehicle total time: 0
+INFO:FixedController:=== FIXED STATISTICS ===
+INFO:FixedController:Fixed - No completed vehicles found or graph not properly initialized
+INFO:FixedController:QA: FIXED cleanup completed
+Step #0.00 (0ms ?*RT. ?UPS, TraCI: 14ms, vehicles TOT 0 ACT 0 BUF 0)                      
+Step #100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #945.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1 ACT 1 BUF 0)                     
+INFO:TrafficSimulator:Simulation completed successfully!
+ERROR:__main__:Unexpected error: 'VehicleDomain' object has no attribute 'reroute'

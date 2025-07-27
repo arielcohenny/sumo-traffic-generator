@@ -1,0 +1,86 @@
+INFO:StandardPipeline:Prepared output directory: workspace
+INFO:StandardPipeline:--- Step 1: Network Generation ---
+INFO:NetworkGenerationStep:Starting NetworkGenerationStep
+INFO:NetworkGenerationStep:Generating SUMO orthogonal grid network...
+INFO:NetworkGenerationStep:Using seed: 62
+Success.
+INFO:NetworkGenerationStep:Generated grid successfully
+INFO:NetworkGenerationStep:Completed NetworkGenerationStep successfully
+INFO:StandardPipeline:--- Step 2: Zone Generation ---
+INFO:ZoneGenerationStep:Starting ZoneGenerationStep
+INFO:ZoneGenerationStep:Generating synthetic network zones using traditional method...
+INFO:pyogrio._io:Created 1,024 records
+INFO:ZoneGenerationStep:Extracted land use zones successfully using traditional method with 25.0m blocks
+INFO:ZoneGenerationStep:Completed ZoneGenerationStep successfully
+INFO:StandardPipeline:--- Step 3: Integrated Edge Splitting with Lane Assignment ---
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+INFO:StandardPipeline:Successfully completed integrated edge splitting with lane assignment
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 66 edges validated successfully
+INFO:StandardPipeline:Split edges validation passed successfully
+INFO:StandardPipeline:--- Step 4: Network Rebuild ---
+Network conversion completed successfully.
+INFO:StandardPipeline:Rebuilt the network successfully
+INFO:StandardPipeline:--- Step 6: Edge Attractiveness Assignment ---
+INFO:StandardPipeline:Assigned edge attractiveness successfully
+INFO:StandardPipeline:--- Step 7: Vehicle Route Generation ---
+Using routing strategies: {'shortest': 50.0, 'realtime': 40.0, 'fastest': 10.0}
+Using vehicle types: {'passenger': 60.0, 'commercial': 30.0, 'public': 10.0}
+Wrote 800 vehicles → workspace/vehicles.rou.xml
+INFO:StandardPipeline:Generated vehicle routes successfully
+INFO:StandardPipeline:--- Step 8: SUMO Configuration Generation ---
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+INFO:StandardPipeline:Generated SUMO configuration file successfully
+INFO:StandardPipeline:--- Step 9: Dynamic Simulation ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: actuated
+INFO:TrafficSimulator:QA: Controller type: ActuatedController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+INFO:ActuatedController:=== ACTUATED CONTROLLER INITIALIZATION ===
+INFO:ActuatedController:QA: ACTUATED - Initialized vehicle tracking system
+INFO:ActuatedController:QA: Found 23 traffic lights
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:259: UserWarning: Call to deprecated function getCompleteRedYellowGreenDefinition, use getAllProgramLogics instead.
+  phase_count = len(traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0].phases)
+INFO:ActuatedController:QA: A0 - program: 0, phases: 3
+INFO:ActuatedController:QA: A1 - program: 0, phases: 4
+INFO:ActuatedController:QA: A2 - program: 0, phases: 4
+INFO:ActuatedController:QA: A3 - program: 0, phases: 4
+INFO:ActuatedController:QA: A4 - program: 0, phases: 4
+INFO:ActuatedController:QA: B1 - program: 0, phases: 4
+INFO:ActuatedController:QA: B2 - program: 0, phases: 4
+INFO:ActuatedController:QA: B3 - program: 0, phases: 4
+INFO:ActuatedController:QA: B4 - program: 0, phases: 4
+INFO:ActuatedController:QA: C0 - program: 0, phases: 4
+INFO:ActuatedController:QA: C1 - program: 0, phases: 4
+INFO:ActuatedController:QA: C2 - program: 0, phases: 4
+INFO:ActuatedController:QA: C3 - program: 0, phases: 4
+INFO:ActuatedController:QA: C4 - program: 0, phases: 4
+INFO:ActuatedController:QA: D0 - program: 0, phases: 4
+INFO:ActuatedController:QA: D1 - program: 0, phases: 4
+INFO:ActuatedController:QA: D2 - program: 0, phases: 4
+INFO:ActuatedController:QA: D4 - program: 0, phases: 3
+INFO:ActuatedController:QA: E0 - program: 0, phases: 4
+INFO:ActuatedController:QA: E1 - program: 0, phases: 4
+INFO:ActuatedController:QA: E2 - program: 0, phases: 4
+INFO:ActuatedController:QA: E3 - program: 0, phases: 3
+INFO:ActuatedController:QA: E4 - program: 0, phases: 4
+INFO:ActuatedController:QA: ACTUATED - Using native SUMO actuated behavior (no modifications)
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+INFO:ActuatedController:QA: ACTUATED step 0 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 42.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 42.0s
+INFO:TrafficSimulator:Step 0: 0 vehicles active
+INFO:ActuatedController:=== ACTUATED CLEANUP STARTED ===
+INFO:ActuatedController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
+INFO:ActuatedController:Ended vehicles count: 0
+INFO:ActuatedController:Vehicle total time: 0
+INFO:ActuatedController:=== ACTUATED STATISTICS ===
+INFO:ActuatedController:Actuated - No completed vehicles found or graph not properly initialized
+INFO:ActuatedController:QA: ACTUATED cleanup completed
+Step #0.00 (0ms ?*RT. ?UPS, TraCI: 10ms, vehicles TOT 0 ACT 0 BUF 0)                      
+Step #45.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 11 ACT 11 BUF 0)                    
+INFO:TrafficSimulator:Simulation completed successfully!
+ERROR:__main__:Unexpected error: 'VehicleDomain' object has no attribute 'reroute'

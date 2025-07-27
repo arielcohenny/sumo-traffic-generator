@@ -1,0 +1,446 @@
+INFO:StandardPipeline:Prepared output directory: workspace
+INFO:StandardPipeline:--- Step 1: Network Generation ---
+INFO:NetworkGenerationStep:Starting NetworkGenerationStep
+INFO:NetworkGenerationStep:Generating SUMO orthogonal grid network...
+INFO:NetworkGenerationStep:Using seed: 62
+Success.
+INFO:NetworkGenerationStep:Generated grid successfully
+INFO:NetworkGenerationStep:Completed NetworkGenerationStep successfully
+INFO:StandardPipeline:--- Step 2: Zone Generation ---
+INFO:ZoneGenerationStep:Starting ZoneGenerationStep
+INFO:ZoneGenerationStep:Generating synthetic network zones using traditional method...
+INFO:pyogrio._io:Created 1,024 records
+INFO:ZoneGenerationStep:Extracted land use zones successfully using traditional method with 25.0m blocks
+INFO:ZoneGenerationStep:Completed ZoneGenerationStep successfully
+INFO:StandardPipeline:--- Step 3: Integrated Edge Splitting with Lane Assignment ---
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+INFO:StandardPipeline:Successfully completed integrated edge splitting with lane assignment
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 72 edges validated successfully
+INFO:StandardPipeline:Split edges validation passed successfully
+INFO:StandardPipeline:--- Step 4: Network Rebuild ---
+Network conversion completed successfully.
+INFO:StandardPipeline:Rebuilt the network successfully
+INFO:StandardPipeline:--- Step 6: Edge Attractiveness Assignment ---
+INFO:StandardPipeline:Assigned edge attractiveness successfully
+INFO:StandardPipeline:--- Step 7: Vehicle Route Generation ---
+Using routing strategies: {'shortest': 50.0, 'realtime': 40.0, 'fastest': 10.0}
+Using vehicle types: {'passenger': 60.0, 'commercial': 30.0, 'public': 10.0}
+Wrote 800 vehicles → workspace/vehicles.rou.xml
+INFO:StandardPipeline:Generated vehicle routes successfully
+INFO:StandardPipeline:--- Step 8: SUMO Configuration Generation ---
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+INFO:StandardPipeline:Generated SUMO configuration file successfully
+INFO:StandardPipeline:--- Step 9: Dynamic Simulation ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: actuated
+INFO:TrafficSimulator:QA: Controller type: ActuatedController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+INFO:ActuatedController:=== ACTUATED CONTROLLER INITIALIZATION ===
+INFO:ActuatedController:QA: ACTUATED - Initialized vehicle tracking system
+INFO:ActuatedController:QA: Found 24 traffic lights
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:259: UserWarning: Call to deprecated function getCompleteRedYellowGreenDefinition, use getAllProgramLogics instead.
+  phase_count = len(traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0].phases)
+INFO:ActuatedController:QA: A0 - program: 0, phases: 4
+INFO:ActuatedController:QA: A1 - program: 0, phases: 4
+INFO:ActuatedController:QA: A2 - program: 0, phases: 4
+INFO:ActuatedController:QA: A3 - program: 0, phases: 4
+INFO:ActuatedController:QA: A4 - program: 0, phases: 4
+INFO:ActuatedController:QA: B0 - program: 0, phases: 4
+INFO:ActuatedController:QA: B1 - program: 0, phases: 4
+INFO:ActuatedController:QA: B2 - program: 0, phases: 4
+INFO:ActuatedController:QA: B3 - program: 0, phases: 4
+INFO:ActuatedController:QA: B4 - program: 0, phases: 4
+INFO:ActuatedController:QA: C0 - program: 0, phases: 4
+INFO:ActuatedController:QA: C1 - program: 0, phases: 4
+INFO:ActuatedController:QA: C2 - program: 0, phases: 4
+INFO:ActuatedController:QA: C3 - program: 0, phases: 4
+INFO:ActuatedController:QA: C4 - program: 0, phases: 4
+INFO:ActuatedController:QA: D0 - program: 0, phases: 4
+INFO:ActuatedController:QA: D1 - program: 0, phases: 4
+INFO:ActuatedController:QA: D2 - program: 0, phases: 4
+INFO:ActuatedController:QA: D4 - program: 0, phases: 3
+INFO:ActuatedController:QA: E0 - program: 0, phases: 4
+INFO:ActuatedController:QA: E1 - program: 0, phases: 4
+INFO:ActuatedController:QA: E2 - program: 0, phases: 4
+INFO:ActuatedController:QA: E3 - program: 0, phases: 3
+INFO:ActuatedController:QA: E4 - program: 0, phases: 4
+INFO:ActuatedController:QA: ACTUATED - Using native SUMO actuated behavior (no modifications)
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+INFO:ActuatedController:QA: ACTUATED step 0 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 42.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 42.0s
+INFO:TrafficSimulator:Step 0: 0 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 50 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 100: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 22.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 22.0s
+INFO:TrafficSimulator:Step 200: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 300: 9 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 350 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 2.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 2.0s
+INFO:TrafficSimulator:Step 400: 3 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 500: 4 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 550 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 27.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 27.0s
+INFO:TrafficSimulator:Step 600: 6 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 700: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 750 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 7.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 7.0s
+INFO:TrafficSimulator:Step 800: 4 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 850 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 900: 9 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 950 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 32.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 32.0s
+INFO:TrafficSimulator:Step 1000: 11 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1050 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 1100: 10 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 12.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 12.0s
+INFO:TrafficSimulator:Step 1200: 7 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 1300: 4 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1350 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 37.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 37.0s
+INFO:TrafficSimulator:Step 1400: 4 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 1500: 6 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1550 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 17.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 17.0s
+INFO:TrafficSimulator:Step 1600: 7 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 1700: 4 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1750 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 3, remaining: 0.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 3, remaining: 0.0s
+INFO:TrafficSimulator:Step 1800: 3 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1850 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 1900: 6 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1950 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 22.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 22.0s
+INFO:TrafficSimulator:Step 2000: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2050 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 2100: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 2.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 2.0s
+INFO:TrafficSimulator:Step 2200: 35 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 2300: 67 vehicles active
+Step #0.00 (0ms ?*RT. ?UPS, TraCI: 13ms, vehicles TOT 0 ACT 0 BUF 0)                      
+Step #100.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 6 ACT 5 BUF 0)                     
+Step #200.00 (1ms ~= 1000.00*RT, ~5000.00UPS, TraCI: 0ms, vehicles TOT 9 ACT 5 BUF 0)     
+Step #300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 14 ACT 9 BUF 0)                    
+Step #400.00 (1ms ~= 1000.00*RT, ~3000.00UPS, TraCI: 0ms, vehicles TOT 15 ACT 3 BUF 0)    
+Step #500.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 18 ACT 4 BUF 0)                    
+Step #600.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 22 ACT 6 BUF 0)                    
+Step #700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 25 ACT 5 BUF 0)                    
+Step #800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 28 ACT 4 BUF 0)                    
+Step #900.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 33 ACT 9 BUF 0)                    
+Step #1000.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 39 ACT 11 BUF 0)                  
+Step #1100.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 45 ACT 10 BUF 0)                  
+Step #1200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 48 ACT 7 BUF 0)                   
+Step #1300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 52 ACT 4 BUF 0)                   
+Step #1400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 54 ACT 4 BUF 0)                   
+Step #1500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 60 ACT 6 BUF 0)                   
+Step #1600.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 63 ACT 7 BUF 0)                   
+Step #1700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 65 ACT 4 BUF 0)                   
+Step #1800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 68 ACT 3 BUF 0)                   
+Step #1900.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 72 ACT 6 BUF 0)                   
+Step #2000.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 75 ACT 5 BUF 0)                   
+Step #2100.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 79 ACT 5 BUF 0)                   
+Step #2200.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 113 ACT 35 BUF 1)                 
+Step #2300.00 (1ms ~= 1000.00*RT, ~67000.00UPS, TraCI: 0ms, vehicles TOT 170 ACT 67 BUF 1)
+Warning: Vehicle 'veh262' performs emergency braking on lane ':C1_12_0' with decel=9.00, wished=4.50, severity=1.00, time=2315.00.
+INFO:ActuatedController:QA: ACTUATED step 2350 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 27.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 27.0s
+INFO:TrafficSimulator:Step 2400: 84 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 2500: 83 vehicles active
+Step #2400.00 (0ms ?*RT. ?UPS, TraCI: 5ms, vehicles TOT 229 ACT 84 BUF 1)                 
+Step #2500.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 281 ACT 83 BUF 0)                 
+Warning: Vehicle 'veh85' performs emergency braking on lane 'B2A2_H_s_0' with decel=9.00, wished=3.50, severity=1.00, time=2521.00.
+INFO:ActuatedController:QA: ACTUATED step 2550 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 7.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 7.0s
+INFO:TrafficSimulator:Step 2600: 90 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 2700: 96 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2750 - No action (SUMO native control)
+Step #2600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 339 ACT 90 BUF 0)                 
+Step #2700.00 (1ms ~= 1000.00*RT, ~96000.00UPS, TraCI: 15ms, vehicles TOT 393 ACT 96 BUF 0
+Warning: Vehicle 'veh785' performs emergency braking on lane 'C1B1_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2774.00.
+INFO:ActuatedController:QA: ACTUATED step 2800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 32.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 32.0s
+INFO:TrafficSimulator:Step 2800: 75 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2850 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 2900: 29 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2950 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 3000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 12.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 12.0s
+INFO:TrafficSimulator:Step 3000: 12 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 3050 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 3100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 3100: 8 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 3150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 3200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 37.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 37.0s
+INFO:TrafficSimulator:Step 3200: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 3250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 3300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 3300: 7 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 3350 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 3400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 17.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 17.0s
+INFO:TrafficSimulator:Step 3400: 9 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 3450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 3500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 3500: 6 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 3550 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 3600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 3, remaining: 0.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 3, remaining: 0.0s
+INFO:TrafficSimulator:Step 3600: 7 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 3650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 3700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 3700: 8 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 3750 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 3800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 22.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 22.0s
+INFO:TrafficSimulator:Step 3800: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 3850 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 3900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 3900: 7 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 3950 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 2.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 2.0s
+INFO:TrafficSimulator:Step 4000: 10 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4050 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 4100: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 27.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 27.0s
+INFO:TrafficSimulator:Step 4200: 7 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 4300: 7 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4350 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 7.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 7.0s
+INFO:TrafficSimulator:Step 4400: 10 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 4500: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4550 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 32.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 32.0s
+INFO:TrafficSimulator:Step 4600: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 4700: 4 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4750 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 12.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 12.0s
+INFO:TrafficSimulator:Step 4800: 3 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4850 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 4900: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4950 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 37.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 37.0s
+INFO:TrafficSimulator:Step 5000: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5050 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 5100: 6 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 17.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 17.0s
+INFO:TrafficSimulator:Step 5200: 12 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 5300: 48 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5350 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 3, remaining: 0.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 3, remaining: 0.0s
+INFO:TrafficSimulator:Step 5400: 75 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 5500: 79 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5550 - No action (SUMO native control)
+Step #2800.00 (1ms ~= 1000.00*RT, ~75000.00UPS, TraCI: 0ms, vehicles TOT 414 ACT 75 BUF 0)
+Step #2900.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 419 ACT 29 BUF 0)                 
+Step #3000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 423 ACT 12 BUF 0)                 
+Step #3100.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 428 ACT 8 BUF 0)                  
+Step #3200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 431 ACT 5 BUF 0)                  
+Step #3300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 436 ACT 7 BUF 0)                  
+Step #3400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 441 ACT 9 BUF 0)                  
+Step #3500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 444 ACT 6 BUF 0)                  
+Step #3600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 448 ACT 7 BUF 0)                  
+Step #3700.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 452 ACT 8 BUF 0)                  
+Step #3800.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 454 ACT 5 BUF 0)                  
+Step #3900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 459 ACT 7 BUF 0)                  
+Step #4000.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 468 ACT 10 BUF 0)                 
+Step #4100.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 470 ACT 5 BUF 0)                  
+Step #4200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 473 ACT 7 BUF 0)                  
+Step #4300.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 476 ACT 7 BUF 0)                  
+Step #4400.00 (2ms ~= 500.00*RT, ~5000.00UPS, TraCI: 0ms, vehicles TOT 482 ACT 10 BUF 0)  
+Step #4500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 485 ACT 5 BUF 0)                  
+Step #4600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 489 ACT 5 BUF 0)                  
+Step #4700.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 491 ACT 4 BUF 0)                  
+Step #4800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 493 ACT 3 BUF 0)                  
+Step #4900.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 497 ACT 5 BUF 0)                  
+Step #5000.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 502 ACT 5 BUF 0)                  
+Step #5100.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 505 ACT 6 BUF 0)                  
+Step #5200.00 (1ms ~= 1000.00*RT, ~12000.00UPS, TraCI: 0ms, vehicles TOT 517 ACT 12 BUF 0)
+Step #5300.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 560 ACT 48 BUF 0)                 
+Step #5400.00 (0ms ?*RT. ?UPS, TraCI: 11ms, vehicles TOT 613 ACT 75 BUF 0)                
+Step #5500.00 (1ms ~= 1000.00*RT, ~79000.00UPS, TraCI: 0ms, vehicles TOT 660 ACT 79 BUF 2)
+Warning: Vehicle 'veh135' performs emergency braking on lane 'D2C2_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5560.00.
+INFO:ActuatedController:QA: ACTUATED step 5600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 22.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 22.0s
+INFO:TrafficSimulator:Step 5600: 60 vehicles active
+Step #5600.00 (2ms ~= 500.00*RT, ~30000.00UPS, TraCI: 1ms, vehicles TOT 702 ACT 60 BUF 0) 
+Warning: Vehicle 'veh350' performs emergency braking on lane 'A1B1_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5603.00.
+INFO:ActuatedController:QA: ACTUATED step 5650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 5700: 64 vehicles active
+Step #5700.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 733 ACT 64 BUF 0)                 
+Warning: Vehicle 'veh550' performs emergency braking on lane 'C2B2_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5733.00.
+INFO:ActuatedController:QA: ACTUATED step 5750 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 2.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 2.0s
+INFO:TrafficSimulator:Step 5800: 60 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5850 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 5900: 24 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5950 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 27.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 27.0s
+INFO:TrafficSimulator:Step 6000: 6 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6050 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 6100: 7 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 7.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 7.0s
+INFO:TrafficSimulator:Step 6200: 3 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 6300: 5 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6350 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 32.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 32.0s
+INFO:TrafficSimulator:Step 6400: 4 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 6500: 2 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6550 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 12.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 12.0s
+INFO:TrafficSimulator:Step 6600: 3 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 6700: 1 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6750 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 37.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 37.0s
+INFO:TrafficSimulator:Step 6800: 1 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6850 - No action (SUMO native control)
+INFO:TrafficSimulator:=== SIMULATION COMPLETED ===
+INFO:TrafficSimulator:Total simulation steps: 6899
+INFO:TrafficSimulator:Vehicles still running: 0
+INFO:TrafficSimulator:Traffic control method: actuated
+INFO:TrafficSimulator:Detailed statistics will be provided by SUMO output below:
+INFO:ActuatedController:=== ACTUATED CLEANUP STARTED ===
+INFO:ActuatedController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
+INFO:ActuatedController:Ended vehicles count: 799
+INFO:ActuatedController:Vehicle total time: 127905
+INFO:ActuatedController:=== ACTUATED STATISTICS ===
+INFO:ActuatedController:Actuated - Vehicles completed: 799
+INFO:ActuatedController:Actuated - Total driving time: 127905
+INFO:ActuatedController:Actuated - Average duration: 160.08 steps
+INFO:ActuatedController:Actuated - Individual durations collected: 799
+INFO:ActuatedController:QA: ACTUATED cleanup completed
+Step #5800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 776 ACT 60 BUF 0)                 
+Step #5900.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 779 ACT 24 BUF 0)                 
+Step #6000.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 783 ACT 6 BUF 0)                  
+Step #6100.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 789 ACT 7 BUF 0)                  
+Step #6200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 791 ACT 3 BUF 0)                  
+Step #6300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 795 ACT 5 BUF 0)                  
+Step #6400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 797 ACT 4 BUF 0)                  
+Step #6500.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 798 ACT 2 BUF 0)                  
+Step #6600.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 800 ACT 3 BUF 0)                  
+Step #6700.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 800 ACT 1 BUF 0)                  
+Step #6800.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 800 ACT 1 BUF 0)                  
+Step #6899.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 800 ACT 0 BUF 0)                  
+INFO:TrafficSimulator:Simulation completed successfully!
+INFO:StandardPipeline:=== SIMULATION COMPLETED ===
+INFO:StandardPipeline:total_simulation_steps: 6899
+INFO:StandardPipeline:vehicles_still_running: 0
+INFO:StandardPipeline:traffic_control_method: actuated
+INFO:__main__:Pipeline execution completed successfully

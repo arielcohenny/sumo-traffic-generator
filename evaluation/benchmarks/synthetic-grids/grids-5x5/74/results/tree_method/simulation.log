@@ -1,0 +1,509 @@
+INFO:StandardPipeline:Prepared output directory: workspace
+INFO:StandardPipeline:--- Step 1: Network Generation ---
+INFO:NetworkGenerationStep:Starting NetworkGenerationStep
+INFO:NetworkGenerationStep:Generating SUMO orthogonal grid network...
+INFO:NetworkGenerationStep:Using seed: 42
+Success.
+INFO:NetworkGenerationStep:Generated grid successfully
+INFO:NetworkGenerationStep:Completed NetworkGenerationStep successfully
+INFO:StandardPipeline:--- Step 2: Zone Generation ---
+INFO:ZoneGenerationStep:Starting ZoneGenerationStep
+INFO:ZoneGenerationStep:Generating synthetic network zones using traditional method...
+INFO:pyogrio._io:Created 1,024 records
+INFO:ZoneGenerationStep:Extracted land use zones successfully using traditional method with 25.0m blocks
+INFO:ZoneGenerationStep:Completed ZoneGenerationStep successfully
+INFO:StandardPipeline:--- Step 3: Integrated Edge Splitting with Lane Assignment ---
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+INFO:StandardPipeline:Successfully completed integrated edge splitting with lane assignment
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 76 edges validated successfully
+INFO:StandardPipeline:Split edges validation passed successfully
+INFO:StandardPipeline:--- Step 4: Network Rebuild ---
+Network conversion completed successfully.
+INFO:StandardPipeline:Rebuilt the network successfully
+INFO:StandardPipeline:--- Step 6: Edge Attractiveness Assignment ---
+INFO:StandardPipeline:Assigned edge attractiveness successfully
+INFO:StandardPipeline:--- Step 7: Vehicle Route Generation ---
+Using routing strategies: {'shortest': 50.0, 'realtime': 40.0, 'fastest': 10.0}
+Using vehicle types: {'passenger': 50.0, 'commercial': 30.0, 'public': 20.0}
+Wrote 800 vehicles → workspace/vehicles.rou.xml
+INFO:StandardPipeline:Generated vehicle routes successfully
+INFO:StandardPipeline:--- Step 8: SUMO Configuration Generation ---
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+INFO:StandardPipeline:Generated SUMO configuration file successfully
+INFO:StandardPipeline:--- Step 9: Dynamic Simulation ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: tree_method
+INFO:TrafficSimulator:QA: Controller type: TreeMethodController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+INFO:TreeMethodController:=== TREE METHOD CONTROLLER INITIALIZATION ===
+INFO:TreeMethodController:QA: TREE METHOD - Initializing Tree Method objects...
+INFO:TreeMethodController:QA: TREE METHOD - Built network JSON file: workspace/grid.net.json
+INFO:TreeMethodController:QA: TREE METHOD - Loaded network tree and run configuration successfully
+INFO:TreeMethodController:QA: TREE METHOD - Loaded network data from JSON
+INFO:TreeMethodController:QA: TREE METHOD - Initialized Tree Method Graph object
+INFO:TreeMethodController:QA: TREE METHOD - Built Tree Method Graph from network data
+INFO:TreeMethodController:QA: TREE METHOD - Built network graph and calculated cycle time: 90s
+INFO:TreeMethodController:QA: TREE METHOD - Integration setup verified successfully
+INFO:TreeMethodController:QA: TREE METHOD - Connected to 24 traffic lights
+INFO:TreeMethodController:QA: TREE METHOD - Graph initialized with 24 traffic light nodes
+INFO:TreeMethodController:QA: TREE METHOD - Initialization complete, ready for algorithm control
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 0: Phase map is empty at time 0 - no traffic light states generated
+INFO:TrafficSimulator:Step 0: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 30: Phase map is empty at time 30 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 60: Phase map is empty at time 60 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 90: Phase map is empty at time 90 - no traffic light states generated
+INFO:TrafficSimulator:Step 100: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 120: Phase map is empty at time 120 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 150: Phase map is empty at time 150 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 180: Phase map is empty at time 180 - no traffic light states generated
+INFO:TrafficSimulator:Step 200: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 210: Phase map is empty at time 210 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 240: Phase map is empty at time 240 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 270: Phase map is empty at time 270 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 300: Phase map is empty at time 300 - no traffic light states generated
+INFO:TrafficSimulator:Step 300: 1 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 330: Phase map is empty at time 330 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 360: Phase map is empty at time 360 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 390: Phase map is empty at time 390 - no traffic light states generated
+INFO:TrafficSimulator:Step 400: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 420: Phase map is empty at time 420 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 450: Phase map is empty at time 450 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 480: Phase map is empty at time 480 - no traffic light states generated
+INFO:TrafficSimulator:Step 500: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 510: Phase map is empty at time 510 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 540: Phase map is empty at time 540 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 570: Phase map is empty at time 570 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 600: Phase map is empty at time 600 - no traffic light states generated
+INFO:TrafficSimulator:Step 600: 1 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 630: Phase map is empty at time 630 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 660: Phase map is empty at time 660 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 690: Phase map is empty at time 690 - no traffic light states generated
+INFO:TrafficSimulator:Step 700: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 720: Phase map is empty at time 720 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 750: Phase map is empty at time 750 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 780: Phase map is empty at time 780 - no traffic light states generated
+INFO:TrafficSimulator:Step 800: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 810: Phase map is empty at time 810 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 840: Phase map is empty at time 840 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 870: Phase map is empty at time 870 - no traffic light states generated
+ERROR:TreeMethodController:Tree Method calculation failed at step 900: 'str' object has no attribute 'value'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 150, in update
+    self.logger.info(f"VERIFY: Iter {iteration}, Step {step}, Total Cost: {total_cost:.2f}, Cost Type: {self.run_config.cost_type.value}, Algo: {self.run_config.algo_type.value}")
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'value'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 900: Phase map is empty at time 900 - no traffic light states generated
+INFO:TrafficSimulator:Step 900: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 930: Phase map is empty at time 930 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 960: Phase map is empty at time 960 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 990: Phase map is empty at time 990 - no traffic light states generated
+INFO:TrafficSimulator:Step 1000: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1020: Phase map is empty at time 1020 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1050: Phase map is empty at time 1050 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1080: Phase map is empty at time 1080 - no traffic light states generated
+INFO:TrafficSimulator:Step 1100: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1110: Phase map is empty at time 1110 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1140: Phase map is empty at time 1140 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1170: Phase map is empty at time 1170 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1200: Phase map is empty at time 1200 - no traffic light states generated
+INFO:TrafficSimulator:Step 1200: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1230: Phase map is empty at time 1230 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1260: Phase map is empty at time 1260 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1290: Phase map is empty at time 1290 - no traffic light states generated
+INFO:TrafficSimulator:Step 1300: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1320: Phase map is empty at time 1320 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1350: Phase map is empty at time 1350 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1380: Phase map is empty at time 1380 - no traffic light states generated
+INFO:TrafficSimulator:Step 1400: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1410: Phase map is empty at time 1410 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1440: Phase map is empty at time 1440 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1470: Phase map is empty at time 1470 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1500: Phase map is empty at time 1500 - no traffic light states generated
+INFO:TrafficSimulator:Step 1500: 1 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1530: Phase map is empty at time 1530 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1560: Phase map is empty at time 1560 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1590: Phase map is empty at time 1590 - no traffic light states generated
+INFO:TrafficSimulator:Step 1600: 1 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1620: Phase map is empty at time 1620 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1650: Phase map is empty at time 1650 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1680: Phase map is empty at time 1680 - no traffic light states generated
+INFO:TrafficSimulator:Step 1700: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1710: Phase map is empty at time 1710 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1740: Phase map is empty at time 1740 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1770: Phase map is empty at time 1770 - no traffic light states generated
+ERROR:TreeMethodController:Tree Method calculation failed at step 1800: 'str' object has no attribute 'value'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 150, in update
+    self.logger.info(f"VERIFY: Iter {iteration}, Step {step}, Total Cost: {total_cost:.2f}, Cost Type: {self.run_config.cost_type.value}, Algo: {self.run_config.algo_type.value}")
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'value'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1800: Phase map is empty at time 1800 - no traffic light states generated
+INFO:TrafficSimulator:Step 1800: 1 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1830: Phase map is empty at time 1830 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1860: Phase map is empty at time 1860 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1890: Phase map is empty at time 1890 - no traffic light states generated
+INFO:TrafficSimulator:Step 1900: 5 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1920: Phase map is empty at time 1920 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1950: Phase map is empty at time 1950 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1980: Phase map is empty at time 1980 - no traffic light states generated
+INFO:TrafficSimulator:Step 2000: 10 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2010: Phase map is empty at time 2010 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2040: Phase map is empty at time 2040 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2070: Phase map is empty at time 2070 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2100: Phase map is empty at time 2100 - no traffic light states generated
+INFO:TrafficSimulator:Step 2100: 10 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2130: Phase map is empty at time 2130 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2160: Phase map is empty at time 2160 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2190: Phase map is empty at time 2190 - no traffic light states generated
+INFO:TrafficSimulator:Step 2200: 12 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2220: Phase map is empty at time 2220 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2250: Phase map is empty at time 2250 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2280: Phase map is empty at time 2280 - no traffic light states generated
+INFO:TrafficSimulator:Step 2300: 16 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2310: Phase map is empty at time 2310 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2340: Phase map is empty at time 2340 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2370: Phase map is empty at time 2370 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2400: Phase map is empty at time 2400 - no traffic light states generated
+INFO:TrafficSimulator:Step 2400: 46 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2430: Phase map is empty at time 2430 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2460: Phase map is empty at time 2460 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2490: Phase map is empty at time 2490 - no traffic light states generated
+INFO:TrafficSimulator:Step 2500: 71 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2520: Phase map is empty at time 2520 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2550: Phase map is empty at time 2550 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2580: Phase map is empty at time 2580 - no traffic light states generated
+Step #0.00 (0ms ?*RT. ?UPS, TraCI: 51ms, vehicles TOT 0 ACT 0 BUF 0)                      
+Step #100.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #200.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 0 ACT 0 BUF 0)                     
+Step #300.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 1 ACT 1 BUF 0)                     
+Step #400.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 1 ACT 0 BUF 0)                     
+Step #500.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 1 ACT 0 BUF 0)                     
+Step #600.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 2 ACT 1 BUF 0)                     
+Step #700.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 2 ACT 0 BUF 0)                     
+Step #800.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 2 ACT 0 BUF 0)                     
+Step #900.00 (0ms ?*RT. ?UPS, TraCI: 7ms, vehicles TOT 2 ACT 0 BUF 0)                     
+Step #1000.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 2 ACT 0 BUF 0)                    
+Step #1100.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 2 ACT 0 BUF 0)                    
+Step #1200.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 2 ACT 0 BUF 0)                    
+Step #1300.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 2 ACT 0 BUF 0)                    
+Step #1400.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 2 ACT 0 BUF 0)                    
+Step #1500.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 3 ACT 1 BUF 0)                    
+Step #1600.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 4 ACT 1 BUF 0)                    
+Step #1700.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 4 ACT 0 BUF 0)                    
+Step #1800.00 (0ms ?*RT. ?UPS, TraCI: 6ms, vehicles TOT 5 ACT 1 BUF 0)                    
+Step #1900.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 9 ACT 5 BUF 0)                    
+Step #2000.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 15 ACT 10 BUF 0)                  
+Step #2100.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 21 ACT 10 BUF 0)                  
+Step #2200.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 29 ACT 12 BUF 0)                  
+Step #2300.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 41 ACT 16 BUF 0)                  
+Step #2400.00 (0ms ?*RT. ?UPS, TraCI: 6ms, vehicles TOT 84 ACT 46 BUF 0)                  
+Step #2500.00 (1ms ~= 1000.00*RT, ~71000.00UPS, TraCI: 3ms, vehicles TOT 135 ACT 71 BUF 0)
+Warning: Vehicle 'veh369' performs emergency braking on lane 'C3B3_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2585.00.
+INFO:TrafficSimulator:Step 2600: 73 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2610: Phase map is empty at time 2610 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2640: Phase map is empty at time 2640 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2670: Phase map is empty at time 2670 - no traffic light states generated
+ERROR:TreeMethodController:Tree Method calculation failed at step 2700: 'str' object has no attribute 'value'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 150, in update
+    self.logger.info(f"VERIFY: Iter {iteration}, Step {step}, Total Cost: {total_cost:.2f}, Cost Type: {self.run_config.cost_type.value}, Algo: {self.run_config.algo_type.value}")
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'value'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2700: Phase map is empty at time 2700 - no traffic light states generated
+INFO:TrafficSimulator:Step 2700: 87 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2730: Phase map is empty at time 2730 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2760: Phase map is empty at time 2760 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2790: Phase map is empty at time 2790 - no traffic light states generated
+INFO:TrafficSimulator:Step 2800: 102 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2820: Phase map is empty at time 2820 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2850: Phase map is empty at time 2850 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2880: Phase map is empty at time 2880 - no traffic light states generated
+INFO:TrafficSimulator:Step 2900: 79 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2910: Phase map is empty at time 2910 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2940: Phase map is empty at time 2940 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2970: Phase map is empty at time 2970 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3000: Phase map is empty at time 3000 - no traffic light states generated
+INFO:TrafficSimulator:Step 3000: 33 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3030: Phase map is empty at time 3030 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3060: Phase map is empty at time 3060 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3090: Phase map is empty at time 3090 - no traffic light states generated
+INFO:TrafficSimulator:Step 3100: 18 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3120: Phase map is empty at time 3120 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3150: Phase map is empty at time 3150 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3180: Phase map is empty at time 3180 - no traffic light states generated
+INFO:TrafficSimulator:Step 3200: 14 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3210: Phase map is empty at time 3210 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3240: Phase map is empty at time 3240 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3270: Phase map is empty at time 3270 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3300: Phase map is empty at time 3300 - no traffic light states generated
+INFO:TrafficSimulator:Step 3300: 12 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3330: Phase map is empty at time 3330 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3360: Phase map is empty at time 3360 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3390: Phase map is empty at time 3390 - no traffic light states generated
+INFO:TrafficSimulator:Step 3400: 15 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3420: Phase map is empty at time 3420 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3450: Phase map is empty at time 3450 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3480: Phase map is empty at time 3480 - no traffic light states generated
+INFO:TrafficSimulator:Step 3500: 19 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3510: Phase map is empty at time 3510 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3540: Phase map is empty at time 3540 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3570: Phase map is empty at time 3570 - no traffic light states generated
+ERROR:TreeMethodController:Tree Method calculation failed at step 3600: 'str' object has no attribute 'value'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 150, in update
+    self.logger.info(f"VERIFY: Iter {iteration}, Step {step}, Total Cost: {total_cost:.2f}, Cost Type: {self.run_config.cost_type.value}, Algo: {self.run_config.algo_type.value}")
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'value'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3600: Phase map is empty at time 3600 - no traffic light states generated
+INFO:TrafficSimulator:Step 3600: 19 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3630: Phase map is empty at time 3630 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3660: Phase map is empty at time 3660 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3690: Phase map is empty at time 3690 - no traffic light states generated
+INFO:TrafficSimulator:Step 3700: 15 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3720: Phase map is empty at time 3720 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3750: Phase map is empty at time 3750 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3780: Phase map is empty at time 3780 - no traffic light states generated
+INFO:TrafficSimulator:Step 3800: 18 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3810: Phase map is empty at time 3810 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3840: Phase map is empty at time 3840 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3870: Phase map is empty at time 3870 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3900: Phase map is empty at time 3900 - no traffic light states generated
+INFO:TrafficSimulator:Step 3900: 20 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3930: Phase map is empty at time 3930 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3960: Phase map is empty at time 3960 - no traffic light states generated
+Step #2600.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 176 ACT 73 BUF 0)                 
+Step #2700.00 (1ms ~= 1000.00*RT, ~87000.00UPS, TraCI: 19ms, vehicles TOT 240 ACT 87 BUF 1
+Step #2800.00 (1ms ~= 1000.00*RT, ~102000.00UPS, TraCI: 3ms, vehicles TOT 291 ACT 102 BUF 
+Step #2900.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 325 ACT 79 BUF 0)                 
+Step #3000.00 (1ms ~= 1000.00*RT, ~33000.00UPS, TraCI: 5ms, vehicles TOT 334 ACT 33 BUF 0)
+Step #3100.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 345 ACT 18 BUF 0)                 
+Step #3200.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 351 ACT 14 BUF 0)                 
+Step #3300.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 360 ACT 12 BUF 0)                 
+Step #3400.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 371 ACT 15 BUF 0)                 
+Step #3500.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 383 ACT 19 BUF 0)                 
+Step #3600.00 (0ms ?*RT. ?UPS, TraCI: 9ms, vehicles TOT 391 ACT 19 BUF 0)                 
+Step #3700.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 399 ACT 15 BUF 0)                 
+Step #3800.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 413 ACT 18 BUF 0)                 
+Step #3900.00 (0ms ?*RT. ?UPS, TraCI: 5ms, vehicles TOT 427 ACT 20 BUF 0)                 
+Warning: Vehicle 'veh661' performs emergency braking on lane ':B3_16_0' with decel=9.00, wished=4.50, severity=1.00, time=3978.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3990: Phase map is empty at time 3990 - no traffic light states generated
+INFO:TrafficSimulator:Step 4000: 26 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4020: Phase map is empty at time 4020 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4050: Phase map is empty at time 4050 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4080: Phase map is empty at time 4080 - no traffic light states generated
+INFO:TrafficSimulator:Step 4100: 21 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4110: Phase map is empty at time 4110 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4140: Phase map is empty at time 4140 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4170: Phase map is empty at time 4170 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4200: Phase map is empty at time 4200 - no traffic light states generated
+INFO:TrafficSimulator:Step 4200: 27 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4230: Phase map is empty at time 4230 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4260: Phase map is empty at time 4260 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4290: Phase map is empty at time 4290 - no traffic light states generated
+INFO:TrafficSimulator:Step 4300: 20 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4320: Phase map is empty at time 4320 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4350: Phase map is empty at time 4350 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4380: Phase map is empty at time 4380 - no traffic light states generated
+INFO:TrafficSimulator:Step 4400: 16 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4410: Phase map is empty at time 4410 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4440: Phase map is empty at time 4440 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4470: Phase map is empty at time 4470 - no traffic light states generated
+ERROR:TreeMethodController:Tree Method calculation failed at step 4500: 'str' object has no attribute 'value'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 150, in update
+    self.logger.info(f"VERIFY: Iter {iteration}, Step {step}, Total Cost: {total_cost:.2f}, Cost Type: {self.run_config.cost_type.value}, Algo: {self.run_config.algo_type.value}")
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'value'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4500: Phase map is empty at time 4500 - no traffic light states generated
+INFO:TrafficSimulator:Step 4500: 21 vehicles active
+Step #4000.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 442 ACT 26 BUF 0)                 
+Step #4100.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 454 ACT 21 BUF 0)                 
+Step #4200.00 (0ms ?*RT. ?UPS, TraCI: 5ms, vehicles TOT 470 ACT 27 BUF 0)                 
+Step #4300.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 484 ACT 20 BUF 0)                 
+Step #4400.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 496 ACT 16 BUF 0)                 
+Step #4500.00 (0ms ?*RT. ?UPS, TraCI: 9ms, vehicles TOT 509 ACT 21 BUF 0)                 
+Warning: Vehicle 'veh324' performs emergency braking on lane ':C2_16_0' with decel=9.00, wished=4.50, severity=1.00, time=4521.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4530: Phase map is empty at time 4530 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4560: Phase map is empty at time 4560 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4590: Phase map is empty at time 4590 - no traffic light states generated
+INFO:TrafficSimulator:Step 4600: 22 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4620: Phase map is empty at time 4620 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4650: Phase map is empty at time 4650 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4680: Phase map is empty at time 4680 - no traffic light states generated
+INFO:TrafficSimulator:Step 4700: 24 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4710: Phase map is empty at time 4710 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4740: Phase map is empty at time 4740 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4770: Phase map is empty at time 4770 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4800: Phase map is empty at time 4800 - no traffic light states generated
+INFO:TrafficSimulator:Step 4800: 20 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4830: Phase map is empty at time 4830 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4860: Phase map is empty at time 4860 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4890: Phase map is empty at time 4890 - no traffic light states generated
+INFO:TrafficSimulator:Step 4900: 19 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4920: Phase map is empty at time 4920 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4950: Phase map is empty at time 4950 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4980: Phase map is empty at time 4980 - no traffic light states generated
+INFO:TrafficSimulator:Step 5000: 16 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5010: Phase map is empty at time 5010 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5040: Phase map is empty at time 5040 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5070: Phase map is empty at time 5070 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5100: Phase map is empty at time 5100 - no traffic light states generated
+INFO:TrafficSimulator:Step 5100: 24 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5130: Phase map is empty at time 5130 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5160: Phase map is empty at time 5160 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5190: Phase map is empty at time 5190 - no traffic light states generated
+INFO:TrafficSimulator:Step 5200: 23 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5220: Phase map is empty at time 5220 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5250: Phase map is empty at time 5250 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5280: Phase map is empty at time 5280 - no traffic light states generated
+INFO:TrafficSimulator:Step 5300: 41 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5310: Phase map is empty at time 5310 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5340: Phase map is empty at time 5340 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5370: Phase map is empty at time 5370 - no traffic light states generated
+ERROR:TreeMethodController:Tree Method calculation failed at step 5400: 'str' object has no attribute 'value'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 150, in update
+    self.logger.info(f"VERIFY: Iter {iteration}, Step {step}, Total Cost: {total_cost:.2f}, Cost Type: {self.run_config.cost_type.value}, Algo: {self.run_config.algo_type.value}")
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'value'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5400: Phase map is empty at time 5400 - no traffic light states generated
+INFO:TrafficSimulator:Step 5400: 52 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5430: Phase map is empty at time 5430 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5460: Phase map is empty at time 5460 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5490: Phase map is empty at time 5490 - no traffic light states generated
+INFO:TrafficSimulator:Step 5500: 51 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5520: Phase map is empty at time 5520 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5550: Phase map is empty at time 5550 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5580: Phase map is empty at time 5580 - no traffic light states generated
+INFO:TrafficSimulator:Step 5600: 50 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5610: Phase map is empty at time 5610 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5640: Phase map is empty at time 5640 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5670: Phase map is empty at time 5670 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5700: Phase map is empty at time 5700 - no traffic light states generated
+INFO:TrafficSimulator:Step 5700: 45 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5730: Phase map is empty at time 5730 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5760: Phase map is empty at time 5760 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5790: Phase map is empty at time 5790 - no traffic light states generated
+INFO:TrafficSimulator:Step 5800: 31 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5820: Phase map is empty at time 5820 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5850: Phase map is empty at time 5850 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5880: Phase map is empty at time 5880 - no traffic light states generated
+INFO:TrafficSimulator:Step 5900: 17 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5910: Phase map is empty at time 5910 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5940: Phase map is empty at time 5940 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5970: Phase map is empty at time 5970 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6000: Phase map is empty at time 6000 - no traffic light states generated
+INFO:TrafficSimulator:Step 6000: 7 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6030: Phase map is empty at time 6030 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6060: Phase map is empty at time 6060 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6090: Phase map is empty at time 6090 - no traffic light states generated
+INFO:TrafficSimulator:Step 6100: 6 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6120: Phase map is empty at time 6120 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6150: Phase map is empty at time 6150 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6180: Phase map is empty at time 6180 - no traffic light states generated
+INFO:TrafficSimulator:Step 6200: 4 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6210: Phase map is empty at time 6210 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6240: Phase map is empty at time 6240 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6270: Phase map is empty at time 6270 - no traffic light states generated
+ERROR:TreeMethodController:Tree Method calculation failed at step 6300: 'str' object has no attribute 'value'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 150, in update
+    self.logger.info(f"VERIFY: Iter {iteration}, Step {step}, Total Cost: {total_cost:.2f}, Cost Type: {self.run_config.cost_type.value}, Algo: {self.run_config.algo_type.value}")
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'value'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6300: Phase map is empty at time 6300 - no traffic light states generated
+INFO:TrafficSimulator:Step 6300: 4 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6330: Phase map is empty at time 6330 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6360: Phase map is empty at time 6360 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6390: Phase map is empty at time 6390 - no traffic light states generated
+INFO:TrafficSimulator:Step 6400: 10 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6420: Phase map is empty at time 6420 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6450: Phase map is empty at time 6450 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6480: Phase map is empty at time 6480 - no traffic light states generated
+INFO:TrafficSimulator:Step 6500: 7 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6510: Phase map is empty at time 6510 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6540: Phase map is empty at time 6540 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6570: Phase map is empty at time 6570 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6600: Phase map is empty at time 6600 - no traffic light states generated
+INFO:TrafficSimulator:Step 6600: 4 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6630: Phase map is empty at time 6630 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6660: Phase map is empty at time 6660 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6690: Phase map is empty at time 6690 - no traffic light states generated
+INFO:TrafficSimulator:Step 6700: 4 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6720: Phase map is empty at time 6720 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6750: Phase map is empty at time 6750 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6780: Phase map is empty at time 6780 - no traffic light states generated
+INFO:TrafficSimulator:Step 6800: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6810: Phase map is empty at time 6810 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6840: Phase map is empty at time 6840 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6870: Phase map is empty at time 6870 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6900: Phase map is empty at time 6900 - no traffic light states generated
+INFO:TrafficSimulator:Step 6900: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6930: Phase map is empty at time 6930 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6960: Phase map is empty at time 6960 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6990: Phase map is empty at time 6990 - no traffic light states generated
+INFO:TrafficSimulator:Step 7000: 2 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7020: Phase map is empty at time 7020 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7050: Phase map is empty at time 7050 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7080: Phase map is empty at time 7080 - no traffic light states generated
+INFO:TrafficSimulator:Step 7100: 2 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7110: Phase map is empty at time 7110 - no traffic light states generated
+INFO:TrafficSimulator:=== SIMULATION COMPLETED ===
+INFO:TrafficSimulator:Total simulation steps: 7125
+INFO:TrafficSimulator:Vehicles still running: 0
+INFO:TrafficSimulator:Traffic control method: tree_method
+INFO:TrafficSimulator:Detailed statistics will be provided by SUMO output below:
+INFO:TreeMethodController:=== TREE METHOD CLEANUP STARTED ===
+INFO:TreeMethodController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
+INFO:TreeMethodController:Ended vehicles count: 799
+INFO:TreeMethodController:Vehicle total time: 130269
+INFO:TreeMethodController:=== TREE METHOD STATISTICS ===
+INFO:TreeMethodController:Tree Method - Vehicles completed: 799
+INFO:TreeMethodController:Tree Method - Total driving time: 130269
+INFO:TreeMethodController:Tree Method - Average duration: 163.04 steps
+INFO:TreeMethodController:Tree Method - Individual durations collected: 799
+Step #4600.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 524 ACT 22 BUF 0)                 
+Step #4700.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 540 ACT 24 BUF 0)                 
+Step #4800.00 (0ms ?*RT. ?UPS, TraCI: 5ms, vehicles TOT 553 ACT 20 BUF 0)                 
+Step #4900.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 564 ACT 19 BUF 0)                 
+Step #5000.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 574 ACT 16 BUF 0)                 
+Step #5100.00 (1ms ~= 1000.00*RT, ~24000.00UPS, TraCI: 5ms, vehicles TOT 588 ACT 24 BUF 1)
+Step #5200.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 601 ACT 23 BUF 0)                 
+Step #5300.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 632 ACT 41 BUF 0)                 
+Step #5400.00 (0ms ?*RT. ?UPS, TraCI: 14ms, vehicles TOT 662 ACT 52 BUF 0)                
+Step #5500.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 688 ACT 51 BUF 1)                 
+Step #5600.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 721 ACT 50 BUF 1)                 
+Step #5700.00 (0ms ?*RT. ?UPS, TraCI: 6ms, vehicles TOT 750 ACT 45 BUF 0)                 
+Step #5800.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 764 ACT 31 BUF 0)                 
+Step #5900.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 772 ACT 17 BUF 0)                 
+Step #6000.00 (0ms ?*RT. ?UPS, TraCI: 5ms, vehicles TOT 775 ACT 7 BUF 0)                  
+Step #6100.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 778 ACT 6 BUF 0)                  
+Step #6200.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 780 ACT 4 BUF 0)                  
+Step #6300.00 (0ms ?*RT. ?UPS, TraCI: 6ms, vehicles TOT 783 ACT 4 BUF 0)                  
+Step #6400.00 (1ms ~= 1000.00*RT, ~10000.00UPS, TraCI: 3ms, vehicles TOT 792 ACT 10 BUF 0)
+Step #6500.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 792 ACT 7 BUF 0)                  
+Step #6600.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 795 ACT 4 BUF 0)                  
+Step #6700.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 798 ACT 4 BUF 0)                  
+Step #6800.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 798 ACT 0 BUF 0)                  
+Step #6900.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 798 ACT 0 BUF 0)                  
+Step #7000.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 800 ACT 2 BUF 0)                  
+Step #7100.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 800 ACT 2 BUF 0)                  
+Step #7125.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 800 ACT 0 BUF 0)                  
+INFO:TrafficSimulator:Simulation completed successfully!
+INFO:StandardPipeline:=== SIMULATION COMPLETED ===
+INFO:StandardPipeline:total_simulation_steps: 7125
+INFO:StandardPipeline:vehicles_still_running: 0
+INFO:StandardPipeline:traffic_control_method: tree_method
+INFO:__main__:Pipeline execution completed successfully

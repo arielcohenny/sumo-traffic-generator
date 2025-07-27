@@ -1,0 +1,50 @@
+INFO:StandardPipeline:Prepared output directory: workspace
+INFO:StandardPipeline:--- Step 1: Network Generation ---
+INFO:NetworkGenerationStep:Starting NetworkGenerationStep
+INFO:NetworkGenerationStep:Generating SUMO orthogonal grid network...
+INFO:NetworkGenerationStep:Using seed: 42
+Success.
+INFO:NetworkGenerationStep:Generated grid successfully
+INFO:NetworkGenerationStep:Completed NetworkGenerationStep successfully
+INFO:StandardPipeline:--- Step 2: Zone Generation ---
+INFO:ZoneGenerationStep:Starting ZoneGenerationStep
+INFO:ZoneGenerationStep:Generating synthetic network zones using traditional method...
+INFO:pyogrio._io:Created 1,024 records
+INFO:ZoneGenerationStep:Extracted land use zones successfully using traditional method with 25.0m blocks
+INFO:ZoneGenerationStep:Completed ZoneGenerationStep successfully
+INFO:StandardPipeline:--- Step 3: Integrated Edge Splitting with Lane Assignment ---
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+INFO:StandardPipeline:Successfully completed integrated edge splitting with lane assignment
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 80 edges validated successfully
+INFO:StandardPipeline:Split edges validation passed successfully
+INFO:StandardPipeline:--- Step 4: Network Rebuild ---
+Network conversion completed successfully.
+INFO:StandardPipeline:Rebuilt the network successfully
+INFO:StandardPipeline:--- Step 6: Edge Attractiveness Assignment ---
+INFO:StandardPipeline:Assigned edge attractiveness successfully
+INFO:StandardPipeline:--- Step 7: Vehicle Route Generation ---
+Using routing strategies: {'shortest': 80.0, 'realtime': 20.0}
+Using vehicle types: {'passenger': 60.0, 'commercial': 30.0, 'public': 10.0}
+Wrote 400 vehicles → workspace/vehicles.rou.xml
+INFO:StandardPipeline:Generated vehicle routes successfully
+INFO:StandardPipeline:--- Step 8: SUMO Configuration Generation ---
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+INFO:StandardPipeline:Generated SUMO configuration file successfully
+INFO:StandardPipeline:--- Step 9: Dynamic Simulation ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: tree_method
+INFO:TrafficSimulator:QA: Controller type: TreeMethodController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+INFO:TreeMethodController:=== TREE METHOD CONTROLLER INITIALIZATION ===
+INFO:TreeMethodController:QA: TREE METHOD - Initializing Tree Method objects...
+INFO:TreeMethodController:QA: TREE METHOD - Built network JSON file: workspace/grid.net.json
+INFO:TreeMethodController:QA: TREE METHOD - Loaded network tree and run configuration successfully
+INFO:TreeMethodController:=== TREE METHOD CLEANUP STARTED ===
+INFO:TreeMethodController:Graph object not found or not initialized
+Step #0.00 (0ms ?*RT. ?UPS, TraCI: 36ms, vehicles TOT 0 ACT 0 BUF 0)                     
+INFO:TrafficSimulator:Simulation completed successfully!
+ERROR:__main__:Unexpected error: Expecting value: line 170 column 102 (char 24192)

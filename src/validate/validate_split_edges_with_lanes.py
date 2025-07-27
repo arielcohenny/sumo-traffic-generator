@@ -98,7 +98,7 @@ def _extract_edge_info_from_xml(edge_lanes: Dict[str, int], movements: Dict[str,
     # Find all base edges (non-head edges)
     base_edges = set()
     for edge_id in edge_lanes.keys():
-        if not edge_id.endswith('_H') and not edge_id.startswith(':'):
+        if not edge_id.endswith('_H_s') and not edge_id.startswith(':'):
             base_edges.add(edge_id)
     
     # Create edge info for each base edge
@@ -107,7 +107,7 @@ def _extract_edge_info_from_xml(edge_lanes: Dict[str, int], movements: Dict[str,
             edge_data[edge_id] = {
                 'id': edge_id,
                 'lanes': edge_lanes[edge_id],  # Original lane count from tail segment
-                'heads': [f"{edge_id}_H"] if f"{edge_id}_H" in edge_lanes else []
+                'heads': [f"{edge_id}_H_s"] if f"{edge_id}_H_s" in edge_lanes else []
             }
     
     return edge_data
@@ -129,7 +129,7 @@ def _extract_edge_info_from_network(network_lanes: Dict[str, List[str]], movemen
     # Find all base edges (non-head edges)
     base_edges = set()
     for edge_id in network_lanes.keys():
-        if not edge_id.endswith('_H') and not edge_id.startswith(':'):
+        if not edge_id.endswith('_H_s') and not edge_id.startswith(':'):
             base_edges.add(edge_id)
     
     # Create edge info for each base edge
@@ -230,8 +230,8 @@ def _analyze_movements_from_connections(connections_file: str) -> Dict[str, Dict
         from_lane = int(from_lane_str)
         
         # Only analyze head edges (ending with _H)
-        if from_edge.endswith('_H'):
-            base_edge = from_edge[:-2]  # Remove _H suffix
+        if from_edge.endswith('_H_s'):
+            base_edge = from_edge[:-4]  # Remove _H_s suffix
             
             if base_edge not in movements_by_edge:
                 movements_by_edge[base_edge] = {
@@ -274,7 +274,7 @@ def _validate_single_edge(
         validation_errors.append(f"Edge {edge_id}: tail segment not found in edges file")
     
     # 2. Validate head lanes equal max(lane_count, total_movement_lanes)
-    head_edge_id = f"{edge_id}_H"
+    head_edge_id = f"{edge_id}_H_s"
     if head_edge_id in edge_lanes:
         actual_head_lanes = edge_lanes[head_edge_id]
         if edge_id in movements:
@@ -372,7 +372,7 @@ def _validate_network_structure(
     edges_with_head_lanes = set()
     
     for edge_id in all_edges:
-        head_edge_id = f"{edge_id}_H"
+        head_edge_id = f"{edge_id}_H_s"
         if head_edge_id in edge_lanes:
             edges_with_head_lanes.add(edge_id)
     
