@@ -1,1 +1,277 @@
-ERROR:__main__:Validation error: Rush hours percentages must sum to 100, got 90.0
+INFO:StandardPipeline:Prepared output directory: workspace
+INFO:StandardPipeline:--- Step 1: Network Generation ---
+INFO:NetworkGenerationStep:Starting NetworkGenerationStep
+INFO:NetworkGenerationStep:Generating SUMO orthogonal grid network...
+INFO:NetworkGenerationStep:Using seed: 82
+Success.
+INFO:NetworkGenerationStep:Generated grid successfully
+INFO:NetworkGenerationStep:Completed NetworkGenerationStep successfully
+INFO:StandardPipeline:--- Step 2: Zone Generation ---
+INFO:ZoneGenerationStep:Starting ZoneGenerationStep
+INFO:ZoneGenerationStep:Generating synthetic network zones using traditional method...
+INFO:pyogrio._io:Created 1,024 records
+INFO:ZoneGenerationStep:Extracted land use zones successfully using traditional method with 25.0m blocks
+INFO:ZoneGenerationStep:Completed ZoneGenerationStep successfully
+INFO:StandardPipeline:--- Step 3: Integrated Edge Splitting with Lane Assignment ---
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+INFO:StandardPipeline:Successfully completed integrated edge splitting with lane assignment
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 72 edges validated successfully
+INFO:StandardPipeline:Split edges validation passed successfully
+INFO:StandardPipeline:--- Step 4: Network Rebuild ---
+Network conversion completed successfully.
+INFO:StandardPipeline:Rebuilt the network successfully
+INFO:StandardPipeline:--- Step 6: Edge Attractiveness Assignment ---
+INFO:StandardPipeline:Assigned edge attractiveness successfully
+INFO:StandardPipeline:--- Step 7: Vehicle Route Generation ---
+Using routing strategies: {'shortest': 80.0, 'realtime': 20.0}
+Using vehicle types: {'passenger': 50.0, 'commercial': 30.0, 'public': 20.0}
+Wrote 1600 vehicles → workspace/vehicles.rou.xml
+INFO:StandardPipeline:Generated vehicle routes successfully
+INFO:StandardPipeline:--- Step 8: SUMO Configuration Generation ---
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+INFO:StandardPipeline:Generated SUMO configuration file successfully
+INFO:StandardPipeline:--- Step 9: Dynamic Simulation ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: fixed
+INFO:TrafficSimulator:QA: Controller type: FixedController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+INFO:FixedController:=== FIXED CONTROLLER INITIALIZATION ===
+INFO:FixedController:QA: FIXED - Initialized vehicle tracking system
+INFO:FixedController:QA: FIXED - Found 23 traffic lights
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:350: UserWarning: Call to deprecated function getCompleteRedYellowGreenDefinition, use getAllProgramLogics instead.
+  complete_def = traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0]
+INFO:FixedController:QA: FIXED A0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED - Initialization complete, will use setPhase + setPhaseDuration
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+INFO:TrafficSimulator:Step 0: 0 vehicles active
+INFO:TrafficSimulator:Step 100: 9 vehicles active
+INFO:TrafficSimulator:Step 200: 12 vehicles active
+INFO:TrafficSimulator:Step 300: 12 vehicles active
+INFO:TrafficSimulator:Step 400: 9 vehicles active
+INFO:TrafficSimulator:Step 500: 12 vehicles active
+INFO:TrafficSimulator:Step 600: 11 vehicles active
+INFO:TrafficSimulator:Step 700: 8 vehicles active
+INFO:TrafficSimulator:Step 800: 13 vehicles active
+INFO:TrafficSimulator:Step 900: 12 vehicles active
+INFO:TrafficSimulator:Step 1000: 9 vehicles active
+INFO:TrafficSimulator:Step 1100: 10 vehicles active
+INFO:TrafficSimulator:Step 1200: 12 vehicles active
+INFO:TrafficSimulator:Step 1300: 15 vehicles active
+INFO:TrafficSimulator:Step 1400: 13 vehicles active
+INFO:TrafficSimulator:Step 1500: 14 vehicles active
+INFO:TrafficSimulator:Step 1600: 10 vehicles active
+INFO:TrafficSimulator:Step 1700: 10 vehicles active
+INFO:TrafficSimulator:Step 1800: 14 vehicles active
+INFO:TrafficSimulator:Step 1900: 13 vehicles active
+INFO:TrafficSimulator:Step 2000: 15 vehicles active
+INFO:TrafficSimulator:Step 2100: 16 vehicles active
+INFO:TrafficSimulator:Step 2200: 84 vehicles active
+INFO:TrafficSimulator:Step 2300: 166 vehicles active
+INFO:TrafficSimulator:Step 2400: 216 vehicles active
+INFO:TrafficSimulator:Step 2500: 252 vehicles active
+INFO:TrafficSimulator:Step 2600: 275 vehicles active
+INFO:TrafficSimulator:Step 2700: 318 vehicles active
+INFO:TrafficSimulator:Step 2800: 326 vehicles active
+Step #0.00 (0ms ?*RT. ?UPS, TraCI: 14ms, vehicles TOT 0 ACT 0 BUF 0)                      
+Step #100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 9 ACT 9 BUF 0)                     
+Step #200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 16 ACT 12 BUF 0)                   
+Step #300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 21 ACT 12 BUF 1)                   
+Step #400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 27 ACT 9 BUF 0)                    
+Step #500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 35 ACT 12 BUF 0)                   
+Step #600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 40 ACT 11 BUF 0)                   
+Step #700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 47 ACT 8 BUF 0)                    
+Step #800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 53 ACT 13 BUF 0)                   
+Step #900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 56 ACT 12 BUF 0)                   
+Step #1000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 62 ACT 9 BUF 0)                   
+Step #1100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 69 ACT 10 BUF 0)                  
+Step #1200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 78 ACT 12 BUF 0)                  
+Step #1300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 85 ACT 15 BUF 0)                  
+Step #1400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 94 ACT 13 BUF 0)                  
+Step #1500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 105 ACT 14 BUF 0)                 
+Step #1600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 108 ACT 10 BUF 0)                 
+Step #1700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 115 ACT 10 BUF 0)                 
+Step #1800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 123 ACT 14 BUF 0)                 
+Step #1900.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 131 ACT 13 BUF 0)                 
+Step #2000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 140 ACT 15 BUF 0)                 
+Step #2100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 146 ACT 16 BUF 0)                 
+Step #2200.00 (1ms ~= 1000.00*RT, ~84000.00UPS, TraCI: 1ms, vehicles TOT 226 ACT 84 BUF 2)
+Step #2300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 340 ACT 166 BUF 1)                
+Step #2400.00 (1ms ~= 1000.00*RT, ~216000.00UPS, TraCI: 11ms, vehicles TOT 449 ACT 216 BUF
+Step #2500.00 (1ms ~= 1000.00*RT, ~252000.00UPS, TraCI: 2ms, vehicles TOT 556 ACT 252 BUF 
+Step #2600.00 (1ms ~= 1000.00*RT, ~275000.00UPS, TraCI: 2ms, vehicles TOT 644 ACT 275 BUF 
+Step #2700.00 (2ms ~= 500.00*RT, ~159000.00UPS, TraCI: 22ms, vehicles TOT 743 ACT 318 BUF 
+Step #2800.00 (1ms ~= 1000.00*RT, ~326000.00UPS, TraCI: 2ms, vehicles TOT 808 ACT 326 BUF 
+Warning: Teleporting vehicle 'veh1404'; waited too long (wrong lane), lane='C2C1_H_s_1', time=2822.00.
+Warning: Vehicle 'veh1404' ends teleporting on edge 'C1B1', time=2822.00.
+INFO:TrafficSimulator:Step 2900: 298 vehicles active
+Step #2900.00 (2ms ~= 500.00*RT, ~149000.00UPS, TraCI: 1ms, vehicles TOT 825 ACT 298 BUF 1
+Warning: Teleporting vehicle 'veh1436'; waited too long (yield), lane='E1D1_H_s_1', time=2992.00.
+Warning: Vehicle 'veh1436' ends teleporting on edge 'D1C1', time=2992.00.
+INFO:TrafficSimulator:Step 3000: 272 vehicles active
+Step #3000.00 (1ms ~= 1000.00*RT, ~272000.00UPS, TraCI: 17ms, vehicles TOT 832 ACT 272 BUF
+Warning: Teleporting vehicle 'veh113'; waited too long (jam), lane='C2C1_H_s_0', time=3002.00.
+Warning: Vehicle 'veh113' ends teleporting on edge 'C1B1', time=3002.00.
+Warning: Teleporting vehicle 'veh1251'; waited too long (jam), lane='C2C1_H_s_0', time=3010.00.
+Warning: Vehicle 'veh1251' ends teleporting on edge 'C1B1', time=3010.00.
+Warning: Teleporting vehicle 'veh167'; waited too long (yield), lane='D0D1_H_s_2', time=3047.00.
+Warning: Vehicle 'veh167' ends teleporting on edge 'D1C1', time=3047.00.
+Warning: Teleporting vehicle 'veh753'; waited too long (wrong lane), lane='B1C1_H_s_2', time=3085.00.
+Warning: Vehicle 'veh753' ends teleporting on edge 'C1B1', time=3085.00.
+Warning: Teleporting vehicle 'veh849'; waited too long (wrong lane), lane='B1C1_H_s_2', time=3098.00.
+Warning: Vehicle 'veh849' ends teleporting on edge 'C1B1', time=3098.00.
+INFO:TrafficSimulator:Step 3100: 243 vehicles active
+Step #3100.00 (1ms ~= 1000.00*RT, ~243000.00UPS, TraCI: 1ms, vehicles TOT 836 ACT 243 BUF 
+Warning: Teleporting vehicle 'veh394'; waited too long (yield), lane='C2C1_H_s_0', time=3124.00.
+Warning: Vehicle 'veh394' ends teleporting on edge 'C1B1', time=3124.00.
+Warning: Teleporting vehicle 'veh957'; waited too long (yield), lane=':C1_18_0', time=3181.00.
+Warning: Vehicle 'veh957' ends teleporting on edge 'C1B1', time=3181.00.
+Warning: Teleporting vehicle 'veh1520'; waited too long (wrong lane), lane='D1C1_H_s_0', time=3183.00.
+Warning: Vehicle 'veh1520' ends teleporting on edge 'C1B1', time=3183.00.
+Warning: Teleporting vehicle 'veh1093'; waited too long (yield), lane='D1C1_H_s_1', time=3185.00.
+Warning: Vehicle 'veh1093' ends teleporting on edge 'C1B1', time=3185.00.
+Warning: Teleporting vehicle 'veh1453'; waited too long (yield), lane='B1A1_H_s_1', time=3196.00.
+Step #3200.00Warning: Teleporting vehicle 'veh435'; waited too long (yield), lane='D2D1_H_s_0', time=3200.00.
+Warning: Vehicle 'veh435' ends teleporting on edge 'D1C1', time=3200.00.
+INFO:TrafficSimulator:Step 3200: 206 vehicles active
+ (1ms ~= 1000.00*RT, ~207000.00UPS, TraCI: 2ms, vehicles TOT 845 ACT 207 BUF 
+Warning: Vehicle 'veh1453' ends teleporting on edge 'A1A0', time=3210.00.
+Warning: Teleporting vehicle 'veh715'; waited too long (yield), lane='C0C1_H_s_2', time=3232.00.
+Warning: Vehicle 'veh715' ends teleporting on edge 'C1B1', time=3232.00.
+INFO:TrafficSimulator:Step 3300: 172 vehicles active
+INFO:TrafficSimulator:Step 3400: 141 vehicles active
+INFO:TrafficSimulator:Step 3500: 96 vehicles active
+INFO:TrafficSimulator:Step 3600: 57 vehicles active
+INFO:TrafficSimulator:Step 3700: 34 vehicles active
+INFO:TrafficSimulator:Step 3800: 19 vehicles active
+INFO:TrafficSimulator:Step 3900: 20 vehicles active
+INFO:TrafficSimulator:Step 4000: 14 vehicles active
+INFO:TrafficSimulator:Step 4100: 10 vehicles active
+INFO:TrafficSimulator:Step 4200: 13 vehicles active
+INFO:TrafficSimulator:Step 4300: 10 vehicles active
+INFO:TrafficSimulator:Step 4400: 12 vehicles active
+INFO:TrafficSimulator:Step 4500: 11 vehicles active
+INFO:TrafficSimulator:Step 4600: 19 vehicles active
+INFO:TrafficSimulator:Step 4700: 18 vehicles active
+INFO:TrafficSimulator:Step 4800: 14 vehicles active
+INFO:TrafficSimulator:Step 4900: 6 vehicles active
+INFO:TrafficSimulator:Step 5000: 11 vehicles active
+INFO:TrafficSimulator:Step 5100: 19 vehicles active
+INFO:TrafficSimulator:Step 5200: 55 vehicles active
+INFO:TrafficSimulator:Step 5300: 115 vehicles active
+INFO:TrafficSimulator:Step 5400: 175 vehicles active
+INFO:TrafficSimulator:Step 5500: 211 vehicles active
+INFO:TrafficSimulator:Step 5600: 231 vehicles active
+INFO:TrafficSimulator:Step 5700: 256 vehicles active
+INFO:TrafficSimulator:Step 5800: 245 vehicles active
+Step #3300.00 (1ms ~= 1000.00*RT, ~172000.00UPS, TraCI: 13ms, vehicles TOT 852 ACT 172 BUF
+Step #3400.00 (1ms ~= 1000.00*RT, ~141000.00UPS, TraCI: 1ms, vehicles TOT 860 ACT 141 BUF 
+Step #3500.00 (1ms ~= 1000.00*RT, ~96000.00UPS, TraCI: 4ms, vehicles TOT 871 ACT 96 BUF 2)
+Step #3600.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 877 ACT 57 BUF 0)                 
+Step #3700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 886 ACT 34 BUF 0)                 
+Step #3800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 898 ACT 19 BUF 0)                 
+Step #3900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 909 ACT 20 BUF 0)                 
+Step #4000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 914 ACT 14 BUF 0)                 
+Step #4100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 920 ACT 10 BUF 0)                 
+Step #4200.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 928 ACT 13 BUF 0)                 
+Step #4300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 931 ACT 10 BUF 0)                 
+Step #4400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 937 ACT 12 BUF 0)                 
+Step #4500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 945 ACT 11 BUF 0)                 
+Step #4600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 955 ACT 19 BUF 0)                 
+Step #4700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 960 ACT 18 BUF 0)                 
+Step #4800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 968 ACT 14 BUF 0)                 
+Step #4900.00 (1ms ~= 1000.00*RT, ~6000.00UPS, TraCI: 1ms, vehicles TOT 973 ACT 6 BUF 0)  
+Step #5000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 982 ACT 11 BUF 0)                 
+Step #5100.00 (1ms ~= 1000.00*RT, ~19000.00UPS, TraCI: 2ms, vehicles TOT 995 ACT 19 BUF 0)
+Step #5200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1036 ACT 55 BUF 1)                
+Step #5300.00 (1ms ~= 1000.00*RT, ~115000.00UPS, TraCI: 2ms, vehicles TOT 1121 ACT 115 BUF
+Step #5400.00 (1ms ~= 1000.00*RT, ~175000.00UPS, TraCI: 9ms, vehicles TOT 1214 ACT 175 BUF
+Step #5500.00 (1ms ~= 1000.00*RT, ~211000.00UPS, TraCI: 1ms, vehicles TOT 1299 ACT 211 BUF
+Step #5600.00 (1ms ~= 1000.00*RT, ~231000.00UPS, TraCI: 1ms, vehicles TOT 1388 ACT 231 BUF
+Step #5700.00 (1ms ~= 1000.00*RT, ~256000.00UPS, TraCI: 17ms, vehicles TOT 1468 ACT 256 BU
+Step #5800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1532 ACT 245 BUF 11)              
+Warning: Teleporting vehicle 'veh1400'; waited too long (yield), lane='C1B1_H_s_1', time=5879.00.
+Warning: Vehicle 'veh1400' ends teleporting on edge 'B1A1', time=5879.00.
+Warning: Teleporting vehicle 'veh1012'; waited too long (wrong lane), lane='B1A1_H_s_1', time=5882.00.
+Warning: Vehicle 'veh1012' ends teleporting on edge 'A1B1', time=5882.00.
+INFO:TrafficSimulator:Step 5900: 196 vehicles active
+Step #5900.00 (1ms ~= 1000.00*RT, ~196000.00UPS, TraCI: 5ms, vehicles TOT 1539 ACT 196 BUF
+Warning: Teleporting vehicle 'veh249'; waited too long (yield), lane='E1D1_H_s_1', time=5958.00.
+Warning: Vehicle 'veh249' ends teleporting on edge 'D1C1', time=5958.00.
+INFO:TrafficSimulator:Step 6000: 149 vehicles active
+INFO:TrafficSimulator:Step 6100: 105 vehicles active
+Step #6000.00 (0ms ?*RT. ?UPS, TraCI: 12ms, vehicles TOT 1552 ACT 149 BUF 4)              
+Step #6100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1558 ACT 105 BUF 2)               
+Warning: Teleporting vehicle 'veh701'; waited too long (yield), lane='D0D1_H_s_2', time=6106.00.
+Warning: Vehicle 'veh701' ends teleporting on edge 'D1C1', time=6106.00.
+INFO:TrafficSimulator:Step 6200: 82 vehicles active
+Step #6200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1564 ACT 82 BUF 2)                
+Warning: Teleporting vehicle 'veh1133'; waited too long (yield), lane='D1C1_H_s_1', time=6238.00.
+Warning: Vehicle 'veh1133' ends teleporting on edge 'C1B1', time=6238.00.
+Warning: Teleporting vehicle 'veh161'; waited too long (yield), lane='C1B1_H_s_1', time=6243.00.
+Warning: Vehicle 'veh161' ends teleporting on edge 'B1A1', time=6243.00.
+Warning: Teleporting vehicle 'veh975'; waited too long (wrong lane), lane='B1A1_H_s_0', time=6244.00.
+Warning: Vehicle 'veh975' ends teleporting on edge 'A1B1', time=6244.00.
+Warning: Teleporting vehicle 'veh862'; waited too long (yield), lane='A1B1_H_s_3', time=6251.00.
+Warning: Vehicle 'veh862' ends teleporting on edge 'B1A1', time=6251.00.
+Warning: Teleporting vehicle 'veh1531'; waited too long (yield), lane='C1D1_H_s_3', time=6257.00.
+Warning: Vehicle 'veh1531' ends teleporting on edge 'D1C1', time=6257.00.
+INFO:TrafficSimulator:Step 6300: 79 vehicles active
+INFO:TrafficSimulator:Step 6400: 66 vehicles active
+INFO:TrafficSimulator:Step 6500: 50 vehicles active
+INFO:TrafficSimulator:Step 6600: 22 vehicles active
+INFO:TrafficSimulator:Step 6700: 10 vehicles active
+INFO:TrafficSimulator:Step 6800: 3 vehicles active
+INFO:TrafficSimulator:=== SIMULATION COMPLETED ===
+INFO:TrafficSimulator:Total simulation steps: 6883
+INFO:TrafficSimulator:Vehicles still running: 0
+INFO:TrafficSimulator:Traffic control method: fixed
+INFO:TrafficSimulator:Detailed statistics will be provided by SUMO output below:
+INFO:FixedController:=== FIXED CLEANUP STARTED ===
+INFO:FixedController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
+INFO:FixedController:Ended vehicles count: 1600
+INFO:FixedController:Vehicle total time: 567526
+INFO:FixedController:=== FIXED STATISTICS ===
+INFO:FixedController:Fixed - Vehicles completed: 1600
+INFO:FixedController:Fixed - Total driving time: 567526
+INFO:FixedController:Fixed - Average duration: 354.70 steps
+INFO:FixedController:Fixed - Individual durations collected: 1600
+INFO:FixedController:QA: FIXED cleanup completed
+Step #6300.00 (1ms ~= 1000.00*RT, ~79000.00UPS, TraCI: 4ms, vehicles TOT 1577 ACT 79 BUF 0
+Step #6400.00 (1ms ~= 1000.00*RT, ~66000.00UPS, TraCI: 1ms, vehicles TOT 1584 ACT 66 BUF 0
+Step #6500.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 1593 ACT 50 BUF 0)                
+Step #6600.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 1599 ACT 22 BUF 1)                
+Step #6700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1600 ACT 10 BUF 0)                
+Step #6800.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1600 ACT 3 BUF 0)                 
+Step #6883.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 1600 ACT 0 BUF 0)                 
+INFO:TrafficSimulator:Simulation completed successfully!
+INFO:StandardPipeline:=== SIMULATION COMPLETED ===
+INFO:StandardPipeline:total_simulation_steps: 6883
+INFO:StandardPipeline:vehicles_still_running: 0
+INFO:StandardPipeline:traffic_control_method: fixed
+INFO:__main__:Pipeline execution completed successfully

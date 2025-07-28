@@ -1,0 +1,415 @@
+INFO:StandardPipeline:Prepared output directory: workspace
+INFO:StandardPipeline:--- Step 1: Network Generation ---
+INFO:NetworkGenerationStep:Starting NetworkGenerationStep
+INFO:NetworkGenerationStep:Generating SUMO orthogonal grid network...
+INFO:NetworkGenerationStep:Using seed: 82
+Success.
+INFO:NetworkGenerationStep:Generated grid successfully
+INFO:NetworkGenerationStep:Completed NetworkGenerationStep successfully
+INFO:StandardPipeline:--- Step 2: Zone Generation ---
+INFO:ZoneGenerationStep:Starting ZoneGenerationStep
+INFO:ZoneGenerationStep:Generating synthetic network zones using traditional method...
+INFO:pyogrio._io:Created 1,024 records
+INFO:ZoneGenerationStep:Extracted land use zones successfully using traditional method with 25.0m blocks
+INFO:ZoneGenerationStep:Completed ZoneGenerationStep successfully
+INFO:StandardPipeline:--- Step 3: Integrated Edge Splitting with Lane Assignment ---
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+INFO:StandardPipeline:Successfully completed integrated edge splitting with lane assignment
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 72 edges validated successfully
+INFO:StandardPipeline:Split edges validation passed successfully
+INFO:StandardPipeline:--- Step 4: Network Rebuild ---
+Network conversion completed successfully.
+INFO:StandardPipeline:Rebuilt the network successfully
+INFO:StandardPipeline:--- Step 6: Edge Attractiveness Assignment ---
+INFO:StandardPipeline:Assigned edge attractiveness successfully
+INFO:StandardPipeline:--- Step 7: Vehicle Route Generation ---
+Using routing strategies: {'shortest': 30.0, 'realtime': 50.0, 'fastest': 20.0}
+Using vehicle types: {'passenger': 50.0, 'commercial': 30.0, 'public': 20.0}
+Wrote 3200 vehicles → workspace/vehicles.rou.xml
+INFO:StandardPipeline:Generated vehicle routes successfully
+INFO:StandardPipeline:--- Step 8: SUMO Configuration Generation ---
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+INFO:StandardPipeline:Generated SUMO configuration file successfully
+INFO:StandardPipeline:--- Step 9: Dynamic Simulation ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: fixed
+INFO:TrafficSimulator:QA: Controller type: FixedController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+INFO:FixedController:=== FIXED CONTROLLER INITIALIZATION ===
+INFO:FixedController:QA: FIXED - Initialized vehicle tracking system
+INFO:FixedController:QA: FIXED - Found 23 traffic lights
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:350: UserWarning: Call to deprecated function getCompleteRedYellowGreenDefinition, use getAllProgramLogics instead.
+  complete_def = traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0]
+INFO:FixedController:QA: FIXED A0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED A3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED B4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED C4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED D4 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E0 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E1 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E2 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED E3 - 4 phases, 90s cycle, durations: [42, 3, 42, 3]
+INFO:FixedController:QA: FIXED - Initialization complete, will use setPhase + setPhaseDuration
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+INFO:TrafficSimulator:Step 0: 0 vehicles active
+INFO:TrafficSimulator:Step 100: 2 vehicles active
+INFO:TrafficSimulator:Step 200: 1 vehicles active
+INFO:TrafficSimulator:Step 300: 1 vehicles active
+INFO:TrafficSimulator:Step 400: 2 vehicles active
+INFO:TrafficSimulator:Step 500: 0 vehicles active
+INFO:TrafficSimulator:Step 600: 1 vehicles active
+INFO:TrafficSimulator:Step 700: 3 vehicles active
+INFO:TrafficSimulator:Step 800: 3 vehicles active
+INFO:TrafficSimulator:Step 900: 2 vehicles active
+INFO:TrafficSimulator:Step 1000: 2 vehicles active
+INFO:TrafficSimulator:Step 1100: 0 vehicles active
+INFO:TrafficSimulator:Step 1200: 1 vehicles active
+INFO:TrafficSimulator:Step 1300: 3 vehicles active
+INFO:TrafficSimulator:Step 1400: 3 vehicles active
+INFO:TrafficSimulator:Step 1500: 2 vehicles active
+INFO:TrafficSimulator:Step 1600: 1 vehicles active
+INFO:TrafficSimulator:Step 1700: 1 vehicles active
+INFO:TrafficSimulator:Step 1800: 2 vehicles active
+INFO:TrafficSimulator:Step 1900: 20 vehicles active
+INFO:TrafficSimulator:Step 2000: 45 vehicles active
+INFO:TrafficSimulator:Step 2100: 59 vehicles active
+INFO:TrafficSimulator:Step 2200: 52 vehicles active
+INFO:TrafficSimulator:Step 2300: 86 vehicles active
+INFO:TrafficSimulator:Step 2400: 230 vehicles active
+INFO:TrafficSimulator:Step 2500: 323 vehicles active
+INFO:TrafficSimulator:Step 2600: 417 vehicles active
+INFO:TrafficSimulator:Step 2700: 484 vehicles active
+INFO:TrafficSimulator:Step 2800: 566 vehicles active
+Step #0.00 (0ms ?*RT. ?UPS, TraCI: 16ms, vehicles TOT 0 ACT 0 BUF 0)                      
+Step #100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2 ACT 2 BUF 0)                     
+Step #200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2 ACT 1 BUF 0)                     
+Step #300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3 ACT 1 BUF 0)                     
+Step #400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 4 ACT 2 BUF 0)                     
+Step #500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 4 ACT 0 BUF 0)                     
+Step #600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 5 ACT 1 BUF 0)                     
+Step #700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 7 ACT 3 BUF 0)                     
+Step #800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 7 ACT 3 BUF 0)                     
+Step #900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 8 ACT 2 BUF 0)                     
+Step #1000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 10 ACT 2 BUF 0)                   
+Step #1100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 10 ACT 0 BUF 0)                   
+Step #1200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 12 ACT 1 BUF 0)                   
+Step #1300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 14 ACT 3 BUF 0)                   
+Step #1400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 16 ACT 3 BUF 0)                   
+Step #1500.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 17 ACT 2 BUF 0)                   
+Step #1600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 19 ACT 1 BUF 0)                   
+Step #1700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 20 ACT 1 BUF 0)                   
+Step #1800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 21 ACT 2 BUF 0)                   
+Step #1900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 43 ACT 20 BUF 0)                  
+Step #2000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 83 ACT 45 BUF 0)                  
+Step #2100.00 (0ms ?*RT. ?UPS, TraCI: 5ms, vehicles TOT 128 ACT 59 BUF 0)                 
+Step #2200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 161 ACT 52 BUF 1)                 
+Step #2300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 228 ACT 86 BUF 1)                 
+Step #2400.00 (2ms ~= 500.00*RT, ~115000.00UPS, TraCI: 16ms, vehicles TOT 418 ACT 230 BUF 
+Step #2500.00 (1ms ~= 1000.00*RT, ~323000.00UPS, TraCI: 2ms, vehicles TOT 618 ACT 323 BUF 
+Step #2600.00 (2ms ~= 500.00*RT, ~208500.00UPS, TraCI: 2ms, vehicles TOT 804 ACT 417 BUF 1
+Step #2700.00 (3ms ~= 333.33*RT, ~161333.33UPS, TraCI: 73ms, vehicles TOT 984 ACT 484 BUF 
+Step #2800.00 (3ms ~= 333.33*RT, ~188666.67UPS, TraCI: 2ms, vehicles TOT 1165 ACT 566 BUF 
+Warning: Vehicle 'veh135' performs emergency braking on lane 'D3C3_H_s_1' with decel=9.00, wished=3.50, severity=1.00, time=2862.00.
+INFO:TrafficSimulator:Step 2900: 629 vehicles active
+Step #2900.00 (3ms ~= 333.33*RT, ~209666.67UPS, TraCI: 2ms, vehicles TOT 1315 ACT 629 BUF 
+Warning: Teleporting vehicle 'veh2425'; waited too long (wrong lane), lane='B1B2_H_s_1', time=2979.00.
+Warning: Vehicle 'veh2425' ends teleporting on edge 'B2B1', time=2979.00.
+INFO:TrafficSimulator:Step 3000: 615 vehicles active
+Step #3000.00 (3ms ~= 333.33*RT, ~205000.00UPS, TraCI: 30ms, vehicles TOT 1353 ACT 615 BUF
+Warning: Teleporting vehicle 'veh2698'; waited too long (jam), lane='D3D2_H_s_0', time=3007.00.
+Warning: Vehicle 'veh2698' ends teleporting on edge 'D2C2', time=3007.00.
+Warning: Teleporting vehicle 'veh758'; waited too long (jam), lane=':D0D1_H_node_0_0', time=3009.00.
+Warning: Vehicle 'veh758' ends teleporting on edge 'D0D1_H_s', time=3009.00.
+Warning: Teleporting vehicle 'veh1602'; waited too long (yield), lane='B2A2_H_s_1', time=3045.00.
+Warning: Vehicle 'veh1602' ends teleporting on edge 'A2A1', time=3045.00.
+Warning: Teleporting vehicle 'veh2355'; waited too long (yield), lane='B1B2_H_s_2', time=3046.00.
+Warning: Vehicle 'veh2355' ends teleporting on edge 'B2A2', time=3046.00.
+Warning: Teleporting vehicle 'veh1257'; waited too long (wrong lane), lane='B3B2_H_s_1', time=3047.00.
+Warning: Vehicle 'veh1257' ends teleporting on edge 'B2A2', time=3047.00.
+Warning: Teleporting vehicle 'veh2559'; waited too long (wrong lane), lane='B1B2_H_s_2', time=3062.00.
+Warning: Vehicle 'veh2559' ends teleporting on edge 'B2B3', time=3062.00.
+Warning: Teleporting vehicle 'veh2130'; waited too long (wrong lane), lane='B1B2_H_s_2', time=3064.00.
+Warning: Vehicle 'veh2130' ends teleporting on edge 'B2C2', time=3064.00.
+Warning: Teleporting vehicle 'veh2700'; waited too long (jam), lane=':B1B2_H_node_0_2', time=3065.00.
+Warning: Teleporting vehicle 'veh1225'; waited too long (jam), lane='B1B2_1', time=3066.00.
+Warning: Teleporting vehicle 'veh1300'; waited too long (jam), lane='B1B2_1', time=3068.00.
+Warning: Teleporting vehicle 'veh2968'; waited too long (jam), lane='B1B2_1', time=3070.00.
+Warning: Teleporting vehicle 'veh2186'; waited too long (jam), lane='B1B2_1', time=3071.00.
+Warning: Vehicle 'veh2700' ends teleporting on edge 'B2C2', time=3071.00.
+Warning: Vehicle 'veh1225' ends teleporting on edge 'B2C2', time=3072.00.
+Warning: Teleporting vehicle 'veh514'; waited too long (jam), lane=':B2_6_0', time=3073.00.
+Warning: Vehicle 'veh514' ends teleporting on edge 'B2A2', time=3073.00.
+Warning: Teleporting vehicle 'veh1214'; waited too long (yield), lane='C1B1_H_s_0', time=3074.00.
+Warning: Vehicle 'veh1214' ends teleporting on edge 'B1B2', time=3074.00.
+Warning: Vehicle 'veh1300' ends teleporting on edge 'B2B3', time=3074.00.
+Warning: Vehicle 'veh2968' ends teleporting on edge 'B2B3', time=3076.00.
+Warning: Vehicle 'veh2186' ends teleporting on edge 'B2C2', time=3077.00.
+Warning: Teleporting vehicle 'veh304'; waited too long (yield), lane='B2B1_H_s_3', time=3092.00.
+Warning: Teleporting vehicle 'veh617'; waited too long (wrong lane), lane='B2C2_H_s_1', time=3096.00.
+Warning: Vehicle 'veh617' ends teleporting on edge 'C2B2', time=3096.00.
+Warning: Teleporting vehicle 'veh3090'; waited too long (jam), lane='C3D3_H_s_0', time=3097.00.
+Warning: Teleporting vehicle 'veh1747'; waited too long (yield), lane='C2D2_H_s_3', time=3097.00.
+Warning: Vehicle 'veh3090' ends teleporting on edge 'D3D2', time=3097.00.
+Warning: Vehicle 'veh1747' ends teleporting on edge 'D2C2', time=3097.00.
+Warning: Teleporting vehicle 'veh1651'; waited too long (yield), lane='D1C1_H_s_1', time=3099.00.
+Warning: Vehicle 'veh1651' ends teleporting on edge 'C1B1', time=3099.00.
+Warning: Vehicle 'veh304' ends teleporting on edge 'B1B2', time=3099.00.
+INFO:TrafficSimulator:Step 3100: 604 vehicles active
+Step #3100.00 (3ms ~= 333.33*RT, ~201333.33UPS, TraCI: 2ms, vehicles TOT 1384 ACT 604 BUF 
+Warning: Teleporting vehicle 'veh2567'; waited too long (wrong lane), lane='B2C2_H_s_2', time=3101.00.
+Warning: Vehicle 'veh2567' ends teleporting on edge 'C2B2', time=3101.00.
+Warning: Teleporting vehicle 'veh1576'; waited too long (yield), lane='C3C2_H_s_0', time=3106.00.
+Warning: Vehicle 'veh1576' ends teleporting on edge 'C2B2', time=3106.00.
+Warning: Teleporting vehicle 'veh2261'; waited too long (yield), lane='C2C1_H_s_0', time=3116.00.
+Warning: Vehicle 'veh2261' ends teleporting on edge 'C1B1', time=3116.00.
+Warning: Teleporting vehicle 'veh101'; waited too long (wrong lane), lane='B3B2_H_s_1', time=3121.00.
+Warning: Vehicle 'veh101' ends teleporting on edge 'B2A2', time=3121.00.
+Warning: Teleporting vehicle 'veh1973'; waited too long (yield), lane='C1C2_H_s_2', time=3149.00.
+Warning: Vehicle 'veh1973' ends teleporting on edge 'C2B2', time=3149.00.
+Warning: Teleporting vehicle 'veh1815'; waited too long (yield), lane='D1D2_H_s_2', time=3160.00.
+Warning: Vehicle 'veh1815' ends teleporting on edge 'D2C2', time=3160.00.
+Warning: Teleporting vehicle 'veh1011'; waited too long (yield), lane='E2D2_H_s_1', time=3171.00.
+Warning: Vehicle 'veh1011' ends teleporting on edge 'D2C2', time=3171.00.
+Warning: Teleporting vehicle 'veh2135'; waited too long (yield), lane='E3E2_H_s_0', time=3180.00.
+Warning: Vehicle 'veh2135' ends teleporting on edge 'E2D2', time=3180.00.
+Warning: Teleporting vehicle 'veh1329'; waited too long (wrong lane), lane='D2C2_H_s_0', time=3184.00.
+Warning: Teleporting vehicle 'veh2067'; waited too long (yield), lane='D2C2_H_s_1', time=3184.00.
+Warning: Vehicle 'veh2067' ends teleporting on edge 'C2B2', time=3184.00.
+Warning: Vehicle 'veh1329' ends teleporting on edge 'C2B2', time=3184.00.
+Warning: Teleporting vehicle 'veh2052'; waited too long (wrong lane), lane='C1D1_H_s_2', time=3192.00.
+Warning: Vehicle 'veh2052' ends teleporting on edge 'D1C1', time=3192.00.
+INFO:TrafficSimulator:Step 3200: 610 vehicles active
+Step #3200.00 (2ms ~= 500.00*RT, ~305000.00UPS, TraCI: 3ms, vehicles TOT 1436 ACT 610 BUF 
+Warning: Teleporting vehicle 'veh684'; waited too long (jam), lane=':E0E1_H_node_0_1', time=3204.00.
+Warning: Teleporting vehicle 'veh29'; waited too long (jam), lane='E2E1_H_s_0', time=3206.00.
+Warning: Vehicle 'veh29' ends teleporting on edge 'E1D1', time=3206.00.
+Warning: Vehicle 'veh684' ends teleporting on edge 'E1D1', time=3210.00.
+Warning: Teleporting vehicle 'veh1688'; waited too long (wrong lane), lane='B3C3_H_s_1', time=3211.00.
+Warning: Vehicle 'veh1688' ends teleporting on edge 'C3B3', time=3211.00.
+Warning: Teleporting vehicle 'veh153'; waited too long (yield), lane=':C2_18_0', time=3216.00.
+Warning: Vehicle 'veh153' ends teleporting on edge 'C2B2', time=3216.00.
+Warning: Teleporting vehicle 'veh251'; waited too long (yield), lane='D1D0_H_s_2', time=3272.00.
+Warning: Vehicle 'veh251' ends teleporting on edge 'D0D1', time=3272.00.
+Warning: Teleporting vehicle 'veh223'; waited too long (jam), lane='A0A1_H_s_0', time=3275.00.
+Warning: Vehicle 'veh223' ends teleporting on edge 'A1B1', time=3275.00.
+Warning: Teleporting vehicle 'veh494'; waited too long (yield), lane='B3C3_H_s_0', time=3296.00.
+Warning: Vehicle 'veh494' ends teleporting on edge 'C3C2', time=3296.00.
+INFO:TrafficSimulator:Step 3300: 595 vehicles active
+Step #3300.00 (3ms ~= 333.33*RT, ~198333.33UPS, TraCI: 29ms, vehicles TOT 1470 ACT 595 BUF
+Warning: Teleporting vehicle 'veh3069'; waited too long (yield), lane='D1E1_H_s_2', time=3306.00.
+Warning: Vehicle 'veh3069' ends teleporting on edge 'E1D1', time=3306.00.
+Warning: Teleporting vehicle 'veh614'; waited too long (yield), lane='D3D2_H_s_0', time=3313.00.
+Warning: Vehicle 'veh614' ends teleporting on edge 'D2C2', time=3313.00.
+Warning: Teleporting vehicle 'veh2508'; waited too long (yield), lane='A3B3_H_s_0', time=3318.00.
+Warning: Vehicle 'veh2508' ends teleporting on edge 'B3B2', time=3318.00.
+Warning: Vehicle 'veh2676' performs emergency braking on lane 'D3C3_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=3320.00.
+Warning: Teleporting vehicle 'veh1609'; waited too long (jam), lane=':B2_25_0', time=3365.00.
+Warning: Vehicle 'veh1609' ends teleporting on edge 'B2A2', time=3365.00.
+Warning: Teleporting vehicle 'veh2998'; waited too long (wrong lane), lane='C2D2_H_s_2', time=3399.00.
+Warning: Vehicle 'veh2998' ends teleporting on edge 'D2C2', time=3399.00.
+INFO:TrafficSimulator:Step 3400: 573 vehicles active
+Step #3400.00 (2ms ~= 500.00*RT, ~286500.00UPS, TraCI: 2ms, vehicles TOT 1510 ACT 573 BUF 
+Warning: Teleporting vehicle 'veh567'; waited too long (yield), lane='C3C2_H_s_0', time=3413.00.
+Warning: Vehicle 'veh567' ends teleporting on edge 'C2B2', time=3413.00.
+Warning: Teleporting vehicle 'veh518'; waited too long (yield), lane='E3D3_H_s_2', time=3415.00.
+Warning: Vehicle 'veh518' ends teleporting on edge 'D3D2', time=3415.00.
+Warning: Teleporting vehicle 'veh195'; waited too long (wrong lane), lane='B1B2_H_s_2', time=3431.00.
+Warning: Vehicle 'veh195' ends teleporting on edge 'B2B3', time=3431.00.
+Warning: Teleporting vehicle 'veh3056'; waited too long (wrong lane), lane='B1B2_H_s_2', time=3432.00.
+Warning: Vehicle 'veh3056' ends teleporting on edge 'B2B3', time=3432.00.
+Warning: Teleporting vehicle 'veh2063'; waited too long (jam), lane=':B1B2_H_node_0_2', time=3433.00.
+Warning: Vehicle 'veh2063' ends teleporting on edge 'B2B3', time=3438.00.
+Warning: Teleporting vehicle 'veh1485'; waited too long (yield), lane='C2D2_H_s_3', time=3451.00.
+Warning: Vehicle 'veh1485' ends teleporting on edge 'D2C2', time=3451.00.
+Warning: Teleporting vehicle 'veh2679'; waited too long (wrong lane), lane='E0E1_H_s_0', time=3452.00.
+Warning: Vehicle 'veh2679' ends teleporting on edge 'E1D1', time=3452.00.
+Warning: Teleporting vehicle 'veh1022'; waited too long (yield), lane='E0E1_H_s_1', time=3455.00.
+Warning: Vehicle 'veh1022' ends teleporting on edge 'E1D1', time=3455.00.
+Warning: Teleporting vehicle 'veh2783'; waited too long (yield), lane=':B2_17_0', time=3456.00.
+Warning: Vehicle 'veh2783' ends teleporting on edge 'B2B3', time=3456.00.
+Warning: Teleporting vehicle 'veh1576'; waited too long (jam), lane='C2B2_1', time=3457.00.
+Warning: Teleporting vehicle 'veh2064'; waited too long (wrong lane), lane='A2B2_H_s_2', time=3460.00.
+Warning: Vehicle 'veh2064' ends teleporting on edge 'B2A2', time=3460.00.
+Warning: Vehicle 'veh1576' ends teleporting on edge 'B2A2', time=3462.00.
+Warning: Teleporting vehicle 'veh1088'; waited too long (jam), lane=':B2_1_0', time=3463.00.
+Warning: Vehicle 'veh1088' ends teleporting on edge 'B2B1', time=3463.00.
+Warning: Teleporting vehicle 'veh1719'; waited too long (jam), lane='E2D2_H_s_1', time=3477.00.
+Warning: Vehicle 'veh1719' ends teleporting on edge 'D2C2', time=3477.00.
+Warning: Teleporting vehicle 'veh2924'; waited too long (jam), lane='E3E2_H_s_0', time=3486.00.
+Warning: Vehicle 'veh2924' ends teleporting on edge 'E2D2', time=3486.00.
+Warning: Teleporting vehicle 'veh2663'; waited too long (yield), lane='E1E2_H_s_1', time=3491.00.
+Warning: Vehicle 'veh2663' ends teleporting on edge 'E2D2', time=3491.00.
+Warning: Teleporting vehicle 'veh1011'; waited too long (jam), lane=':D2C2_H_node_0_2', time=3493.00.
+Warning: Vehicle 'veh1011' ends teleporting on edge 'C2B2', time=3498.00.
+INFO:TrafficSimulator:Step 3500: 532 vehicles active
+Step #3500.00 (3ms ~= 333.33*RT, ~177333.33UPS, TraCI: 2ms, vehicles TOT 1553 ACT 532 BUF 
+Warning: Teleporting vehicle 'veh880'; waited too long (jam), lane='B3B2_1', time=3501.00.
+Warning: Teleporting vehicle 'veh2488'; waited too long (jam), lane=':D1D2_H_node_0_1', time=3507.00.
+Warning: Vehicle 'veh880' ends teleporting on edge 'B2A2', time=3512.00.
+Warning: Vehicle 'veh2488' ends teleporting on edge 'D2C2', time=3516.00.
+Warning: Teleporting vehicle 'veh2993'; waited too long (yield), lane='B2C2_H_s_3', time=3542.00.
+Warning: Vehicle 'veh2993' ends teleporting on edge 'C2B2', time=3542.00.
+Warning: Teleporting vehicle 'veh2046'; waited too long (yield), lane='B2C2_H_s_3', time=3543.00.
+Warning: Vehicle 'veh2046' ends teleporting on edge 'C2B2', time=3543.00.
+Warning: Teleporting vehicle 'veh617'; waited too long (wrong lane), lane='C2B2_H_s_1', time=3549.00.
+Warning: Vehicle 'veh617' ends teleporting on edge 'B2B3', time=3549.00.
+Warning: Teleporting vehicle 'veh2109'; waited too long (jam), lane='C2B2_H_s_1', time=3571.00.
+Warning: Vehicle 'veh2109' ends teleporting on edge 'B2A2', time=3571.00.
+INFO:TrafficSimulator:Step 3600: 457 vehicles active
+Step #3600.00 (3ms ~= 333.33*RT, ~152333.33UPS, TraCI: 71ms, vehicles TOT 1599 ACT 457 BUF
+Warning: Teleporting vehicle 'veh2734'; waited too long (jam), lane='D3D2_H_s_0', time=3620.00.
+Warning: Vehicle 'veh2734' ends teleporting on edge 'D2C2', time=3620.00.
+Warning: Teleporting vehicle 'veh2912'; waited too long (wrong lane), lane='D1D2_H_s_1', time=3699.00.
+Warning: Vehicle 'veh2912' ends teleporting on edge 'D2C2', time=3699.00.
+INFO:TrafficSimulator:Step 3700: 427 vehicles active
+Step #3700.00 (2ms ~= 500.00*RT, ~213500.00UPS, TraCI: 2ms, vehicles TOT 1644 ACT 427 BUF 
+Warning: Teleporting vehicle 'veh1767'; waited too long (yield), lane='C2D2_H_s_3', time=3755.00.
+Warning: Vehicle 'veh1767' ends teleporting on edge 'D2C2', time=3755.00.
+Warning: Teleporting vehicle 'veh3129'; waited too long (jam), lane=':D2C2_H_node_0_1', time=3781.00.
+Warning: Teleporting vehicle 'veh1785'; waited too long (yield), lane='C1C2_H_s_2', time=3783.00.
+Warning: Vehicle 'veh1785' ends teleporting on edge 'C2B2', time=3783.00.
+Warning: Vehicle 'veh3129' ends teleporting on edge 'C2B2', time=3786.00.
+Warning: Teleporting vehicle 'veh2135'; waited too long (jam), lane=':E2D2_H_node_0_2', time=3794.00.
+Warning: Teleporting vehicle 'veh1554'; waited too long (yield), lane='E3E2_H_s_0', time=3794.00.
+Warning: Teleporting vehicle 'veh2609'; waited too long (yield), lane='D1D2_H_s_2', time=3794.00.
+Warning: Vehicle 'veh1554' ends teleporting on edge 'E2D2', time=3794.00.
+Warning: Vehicle 'veh2609' ends teleporting on edge 'D2C2', time=3794.00.
+Warning: Vehicle 'veh2135' ends teleporting on edge 'D2C2', time=3798.00.
+Warning: Teleporting vehicle 'veh49'; waited too long (yield), lane='E2D2_H_s_1', time=3799.00.
+Warning: Vehicle 'veh49' ends teleporting on edge 'D2C2', time=3799.00.
+INFO:TrafficSimulator:Step 3800: 383 vehicles active
+Step #3800.00 (2ms ~= 500.00*RT, ~191500.00UPS, TraCI: 2ms, vehicles TOT 1689 ACT 383 BUF 
+Warning: Teleporting vehicle 'veh539'; waited too long (yield), lane='D2E2_H_s_2', time=3822.00.
+Warning: Vehicle 'veh539' ends teleporting on edge 'E2D2', time=3822.00.
+Warning: Teleporting vehicle 'veh1994'; waited too long (jam), lane='D2C2_H_s_1', time=3855.00.
+Warning: Vehicle 'veh1994' ends teleporting on edge 'C2B2', time=3855.00.
+INFO:TrafficSimulator:Step 3900: 325 vehicles active
+Step #3900.00 (2ms ~= 500.00*RT, ~162500.00UPS, TraCI: 16ms, vehicles TOT 1734 ACT 325 BUF
+Warning: Teleporting vehicle 'veh2832'; waited too long (yield), lane='D3D2_H_s_0', time=3926.00.
+Warning: Vehicle 'veh2832' ends teleporting on edge 'D2C2', time=3926.00.
+Warning: Teleporting vehicle 'veh1640'; waited too long (yield), lane='C3D3_H_s_0', time=3945.00.
+Warning: Vehicle 'veh1640' ends teleporting on edge 'D3D2', time=3945.00.
+INFO:TrafficSimulator:Step 4000: 294 vehicles active
+Step #4000.00 (2ms ~= 500.00*RT, ~147000.00UPS, TraCI: 2ms, vehicles TOT 1794 ACT 294 BUF 
+Warning: Teleporting vehicle 'veh261'; waited too long (yield), lane='E1E2_H_s_1', time=4019.00.
+Warning: Vehicle 'veh261' ends teleporting on edge 'E2D2', time=4019.00.
+Step #4100.00Warning: Teleporting vehicle 'veh2924'; waited too long (jam), lane=':E2D2_H_node_0_2', time=4100.00.
+INFO:TrafficSimulator:Step 4100: 259 vehicles active
+ (1ms ~= 1000.00*RT, ~260000.00UPS, TraCI: 2ms, vehicles TOT 1849 ACT 260 BUF
+Warning: Teleporting vehicle 'veh2416'; waited too long (jam), lane='E3E2_H_s_0', time=4102.00.
+Warning: Vehicle 'veh2416' ends teleporting on edge 'E2D2', time=4102.00.
+Warning: Vehicle 'veh2924' ends teleporting on edge 'D2C2', time=4104.00.
+INFO:TrafficSimulator:Step 4200: 241 vehicles active
+Step #4200.00 (1ms ~= 1000.00*RT, ~241000.00UPS, TraCI: 13ms, vehicles TOT 1907 ACT 241 BU
+Warning: Vehicle 'veh307' performs emergency braking on lane ':C1_12_0' with decel=9.00, wished=4.50, severity=1.00, time=4206.00.
+Warning: Vehicle 'veh1189' performs emergency braking on lane ':B3_5_0' with decel=9.00, wished=3.50, severity=1.00, time=4214.00.
+Warning: Vehicle 'veh897' performs emergency braking on lane 'B2C2_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=4251.00.
+INFO:TrafficSimulator:Step 4300: 205 vehicles active
+INFO:TrafficSimulator:Step 4400: 166 vehicles active
+Step #4300.00 (1ms ~= 1000.00*RT, ~205000.00UPS, TraCI: 2ms, vehicles TOT 1952 ACT 205 BUF
+Step #4400.00 (1ms ~= 1000.00*RT, ~166000.00UPS, TraCI: 2ms, vehicles TOT 2001 ACT 166 BUF
+Warning: Teleporting vehicle 'veh799'; waited too long (yield), lane='E3E2_H_s_0', time=4411.00.
+Warning: Vehicle 'veh799' ends teleporting on edge 'E2D2', time=4411.00.
+Warning: Vehicle 'veh2366' performs emergency braking on lane ':D2_2_0' with decel=9.00, wished=4.00, severity=1.00, time=4436.00.
+INFO:TrafficSimulator:Step 4500: 176 vehicles active
+INFO:TrafficSimulator:Step 4600: 165 vehicles active
+INFO:TrafficSimulator:Step 4700: 146 vehicles active
+Step #4500.00 (1ms ~= 1000.00*RT, ~176000.00UPS, TraCI: 28ms, vehicles TOT 2076 ACT 176 BU
+Step #4600.00 (3ms ~= 333.33*RT, ~55000.00UPS, TraCI: 5ms, vehicles TOT 2133 ACT 165 BUF 4
+Step #4700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2195 ACT 146 BUF 2)               
+Warning: Vehicle 'veh2408' performs emergency braking on lane ':B3_5_0' with decel=9.00, wished=4.00, severity=1.00, time=4748.00.
+INFO:TrafficSimulator:Step 4800: 124 vehicles active
+INFO:TrafficSimulator:Step 4900: 116 vehicles active
+Step #4800.00 (0ms ?*RT. ?UPS, TraCI: 7ms, vehicles TOT 2253 ACT 124 BUF 0)               
+Step #4900.00 (1ms ~= 1000.00*RT, ~116000.00UPS, TraCI: 2ms, vehicles TOT 2312 ACT 116 BUF
+Warning: Vehicle 'veh2206' performs emergency braking on lane ':B3_5_0' with decel=9.00, wished=4.50, severity=1.00, time=4924.00.
+INFO:TrafficSimulator:Step 5000: 94 vehicles active
+Step #5000.00 (1ms ~= 1000.00*RT, ~94000.00UPS, TraCI: 1ms, vehicles TOT 2365 ACT 94 BUF 1
+Warning: Vehicle 'veh2795' performs emergency braking on lane 'E1D1_H_s_1' with decel=9.00, wished=4.00, severity=1.00, time=5015.00.
+INFO:TrafficSimulator:Step 5100: 96 vehicles active
+Step #5100.00 (1ms ~= 1000.00*RT, ~96000.00UPS, TraCI: 6ms, vehicles TOT 2421 ACT 96 BUF 0
+Warning: Vehicle 'veh1660' performs emergency braking on lane 'E3D3_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=5196.00.
+INFO:TrafficSimulator:Step 5200: 104 vehicles active
+Step #5200.00 (1ms ~= 1000.00*RT, ~104000.00UPS, TraCI: 2ms, vehicles TOT 2493 ACT 104 BUF
+Warning: Vehicle 'veh1904' performs emergency braking on lane 'E1D1_H_s_1' with decel=9.00, wished=4.00, severity=1.00, time=5288.00.
+INFO:TrafficSimulator:Step 5300: 134 vehicles active
+Step #5300.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2580 ACT 134 BUF 2)               
+Warning: Vehicle 'veh2406' performs emergency braking on lane ':D1_16_0' with decel=9.00, wished=4.50, severity=1.00, time=5329.00.
+INFO:TrafficSimulator:Step 5400: 164 vehicles active
+INFO:TrafficSimulator:Step 5500: 172 vehicles active
+INFO:TrafficSimulator:Step 5600: 183 vehicles active
+Step #5400.00 (1ms ~= 1000.00*RT, ~164000.00UPS, TraCI: 26ms, vehicles TOT 2684 ACT 164 BU
+Step #5500.00 (1ms ~= 1000.00*RT, ~172000.00UPS, TraCI: 2ms, vehicles TOT 2769 ACT 172 BUF
+Step #5600.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 2872 ACT 183 BUF 1)               
+Warning: Vehicle 'veh1003' performs emergency braking on lane ':C2_15_0' with decel=9.00, wished=4.50, severity=1.00, time=5692.00.
+INFO:TrafficSimulator:Step 5700: 186 vehicles active
+INFO:TrafficSimulator:Step 5800: 186 vehicles active
+INFO:TrafficSimulator:Step 5900: 106 vehicles active
+Step #5700.00 (1ms ~= 1000.00*RT, ~186000.00UPS, TraCI: 11ms, vehicles TOT 2978 ACT 186 BU
+Step #5800.00 (1ms ~= 1000.00*RT, ~186000.00UPS, TraCI: 2ms, vehicles TOT 3055 ACT 186 BUF
+Step #5900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3070 ACT 106 BUF 1)               
+Warning: Vehicle 'veh631' performs emergency braking on lane ':C1_2_0' with decel=9.00, wished=4.00, severity=1.00, time=5981.00.
+INFO:TrafficSimulator:Step 6000: 46 vehicles active
+INFO:TrafficSimulator:Step 6100: 22 vehicles active
+INFO:TrafficSimulator:Step 6200: 23 vehicles active
+INFO:TrafficSimulator:Step 6300: 23 vehicles active
+INFO:TrafficSimulator:Step 6400: 19 vehicles active
+INFO:TrafficSimulator:Step 6500: 18 vehicles active
+INFO:TrafficSimulator:Step 6600: 27 vehicles active
+INFO:TrafficSimulator:Step 6700: 33 vehicles active
+INFO:TrafficSimulator:Step 6800: 10 vehicles active
+INFO:TrafficSimulator:Step 6900: 4 vehicles active
+INFO:TrafficSimulator:Step 7000: 4 vehicles active
+INFO:TrafficSimulator:Step 7100: 2 vehicles active
+INFO:TrafficSimulator:=== SIMULATION COMPLETED ===
+INFO:TrafficSimulator:Total simulation steps: 7144
+INFO:TrafficSimulator:Vehicles still running: 0
+INFO:TrafficSimulator:Traffic control method: fixed
+INFO:TrafficSimulator:Detailed statistics will be provided by SUMO output below:
+INFO:FixedController:=== FIXED CLEANUP STARTED ===
+INFO:FixedController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
+INFO:FixedController:Ended vehicles count: 3214
+INFO:FixedController:Vehicle total time: 1160191
+INFO:FixedController:=== FIXED STATISTICS ===
+INFO:FixedController:Fixed - Vehicles completed: 3214
+INFO:FixedController:Fixed - Total driving time: 1160191
+INFO:FixedController:Fixed - Average duration: 360.98 steps
+INFO:FixedController:Fixed - Individual durations collected: 3214
+INFO:FixedController:QA: FIXED cleanup completed
+Step #6000.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 3081 ACT 46 BUF 0)                
+Step #6100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3096 ACT 22 BUF 0)                
+Step #6200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3111 ACT 23 BUF 0)                
+Step #6300.00 (0ms ?*RT. ?UPS, TraCI: 5ms, vehicles TOT 3126 ACT 23 BUF 0)                
+Step #6400.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3139 ACT 19 BUF 0)                
+Step #6500.00 (2ms ~= 500.00*RT, ~9000.00UPS, TraCI: 1ms, vehicles TOT 3150 ACT 18 BUF 0) 
+Step #6600.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 3170 ACT 27 BUF 0)                
+Step #6700.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3192 ACT 33 BUF 0)                
+Step #6800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3192 ACT 10 BUF 0)                
+Step #6900.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3194 ACT 4 BUF 0)                 
+Step #7000.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3200 ACT 4 BUF 0)                 
+Step #7100.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 3200 ACT 2 BUF 0)                 
+Step #7144.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 3200 ACT 0 BUF 0)                 
+INFO:TrafficSimulator:Simulation completed successfully!
+INFO:StandardPipeline:=== SIMULATION COMPLETED ===
+INFO:StandardPipeline:total_simulation_steps: 7144
+INFO:StandardPipeline:vehicles_still_running: 0
+INFO:StandardPipeline:traffic_control_method: fixed
+INFO:__main__:Pipeline execution completed successfully

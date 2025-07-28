@@ -1,0 +1,1800 @@
+INFO:StandardPipeline:Prepared output directory: workspace
+INFO:StandardPipeline:--- Step 1: Network Generation ---
+INFO:NetworkGenerationStep:Starting NetworkGenerationStep
+INFO:NetworkGenerationStep:Generating SUMO orthogonal grid network...
+INFO:NetworkGenerationStep:Using seed: 42
+Success.
+INFO:NetworkGenerationStep:Generated grid successfully
+INFO:NetworkGenerationStep:Completed NetworkGenerationStep successfully
+INFO:StandardPipeline:--- Step 2: Zone Generation ---
+INFO:ZoneGenerationStep:Starting ZoneGenerationStep
+INFO:ZoneGenerationStep:Generating synthetic network zones using traditional method...
+INFO:pyogrio._io:Created 1,024 records
+INFO:ZoneGenerationStep:Extracted land use zones successfully using traditional method with 25.0m blocks
+INFO:ZoneGenerationStep:Completed ZoneGenerationStep successfully
+INFO:StandardPipeline:--- Step 3: Integrated Edge Splitting with Lane Assignment ---
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+INFO:StandardPipeline:Successfully completed integrated edge splitting with lane assignment
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 76 edges validated successfully
+INFO:StandardPipeline:Split edges validation passed successfully
+INFO:StandardPipeline:--- Step 4: Network Rebuild ---
+Network conversion completed successfully.
+INFO:StandardPipeline:Rebuilt the network successfully
+INFO:StandardPipeline:--- Step 6: Edge Attractiveness Assignment ---
+INFO:StandardPipeline:Assigned edge attractiveness successfully
+INFO:StandardPipeline:--- Step 7: Vehicle Route Generation ---
+Using routing strategies: {'shortest': 50.0, 'realtime': 40.0, 'fastest': 10.0}
+Using vehicle types: {'passenger': 50.0, 'commercial': 30.0, 'public': 20.0}
+Wrote 3200 vehicles → workspace/vehicles.rou.xml
+INFO:StandardPipeline:Generated vehicle routes successfully
+INFO:StandardPipeline:--- Step 8: SUMO Configuration Generation ---
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+INFO:StandardPipeline:Generated SUMO configuration file successfully
+INFO:StandardPipeline:--- Step 9: Dynamic Simulation ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: tree_method
+INFO:TrafficSimulator:QA: Controller type: TreeMethodController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+INFO:TreeMethodController:=== TREE METHOD CONTROLLER INITIALIZATION ===
+INFO:TreeMethodController:QA: TREE METHOD - Initializing Tree Method objects...
+INFO:TreeMethodController:QA: TREE METHOD - Built network JSON file: workspace/grid.net.json
+INFO:TreeMethodController:QA: TREE METHOD - Loaded network tree and run configuration successfully
+INFO:TreeMethodController:QA: TREE METHOD - Loaded network data from JSON
+INFO:TreeMethodController:QA: TREE METHOD - Initialized Tree Method Graph object
+INFO:TreeMethodController:QA: TREE METHOD - Built Tree Method Graph from network data
+INFO:TreeMethodController:QA: TREE METHOD - Built network graph and calculated cycle time: 90s
+INFO:TreeMethodController:QA: TREE METHOD - Integration setup verified successfully
+INFO:TreeMethodController:QA: TREE METHOD - Connected to 24 traffic lights
+INFO:TreeMethodController:QA: TREE METHOD - Graph initialized with 24 traffic light nodes
+INFO:TreeMethodController:QA: TREE METHOD - Initialization complete, ready for algorithm control
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 0: Phase map is empty at time 0 - no traffic light states generated
+INFO:TrafficSimulator:Step 0: 0 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 30: Phase map is empty at time 30 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 60: Phase map is empty at time 60 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 90: Phase map is empty at time 90 - no traffic light states generated
+INFO:TrafficSimulator:Step 100: 17 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 120: Phase map is empty at time 120 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 150: Phase map is empty at time 150 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 180: Phase map is empty at time 180 - no traffic light states generated
+INFO:TrafficSimulator:Step 200: 20 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 210: Phase map is empty at time 210 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 240: Phase map is empty at time 240 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 270: Phase map is empty at time 270 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 300: Phase map is empty at time 300 - no traffic light states generated
+INFO:TrafficSimulator:Step 300: 19 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 330: Phase map is empty at time 330 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 360: Phase map is empty at time 360 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 390: Phase map is empty at time 390 - no traffic light states generated
+INFO:TrafficSimulator:Step 400: 17 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 420: Phase map is empty at time 420 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 450: Phase map is empty at time 450 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 480: Phase map is empty at time 480 - no traffic light states generated
+INFO:TrafficSimulator:Step 500: 22 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 510: Phase map is empty at time 510 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 540: Phase map is empty at time 540 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 570: Phase map is empty at time 570 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 600: Phase map is empty at time 600 - no traffic light states generated
+INFO:TrafficSimulator:Step 600: 33 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 630: Phase map is empty at time 630 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 660: Phase map is empty at time 660 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 690: Phase map is empty at time 690 - no traffic light states generated
+INFO:TrafficSimulator:Step 700: 31 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 720: Phase map is empty at time 720 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 750: Phase map is empty at time 750 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 780: Phase map is empty at time 780 - no traffic light states generated
+INFO:TrafficSimulator:Step 800: 32 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 810: Phase map is empty at time 810 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 840: Phase map is empty at time 840 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 870: Phase map is empty at time 870 - no traffic light states generated
+ERROR:TreeMethodController:Tree Method calculation failed at step 900: 'str' object has no attribute 'value'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 150, in update
+    self.logger.info(f"VERIFY: Iter {iteration}, Step {step}, Total Cost: {total_cost:.2f}, Cost Type: {self.run_config.cost_type.value}, Algo: {self.run_config.algo_type.value}")
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'value'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 900: Phase map is empty at time 900 - no traffic light states generated
+INFO:TrafficSimulator:Step 900: 34 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 930: Phase map is empty at time 930 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 960: Phase map is empty at time 960 - no traffic light states generated
+Step #0.00 (0ms ?*RT. ?UPS, TraCI: 53ms, vehicles TOT 0 ACT 0 BUF 0)                      
+Step #100.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 17 ACT 17 BUF 0)                   
+Step #200.00 (0ms ?*RT. ?UPS, TraCI: 5ms, vehicles TOT 28 ACT 20 BUF 0)                   
+Step #300.00 (0ms ?*RT. ?UPS, TraCI: 5ms, vehicles TOT 40 ACT 19 BUF 0)                   
+Step #400.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 51 ACT 17 BUF 0)                   
+Step #500.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 65 ACT 22 BUF 0)                   
+Step #600.00 (0ms ?*RT. ?UPS, TraCI: 6ms, vehicles TOT 87 ACT 33 BUF 0)                   
+Step #700.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 104 ACT 31 BUF 0)                  
+Step #800.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 124 ACT 32 BUF 0)                  
+Step #900.00 (0ms ?*RT. ?UPS, TraCI: 13ms, vehicles TOT 147 ACT 34 BUF 0)                 
+Warning: Vehicle 'veh2491' performs emergency braking on lane 'C3B3_H_s_1' with decel=9.00, wished=4.00, severity=1.00, time=969.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 990: Phase map is empty at time 990 - no traffic light states generated
+INFO:TrafficSimulator:Step 1000: 32 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1020: Phase map is empty at time 1020 - no traffic light states generated
+Step #1000.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 159 ACT 32 BUF 0)                 
+Warning: Vehicle 'veh2867' performs emergency braking on lane 'C2B2_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=1038.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1050: Phase map is empty at time 1050 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1080: Phase map is empty at time 1080 - no traffic light states generated
+INFO:TrafficSimulator:Step 1100: 17 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1110: Phase map is empty at time 1110 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1140: Phase map is empty at time 1140 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1170: Phase map is empty at time 1170 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1200: Phase map is empty at time 1200 - no traffic light states generated
+INFO:TrafficSimulator:Step 1200: 24 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1230: Phase map is empty at time 1230 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1260: Phase map is empty at time 1260 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1290: Phase map is empty at time 1290 - no traffic light states generated
+INFO:TrafficSimulator:Step 1300: 22 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1320: Phase map is empty at time 1320 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1350: Phase map is empty at time 1350 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1380: Phase map is empty at time 1380 - no traffic light states generated
+INFO:TrafficSimulator:Step 1400: 23 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1410: Phase map is empty at time 1410 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1440: Phase map is empty at time 1440 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1470: Phase map is empty at time 1470 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1500: Phase map is empty at time 1500 - no traffic light states generated
+INFO:TrafficSimulator:Step 1500: 24 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1530: Phase map is empty at time 1530 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1560: Phase map is empty at time 1560 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1590: Phase map is empty at time 1590 - no traffic light states generated
+INFO:TrafficSimulator:Step 1600: 19 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1620: Phase map is empty at time 1620 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1650: Phase map is empty at time 1650 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1680: Phase map is empty at time 1680 - no traffic light states generated
+INFO:TrafficSimulator:Step 1700: 22 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1710: Phase map is empty at time 1710 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1740: Phase map is empty at time 1740 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1770: Phase map is empty at time 1770 - no traffic light states generated
+ERROR:TreeMethodController:Tree Method calculation failed at step 1800: 'str' object has no attribute 'value'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 150, in update
+    self.logger.info(f"VERIFY: Iter {iteration}, Step {step}, Total Cost: {total_cost:.2f}, Cost Type: {self.run_config.cost_type.value}, Algo: {self.run_config.algo_type.value}")
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'value'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1800: Phase map is empty at time 1800 - no traffic light states generated
+INFO:TrafficSimulator:Step 1800: 29 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1830: Phase map is empty at time 1830 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1860: Phase map is empty at time 1860 - no traffic light states generated
+Step #1100.00 (0ms ?*RT. ?UPS, TraCI: 8ms, vehicles TOT 168 ACT 17 BUF 0)                 
+Step #1200.00 (0ms ?*RT. ?UPS, TraCI: 6ms, vehicles TOT 187 ACT 24 BUF 0)                 
+Step #1300.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 204 ACT 22 BUF 0)                 
+Step #1400.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 219 ACT 23 BUF 0)                 
+Step #1500.00 (1ms ~= 1000.00*RT, ~24000.00UPS, TraCI: 5ms, vehicles TOT 235 ACT 24 BUF 0)
+Step #1600.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 248 ACT 19 BUF 0)                 
+Step #1700.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 261 ACT 22 BUF 0)                 
+Step #1800.00 (0ms ?*RT. ?UPS, TraCI: 11ms, vehicles TOT 282 ACT 29 BUF 0)                
+Warning: Vehicle 'veh2418' performs emergency braking on lane ':B1_12_0' with decel=9.00, wished=4.50, severity=1.00, time=1866.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1890: Phase map is empty at time 1890 - no traffic light states generated
+INFO:TrafficSimulator:Step 1900: 26 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1920: Phase map is empty at time 1920 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1950: Phase map is empty at time 1950 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 1980: Phase map is empty at time 1980 - no traffic light states generated
+INFO:TrafficSimulator:Step 2000: 17 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2010: Phase map is empty at time 2010 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2040: Phase map is empty at time 2040 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2070: Phase map is empty at time 2070 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2100: Phase map is empty at time 2100 - no traffic light states generated
+INFO:TrafficSimulator:Step 2100: 21 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2130: Phase map is empty at time 2130 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2160: Phase map is empty at time 2160 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2190: Phase map is empty at time 2190 - no traffic light states generated
+INFO:TrafficSimulator:Step 2200: 172 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2220: Phase map is empty at time 2220 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2250: Phase map is empty at time 2250 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2280: Phase map is empty at time 2280 - no traffic light states generated
+INFO:TrafficSimulator:Step 2300: 332 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2310: Phase map is empty at time 2310 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2340: Phase map is empty at time 2340 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2370: Phase map is empty at time 2370 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2400: Phase map is empty at time 2400 - no traffic light states generated
+INFO:TrafficSimulator:Step 2400: 423 vehicles active
+Step #1900.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 290 ACT 26 BUF 0)                 
+Step #2000.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 299 ACT 17 BUF 0)                 
+Step #2100.00 (0ms ?*RT. ?UPS, TraCI: 5ms, vehicles TOT 313 ACT 21 BUF 0)                 
+Step #2200.00 (1ms ~= 1000.00*RT, ~172000.00UPS, TraCI: 3ms, vehicles TOT 482 ACT 172 BUF 
+Step #2300.00 (2ms ~= 500.00*RT, ~166000.00UPS, TraCI: 3ms, vehicles TOT 707 ACT 332 BUF 8
+Step #2400.00 (2ms ~= 500.00*RT, ~211500.00UPS, TraCI: 25ms, vehicles TOT 887 ACT 423 BUF 
+Warning: Vehicle 'veh3057' performs emergency braking on lane 'C3C4_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2408.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2430: Phase map is empty at time 2430 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2460: Phase map is empty at time 2460 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2490: Phase map is empty at time 2490 - no traffic light states generated
+INFO:TrafficSimulator:Step 2500: 526 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2520: Phase map is empty at time 2520 - no traffic light states generated
+Step #2500.00 (3ms ~= 333.33*RT, ~175333.33UPS, TraCI: 4ms, vehicles TOT 1094 ACT 526 BUF 
+Warning: Vehicle 'veh2881' performs emergency braking on lane 'E2E3_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=2539.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2550: Phase map is empty at time 2550 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2580: Phase map is empty at time 2580 - no traffic light states generated
+INFO:TrafficSimulator:Step 2600: 653 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2610: Phase map is empty at time 2610 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2640: Phase map is empty at time 2640 - no traffic light states generated
+Step #2600.00 (3ms ~= 333.33*RT, ~217666.67UPS, TraCI: 4ms, vehicles TOT 1297 ACT 653 BUF 
+Warning: Teleporting vehicle 'veh2185'; waited too long (yield), lane='A2B2_H_s_3', time=2641.00.
+Warning: Vehicle 'veh2185' ends teleporting on edge 'B2A2', time=2641.00.
+Warning: Teleporting vehicle 'veh987'; waited too long (yield), lane='A1B1_H_s_3', time=2644.00.
+Warning: Vehicle 'veh987' ends teleporting on edge 'B1A1', time=2644.00.
+Warning: Teleporting vehicle 'veh284'; waited too long (wrong lane), lane='C2D2_H_s_1', time=2645.00.
+Warning: Vehicle 'veh284' ends teleporting on edge 'D2C2', time=2645.00.
+Warning: Teleporting vehicle 'veh2533'; waited too long (wrong lane), lane='B1C1_H_s_1', time=2646.00.
+Warning: Vehicle 'veh2533' ends teleporting on edge 'C1B1', time=2646.00.
+Warning: Teleporting vehicle 'veh2305'; waited too long (wrong lane), lane='A1B1_H_s_1', time=2654.00.
+Warning: Vehicle 'veh2305' ends teleporting on edge 'B1A1', time=2654.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2670: Phase map is empty at time 2670 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2410'; waited too long (yield), lane='A2B2_H_s_3', time=2673.00.
+Warning: Vehicle 'veh2410' ends teleporting on edge 'B2A2', time=2673.00.
+Warning: Teleporting vehicle 'veh1949'; waited too long (wrong lane), lane='B1C1_H_s_2', time=2675.00.
+Warning: Vehicle 'veh1949' ends teleporting on edge 'C1B1', time=2675.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 2700: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2700: Phase map is empty at time 2700 - no traffic light states generated
+INFO:TrafficSimulator:Step 2700: 781 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2730: Phase map is empty at time 2730 - no traffic light states generated
+Step #2700.00 (4ms ~= 250.00*RT, ~195250.00UPS, TraCI: 128ms, vehicles TOT 1473 ACT 781 BU
+Warning: Teleporting vehicle 'veh630'; waited too long (wrong lane), lane='A2B2_H_s_2', time=2744.00.
+Warning: Vehicle 'veh630' ends teleporting on edge 'B2A2', time=2744.00.
+Warning: Teleporting vehicle 'veh1736'; waited too long (wrong lane), lane='B2C2_H_s_2', time=2752.00.
+Warning: Vehicle 'veh1736' ends teleporting on edge 'C2C1', time=2752.00.
+Warning: Teleporting vehicle 'veh2326'; waited too long (yield), lane='D3D2_H_s_0', time=2753.00.
+Warning: Vehicle 'veh2326' ends teleporting on edge 'D2C2', time=2753.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2760: Phase map is empty at time 2760 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1785'; waited too long (wrong lane), lane='D1D2_H_s_1', time=2780.00.
+Warning: Teleporting vehicle 'veh1010'; waited too long (yield), lane='D1D2_H_s_2', time=2780.00.
+Warning: Vehicle 'veh1010' ends teleporting on edge 'D2C2', time=2780.00.
+Warning: Vehicle 'veh1785' ends teleporting on edge 'D2C2', time=2780.00.
+Warning: Teleporting vehicle 'veh647'; waited too long (jam), lane=':A2B2_H_node_0_3', time=2781.00.
+Warning: Teleporting vehicle 'veh2224'; waited too long (jam), lane=':D1D2_H_node_0_2', time=2783.00.
+Warning: Vehicle 'veh2224' ends teleporting on edge 'D2C2', time=2787.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2790: Phase map is empty at time 2790 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1360'; waited too long (wrong lane), lane='A2B2_H_s_3', time=2793.00.
+Warning: Vehicle 'veh1360' ends teleporting on edge 'B2B3', time=2793.00.
+Warning: Vehicle 'veh647' ends teleporting on edge 'A2B2_H_s', time=2796.00.
+INFO:TrafficSimulator:Step 2800: 824 vehicles active
+Step #2800.00 (4ms ~= 250.00*RT, ~206000.00UPS, TraCI: 4ms, vehicles TOT 1568 ACT 824 BUF 
+Warning: Teleporting vehicle 'veh1884'; waited too long (wrong lane), lane='E2D2_H_s_0', time=2807.00.
+Warning: Vehicle 'veh1884' ends teleporting on edge 'D2D1', time=2807.00.
+Warning: Teleporting vehicle 'veh876'; waited too long (yield), lane='E2D2_H_s_1', time=2808.00.
+Warning: Vehicle 'veh876' ends teleporting on edge 'D2C2', time=2808.00.
+Warning: Teleporting vehicle 'veh2648'; waited too long (yield), lane='A3A2_H_s_1', time=2816.00.
+Warning: Vehicle 'veh2648' ends teleporting on edge 'A2B2', time=2816.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2820: Phase map is empty at time 2820 - no traffic light states generated
+Warning: Teleporting vehicle 'veh986'; waited too long (yield), lane='E3E2_H_s_0', time=2826.00.
+Warning: Vehicle 'veh986' ends teleporting on edge 'E2D2', time=2826.00.
+Warning: Teleporting vehicle 'veh1212'; waited too long (wrong lane), lane='C1D1_H_s_1', time=2837.00.
+Warning: Vehicle 'veh1212' ends teleporting on edge 'D1C1', time=2837.00.
+Warning: Teleporting vehicle 'veh2858'; waited too long (jam), lane='D2D1_H_s_0', time=2842.00.
+Warning: Vehicle 'veh2858' ends teleporting on edge 'D1C1', time=2842.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2850: Phase map is empty at time 2850 - no traffic light states generated
+Warning: Teleporting vehicle 'veh603'; waited too long (yield), lane='B2C2_H_s_3', time=2866.00.
+Warning: Vehicle 'veh603' ends teleporting on edge 'C2B2', time=2866.00.
+Warning: Teleporting vehicle 'veh106'; waited too long (yield), lane='A2A1_H_s_2', time=2869.00.
+Warning: Vehicle 'veh106' ends teleporting on edge 'A1A2', time=2869.00.
+Warning: Teleporting vehicle 'veh2546'; waited too long (yield), lane='D4D3_H_s_0', time=2870.00.
+Warning: Vehicle 'veh2546' ends teleporting on edge 'D3C3', time=2870.00.
+Warning: Teleporting vehicle 'veh1033'; waited too long (yield), lane='E3D3_H_s_1', time=2872.00.
+Warning: Vehicle 'veh1033' ends teleporting on edge 'D3C3', time=2872.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2880: Phase map is empty at time 2880 - no traffic light states generated
+Warning: Teleporting vehicle 'veh3018'; waited too long (jam), lane='B2A2_H_s_1', time=2880.00.
+Warning: Teleporting vehicle 'veh628'; waited too long (wrong lane), lane='B2C2_H_s_3', time=2880.00.
+Warning: Vehicle 'veh628' ends teleporting on edge 'C2C1', time=2880.00.
+Warning: Vehicle 'veh3018' ends teleporting on edge 'A2A1', time=2880.00.
+Warning: Teleporting vehicle 'veh2582'; waited too long (yield), lane='D2D3_H_s_2', time=2886.00.
+Warning: Vehicle 'veh2582' ends teleporting on edge 'D3C3', time=2886.00.
+INFO:TrafficSimulator:Step 2900: 811 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2910: Phase map is empty at time 2910 - no traffic light states generated
+Step #2900.00 (4ms ~= 250.00*RT, ~202750.00UPS, TraCI: 4ms, vehicles TOT 1602 ACT 811 BUF 
+Warning: Teleporting vehicle 'veh1330'; waited too long (wrong lane), lane='B1A1_H_s_2', time=2916.00.
+Warning: Vehicle 'veh1330' ends teleporting on edge 'A1A2', time=2916.00.
+Warning: Teleporting vehicle 'veh2476'; waited too long (wrong lane), lane='A0A1_H_s_0', time=2934.00.
+Warning: Teleporting vehicle 'veh1759'; waited too long (yield), lane='A0A1_H_s_1', time=2934.00.
+Warning: Vehicle 'veh1759' ends teleporting on edge 'A1A2', time=2934.00.
+Warning: Vehicle 'veh2476' ends teleporting on edge 'A1A2', time=2934.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2940: Phase map is empty at time 2940 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1306'; waited too long (jam), lane='B1A1_H_s_0', time=2942.00.
+Warning: Vehicle 'veh1306' ends teleporting on edge 'A1A2', time=2942.00.
+Warning: Teleporting vehicle 'veh3005'; waited too long (yield), lane='A2B2_H_s_3', time=2946.00.
+Warning: Teleporting vehicle 'veh395'; waited too long (wrong lane), lane='B2B1_H_s_1', time=2946.00.
+Warning: Vehicle 'veh3005' ends teleporting on edge 'B2A2', time=2946.00.
+Warning: Vehicle 'veh395' ends teleporting on edge 'B1A1', time=2946.00.
+Warning: Teleporting vehicle 'veh987'; waited too long (jam), lane=':B1A1_H_node_0_2', time=2956.00.
+Warning: Teleporting vehicle 'veh169'; waited too long (yield), lane='B1A1_H_s_1', time=2956.00.
+Warning: Vehicle 'veh169' ends teleporting on edge 'A1A0', time=2956.00.
+Warning: Teleporting vehicle 'veh1388'; waited too long (wrong lane), lane='B2B1_H_s_1', time=2957.00.
+Warning: Teleporting vehicle 'veh3037'; waited too long (yield), lane='A1B1_H_s_3', time=2957.00.
+Warning: Vehicle 'veh3037' ends teleporting on edge 'B1A1', time=2957.00.
+Warning: Teleporting vehicle 'veh401'; waited too long (wrong lane), lane='A1B1_H_s_0', time=2958.00.
+Warning: Vehicle 'veh1388' ends teleporting on edge 'B1A1', time=2958.00.
+Warning: Teleporting vehicle 'veh1504'; waited too long (wrong lane), lane='A1B1_H_s_2', time=2959.00.
+Warning: Vehicle 'veh1504' ends teleporting on edge 'B1A1', time=2959.00.
+Warning: Vehicle 'veh987' ends teleporting on edge 'A1A2', time=2965.00.
+Warning: Teleporting vehicle 'veh2215'; waited too long (yield), lane='E4E3_H_s_0', time=2966.00.
+Warning: Vehicle 'veh2215' ends teleporting on edge 'E3D3', time=2966.00.
+Warning: Teleporting vehicle 'veh1913'; waited too long (wrong lane), lane='C0C1_H_s_1', time=2969.00.
+Warning: Vehicle 'veh1913' ends teleporting on edge 'C1B1', time=2969.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 2970: Phase map is empty at time 2970 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2932'; waited too long (yield), lane='C1B1_H_s_1', time=2976.00.
+Warning: Vehicle 'veh2932' ends teleporting on edge 'B1A1', time=2976.00.
+Warning: Teleporting vehicle 'veh3046'; waited too long (yield), lane='E2E1_H_s_0', time=2995.00.
+Warning: Vehicle 'veh3046' ends teleporting on edge 'E1D1', time=2995.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3000: Phase map is empty at time 3000 - no traffic light states generated
+INFO:TrafficSimulator:Step 3000: 781 vehicles active
+Step #3000.00 (4ms ~= 250.00*RT, ~195500.00UPS, TraCI: 42ms, vehicles TOT 1626 ACT 782 BUF
+Warning: Teleporting vehicle 'veh1663'; waited too long (yield), lane='B2B1_H_s_0', time=3001.00.
+Warning: Vehicle 'veh1663' ends teleporting on edge 'B1A1', time=3001.00.
+Warning: Teleporting vehicle 'veh1415'; waited too long (yield), lane='B2A2_H_s_2', time=3002.00.
+Warning: Vehicle 'veh1415' ends teleporting on edge 'A2B2', time=3002.00.
+Warning: Teleporting vehicle 'veh838'; waited too long (jam), lane='C2C1_H_s_0', time=3017.00.
+Warning: Vehicle 'veh838' ends teleporting on edge 'C1B1', time=3017.00.
+Warning: Teleporting vehicle 'veh2872'; waited too long (yield), lane='A1A0_H_s_1', time=3020.00.
+Warning: Vehicle 'veh2872' ends teleporting on edge 'A0A1', time=3020.00.
+Warning: Teleporting vehicle 'veh1474'; waited too long (jam), lane='B0A0_H_s_0', time=3024.00.
+Warning: Vehicle 'veh1474' ends teleporting on edge 'A0A1', time=3024.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3030: Phase map is empty at time 3030 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1530'; waited too long (wrong lane), lane='B1C1_H_s_2', time=3038.00.
+Warning: Vehicle 'veh1530' ends teleporting on edge 'C1B1', time=3038.00.
+Warning: Teleporting vehicle 'veh476'; waited too long (yield), lane='C0C1_H_s_2', time=3053.00.
+Warning: Vehicle 'veh476' ends teleporting on edge 'C1B1', time=3053.00.
+Warning: Teleporting vehicle 'veh3008'; waited too long (jam), lane=':C0C1_H_node_0_2', time=3057.00.
+Warning: Teleporting vehicle 'veh1944'; waited too long (yield), lane='A1A2_H_s_0', time=3057.00.
+Warning: Vehicle 'veh1944' ends teleporting on edge 'A2B2', time=3057.00.
+Warning: Teleporting vehicle 'veh2981'; waited too long (wrong lane), lane='C1B1_H_s_0', time=3059.00.
+Warning: Vehicle 'veh2981' ends teleporting on edge 'B1A1', time=3059.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3060: Phase map is empty at time 3060 - no traffic light states generated
+Warning: Vehicle 'veh3008' ends teleporting on edge 'C1B1', time=3063.00.
+Warning: Teleporting vehicle 'veh2180'; waited too long (wrong lane), lane='D0D1_H_s_0', time=3076.00.
+Warning: Vehicle 'veh2180' ends teleporting on edge 'D1C1', time=3076.00.
+Warning: Teleporting vehicle 'veh2819'; waited too long (wrong lane), lane='D0D1_H_s_1', time=3082.00.
+Warning: Vehicle 'veh2819' ends teleporting on edge 'D1C1', time=3082.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3090: Phase map is empty at time 3090 - no traffic light states generated
+Warning: Teleporting vehicle 'veh644'; waited too long (jam), lane=':D0D1_H_node_0_1', time=3098.00.
+INFO:TrafficSimulator:Step 3100: 766 vehicles active
+Step #3100.00 (3ms ~= 333.33*RT, ~256000.00UPS, TraCI: 4ms, vehicles TOT 1658 ACT 768 BUF 
+Warning: Vehicle 'veh644' ends teleporting on edge 'D1C1', time=3103.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3120: Phase map is empty at time 3120 - no traffic light states generated
+Warning: Teleporting vehicle 'veh837'; waited too long (wrong lane), lane='E1D1_H_s_2', time=3121.00.
+Warning: Vehicle 'veh837' ends teleporting on edge 'D1C1', time=3121.00.
+Warning: Teleporting vehicle 'veh2391'; waited too long (jam), lane=':D1E1_H_node_0_1', time=3128.00.
+Warning: Teleporting vehicle 'veh1449'; waited too long (yield), lane='C2C1_H_s_2', time=3137.00.
+Warning: Vehicle 'veh1449' ends teleporting on edge 'C1D1', time=3137.00.
+Warning: Teleporting vehicle 'veh1078'; waited too long (wrong lane), lane='C1D1_H_s_1', time=3141.00.
+Warning: Vehicle 'veh1078' ends teleporting on edge 'D1C1', time=3141.00.
+Warning: Teleporting vehicle 'veh636'; waited too long (yield), lane=':D1_17_0', time=3146.00.
+Warning: Vehicle 'veh636' ends teleporting on edge 'D1D2', time=3146.00.
+Warning: Teleporting vehicle 'veh2883'; waited too long (wrong lane), lane='C1D1_H_s_1', time=3149.00.
+Warning: Vehicle 'veh2883' ends teleporting on edge 'D1C1', time=3149.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3150: Phase map is empty at time 3150 - no traffic light states generated
+Warning: Vehicle 'veh2391' ends teleporting on edge 'E1D1', time=3153.00.
+Warning: Teleporting vehicle 'veh435'; waited too long (yield), lane='D1C1_H_s_1', time=3156.00.
+Warning: Vehicle 'veh435' ends teleporting on edge 'C1B1', time=3156.00.
+Warning: Teleporting vehicle 'veh1287'; waited too long (yield), lane='D0D1_H_s_2', time=3160.00.
+Warning: Vehicle 'veh1287' ends teleporting on edge 'D1C1', time=3160.00.
+Warning: Teleporting vehicle 'veh2777'; waited too long (jam), lane=':D1_6_0', time=3175.00.
+Warning: Vehicle 'veh2777' ends teleporting on edge 'D1C1', time=3175.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3180: Phase map is empty at time 3180 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2379'; waited too long (yield), lane='E1D1_H_s_1', time=3185.00.
+Warning: Vehicle 'veh2379' ends teleporting on edge 'D1C1', time=3185.00.
+Warning: Teleporting vehicle 'veh1647'; waited too long (jam), lane=':D1_1_0', time=3187.00.
+Warning: Vehicle 'veh1647' ends teleporting on edge 'D1D0', time=3187.00.
+Warning: Teleporting vehicle 'veh2964'; waited too long (yield), lane=':D1_3_0', time=3189.00.
+Warning: Teleporting vehicle 'veh2406'; waited too long (jam), lane=':D1_1_0', time=3189.00.
+Warning: Vehicle 'veh2406' ends teleporting on edge 'D1D0', time=3189.00.
+Warning: Vehicle 'veh2964' ends teleporting on edge 'D1D2', time=3189.00.
+Warning: Teleporting vehicle 'veh1939'; waited too long (wrong lane), lane='E1D1_H_s_0', time=3190.00.
+Warning: Vehicle 'veh1939' ends teleporting on edge 'D1C1', time=3190.00.
+Warning: Vehicle 'veh401' ends teleporting on edge 'C1D1', time=3195.00.
+Warning: Teleporting vehicle 'veh2607'; waited too long (wrong lane), lane='E2E3_H_s_0', time=3199.00.
+Warning: Vehicle 'veh2607' ends teleporting on edge 'E3D3', time=3199.00.
+Step #3200.00Warning: Teleporting vehicle 'veh1569'; waited too long (jam), lane='C2D2_H_s_0', time=3200.00.
+Warning: Teleporting vehicle 'veh1180'; waited too long (yield), lane='E2E3_H_s_1', time=3200.00.
+Warning: Vehicle 'veh1569' ends teleporting on edge 'D2D1', time=3200.00.
+Warning: Vehicle 'veh1180' ends teleporting on edge 'E3D3', time=3200.00.
+INFO:TrafficSimulator:Step 3200: 756 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3210: Phase map is empty at time 3210 - no traffic light states generated
+ (4ms ~= 250.00*RT, ~189000.00UPS, TraCI: 4ms, vehicles TOT 1677 ACT 756 BUF 
+Warning: Teleporting vehicle 'veh822'; waited too long (wrong lane), lane='E1D1_H_s_0', time=3211.00.
+Warning: Teleporting vehicle 'veh1998'; waited too long (wrong lane), lane='C3D3_H_s_2', time=3211.00.
+Warning: Teleporting vehicle 'veh676'; waited too long (yield), lane='D3E3_H_s_2', time=3211.00.
+Warning: Vehicle 'veh822' ends teleporting on edge 'D1C1', time=3211.00.
+Warning: Vehicle 'veh676' ends teleporting on edge 'E3D3', time=3211.00.
+Warning: Vehicle 'veh1998' ends teleporting on edge 'D3C3', time=3211.00.
+Warning: Teleporting vehicle 'veh3152'; waited too long (wrong lane), lane='D1E1_H_s_0', time=3218.00.
+Warning: Vehicle 'veh3152' ends teleporting on edge 'E1D1', time=3218.00.
+Warning: Teleporting vehicle 'veh2921'; waited too long (wrong lane), lane='B2C2_H_s_2', time=3226.00.
+Warning: Vehicle 'veh2921' ends teleporting on edge 'C2B2', time=3226.00.
+Warning: Teleporting vehicle 'veh1103'; waited too long (yield), lane='B2A2_H_s_1', time=3238.00.
+Warning: Vehicle 'veh1103' ends teleporting on edge 'A2A1', time=3238.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3240: Phase map is empty at time 3240 - no traffic light states generated
+Warning: Teleporting vehicle 'veh3166'; waited too long (wrong lane), lane='B1A1_H_s_1', time=3244.00.
+Warning: Vehicle 'veh3166' ends teleporting on edge 'A1A2', time=3244.00.
+Warning: Teleporting vehicle 'veh2658'; waited too long (jam), lane='B1A1_H_s_0', time=3247.00.
+Warning: Vehicle 'veh2658' ends teleporting on edge 'A1A2', time=3247.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3270: Phase map is empty at time 3270 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1602'; waited too long (wrong lane), lane='A1B1_H_s_2', time=3271.00.
+Warning: Vehicle 'veh1602' ends teleporting on edge 'B1A1', time=3271.00.
+Warning: Teleporting vehicle 'veh2570'; waited too long (wrong lane), lane='A0A1_H_s_0', time=3272.00.
+Warning: Teleporting vehicle 'veh1648'; waited too long (yield), lane='A0A1_H_s_1', time=3272.00.
+Warning: Vehicle 'veh1648' ends teleporting on edge 'A1A2', time=3272.00.
+Warning: Vehicle 'veh2570' ends teleporting on edge 'A1A0', time=3272.00.
+Warning: Teleporting vehicle 'veh1908'; waited too long (wrong lane), lane='A1B1_H_s_2', time=3273.00.
+Warning: Vehicle 'veh1908' ends teleporting on edge 'B1A1', time=3274.00.
+Warning: Teleporting vehicle 'veh812'; waited too long (wrong lane), lane='A1B1_H_s_0', time=3277.00.
+Warning: Vehicle 'veh812' ends teleporting on edge 'B1A1', time=3277.00.
+Warning: Teleporting vehicle 'veh507'; waited too long (jam), lane=':B3A3_H_node_0_1', time=3279.00.
+Warning: Teleporting vehicle 'veh2601'; waited too long (yield), lane='C1B1_H_s_1', time=3281.00.
+Warning: Vehicle 'veh2601' ends teleporting on edge 'B1A1', time=3281.00.
+Warning: Teleporting vehicle 'veh638'; waited too long (jam), lane='B3A3_1', time=3283.00.
+Warning: Vehicle 'veh507' ends teleporting on edge 'A3A2', time=3285.00.
+Warning: Teleporting vehicle 'veh2009'; waited too long (yield), lane=':D1_18_0', time=3288.00.
+Warning: Vehicle 'veh2009' ends teleporting on edge 'D1C1', time=3288.00.
+Warning: Vehicle 'veh638' ends teleporting on edge 'A3A2', time=3289.00.
+Warning: Teleporting vehicle 'veh2648'; waited too long (jam), lane=':A2B2_H_node_0_2', time=3294.00.
+Warning: Teleporting vehicle 'veh2182'; waited too long (jam), lane=':D1_0_0', time=3295.00.
+Warning: Vehicle 'veh2182' ends teleporting on edge 'D1C1', time=3295.00.
+Warning: Teleporting vehicle 'veh597'; waited too long (wrong lane), lane='A2B2_H_s_3', time=3296.00.
+Warning: Vehicle 'veh597' ends teleporting on edge 'B2B3', time=3296.00.
+Warning: Teleporting vehicle 'veh2021'; waited too long (wrong lane), lane='A2B2_H_s_1', time=3297.00.
+Warning: Vehicle 'veh2021' ends teleporting on edge 'B2A2', time=3297.00.
+Warning: Vehicle 'veh2648' ends teleporting on edge 'A2B2_H_s', time=3298.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3300: Phase map is empty at time 3300 - no traffic light states generated
+INFO:TrafficSimulator:Step 3300: 737 vehicles active
+Step #3300.00 (4ms ~= 250.00*RT, ~184250.00UPS, TraCI: 39ms, vehicles TOT 1695 ACT 737 BUF
+Warning: Teleporting vehicle 'veh2858'; waited too long (wrong lane), lane='D1C1_H_s_2', time=3302.00.
+Warning: Teleporting vehicle 'veh417'; waited too long (wrong lane), lane='B3B2_H_s_2', time=3302.00.
+Warning: Teleporting vehicle 'veh517'; waited too long (wrong lane), lane='D1C1_H_s_0', time=3302.00.
+Warning: Teleporting vehicle 'veh2933'; waited too long (jam), lane='E2E1_H_s_0', time=3302.00.
+Warning: Vehicle 'veh2858' ends teleporting on edge 'C1B1', time=3302.00.
+Warning: Vehicle 'veh517' ends teleporting on edge 'C1B1', time=3302.00.
+Warning: Vehicle 'veh2933' ends teleporting on edge 'E1D1', time=3302.00.
+Warning: Vehicle 'veh417' ends teleporting on edge 'B2A2', time=3302.00.
+Warning: Teleporting vehicle 'veh1525'; waited too long (yield), lane='B2B1_H_s_0', time=3308.00.
+Warning: Teleporting vehicle 'veh1986'; waited too long (wrong lane), lane='A2B2_H_s_0', time=3318.00.
+Warning: Vehicle 'veh1986' ends teleporting on edge 'B2A2', time=3318.00.
+Warning: Teleporting vehicle 'veh2011'; waited too long (wrong lane), lane='B0B1_H_s_1', time=3320.00.
+Warning: Teleporting vehicle 'veh1248'; waited too long (yield), lane='C2C1_H_s_0', time=3322.00.
+Warning: Vehicle 'veh1248' ends teleporting on edge 'C1B1', time=3322.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3330: Phase map is empty at time 3330 - no traffic light states generated
+Warning: Teleporting vehicle 'veh3080'; waited too long (wrong lane), lane='B1C1_H_s_1', time=3343.00.
+Warning: Vehicle 'veh3080' ends teleporting on edge 'C1C2', time=3343.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3360: Phase map is empty at time 3360 - no traffic light states generated
+Warning: Teleporting vehicle 'veh3179'; waited too long (jam), lane='C2C1_0', time=3363.00.
+Warning: Teleporting vehicle 'veh628'; waited too long (jam), lane=':C1_1_0', time=3366.00.
+Warning: Vehicle 'veh628' ends teleporting on edge 'C1C0', time=3366.00.
+Warning: Vehicle 'veh3179' ends teleporting on edge 'C1B1', time=3366.00.
+Warning: Teleporting vehicle 'veh1668'; waited too long (yield), lane='B3C3_H_s_1', time=3369.00.
+Warning: Vehicle 'veh1668' ends teleporting on edge 'C3D3', time=3369.00.
+Warning: Teleporting vehicle 'veh1717'; waited too long (wrong lane), lane='B3A3_H_s_0', time=3389.00.
+Warning: Vehicle 'veh1717' ends teleporting on edge 'A3A2', time=3389.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3390: Phase map is empty at time 3390 - no traffic light states generated
+Warning: Teleporting vehicle 'veh124'; waited too long (jam), lane=':A1B1_H_node_0_1', time=3392.00.
+Warning: Teleporting vehicle 'veh1385'; waited too long (yield), lane='B1C1_H_s_3', time=3395.00.
+INFO:TrafficSimulator:Step 3400: 730 vehicles active
+Step #3400.00 (3ms ~= 333.33*RT, ~244666.67UPS, TraCI: 4ms, vehicles TOT 1716 ACT 734 BUF 
+Warning: Teleporting vehicle 'veh1585'; waited too long (jam), lane='A1B1_0', time=3407.00.
+Warning: Vehicle 'veh124' ends teleporting on edge 'B1C1', time=3411.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3420: Phase map is empty at time 3420 - no traffic light states generated
+Warning: Teleporting vehicle 'veh990'; waited too long (yield), lane='D0D1_H_s_1', time=3421.00.
+Warning: Vehicle 'veh990' ends teleporting on edge 'D1D2', time=3421.00.
+Warning: Teleporting vehicle 'veh1524'; waited too long (yield), lane='C0C1_H_s_1', time=3427.00.
+Warning: Vehicle 'veh1524' ends teleporting on edge 'C1C2', time=3427.00.
+Warning: Teleporting vehicle 'veh1689'; waited too long (yield), lane='C0C1_H_s_2', time=3429.00.
+Warning: Vehicle 'veh1689' ends teleporting on edge 'C1B1', time=3429.00.
+Warning: Teleporting vehicle 'veh1311'; waited too long (jam), lane=':D2_6_0', time=3431.00.
+Warning: Vehicle 'veh1311' ends teleporting on edge 'D2C2', time=3431.00.
+Warning: Teleporting vehicle 'veh2262'; waited too long (wrong lane), lane='E2D2_H_s_0', time=3434.00.
+Warning: Vehicle 'veh2262' ends teleporting on edge 'D2D1', time=3434.00.
+Warning: Vehicle 'veh1585' ends teleporting on edge 'B1A1_H_s', time=3444.00.
+Warning: Teleporting vehicle 'veh1113'; waited too long (wrong lane), lane='C1D1_H_s_2', time=3446.00.
+Warning: Vehicle 'veh1113' ends teleporting on edge 'D1C1', time=3446.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3450: Phase map is empty at time 3450 - no traffic light states generated
+Warning: Teleporting vehicle 'veh183'; waited too long (yield), lane='D1C1_H_s_1', time=3461.00.
+Warning: Teleporting vehicle 'veh2180'; waited too long (jam), lane='D1C1_1', time=3465.00.
+Warning: Vehicle 'veh2180' ends teleporting on edge 'D1C1_H_s', time=3465.00.
+Warning: Teleporting vehicle 'veh1692'; waited too long (jam), lane='D2D1_H_s_0', time=3472.00.
+Warning: Vehicle 'veh1692' ends teleporting on edge 'D1C1', time=3472.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3480: Phase map is empty at time 3480 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2605'; waited too long (wrong lane), lane='A4A3_H_s_1', time=3481.00.
+Warning: Vehicle 'veh2605' ends teleporting on edge 'A3A2', time=3481.00.
+Warning: Teleporting vehicle 'veh553'; waited too long (wrong lane), lane='D4D3_H_s_1', time=3482.00.
+Warning: Vehicle 'veh553' ends teleporting on edge 'D3C3', time=3482.00.
+Warning: Teleporting vehicle 'veh2974'; waited too long (yield), lane='C3D3_H_s_3', time=3486.00.
+Warning: Teleporting vehicle 'veh2425'; waited too long (jam), lane=':D3_1_0', time=3486.00.
+Warning: Vehicle 'veh2425' ends teleporting on edge 'D3D2', time=3486.00.
+Warning: Vehicle 'veh2974' ends teleporting on edge 'D3C3', time=3486.00.
+Warning: Teleporting vehicle 'veh518'; waited too long (jam), lane=':D2_16_0', time=3498.00.
+Warning: Vehicle 'veh518' ends teleporting on edge 'D2E2', time=3498.00.
+Step #3500.00Warning: Teleporting vehicle 'veh673'; waited too long (yield), lane='E1D1_H_s_1', time=3500.00.
+Warning: Vehicle 'veh673' ends teleporting on edge 'D1C1', time=3500.00.
+INFO:TrafficSimulator:Step 3500: 717 vehicles active
+ (3ms ~= 333.33*RT, ~240333.33UPS, TraCI: 4ms, vehicles TOT 1737 ACT 721 BUF 
+Warning: Teleporting vehicle 'veh1029'; waited too long (jam), lane=':D2_15_0', time=3506.00.
+Warning: Vehicle 'veh1029' ends teleporting on edge 'D2D1', time=3506.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3510: Phase map is empty at time 3510 - no traffic light states generated
+Warning: Teleporting vehicle 'veh837'; waited too long (yield), lane='D1C1_H_s_3', time=3511.00.
+Warning: Vehicle 'veh837' ends teleporting on edge 'C1D1', time=3511.00.
+Warning: Teleporting vehicle 'veh972'; waited too long (jam), lane='D3D2_H_s_1', time=3512.00.
+Warning: Vehicle 'veh972' ends teleporting on edge 'D2D1', time=3512.00.
+Warning: Teleporting vehicle 'veh910'; waited too long (wrong lane), lane='C3D3_H_s_1', time=3513.00.
+Warning: Vehicle 'veh910' ends teleporting on edge 'D3D2', time=3513.00.
+Warning: Vehicle 'veh1385' ends teleporting on edge 'C1B1_H_s', time=3514.00.
+Warning: Teleporting vehicle 'veh566'; waited too long (yield), lane='A4A3_H_s_0', time=3521.00.
+Warning: Vehicle 'veh566' ends teleporting on edge 'A3A2', time=3521.00.
+Warning: Teleporting vehicle 'veh505'; waited too long (yield), lane='D0D1_H_s_2', time=3522.00.
+Warning: Vehicle 'veh505' ends teleporting on edge 'D1C1', time=3522.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3540: Phase map is empty at time 3540 - no traffic light states generated
+Warning: Vehicle 'veh1525' ends teleporting on edge 'A1A2', time=3545.00.
+Warning: Teleporting vehicle 'veh2962'; waited too long (wrong lane), lane='C1D1_H_s_1', time=3551.00.
+Warning: Vehicle 'veh2962' ends teleporting on edge 'D1C1', time=3551.00.
+Warning: Teleporting vehicle 'veh1040'; waited too long (yield), lane='D1E1_H_s_2', time=3553.00.
+Warning: Vehicle 'veh1040' ends teleporting on edge 'E1D1', time=3553.00.
+Warning: Vehicle 'veh2011' ends teleporting on edge 'A1A2', time=3557.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3570: Phase map is empty at time 3570 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1750'; waited too long (yield), lane='E1D1_H_s_1', time=3572.00.
+Warning: Vehicle 'veh1750' ends teleporting on edge 'D1C1', time=3572.00.
+Warning: Teleporting vehicle 'veh1009'; waited too long (wrong lane), lane='A1B1_H_s_0', time=3579.00.
+Warning: Teleporting vehicle 'veh2872'; waited too long (jam), lane=':A0A1_H_node_0_2', time=3580.00.
+Warning: Teleporting vehicle 'veh2876'; waited too long (wrong lane), lane='C1B1_H_s_0', time=3585.00.
+Warning: Vehicle 'veh2876' ends teleporting on edge 'B1A1', time=3585.00.
+Warning: Vehicle 'veh2872' ends teleporting on edge 'A1A2', time=3586.00.
+Warning: Teleporting vehicle 'veh1913'; waited too long (jam), lane=':C1B1_H_node_0_2', time=3587.00.
+Warning: Teleporting vehicle 'veh561'; waited too long (jam), lane='C1B1_H_s_1', time=3587.00.
+Warning: Vehicle 'veh183' ends teleporting on edge 'C1B1_H_s', time=3587.00.
+Warning: Vehicle 'veh561' ends teleporting on edge 'B1A1', time=3587.00.
+Warning: Vehicle 'veh1913' ends teleporting on edge 'B1A1', time=3591.00.
+Warning: Teleporting vehicle 'veh1235'; waited too long (yield), lane=':D1_18_0', time=3593.00.
+Warning: Vehicle 'veh1235' ends teleporting on edge 'D1C1', time=3593.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 3600: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3600: Phase map is empty at time 3600 - no traffic light states generated
+INFO:TrafficSimulator:Step 3600: 695 vehicles active
+Step #3600.00 (3ms ~= 333.33*RT, ~232000.00UPS, TraCI: 108ms, vehicles TOT 1763 ACT 696 BU
+Warning: Teleporting vehicle 'veh2744'; waited too long (jam), lane='B0A0_H_s_0', time=3601.00.
+Warning: Vehicle 'veh2744' ends teleporting on edge 'A0A1', time=3601.00.
+Warning: Teleporting vehicle 'veh3045'; waited too long (wrong lane), lane='C1B1_H_s_1', time=3604.00.
+Warning: Vehicle 'veh3045' ends teleporting on edge 'B1B2', time=3604.00.
+Warning: Teleporting vehicle 'veh144'; waited too long (yield), lane='E2E1_H_s_0', time=3608.00.
+Warning: Vehicle 'veh144' ends teleporting on edge 'E1D1', time=3608.00.
+Warning: Teleporting vehicle 'veh928'; waited too long (jam), lane='B2B1_H_s_0', time=3614.00.
+Warning: Vehicle 'veh928' ends teleporting on edge 'B1A1', time=3614.00.
+Warning: Teleporting vehicle 'veh2933'; waited too long (jam), lane='E1D1_1', time=3615.00.
+Warning: Vehicle 'veh2933' ends teleporting on edge 'D1C1', time=3620.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3630: Phase map is empty at time 3630 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2835'; waited too long (yield), lane='A0A1_H_s_1', time=3632.00.
+Warning: Vehicle 'veh2835' ends teleporting on edge 'A1A2', time=3632.00.
+Warning: Teleporting vehicle 'veh1047'; waited too long (yield), lane=':B1_17_0', time=3636.00.
+Warning: Vehicle 'veh1047' ends teleporting on edge 'B1B2', time=3636.00.
+Warning: Teleporting vehicle 'veh2816'; waited too long (wrong lane), lane='B1C1_H_s_2', time=3649.00.
+Warning: Vehicle 'veh2816' ends teleporting on edge 'C1C0', time=3649.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3660: Phase map is empty at time 3660 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1994'; waited too long (wrong lane), lane='D1D2_H_s_1', time=3661.00.
+Warning: Teleporting vehicle 'veh2900'; waited too long (yield), lane='A1B1_H_s_1', time=3661.00.
+Warning: Vehicle 'veh1994' ends teleporting on edge 'D2C2', time=3661.00.
+Warning: Teleporting vehicle 'veh2691'; waited too long (wrong lane), lane='A1B1_H_s_2', time=3662.00.
+Warning: Vehicle 'veh2691' ends teleporting on edge 'B1A1', time=3662.00.
+Warning: Teleporting vehicle 'veh2450'; waited too long (yield), lane='C2C1_H_s_0', time=3668.00.
+Warning: Vehicle 'veh1009' ends teleporting on edge 'B1C1', time=3668.00.
+Warning: Vehicle 'veh2450' ends teleporting on edge 'C1B1', time=3668.00.
+Warning: Teleporting vehicle 'veh2945'; waited too long (wrong lane), lane='B3C3_H_s_1', time=3673.00.
+Warning: Vehicle 'veh2945' ends teleporting on edge 'C3B3', time=3673.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3690: Phase map is empty at time 3690 - no traffic light states generated
+Warning: Vehicle 'veh2900' ends teleporting on edge 'B1C1', time=3690.00.
+INFO:TrafficSimulator:Step 3700: 672 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3720: Phase map is empty at time 3720 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3750: Phase map is empty at time 3750 - no traffic light states generated
+Step #3700.00 (3ms ~= 333.33*RT, ~224000.00UPS, TraCI: 4ms, vehicles TOT 1773 ACT 672 BUF 
+Warning: Teleporting vehicle 'veh1386'; waited too long (wrong lane), lane='C1D1_H_s_2', time=3750.00.
+Warning: Vehicle 'veh1386' ends teleporting on edge 'D1C1', time=3750.00.
+Warning: Teleporting vehicle 'veh2089'; waited too long (wrong lane), lane='D0D1_H_s_1', time=3751.00.
+Warning: Vehicle 'veh2089' ends teleporting on edge 'D1C1', time=3751.00.
+Warning: Teleporting vehicle 'veh3066'; waited too long (wrong lane), lane='C0C1_H_s_1', time=3752.00.
+Warning: Vehicle 'veh3066' ends teleporting on edge 'C1B1', time=3752.00.
+Warning: Teleporting vehicle 'veh774'; waited too long (yield), lane=':B1_18_0', time=3753.00.
+Warning: Vehicle 'veh774' ends teleporting on edge 'B1A1', time=3753.00.
+Warning: Teleporting vehicle 'veh417'; waited too long (jam), lane=':B2A2_H_node_0_2', time=3767.00.
+Warning: Teleporting vehicle 'veh1212'; waited too long (jam), lane='D1C1_H_s_1', time=3767.00.
+Warning: Teleporting vehicle 'veh2191'; waited too long (wrong lane), lane='C0C1_H_s_1', time=3767.00.
+Warning: Vehicle 'veh417' ends teleporting on edge 'A2A1', time=3772.00.
+Warning: Teleporting vehicle 'veh1884'; waited too long (yield), lane='D2D1_H_s_0', time=3778.00.
+Warning: Vehicle 'veh1884' ends teleporting on edge 'D1C1', time=3778.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3780: Phase map is empty at time 3780 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1967'; waited too long (yield), lane='E2D2_H_s_2', time=3781.00.
+Warning: Teleporting vehicle 'veh618'; waited too long (yield), lane='B0B1_H_s_1', time=3781.00.
+Warning: Vehicle 'veh1967' ends teleporting on edge 'D2D1', time=3781.00.
+Warning: Vehicle 'veh618' ends teleporting on edge 'B1B2', time=3781.00.
+Warning: Teleporting vehicle 'veh2819'; waited too long (yield), lane='D1C1_H_s_2', time=3782.00.
+Warning: Teleporting vehicle 'veh2180'; waited too long (yield), lane='D1C1_H_s_0', time=3782.00.
+Warning: Vehicle 'veh2819' ends teleporting on edge 'C1C0', time=3782.00.
+Warning: Vehicle 'veh2180' ends teleporting on edge 'C1C2', time=3782.00.
+Warning: Teleporting vehicle 'veh1636'; waited too long (yield), lane='C0C1_H_s_2', time=3787.00.
+Warning: Teleporting vehicle 'veh931'; waited too long (yield), lane='A4A3_H_s_1', time=3789.00.
+Warning: Vehicle 'veh2191' ends teleporting on edge 'C1B1', time=3789.00.
+Warning: Vehicle 'veh931' ends teleporting on edge 'A3B3', time=3789.00.
+INFO:TrafficSimulator:Step 3800: 642 vehicles active
+Step #3800.00 (3ms ~= 333.33*RT, ~214666.67UPS, TraCI: 4ms, vehicles TOT 1788 ACT 644 BUF 
+Warning: Teleporting vehicle 'veh897'; waited too long (yield), lane='C3B3_H_s_1', time=3806.00.
+Warning: Vehicle 'veh897' ends teleporting on edge 'B3A3', time=3806.00.
+Warning: Teleporting vehicle 'veh2473'; waited too long (jam), lane=':D2_16_0', time=3808.00.
+Warning: Teleporting vehicle 'veh2964'; waited too long (jam), lane=':D2_12_0', time=3808.00.
+Warning: Vehicle 'veh2473' ends teleporting on edge 'D2E2', time=3808.00.
+Warning: Vehicle 'veh2964' ends teleporting on edge 'D2C2', time=3808.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3810: Phase map is empty at time 3810 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1382'; waited too long (jam), lane='C2D2_H_s_0', time=3810.00.
+Warning: Vehicle 'veh1382' ends teleporting on edge 'D2D1', time=3810.00.
+Warning: Teleporting vehicle 'veh1269'; waited too long (wrong lane), lane='B3A3_H_s_0', time=3813.00.
+Warning: Vehicle 'veh1269' ends teleporting on edge 'A3A2', time=3813.00.
+Warning: Teleporting vehicle 'veh1176'; waited too long (jam), lane='B3A3_H_s_1', time=3815.00.
+Warning: Vehicle 'veh1176' ends teleporting on edge 'A3A2', time=3815.00.
+Warning: Vehicle 'veh1212' ends teleporting on edge 'C1B1', time=3816.00.
+Warning: Teleporting vehicle 'veh2556'; waited too long (jam), lane='B2C2_H_s_0', time=3825.00.
+Warning: Vehicle 'veh2556' ends teleporting on edge 'C2C1', time=3825.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3840: Phase map is empty at time 3840 - no traffic light states generated
+Warning: Teleporting vehicle 'veh603'; waited too long (wrong lane), lane='B2C2_H_s_1', time=3847.00.
+Warning: Vehicle 'veh603' ends teleporting on edge 'C2B2', time=3847.00.
+Warning: Teleporting vehicle 'veh452'; waited too long (yield), lane='A2B2_H_s_0', time=3850.00.
+Warning: Vehicle 'veh452' ends teleporting on edge 'B2B1', time=3850.00.
+Warning: Teleporting vehicle 'veh215'; waited too long (yield), lane='B0B1_H_s_2', time=3865.00.
+Warning: Vehicle 'veh215' ends teleporting on edge 'B1A1', time=3865.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3870: Phase map is empty at time 3870 - no traffic light states generated
+Warning: Teleporting vehicle 'veh480'; waited too long (yield), lane='D0D1_H_s_2', time=3882.00.
+Warning: Vehicle 'veh480' ends teleporting on edge 'D1C1', time=3882.00.
+Warning: Teleporting vehicle 'veh2014'; waited too long (yield), lane='C2B2_H_s_2', time=3888.00.
+Warning: Teleporting vehicle 'veh416'; waited too long (yield), lane='A3A2_H_s_1', time=3888.00.
+Warning: Vehicle 'veh416' ends teleporting on edge 'A2B2', time=3888.00.
+Warning: Vehicle 'veh2014' ends teleporting on edge 'B2B1', time=3888.00.
+Warning: Teleporting vehicle 'veh2645'; waited too long (yield), lane=':D1_18_0', time=3898.00.
+Warning: Vehicle 'veh2645' ends teleporting on edge 'D1C1', time=3898.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3900: Phase map is empty at time 3900 - no traffic light states generated
+INFO:TrafficSimulator:Step 3900: 616 vehicles active
+Step #3900.00 (3ms ~= 333.33*RT, ~205666.67UPS, TraCI: 34ms, vehicles TOT 1805 ACT 617 BUF
+Warning: Teleporting vehicle 'veh2461'; waited too long (yield), lane='D1E1_H_s_2', time=3902.00.
+Warning: Vehicle 'veh2461' ends teleporting on edge 'E1D1', time=3902.00.
+Warning: Teleporting vehicle 'veh2343'; waited too long (jam), lane='E2E1_H_s_0', time=3913.00.
+Warning: Vehicle 'veh2343' ends teleporting on edge 'E1D1', time=3913.00.
+Warning: Teleporting vehicle 'veh2478'; waited too long (jam), lane='B2B1_H_s_0', time=3920.00.
+Warning: Teleporting vehicle 'veh1040'; waited too long (jam), lane='E1D1_1', time=3920.00.
+Warning: Vehicle 'veh2478' ends teleporting on edge 'B1A1', time=3920.00.
+Warning: Vehicle 'veh1040' ends teleporting on edge 'E1D1_H_s', time=3920.00.
+Warning: Teleporting vehicle 'veh2400'; waited too long (wrong lane), lane='A2B2_H_s_3', time=3927.00.
+Warning: Vehicle 'veh2400' ends teleporting on edge 'B2C2', time=3927.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3930: Phase map is empty at time 3930 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1955'; waited too long (wrong lane), lane='D2C2_H_s_3', time=3931.00.
+Warning: Vehicle 'veh1955' ends teleporting on edge 'C2B2', time=3931.00.
+Warning: Teleporting vehicle 'veh1836'; waited too long (wrong lane), lane='D2C2_H_s_0', time=3932.00.
+Warning: Vehicle 'veh1836' ends teleporting on edge 'C2B2', time=3933.00.
+Warning: Teleporting vehicle 'veh2392'; waited too long (yield), lane='B0B1_H_s_2', time=3934.00.
+Warning: Vehicle 'veh2392' ends teleporting on edge 'B1A1', time=3934.00.
+Warning: Teleporting vehicle 'veh3045'; waited too long (yield), lane='B1B2_H_s_2', time=3942.00.
+Warning: Vehicle 'veh3045' ends teleporting on edge 'B2A2', time=3942.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3960: Phase map is empty at time 3960 - no traffic light states generated
+Warning: Teleporting vehicle 'veh3000'; waited too long (yield), lane='C2B2_H_s_1', time=3965.00.
+Warning: Vehicle 'veh3000' ends teleporting on edge 'B2A2', time=3965.00.
+Warning: Teleporting vehicle 'veh2128'; waited too long (wrong lane), lane='A1B1_H_s_2', time=3966.00.
+Warning: Vehicle 'veh2128' ends teleporting on edge 'B1A1', time=3966.00.
+Warning: Teleporting vehicle 'veh1799'; waited too long (jam), lane='B3B2_H_s_0', time=3975.00.
+Warning: Vehicle 'veh1799' ends teleporting on edge 'B2A2', time=3975.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 3990: Phase map is empty at time 3990 - no traffic light states generated
+INFO:TrafficSimulator:Step 4000: 601 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4020: Phase map is empty at time 4020 - no traffic light states generated
+Step #4000.00 (2ms ~= 500.00*RT, ~301000.00UPS, TraCI: 4ms, vehicles TOT 1829 ACT 602 BUF 
+Warning: Teleporting vehicle 'veh698'; waited too long (wrong lane), lane='D2C2_H_s_2', time=4022.00.
+Warning: Vehicle 'veh698' ends teleporting on edge 'C2B2', time=4022.00.
+Warning: Vehicle 'veh1636' ends teleporting on edge 'B1B2', time=4024.00.
+Warning: Teleporting vehicle 'veh1567'; waited too long (wrong lane), lane='C1C2_H_s_1', time=4037.00.
+Warning: Teleporting vehicle 'veh2575'; waited too long (yield), lane='B2A2_H_s_1', time=4037.00.
+Warning: Vehicle 'veh1567' ends teleporting on edge 'C2B2', time=4037.00.
+Warning: Vehicle 'veh2575' ends teleporting on edge 'A2A1', time=4037.00.
+Warning: Teleporting vehicle 'veh683'; waited too long (wrong lane), lane='C1C2_H_s_1', time=4039.00.
+Warning: Teleporting vehicle 'veh351'; waited too long (jam), lane=':D2C2_H_node_0_2', time=4039.00.
+Warning: Vehicle 'veh683' ends teleporting on edge 'C2B2', time=4039.00.
+Warning: Teleporting vehicle 'veh1589'; waited too long (yield), lane='A1B1_H_s_1', time=4048.00.
+Warning: Vehicle 'veh1589' ends teleporting on edge 'B1C1', time=4048.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4050: Phase map is empty at time 4050 - no traffic light states generated
+Warning: Teleporting vehicle 'veh490'; waited too long (yield), lane='C1C2_H_s_2', time=4053.00.
+Warning: Vehicle 'veh490' ends teleporting on edge 'C2B2', time=4053.00.
+Warning: Teleporting vehicle 'veh2174'; waited too long (yield), lane='D2C2_H_s_1', time=4058.00.
+Warning: Vehicle 'veh351' ends teleporting on edge 'C2B2', time=4058.00.
+Warning: Vehicle 'veh2174' ends teleporting on edge 'C2B2', time=4058.00.
+Warning: Teleporting vehicle 'veh1327'; waited too long (yield), lane='E1D1_H_s_1', time=4067.00.
+Warning: Vehicle 'veh1327' ends teleporting on edge 'D1C1', time=4067.00.
+Warning: Teleporting vehicle 'veh220'; waited too long (yield), lane='D1C1_H_s_1', time=4074.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4080: Phase map is empty at time 4080 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1555'; waited too long (jam), lane='D2D1_H_s_0', time=4083.00.
+Warning: Vehicle 'veh1555' ends teleporting on edge 'D1C1', time=4083.00.
+Warning: Vehicle 'veh220' ends teleporting on edge 'C1B1', time=4085.00.
+Warning: Teleporting vehicle 'veh1029'; waited too long (jam), lane=':D2D1_H_node_0_2', time=4086.00.
+Warning: Teleporting vehicle 'veh1195'; waited too long (yield), lane=':D1_17_0', time=4086.00.
+Warning: Vehicle 'veh1195' ends teleporting on edge 'D1D2', time=4086.00.
+Warning: Teleporting vehicle 'veh59'; waited too long (jam), lane=':D1_1_0', time=4089.00.
+Warning: Vehicle 'veh59' ends teleporting on edge 'D1D0', time=4089.00.
+Warning: Vehicle 'veh1029' ends teleporting on edge 'D1C1_H_s', time=4091.00.
+INFO:TrafficSimulator:Step 4100: 582 vehicles active
+Step #4100.00 (3ms ~= 333.33*RT, ~194000.00UPS, TraCI: 4ms, vehicles TOT 1848 ACT 582 BUF 
+Warning: Teleporting vehicle 'veh1692'; waited too long (jam), lane='D1C1_1', time=4102.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4110: Phase map is empty at time 4110 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1125'; waited too long (wrong lane), lane='C0C1_H_s_1', time=4111.00.
+Warning: Vehicle 'veh1692' ends teleporting on edge 'C1C2', time=4111.00.
+Warning: Teleporting vehicle 'veh788'; waited too long (wrong lane), lane='C2D2_H_s_0', time=4112.00.
+Warning: Teleporting vehicle 'veh2391'; waited too long (wrong lane), lane='E1D1_H_s_0', time=4112.00.
+Warning: Teleporting vehicle 'veh784'; waited too long (wrong lane), lane='D1C1_H_s_0', time=4112.00.
+Warning: Vehicle 'veh788' ends teleporting on edge 'D2C2', time=4112.00.
+Warning: Teleporting vehicle 'veh339'; waited too long (jam), lane=':D2_12_0', time=4113.00.
+Warning: Vehicle 'veh339' ends teleporting on edge 'D2C2', time=4113.00.
+Warning: Teleporting vehicle 'veh1575'; waited too long (yield), lane='C2C1_H_s_0', time=4118.00.
+Warning: Vehicle 'veh1575' ends teleporting on edge 'C1B1', time=4120.00.
+Warning: Teleporting vehicle 'veh2399'; waited too long (jam), lane=':D2_16_0', time=4126.00.
+Warning: Vehicle 'veh2399' ends teleporting on edge 'D2E2', time=4126.00.
+Warning: Teleporting vehicle 'veh2265'; waited too long (wrong lane), lane='D1C1_H_s_0', time=4128.00.
+Warning: Teleporting vehicle 'veh934'; waited too long (wrong lane), lane='C0C1_H_s_1', time=4131.00.
+Warning: Teleporting vehicle 'veh990'; waited too long (jam), lane=':D2_12_0', time=4133.00.
+Warning: Vehicle 'veh990' ends teleporting on edge 'D2C2', time=4133.00.
+Warning: Teleporting vehicle 'veh635'; waited too long (jam), lane=':C0C1_H_node_0_1', time=4134.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4140: Phase map is empty at time 4140 - no traffic light states generated
+Warning: Vehicle 'veh784' ends teleporting on edge 'C1B1', time=4143.00.
+Warning: Vehicle 'veh635' ends teleporting on edge 'C1B1_H_s', time=4144.00.
+Warning: Teleporting vehicle 'veh2490'; waited too long (yield), lane='C0C1_H_s_2', time=4147.00.
+Warning: Vehicle 'veh2391' ends teleporting on edge 'D1C1', time=4162.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4170: Phase map is empty at time 4170 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2694'; waited too long (yield), lane='B1C1_H_s_3', time=4172.00.
+Warning: Teleporting vehicle 'veh771'; waited too long (wrong lane), lane='B3A3_H_s_0', time=4177.00.
+Warning: Teleporting vehicle 'veh2877'; waited too long (jam), lane='B3A3_H_s_1', time=4177.00.
+Warning: Vehicle 'veh2877' ends teleporting on edge 'A3A2', time=4177.00.
+Warning: Teleporting vehicle 'veh897'; waited too long (jam), lane=':B3A3_H_node_0_2', time=4178.00.
+Warning: Vehicle 'veh771' ends teleporting on edge 'A3A2', time=4178.00.
+Warning: Vehicle 'veh897' ends teleporting on edge 'A3A2', time=4184.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4200: Phase map is empty at time 4200 - no traffic light states generated
+Step #4200.00Warning: Teleporting vehicle 'veh2052'; waited too long (yield), lane='B2C2_H_s_0', time=4200.00.
+Warning: Vehicle 'veh2052' ends teleporting on edge 'C2C1', time=4200.00.
+INFO:TrafficSimulator:Step 4200: 526 vehicles active
+ (3ms ~= 333.33*RT, ~177000.00UPS, TraCI: 28ms, vehicles TOT 1859 ACT 531 BUF
+Warning: Teleporting vehicle 'veh2182'; waited too long (wrong lane), lane='D1C1_H_s_2', time=4202.00.
+Warning: Teleporting vehicle 'veh1517'; waited too long (yield), lane='C1D1_H_s_3', time=4204.00.
+Warning: Teleporting vehicle 'veh2031'; waited too long (jam), lane='A3A2_H_s_1', time=4207.00.
+Warning: Vehicle 'veh2031' ends teleporting on edge 'A2B2', time=4207.00.
+Warning: Teleporting vehicle 'veh1454'; waited too long (yield), lane=':D2_17_0', time=4213.00.
+Warning: Vehicle 'veh1454' ends teleporting on edge 'D2D3', time=4213.00.
+Warning: Teleporting vehicle 'veh1353'; waited too long (yield), lane='E2E1_H_s_0', time=4220.00.
+Warning: Vehicle 'veh1353' ends teleporting on edge 'E1D1', time=4220.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4230: Phase map is empty at time 4230 - no traffic light states generated
+Warning: Vehicle 'veh2182' ends teleporting on edge 'C1B1', time=4235.00.
+Warning: Vehicle 'veh2265' ends teleporting on edge 'C1B1', time=4237.00.
+Warning: Vehicle 'veh2490' ends teleporting on edge 'C1B1', time=4240.00.
+Warning: Teleporting vehicle 'veh1182'; waited too long (yield), lane='D0D1_H_s_2', time=4241.00.
+Warning: Vehicle 'veh1182' ends teleporting on edge 'D1C1', time=4241.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4260: Phase map is empty at time 4260 - no traffic light states generated
+Warning: Teleporting vehicle 'veh65'; waited too long (jam), lane=':D2_1_0', time=4266.00.
+Warning: Vehicle 'veh65' ends teleporting on edge 'D2D1', time=4266.00.
+Warning: Teleporting vehicle 'veh416'; waited too long (yield), lane='A2B2_H_s_3', time=4274.00.
+Warning: Vehicle 'veh416' ends teleporting on edge 'B2A2', time=4274.00.
+Warning: Teleporting vehicle 'veh214'; waited too long (yield), lane='B3B2_H_s_0', time=4283.00.
+Warning: Vehicle 'veh214' ends teleporting on edge 'B2A2', time=4283.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4290: Phase map is empty at time 4290 - no traffic light states generated
+Warning: Vehicle 'veh2694' ends teleporting on edge 'C1B1_H_s', time=4291.00.
+Warning: Teleporting vehicle 'veh1257'; waited too long (yield), lane=':D2_18_0', time=4295.00.
+Warning: Vehicle 'veh1257' ends teleporting on edge 'D2C2', time=4295.00.
+Warning: Teleporting vehicle 'veh3154'; waited too long (jam), lane=':D2_0_0', time=4296.00.
+Warning: Vehicle 'veh3154' ends teleporting on edge 'D2C2', time=4296.00.
+INFO:TrafficSimulator:Step 4300: 508 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4320: Phase map is empty at time 4320 - no traffic light states generated
+Step #4300.00 (2ms ~= 500.00*RT, ~255500.00UPS, TraCI: 4ms, vehicles TOT 1877 ACT 511 BUF 
+Warning: Vehicle 'veh1517' ends teleporting on edge 'D1C1_H_s', time=4323.00.
+Warning: Teleporting vehicle 'veh638'; waited too long (yield), lane='A3A2_H_s_0', time=4327.00.
+Warning: Vehicle 'veh638' ends teleporting on edge 'A2A1', time=4327.00.
+Warning: Teleporting vehicle 'veh2605'; waited too long (wrong lane), lane='A3A2_H_s_0', time=4330.00.
+Warning: Vehicle 'veh2605' ends teleporting on edge 'A2B2', time=4330.00.
+Warning: Vehicle 'veh1125' ends teleporting on edge 'B1A1', time=4348.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4350: Phase map is empty at time 4350 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2463'; waited too long (wrong lane), lane='A1B1_H_s_2', time=4352.00.
+Warning: Teleporting vehicle 'veh2118'; waited too long (yield), lane='D1E1_H_s_2', time=4352.00.
+Warning: Vehicle 'veh2463' ends teleporting on edge 'B1A1', time=4352.00.
+Warning: Vehicle 'veh2118' ends teleporting on edge 'E1D1', time=4352.00.
+Warning: Teleporting vehicle 'veh2744'; waited too long (wrong lane), lane='A0A1_H_s_1', time=4365.00.
+Warning: Vehicle 'veh934' ends teleporting on edge 'B1A1', time=4368.00.
+Warning: Teleporting vehicle 'veh3046'; waited too long (yield), lane='E1D1_H_s_1', time=4374.00.
+Warning: Teleporting vehicle 'veh2461'; waited too long (jam), lane='E1D1_1', time=4377.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4380: Phase map is empty at time 4380 - no traffic light states generated
+Warning: Teleporting vehicle 'veh814'; waited too long (yield), lane='D1C1_H_s_1', time=4380.00.
+Warning: Vehicle 'veh2461' ends teleporting on edge 'D1D2', time=4381.00.
+Warning: Teleporting vehicle 'veh2324'; waited too long (yield), lane='D2D1_H_s_0', time=4388.00.
+Warning: Vehicle 'veh2324' ends teleporting on edge 'D1C1', time=4388.00.
+Warning: Teleporting vehicle 'veh1967'; waited too long (jam), lane=':D2D1_H_node_0_2', time=4396.00.
+Warning: Vehicle 'veh3046' ends teleporting on edge 'D1C1', time=4397.00.
+Warning: Teleporting vehicle 'veh1132'; waited too long (wrong lane), lane='A1B1_H_s_2', time=4399.00.
+Warning: Vehicle 'veh1132' ends teleporting on edge 'B1A1', time=4399.00.
+Step #4400.00Warning: Vehicle 'veh1967' ends teleporting on edge 'D1C1', time=4400.00.
+INFO:TrafficSimulator:Step 4400: 515 vehicles active
+ (3ms ~= 333.33*RT, ~172333.33UPS, TraCI: 4ms, vehicles TOT 1896 ACT 517 BUF 
+Warning: Teleporting vehicle 'veh2385'; waited too long (yield), lane='B2B1_H_s_0', time=4402.00.
+Warning: Vehicle 'veh2385' ends teleporting on edge 'B1A1', time=4402.00.
+Warning: Teleporting vehicle 'veh563'; waited too long (jam), lane=':D2_2_0', time=4403.00.
+Warning: Vehicle 'veh563' ends teleporting on edge 'D2E2', time=4403.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4410: Phase map is empty at time 4410 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2274'; waited too long (jam), lane='C2C1_H_s_0', time=4425.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4440: Phase map is empty at time 4440 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4470: Phase map is empty at time 4470 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2903'; waited too long (wrong lane), lane='C2D2_H_s_1', time=4472.00.
+Warning: Teleporting vehicle 'veh1381'; waited too long (wrong lane), lane='C0C1_H_s_1', time=4472.00.
+Warning: Teleporting vehicle 'veh1040'; waited too long (wrong lane), lane='E1D1_H_s_0', time=4472.00.
+Warning: Vehicle 'veh1381' ends teleporting on edge 'C1B1', time=4472.00.
+Warning: Vehicle 'veh1040' ends teleporting on edge 'D1C1', time=4472.00.
+Warning: Vehicle 'veh2903' ends teleporting on edge 'D2C2', time=4472.00.
+Warning: Teleporting vehicle 'veh2663'; waited too long (yield), lane='B1C1_H_s_3', time=4474.00.
+Warning: Teleporting vehicle 'veh1653'; waited too long (yield), lane='C2D2_H_s_0', time=4481.00.
+Warning: Vehicle 'veh1653' ends teleporting on edge 'D2D1', time=4481.00.
+Warning: Teleporting vehicle 'veh1762'; waited too long (yield), lane='D1D2_H_s_2', time=4486.00.
+Warning: Vehicle 'veh1762' ends teleporting on edge 'D2C2', time=4486.00.
+Warning: Teleporting vehicle 'veh1115'; waited too long (wrong lane), lane='C0C1_H_s_1', time=4488.00.
+Warning: Teleporting vehicle 'veh1014'; waited too long (jam), lane=':C0C1_H_node_0_1', time=4490.00.
+Warning: Teleporting vehicle 'veh1809'; waited too long (jam), lane=':C0C1_H_node_0_1', time=4492.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 4500: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4500: Phase map is empty at time 4500 - no traffic light states generated
+INFO:TrafficSimulator:Step 4500: 509 vehicles active
+Step #4500.00 (2ms ~= 500.00*RT, ~258000.00UPS, TraCI: 82ms, vehicles TOT 1907 ACT 516 BUF
+Warning: Teleporting vehicle 'veh942'; waited too long (yield), lane='D1D2_H_s_1', time=4501.00.
+Warning: Vehicle 'veh942' ends teleporting on edge 'D2D3', time=4501.00.
+Warning: Teleporting vehicle 'veh2730'; waited too long (yield), lane='C0C1_H_s_2', time=4502.00.
+Warning: Teleporting vehicle 'veh1697'; waited too long (yield), lane=':B1_18_0', time=4506.00.
+Warning: Vehicle 'veh1697' ends teleporting on edge 'B1A1', time=4506.00.
+Warning: Teleporting vehicle 'veh1530'; waited too long (wrong lane), lane='C1B1_H_s_2', time=4514.00.
+Warning: Teleporting vehicle 'veh447'; waited too long (yield), lane='A3A2_H_s_1', time=4514.00.
+Warning: Vehicle 'veh1530' ends teleporting on edge 'B1B2', time=4514.00.
+Warning: Vehicle 'veh447' ends teleporting on edge 'A2B2', time=4514.00.
+Warning: Teleporting vehicle 'veh1221'; waited too long (yield), lane='D2C2_H_s_1', time=4520.00.
+Warning: Vehicle 'veh1221' ends teleporting on edge 'C2B2', time=4520.00.
+Warning: Teleporting vehicle 'veh788'; waited too long (jam), lane='D2C2_1', time=4525.00.
+Warning: Teleporting vehicle 'veh2578'; waited too long (yield), lane='E2D2_H_s_1', time=4526.00.
+Warning: Vehicle 'veh2578' ends teleporting on edge 'D2C2', time=4526.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4530: Phase map is empty at time 4530 - no traffic light states generated
+Warning: Vehicle 'veh788' ends teleporting on edge 'C2B2', time=4530.00.
+Warning: Teleporting vehicle 'veh912'; waited too long (wrong lane), lane='B2C2_H_s_1', time=4532.00.
+Warning: Teleporting vehicle 'veh2550'; waited too long (yield), lane='C1D1_H_s_3', time=4532.00.
+Warning: Vehicle 'veh912' ends teleporting on edge 'C2B2', time=4532.00.
+Warning: Teleporting vehicle 'veh2818'; waited too long (yield), lane=':D2_17_0', time=4535.00.
+Warning: Vehicle 'veh2818' ends teleporting on edge 'D2D3', time=4535.00.
+Warning: Teleporting vehicle 'veh1577'; waited too long (yield), lane='A4A3_H_s_0', time=4536.00.
+Warning: Vehicle 'veh1577' ends teleporting on edge 'A3A2', time=4536.00.
+Warning: Teleporting vehicle 'veh549'; waited too long (wrong lane), lane='B3A3_H_s_0', time=4540.00.
+Warning: Teleporting vehicle 'veh3134'; waited too long (jam), lane='B3A3_H_s_1', time=4540.00.
+Warning: Vehicle 'veh3134' ends teleporting on edge 'A3A2', time=4540.00.
+Warning: Vehicle 'veh549' ends teleporting on edge 'A3A2', time=4543.00.
+Warning: Vehicle 'veh2274' ends teleporting on edge 'C1B1_H_s', time=4544.00.
+Warning: Teleporting vehicle 'veh1086'; waited too long (wrong lane), lane='A2B2_H_s_2', time=4552.00.
+Warning: Vehicle 'veh1086' ends teleporting on edge 'B2B1', time=4552.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4560: Phase map is empty at time 4560 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1279'; waited too long (wrong lane), lane='C0C1_H_s_0', time=4561.00.
+Warning: Teleporting vehicle 'veh404'; waited too long (yield), lane='A4A3_H_s_0', time=4562.00.
+Warning: Vehicle 'veh404' ends teleporting on edge 'A3A2', time=4562.00.
+Warning: Teleporting vehicle 'veh774'; waited too long (yield), lane='A1A2_H_s_0', time=4564.00.
+Warning: Vehicle 'veh774' ends teleporting on edge 'A2B2', time=4564.00.
+Warning: Vehicle 'veh1115' ends teleporting on edge 'C1B1', time=4571.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4590: Phase map is empty at time 4590 - no traffic light states generated
+Warning: Teleporting vehicle 'veh476'; waited too long (yield), lane='C1B1_H_s_0', time=4591.00.
+Warning: Vehicle 'veh476' ends teleporting on edge 'B1B2', time=4591.00.
+Step #4600.00Warning: Teleporting vehicle 'veh455'; waited too long (yield), lane='D0D1_H_s_2', time=4600.00.
+INFO:TrafficSimulator:Step 4600: 501 vehicles active
+ (2ms ~= 500.00*RT, ~255000.00UPS, TraCI: 4ms, vehicles TOT 1924 ACT 510 BUF 
+Warning: Teleporting vehicle 'veh3033'; waited too long (yield), lane='B0B1_H_s_1', time=4602.00.
+Warning: Teleporting vehicle 'veh1488'; waited too long (jam), lane=':B1_12_0', time=4602.00.
+Warning: Vehicle 'veh1488' ends teleporting on edge 'B1A1', time=4602.00.
+Warning: Vehicle 'veh3033' ends teleporting on edge 'B1B2', time=4602.00.
+Warning: Teleporting vehicle 'veh1303'; waited too long (wrong lane), lane='B0B1_H_s_1', time=4606.00.
+Warning: Vehicle 'veh1303' ends teleporting on edge 'B1C1', time=4606.00.
+Warning: Vehicle 'veh2744' ends teleporting on edge 'B1C1', time=4608.00.
+Warning: Teleporting vehicle 'veh2265'; waited too long (jam), lane=':C1B1_H_node_0_2', time=4610.00.
+Warning: Vehicle 'veh814' ends teleporting on edge 'B1A1', time=4617.00.
+Warning: Vehicle 'veh1014' ends teleporting on edge 'B1A1', time=4617.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4620: Phase map is empty at time 4620 - no traffic light states generated
+Warning: Vehicle 'veh2265' ends teleporting on edge 'B1B2', time=4620.00.
+Warning: Teleporting vehicle 'veh1081'; waited too long (wrong lane), lane='B3B2_H_s_1', time=4621.00.
+Warning: Vehicle 'veh1081' ends teleporting on edge 'B2A2', time=4621.00.
+Warning: Vehicle 'veh1809' ends teleporting on edge 'B1A1', time=4625.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4650: Phase map is empty at time 4650 - no traffic light states generated
+Warning: Vehicle 'veh2550' teleports beyond arrival edge 'D1C1', time=4650.00.
+Warning: Teleporting vehicle 'veh1962'; waited too long (wrong lane), lane='D2C2_H_s_2', time=4652.00.
+Warning: Vehicle 'veh1962' ends teleporting on edge 'C2B2', time=4652.00.
+Warning: Teleporting vehicle 'veh2282'; waited too long (wrong lane), lane='A1B1_H_s_0', time=4663.00.
+Warning: Teleporting vehicle 'veh2735'; waited too long (jam), lane=':B1_16_0', time=4663.00.
+Warning: Vehicle 'veh2735' ends teleporting on edge 'B1C1', time=4663.00.
+Warning: Vehicle 'veh2282' ends teleporting on edge 'B1A1', time=4663.00.
+Warning: Teleporting vehicle 'veh296'; waited too long (yield), lane='A2A1_H_s_1', time=4676.00.
+Warning: Vehicle 'veh296' ends teleporting on edge 'A1B1', time=4676.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4680: Phase map is empty at time 4680 - no traffic light states generated
+Warning: Teleporting vehicle 'veh3152'; waited too long (yield), lane='E1D1_H_s_1', time=4680.00.
+Warning: Teleporting vehicle 'veh2544'; waited too long (wrong lane), lane='D1C1_H_s_0', time=4691.00.
+Warning: Vehicle 'veh2544' ends teleporting on edge 'C1D1', time=4691.00.
+Warning: Teleporting vehicle 'veh3182'; waited too long (yield), lane='D1C1_H_s_1', time=4693.00.
+Warning: Teleporting vehicle 'veh2534'; waited too long (yield), lane='E2E1_H_s_0', time=4694.00.
+Warning: Teleporting vehicle 'veh2247'; waited too long (jam), lane='D2D1_H_s_0', time=4694.00.
+Warning: Vehicle 'veh2534' ends teleporting on edge 'E1D1', time=4694.00.
+INFO:TrafficSimulator:Step 4700: 500 vehicles active
+Step #4700.00 (3ms ~= 333.33*RT, ~169000.00UPS, TraCI: 3ms, vehicles TOT 1936 ACT 507 BUF 
+Warning: Teleporting vehicle 'veh2064'; waited too long (jam), lane='B2B1_H_s_0', time=4709.00.
+Warning: Vehicle 'veh2064' ends teleporting on edge 'B1A1', time=4709.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4710: Phase map is empty at time 4710 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1748'; waited too long (yield), lane='D1E1_H_s_2', time=4711.00.
+Warning: Vehicle 'veh1748' ends teleporting on edge 'E1D1', time=4711.00.
+Warning: Teleporting vehicle 'veh1995'; waited too long (yield), lane='A0A1_H_s_0', time=4712.00.
+Warning: Vehicle 'veh1995' ends teleporting on edge 'A1B1', time=4714.00.
+Warning: Vehicle 'veh2663' ends teleporting on edge 'B1A1', time=4715.00.
+Warning: Teleporting vehicle 'veh2358'; waited too long (yield), lane='B3B2_H_s_0', time=4716.00.
+Warning: Vehicle 'veh2358' ends teleporting on edge 'B2A2', time=4716.00.
+Warning: Teleporting vehicle 'veh1967'; waited too long (jam), lane='D1C1_1', time=4719.00.
+Warning: Vehicle 'veh3152' ends teleporting on edge 'D1C1', time=4719.00.
+Warning: Teleporting vehicle 'veh3000'; waited too long (jam), lane=':B2A2_H_node_0_2', time=4725.00.
+Warning: Teleporting vehicle 'veh1347'; waited too long (jam), lane='C2C1_H_s_0', time=4731.00.
+Warning: Vehicle 'veh3000' ends teleporting on edge 'A2A1', time=4734.00.
+Warning: Vehicle 'veh2730' ends teleporting on edge 'B1B2', time=4739.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4740: Phase map is empty at time 4740 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2720'; waited too long (wrong lane), lane='B0B1_H_s_1', time=4741.00.
+Warning: Vehicle 'veh2720' ends teleporting on edge 'B1A1', time=4741.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4770: Phase map is empty at time 4770 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1104'; waited too long (yield), lane='C1B1_H_s_1', time=4780.00.
+Warning: Vehicle 'veh1104' ends teleporting on edge 'B1A1', time=4780.00.
+Warning: Teleporting vehicle 'veh784'; waited too long (wrong lane), lane='C1B1_H_s_1', time=4781.00.
+Warning: Vehicle 'veh784' ends teleporting on edge 'B1B2', time=4781.00.
+Warning: Vehicle 'veh1967' ends teleporting on edge 'C1B1_H_s', time=4781.00.
+Warning: Vehicle 'veh1279' ends teleporting on edge 'B1A1', time=4798.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4800: Phase map is empty at time 4800 - no traffic light states generated
+INFO:TrafficSimulator:Step 4800: 491 vehicles active
+Step #4800.00 (3ms ~= 333.33*RT, ~165000.00UPS, TraCI: 28ms, vehicles TOT 1949 ACT 495 BUF
+Warning: Teleporting vehicle 'veh2861'; waited too long (yield), lane='B1C1_H_s_3', time=4802.00.
+Warning: Teleporting vehicle 'veh2650'; waited too long (jam), lane=':B2_2_0', time=4806.00.
+Warning: Vehicle 'veh2650' ends teleporting on edge 'B2C2', time=4806.00.
+Warning: Teleporting vehicle 'veh1922'; waited too long (jam), lane=':B2_2_0', time=4813.00.
+Warning: Vehicle 'veh1922' ends teleporting on edge 'B2C2', time=4813.00.
+Warning: Teleporting vehicle 'veh1329'; waited too long (jam), lane='C0C1_1', time=4817.00.
+Warning: Teleporting vehicle 'veh364'; waited too long (wrong lane), lane='A3A2_H_s_0', time=4820.00.
+Warning: Vehicle 'veh364' ends teleporting on edge 'A2B2', time=4820.00.
+Warning: Teleporting vehicle 'veh517'; waited too long (jam), lane='C1B1_1', time=4821.00.
+Warning: Teleporting vehicle 'veh53'; waited too long (yield), lane='A3A2_H_s_1', time=4821.00.
+Warning: Vehicle 'veh2861' ends teleporting on edge 'C1B1', time=4821.00.
+Warning: Vehicle 'veh1347' ends teleporting on edge 'C1B1', time=4822.00.
+Warning: Vehicle 'veh53' ends teleporting on edge 'A2B2', time=4823.00.
+Warning: Vehicle 'veh1329' ends teleporting on edge 'C1B1', time=4828.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4830: Phase map is empty at time 4830 - no traffic light states generated
+Warning: Vehicle 'veh517' ends teleporting on edge 'B1B2', time=4830.00.
+Warning: Teleporting vehicle 'veh3008'; waited too long (wrong lane), lane='C1B1_H_s_2', time=4831.00.
+Warning: Vehicle 'veh3008' ends teleporting on edge 'B1A1', time=4831.00.
+Warning: Teleporting vehicle 'veh2574'; waited too long (wrong lane), lane='C0C1_H_s_1', time=4832.00.
+Warning: Teleporting vehicle 'veh749'; waited too long (wrong lane), lane='E1D1_H_s_0', time=4832.00.
+Warning: Vehicle 'veh749' ends teleporting on edge 'D1C1', time=4832.00.
+Warning: Vehicle 'veh2574' ends teleporting on edge 'C1B1', time=4832.00.
+Warning: Teleporting vehicle 'veh2526'; waited too long (yield), lane='E2D2_H_s_1', time=4833.00.
+Warning: Teleporting vehicle 'veh2058'; waited too long (wrong lane), lane='C0C1_H_s_1', time=4833.00.
+Warning: Vehicle 'veh2526' ends teleporting on edge 'D2C2', time=4833.00.
+Warning: Vehicle 'veh2058' ends teleporting on edge 'C1B1', time=4835.00.
+Warning: Vehicle 'veh455' ends teleporting on edge 'C1C2', time=4837.00.
+Warning: Teleporting vehicle 'veh1706'; waited too long (yield), lane='C1D1_H_s_3', time=4838.00.
+Warning: Vehicle 'veh1706' ends teleporting on edge 'D1C1', time=4838.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4860: Phase map is empty at time 4860 - no traffic light states generated
+Warning: Vehicle 'veh3182' ends teleporting on edge 'C1B1_H_s', time=4860.00.
+Warning: Teleporting vehicle 'veh1090'; waited too long (yield), lane='C0C1_H_s_2', time=4863.00.
+Warning: Vehicle 'veh1090' ends teleporting on edge 'C1B1', time=4863.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4890: Phase map is empty at time 4890 - no traffic light states generated
+INFO:TrafficSimulator:Step 4900: 461 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4920: Phase map is empty at time 4920 - no traffic light states generated
+Step #4900.00 (2ms ~= 500.00*RT, ~231000.00UPS, TraCI: 4ms, vehicles TOT 1965 ACT 462 BUF 
+Warning: Teleporting vehicle 'veh2620'; waited too long (jam), lane='A4A3_1', time=4927.00.
+Warning: Teleporting vehicle 'veh1599'; waited too long (wrong lane), lane='B3B2_H_s_1', time=4929.00.
+Warning: Vehicle 'veh1599' ends teleporting on edge 'B2A2', time=4929.00.
+Warning: Vehicle 'veh2620' ends teleporting on edge 'A3B3', time=4936.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4950: Phase map is empty at time 4950 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2896'; waited too long (yield), lane='A4A3_H_s_1', time=4951.00.
+Warning: Vehicle 'veh2896' ends teleporting on edge 'A3B3', time=4951.00.
+Warning: Teleporting vehicle 'veh1384'; waited too long (yield), lane='D0D1_H_s_2', time=4960.00.
+Warning: Teleporting vehicle 'veh3144'; waited too long (yield), lane='A4A3_H_s_0', time=4962.00.
+Warning: Vehicle 'veh3144' ends teleporting on edge 'A3A2', time=4962.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 4980: Phase map is empty at time 4980 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1624'; waited too long (yield), lane='E1D1_H_s_1', time=4985.00.
+INFO:TrafficSimulator:Step 5000: 396 vehicles active
+Step #5000.00 (2ms ~= 500.00*RT, ~199500.00UPS, TraCI: 4ms, vehicles TOT 1981 ACT 399 BUF 
+Warning: Teleporting vehicle 'veh3002'; waited too long (jam), lane='D2D1_H_s_0', time=5001.00.
+Warning: Vehicle 'veh2247' ends teleporting on edge 'C1B1_H_s', time=5005.00.
+Warning: Teleporting vehicle 'veh1353'; waited too long (jam), lane='E1D1_1', time=5008.00.
+Warning: Teleporting vehicle 'veh367'; waited too long (jam), lane='E2E1_H_s_0', time=5009.00.
+Warning: Vehicle 'veh367' ends teleporting on edge 'E1D1', time=5009.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5010: Phase map is empty at time 5010 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2777'; waited too long (wrong lane), lane='D1C1_H_s_0', time=5011.00.
+Warning: Vehicle 'veh2777' ends teleporting on edge 'C1B1', time=5011.00.
+Warning: Teleporting vehicle 'veh1313'; waited too long (wrong lane), lane='D0D1_H_s_1', time=5012.00.
+Warning: Vehicle 'veh1313' ends teleporting on edge 'D1C1', time=5012.00.
+Warning: Teleporting vehicle 'veh3079'; waited too long (yield), lane='C2D2_H_s_0', time=5016.00.
+Warning: Vehicle 'veh3079' ends teleporting on edge 'D2D1', time=5016.00.
+Warning: Teleporting vehicle 'veh2962'; waited too long (jam), lane='D1C1_2', time=5029.00.
+Warning: Vehicle 'veh3002' ends teleporting on edge 'D1C1', time=5029.00.
+Warning: Vehicle 'veh2962' ends teleporting on edge 'C1B1', time=5033.00.
+Warning: Teleporting vehicle 'veh1736'; waited too long (yield), lane='C2C1_H_s_0', time=5037.00.
+Warning: Vehicle 'veh1736' ends teleporting on edge 'C1B1', time=5037.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5040: Phase map is empty at time 5040 - no traffic light states generated
+Warning: Vehicle 'veh1624' ends teleporting on edge 'D1C1', time=5047.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5070: Phase map is empty at time 5070 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5100: Phase map is empty at time 5100 - no traffic light states generated
+INFO:TrafficSimulator:Step 5100: 339 vehicles active
+Step #5100.00 (1ms ~= 1000.00*RT, ~341000.00UPS, TraCI: 21ms, vehicles TOT 2001 ACT 341 BU
+Warning: Vehicle 'veh1353' ends teleporting on edge 'D1C1_H_s', time=5118.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5130: Phase map is empty at time 5130 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5160: Phase map is empty at time 5160 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1449'; waited too long (yield), lane='C1D1_H_s_3', time=5162.00.
+Warning: Vehicle 'veh1449' ends teleporting on edge 'D1C1', time=5162.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5190: Phase map is empty at time 5190 - no traffic light states generated
+Warning: Vehicle 'veh1384' ends teleporting on edge 'C1C2', time=5197.00.
+INFO:TrafficSimulator:Step 5200: 325 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5220: Phase map is empty at time 5220 - no traffic light states generated
+Step #5200.00 (1ms ~= 1000.00*RT, ~325000.00UPS, TraCI: 4ms, vehicles TOT 2059 ACT 325 BUF
+Warning: Teleporting vehicle 'veh991'; waited too long (wrong lane), lane='C0C1_H_s_2', time=5221.00.
+Warning: Vehicle 'veh991' ends teleporting on edge 'C1D1', time=5221.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5250: Phase map is empty at time 5250 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5280: Phase map is empty at time 5280 - no traffic light states generated
+INFO:TrafficSimulator:Step 5300: 440 vehicles active
+Step #5300.00 (2ms ~= 500.00*RT, ~220000.00UPS, TraCI: 4ms, vehicles TOT 2231 ACT 440 BUF 
+Warning: Teleporting vehicle 'veh2673'; waited too long (yield), lane='D2D1_H_s_0', time=5309.00.
+Warning: Vehicle 'veh2673' ends teleporting on edge 'D1C1', time=5309.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5310: Phase map is empty at time 5310 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1756'; waited too long (yield), lane='D0D1_H_s_2', time=5319.00.
+Warning: Vehicle 'veh1756' ends teleporting on edge 'D1C1', time=5319.00.
+Warning: Teleporting vehicle 'veh1161'; waited too long (jam), lane='C2D2_H_s_0', time=5324.00.
+Warning: Vehicle 'veh1161' ends teleporting on edge 'D2D1', time=5324.00.
+Warning: Teleporting vehicle 'veh2534'; waited too long (jam), lane='E1D1_1', time=5326.00.
+Warning: Vehicle 'veh2534' ends teleporting on edge 'D1D2', time=5331.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5340: Phase map is empty at time 5340 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1308'; waited too long (yield), lane='E1D1_H_s_1', time=5345.00.
+Warning: Vehicle 'veh1308' ends teleporting on edge 'D1C1', time=5345.00.
+Warning: Teleporting vehicle 'veh1812'; waited too long (yield), lane='D1E1_H_s_2', time=5349.00.
+Warning: Vehicle 'veh1812' ends teleporting on edge 'E1D1', time=5349.00.
+Warning: Teleporting vehicle 'veh3125'; waited too long (jam), lane='E2E1_H_s_0', time=5365.00.
+Warning: Vehicle 'veh3125' ends teleporting on edge 'E1D1', time=5365.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5370: Phase map is empty at time 5370 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1553'; waited too long (yield), lane='E1D1_H_s_1', time=5371.00.
+Warning: Vehicle 'veh1553' ends teleporting on edge 'D1C1', time=5371.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 5400: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5400: Phase map is empty at time 5400 - no traffic light states generated
+INFO:TrafficSimulator:Step 5400: 506 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5430: Phase map is empty at time 5430 - no traffic light states generated
+Step #5400.00 (3ms ~= 333.33*RT, ~168666.67UPS, TraCI: 83ms, vehicles TOT 2372 ACT 506 BUF
+Warning: Vehicle 'veh321' performs emergency braking on lane ':B1_5_0' with decel=9.00, wished=4.50, severity=1.00, time=5448.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5460: Phase map is empty at time 5460 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1470'; waited too long (wrong lane), lane='D0D1_H_s_1', time=5461.00.
+Warning: Vehicle 'veh1470' ends teleporting on edge 'D1C1', time=5461.00.
+Warning: Teleporting vehicle 'veh542'; waited too long (wrong lane), lane='A4A3_H_s_1', time=5462.00.
+Warning: Vehicle 'veh542' ends teleporting on edge 'A3A2', time=5462.00.
+Warning: Teleporting vehicle 'veh412'; waited too long (yield), lane='C1D1_H_s_3', time=5470.00.
+Warning: Vehicle 'veh412' ends teleporting on edge 'D1C1', time=5473.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5490: Phase map is empty at time 5490 - no traffic light states generated
+Warning: Teleporting vehicle 'veh316'; waited too long (wrong lane), lane='A0A1_H_s_0', time=5499.00.
+Warning: Vehicle 'veh316' ends teleporting on edge 'A1A2', time=5499.00.
+INFO:TrafficSimulator:Step 5500: 564 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5520: Phase map is empty at time 5520 - no traffic light states generated
+Step #5500.00 (3ms ~= 333.33*RT, ~188000.00UPS, TraCI: 4ms, vehicles TOT 2503 ACT 564 BUF 
+Warning: Vehicle 'veh376' performs emergency braking on lane 'B2A2_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=5531.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5550: Phase map is empty at time 5550 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5580: Phase map is empty at time 5580 - no traffic light states generated
+INFO:TrafficSimulator:Step 5600: 637 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5610: Phase map is empty at time 5610 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5640: Phase map is empty at time 5640 - no traffic light states generated
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5670: Phase map is empty at time 5670 - no traffic light states generated
+Step #5600.00 (3ms ~= 333.33*RT, ~212333.33UPS, TraCI: 3ms, vehicles TOT 2647 ACT 637 BUF 
+Warning: Teleporting vehicle 'veh1734'; waited too long (yield), lane='E1D1_H_s_0', time=5673.00.
+Warning: Teleporting vehicle 'veh2136'; waited too long (yield), lane='E2E1_H_s_0', time=5673.00.
+Warning: Vehicle 'veh2136' ends teleporting on edge 'E1D1', time=5673.00.
+Warning: Vehicle 'veh1734' ends teleporting on edge 'D1D2', time=5673.00.
+Warning: Teleporting vehicle 'veh1443'; waited too long (yield), lane='D0D1_H_s_2', time=5678.00.
+Warning: Vehicle 'veh1443' ends teleporting on edge 'D1C1', time=5678.00.
+Warning: Teleporting vehicle 'veh354'; waited too long (yield), lane='D1D2_H_s_2', time=5684.00.
+Warning: Vehicle 'veh354' ends teleporting on edge 'D2C2', time=5684.00.
+Warning: Teleporting vehicle 'veh2714'; waited too long (yield), lane='E3E2_H_s_0', time=5690.00.
+Warning: Vehicle 'veh2714' ends teleporting on edge 'E2D2', time=5690.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5700: Phase map is empty at time 5700 - no traffic light states generated
+INFO:TrafficSimulator:Step 5700: 719 vehicles active
+Step #5700.00 (3ms ~= 333.33*RT, ~239666.67UPS, TraCI: 39ms, vehicles TOT 2782 ACT 719 BUF
+Warning: Teleporting vehicle 'veh2459'; waited too long (wrong lane), lane='D1E1_H_s_1', time=5708.00.
+Warning: Vehicle 'veh2459' ends teleporting on edge 'E1D1', time=5708.00.
+Warning: Teleporting vehicle 'veh3042'; waited too long (wrong lane), lane='D1E1_H_s_1', time=5709.00.
+Warning: Vehicle 'veh3042' ends teleporting on edge 'E1D1', time=5709.00.
+Warning: Teleporting vehicle 'veh3018'; waited too long (yield), lane='D1E1_H_s_2', time=5711.00.
+Warning: Vehicle 'veh3018' ends teleporting on edge 'E1D1', time=5711.00.
+Warning: Teleporting vehicle 'veh1777'; waited too long (wrong lane), lane='A2B2_H_s_0', time=5713.00.
+Warning: Teleporting vehicle 'veh1707'; waited too long (jam), lane='A2B2_H_s_1', time=5713.00.
+Warning: Vehicle 'veh1707' ends teleporting on edge 'B2C2', time=5713.00.
+Warning: Vehicle 'veh1777' ends teleporting on edge 'B2A2', time=5713.00.
+Warning: Teleporting vehicle 'veh1168'; waited too long (wrong lane), lane='A1B1_H_s_3', time=5715.00.
+Warning: Vehicle 'veh1168' ends teleporting on edge 'B1C1', time=5715.00.
+Warning: Teleporting vehicle 'veh2166'; waited too long (wrong lane), lane='A1B1_H_s_2', time=5718.00.
+Warning: Vehicle 'veh2166' ends teleporting on edge 'B1B0', time=5718.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5730: Phase map is empty at time 5730 - no traffic light states generated
+Warning: Teleporting vehicle 'veh121'; waited too long (yield), lane='A1A2_H_s_0', time=5748.00.
+Warning: Vehicle 'veh121' ends teleporting on edge 'A2B2', time=5748.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5760: Phase map is empty at time 5760 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2359'; waited too long (wrong lane), lane='D0D1_H_s_0', time=5774.00.
+Warning: Vehicle 'veh2359' ends teleporting on edge 'D1C1', time=5774.00.
+Warning: Teleporting vehicle 'veh1755'; waited too long (yield), lane='A3A2_H_s_1', time=5777.00.
+Warning: Vehicle 'veh1755' ends teleporting on edge 'A2B2', time=5777.00.
+Warning: Teleporting vehicle 'veh2571'; waited too long (wrong lane), lane='C3B3_H_s_2', time=5780.00.
+Warning: Vehicle 'veh2571' ends teleporting on edge 'B3C3', time=5780.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5790: Phase map is empty at time 5790 - no traffic light states generated
+INFO:TrafficSimulator:Step 5800: 799 vehicles active
+Step #5800.00 (4ms ~= 250.00*RT, ~199750.00UPS, TraCI: 4ms, vehicles TOT 2898 ACT 799 BUF 
+Warning: Teleporting vehicle 'veh340'; waited too long (wrong lane), lane='C3B3_H_s_1', time=5809.00.
+Warning: Teleporting vehicle 'veh1409'; waited too long (wrong lane), lane='A0A1_H_s_0', time=5809.00.
+Warning: Vehicle 'veh1409' ends teleporting on edge 'A1A2', time=5809.00.
+Warning: Vehicle 'veh340' ends teleporting on edge 'B3C3', time=5809.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5820: Phase map is empty at time 5820 - no traffic light states generated
+Warning: Teleporting vehicle 'veh692'; waited too long (yield), lane='B2B1_H_s_0', time=5820.00.
+Warning: Vehicle 'veh692' ends teleporting on edge 'B1A1', time=5820.00.
+Warning: Teleporting vehicle 'veh1232'; waited too long (yield), lane='C2C1_H_s_0', time=5830.00.
+Warning: Teleporting vehicle 'veh733'; waited too long (wrong lane), lane='B2C2_H_s_0', time=5830.00.
+Warning: Vehicle 'veh733' ends teleporting on edge 'C2D2', time=5830.00.
+Warning: Vehicle 'veh1232' ends teleporting on edge 'C1B1', time=5830.00.
+Warning: Teleporting vehicle 'veh1955'; waited too long (wrong lane), lane='C2D2_H_s_2', time=5838.00.
+Warning: Vehicle 'veh1955' ends teleporting on edge 'D2C2', time=5838.00.
+Warning: Teleporting vehicle 'veh1078'; waited too long (jam), lane='B1A1_H_s_0', time=5849.00.
+Warning: Vehicle 'veh1078' ends teleporting on edge 'A1A2', time=5849.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5850: Phase map is empty at time 5850 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2686'; waited too long (yield), lane='D2D3_H_s_2', time=5855.00.
+Warning: Vehicle 'veh2686' ends teleporting on edge 'D3C3', time=5855.00.
+Warning: Teleporting vehicle 'veh1256'; waited too long (yield), lane='B1B2_H_s_0', time=5859.00.
+Warning: Vehicle 'veh1256' ends teleporting on edge 'B2C2', time=5859.00.
+Warning: Teleporting vehicle 'veh2343'; waited too long (yield), lane='E1D1_H_s_1', time=5861.00.
+Warning: Vehicle 'veh2343' ends teleporting on edge 'D1C1', time=5861.00.
+Warning: Teleporting vehicle 'veh1812'; waited too long (jam), lane='E1D1_1', time=5862.00.
+Warning: Teleporting vehicle 'veh1528'; waited too long (yield), lane='C2B2_H_s_3', time=5865.00.
+Warning: Vehicle 'veh1528' ends teleporting on edge 'B2C2', time=5865.00.
+Warning: Vehicle 'veh1812' ends teleporting on edge 'D1D2', time=5866.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5880: Phase map is empty at time 5880 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1838'; waited too long (yield), lane='A0A1_H_s_1', time=5881.00.
+Warning: Vehicle 'veh1838' ends teleporting on edge 'A1A2', time=5881.00.
+Warning: Teleporting vehicle 'veh1024'; waited too long (yield), lane='B2C2_H_s_1', time=5887.00.
+Warning: Vehicle 'veh1024' ends teleporting on edge 'C2D2', time=5887.00.
+Warning: Teleporting vehicle 'veh741'; waited too long (yield), lane='B2A2_H_s_2', time=5888.00.
+Warning: Vehicle 'veh741' ends teleporting on edge 'A2B2', time=5888.00.
+Warning: Teleporting vehicle 'veh1420'; waited too long (wrong lane), lane='B2B1_H_s_2', time=5889.00.
+Warning: Vehicle 'veh1420' ends teleporting on edge 'B1A1', time=5889.00.
+Warning: Teleporting vehicle 'veh260'; waited too long (wrong lane), lane='A3B3_H_s_2', time=5890.00.
+Warning: Vehicle 'veh260' ends teleporting on edge 'B3A3', time=5890.00.
+Warning: Teleporting vehicle 'veh2398'; waited too long (wrong lane), lane='E1E2_H_s_0', time=5892.00.
+Warning: Vehicle 'veh2398' ends teleporting on edge 'E2D2', time=5892.00.
+Warning: Teleporting vehicle 'veh946'; waited too long (yield), lane='E1E2_H_s_1', time=5893.00.
+Warning: Teleporting vehicle 'veh2402'; waited too long (wrong lane), lane='E1E2_H_s_0', time=5893.00.
+Warning: Vehicle 'veh946' ends teleporting on edge 'E2D2', time=5893.00.
+Warning: Vehicle 'veh2402' ends teleporting on edge 'E2D2', time=5893.00.
+Warning: Teleporting vehicle 'veh2278'; waited too long (yield), lane='B3B2_H_s_2', time=5896.00.
+Warning: Vehicle 'veh2278' ends teleporting on edge 'B2C2', time=5896.00.
+INFO:TrafficSimulator:Step 5900: 781 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5910: Phase map is empty at time 5910 - no traffic light states generated
+Step #5900.00 (3ms ~= 333.33*RT, ~260333.33UPS, TraCI: 5ms, vehicles TOT 2917 ACT 781 BUF 
+Warning: Teleporting vehicle 'veh659'; waited too long (jam), lane='C1C2_H_s_0', time=5910.00.
+Warning: Vehicle 'veh659' ends teleporting on edge 'C2D2', time=5910.00.
+Warning: Teleporting vehicle 'veh1095'; waited too long (yield), lane='B2B1_H_s_0', time=5912.00.
+Warning: Vehicle 'veh1095' ends teleporting on edge 'B1A1', time=5912.00.
+Warning: Vehicle 'veh1001' performs emergency braking on lane 'C3B3_H_s_1' with decel=9.00, wished=3.50, severity=1.00, time=5914.00.
+Warning: Teleporting vehicle 'veh1508'; waited too long (yield), lane='D2D1_H_s_0', time=5920.00.
+Warning: Vehicle 'veh1508' ends teleporting on edge 'D1C1', time=5920.00.
+Warning: Teleporting vehicle 'veh104'; waited too long (jam), lane=':B1_6_0', time=5923.00.
+Warning: Vehicle 'veh104' ends teleporting on edge 'B1A1', time=5923.00.
+Warning: Teleporting vehicle 'veh162'; waited too long (yield), lane='C2D2_H_s_0', time=5931.00.
+Warning: Vehicle 'veh162' ends teleporting on edge 'D2D1', time=5931.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5940: Phase map is empty at time 5940 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1555'; waited too long (jam), lane='D1C1_2', time=5961.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 5970: Phase map is empty at time 5970 - no traffic light states generated
+Warning: Vehicle 'veh1555' ends teleporting on edge 'C1C2', time=5970.00.
+Warning: Teleporting vehicle 'veh958'; waited too long (yield), lane='A1A0_H_s_1', time=5977.00.
+Warning: Vehicle 'veh958' ends teleporting on edge 'A0A1', time=5977.00.
+Warning: Teleporting vehicle 'veh2245'; waited too long (wrong lane), lane='D0D1_H_s_1', time=5982.00.
+Warning: Teleporting vehicle 'veh2748'; waited too long (jam), lane='E3E2_H_s_0', time=5997.00.
+Warning: Vehicle 'veh2748' ends teleporting on edge 'E2D2', time=5997.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6000: Phase map is empty at time 6000 - no traffic light states generated
+INFO:TrafficSimulator:Step 6000: 782 vehicles active
+Step #6000.00 (4ms ~= 250.00*RT, ~195750.00UPS, TraCI: 42ms, vehicles TOT 2942 ACT 783 BUF
+Warning: Teleporting vehicle 'veh3191'; waited too long (yield), lane='C0C1_H_s_2', time=6004.00.
+Warning: Vehicle 'veh3191' ends teleporting on edge 'C1B1', time=6004.00.
+Warning: Teleporting vehicle 'veh2543'; waited too long (wrong lane), lane='D1E1_H_s_1', time=6016.00.
+Warning: Vehicle 'veh2543' ends teleporting on edge 'E1D1', time=6016.00.
+Warning: Teleporting vehicle 'veh1395'; waited too long (jam), lane=':D1E1_H_node_0_1', time=6025.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6030: Phase map is empty at time 6030 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1435'; waited too long (wrong lane), lane='D1D2_H_s_1', time=6031.00.
+Warning: Vehicle 'veh1435' ends teleporting on edge 'D2E2', time=6031.00.
+Warning: Teleporting vehicle 'veh3090'; waited too long (yield), lane='B0B1_H_s_2', time=6032.00.
+Warning: Vehicle 'veh3090' ends teleporting on edge 'B1A1', time=6032.00.
+Warning: Teleporting vehicle 'veh2756'; waited too long (yield), lane='D0D1_H_s_2', time=6036.00.
+Warning: Teleporting vehicle 'veh2294'; waited too long (jam), lane=':D0D1_H_node_0_2', time=6042.00.
+Warning: Teleporting vehicle 'veh222'; waited too long (wrong lane), lane='A2A1_H_s_0', time=6049.00.
+Warning: Teleporting vehicle 'veh1077'; waited too long (jam), lane=':D2_12_0', time=6049.00.
+Warning: Vehicle 'veh1077' ends teleporting on edge 'D2C2', time=6049.00.
+Warning: Vehicle 'veh222' ends teleporting on edge 'A1B1', time=6050.00.
+Warning: Vehicle 'veh1395' ends teleporting on edge 'E1E2', time=6050.00.
+Warning: Teleporting vehicle 'veh443'; waited too long (yield), lane='A2A1_H_s_1', time=6051.00.
+Warning: Teleporting vehicle 'veh847'; waited too long (jam), lane=':D2_12_0', time=6051.00.
+Warning: Vehicle 'veh2294' ends teleporting on edge 'D1C1', time=6051.00.
+Warning: Vehicle 'veh847' ends teleporting on edge 'D2C2', time=6051.00.
+Warning: Teleporting vehicle 'veh878'; waited too long (jam), lane='A1A2_H_s_0', time=6053.00.
+Warning: Vehicle 'veh878' ends teleporting on edge 'A2B2', time=6053.00.
+Warning: Vehicle 'veh443' ends teleporting on edge 'A1B1', time=6053.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6060: Phase map is empty at time 6060 - no traffic light states generated
+Warning: Teleporting vehicle 'veh151'; waited too long (yield), lane='D1E1_H_s_2', time=6061.00.
+Warning: Vehicle 'veh151' ends teleporting on edge 'E1D1', time=6061.00.
+Warning: Teleporting vehicle 'veh2865'; waited too long (yield), lane='B1C1_H_s_3', time=6062.00.
+Warning: Vehicle 'veh2865' ends teleporting on edge 'C1B1', time=6062.00.
+Warning: Teleporting vehicle 'veh2263'; waited too long (jam), lane='D1E1_2', time=6072.00.
+Warning: Vehicle 'veh2263' ends teleporting on edge 'E1D1', time=6082.00.
+Warning: Teleporting vehicle 'veh39'; waited too long (jam), lane=':C1_2_0', time=6085.00.
+Warning: Vehicle 'veh39' ends teleporting on edge 'C1D1', time=6085.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6090: Phase map is empty at time 6090 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1833'; waited too long (wrong lane), lane='C1B1_H_s_0', time=6091.00.
+Warning: Vehicle 'veh1833' ends teleporting on edge 'B1A1', time=6091.00.
+Warning: Teleporting vehicle 'veh2975'; waited too long (wrong lane), lane='D1C1_H_s_0', time=6092.00.
+Warning: Vehicle 'veh2975' ends teleporting on edge 'C1B1', time=6092.00.
+Warning: Teleporting vehicle 'veh943'; waited too long (jam), lane=':B0B1_H_node_0_2', time=6093.00.
+Warning: Teleporting vehicle 'veh1815'; waited too long (jam), lane='D1C1_H_s_1', time=6093.00.
+Warning: Vehicle 'veh1815' ends teleporting on edge 'C1B1', time=6093.00.
+Warning: Teleporting vehicle 'veh2645'; waited too long (wrong lane), lane='D1C1_H_s_2', time=6094.00.
+Warning: Vehicle 'veh2645' ends teleporting on edge 'C1B1', time=6094.00.
+Warning: Vehicle 'veh943' ends teleporting on edge 'B1A1', time=6098.00.
+INFO:TrafficSimulator:Step 6100: 764 vehicles active
+Step #6100.00 (3ms ~= 333.33*RT, ~255333.33UPS, TraCI: 4ms, vehicles TOT 2967 ACT 766 BUF 
+Warning: Teleporting vehicle 'veh2624'; waited too long (jam), lane=':C1B1_H_node_0_0', time=6108.00.
+Warning: Teleporting vehicle 'veh1750'; waited too long (wrong lane), lane='C1B1_H_s_0', time=6108.00.
+Warning: Vehicle 'veh1750' ends teleporting on edge 'B1A1', time=6108.00.
+Warning: Teleporting vehicle 'veh2714'; waited too long (jam), lane=':E2D2_H_node_0_2', time=6109.00.
+Warning: Vehicle 'veh2714' ends teleporting on edge 'E2D2_H_s', time=6109.00.
+Warning: Vehicle 'veh2624' ends teleporting on edge 'B1A1', time=6112.00.
+Warning: Teleporting vehicle 'veh259'; waited too long (jam), lane=':B0B1_H_node_0_2', time=6113.00.
+Warning: Teleporting vehicle 'veh656'; waited too long (jam), lane=':C1_11_0', time=6114.00.
+Warning: Vehicle 'veh656' ends teleporting on edge 'C1C2', time=6114.00.
+Warning: Teleporting vehicle 'veh1040'; waited too long (jam), lane=':D1C1_H_node_0_2', time=6115.00.
+Warning: Teleporting vehicle 'veh739'; waited too long (yield), lane='A0A1_H_s_0', time=6117.00.
+Warning: Vehicle 'veh739' ends teleporting on edge 'A1B1', time=6117.00.
+Warning: Vehicle 'veh259' ends teleporting on edge 'B1A1', time=6118.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6120: Phase map is empty at time 6120 - no traffic light states generated
+Warning: Vehicle 'veh1040' ends teleporting on edge 'C1B1', time=6120.00.
+Warning: Teleporting vehicle 'veh2815'; waited too long (yield), lane='B0B1_H_s_1', time=6121.00.
+Warning: Teleporting vehicle 'veh3098'; waited too long (wrong lane), lane='B0B1_H_s_2', time=6121.00.
+Warning: Teleporting vehicle 'veh1906'; waited too long (yield), lane='E2D2_H_s_2', time=6121.00.
+Warning: Vehicle 'veh1906' ends teleporting on edge 'D2D1', time=6121.00.
+Warning: Vehicle 'veh3098' ends teleporting on edge 'B1B2', time=6121.00.
+Warning: Vehicle 'veh2815' ends teleporting on edge 'B1B2', time=6121.00.
+Warning: Teleporting vehicle 'veh2879'; waited too long (jam), lane='C2C1_H_s_0', time=6136.00.
+Warning: Vehicle 'veh2879' ends teleporting on edge 'C1B1', time=6136.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6150: Phase map is empty at time 6150 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2538'; waited too long (jam), lane='B1A1_H_s_0', time=6156.00.
+Warning: Vehicle 'veh2538' ends teleporting on edge 'A1A2', time=6156.00.
+Warning: Teleporting vehicle 'veh2121'; waited too long (yield), lane='C3C2_H_s_2', time=6159.00.
+Warning: Vehicle 'veh2121' ends teleporting on edge 'C2D2', time=6159.00.
+Warning: Teleporting vehicle 'veh1069'; waited too long (yield), lane='C1D1_H_s_3', time=6160.00.
+Warning: Teleporting vehicle 'veh2784'; waited too long (yield), lane='B1B2_H_s_0', time=6165.00.
+Warning: Vehicle 'veh2784' ends teleporting on edge 'B2C2', time=6165.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6180: Phase map is empty at time 6180 - no traffic light states generated
+Warning: Teleporting vehicle 'veh409'; waited too long (jam), lane='E2E1_H_s_0', time=6188.00.
+Warning: Vehicle 'veh409' ends teleporting on edge 'E1D1', time=6188.00.
+Warning: Teleporting vehicle 'veh760'; waited too long (wrong lane), lane='B2C2_H_s_0', time=6192.00.
+Warning: Vehicle 'veh760' ends teleporting on edge 'C2B2', time=6192.00.
+Warning: Teleporting vehicle 'veh2755'; waited too long (wrong lane), lane='E1E2_H_s_0', time=6198.00.
+Warning: Vehicle 'veh2755' ends teleporting on edge 'E2D2', time=6198.00.
+Warning: Teleporting vehicle 'veh2259'; waited too long (wrong lane), lane='E1E2_H_s_0', time=6199.00.
+Warning: Teleporting vehicle 'veh3042'; waited too long (jam), lane='E1D1_1', time=6199.00.
+Warning: Vehicle 'veh2259' ends teleporting on edge 'E2D2', time=6199.00.
+INFO:TrafficSimulator:Step 6200: 739 vehicles active
+Step #6200.00 (4ms ~= 250.00*RT, ~185750.00UPS, TraCI: 4ms, vehicles TOT 2981 ACT 743 BUF 
+Warning: Vehicle 'veh3042' ends teleporting on edge 'D1C1', time=6208.00.
+Warning: Vehicle 'veh1069' ends teleporting on edge 'D1C1', time=6209.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6210: Phase map is empty at time 6210 - no traffic light states generated
+Warning: Teleporting vehicle 'veh440'; waited too long (jam), lane='B0A0_H_s_0', time=6212.00.
+Warning: Vehicle 'veh440' ends teleporting on edge 'A0A1', time=6212.00.
+Warning: Teleporting vehicle 'veh3125'; waited too long (wrong lane), lane='E1D1_H_s_2', time=6218.00.
+Warning: Vehicle 'veh3125' ends teleporting on edge 'D1D2', time=6218.00.
+Warning: Vehicle 'veh2245' ends teleporting on edge 'C1B1', time=6219.00.
+Warning: Teleporting vehicle 'veh123'; waited too long (yield), lane='E1D1_H_s_1', time=6222.00.
+Warning: Vehicle 'veh123' ends teleporting on edge 'D1C1', time=6222.00.
+Warning: Teleporting vehicle 'veh2509'; waited too long (yield), lane='E1D1_H_s_0', time=6223.00.
+Warning: Vehicle 'veh2509' ends teleporting on edge 'D1D2', time=6223.00.
+Warning: Teleporting vehicle 'veh2503'; waited too long (jam), lane='D2D1_H_s_0', time=6227.00.
+Warning: Vehicle 'veh2503' ends teleporting on edge 'D1C1', time=6227.00.
+Warning: Teleporting vehicle 'veh2051'; waited too long (yield), lane='C1B1_H_s_1', time=6234.00.
+Warning: Vehicle 'veh2051' ends teleporting on edge 'B1A1', time=6234.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6240: Phase map is empty at time 6240 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1124'; waited too long (jam), lane='C2D2_H_s_0', time=6241.00.
+Warning: Vehicle 'veh1124' ends teleporting on edge 'D2D1', time=6241.00.
+Warning: Teleporting vehicle 'veh2440'; waited too long (yield), lane='A0A1_H_s_1', time=6242.00.
+Warning: Teleporting vehicle 'veh857'; waited too long (yield), lane='E1E2_H_s_1', time=6242.00.
+Warning: Vehicle 'veh2440' ends teleporting on edge 'A1A2', time=6242.00.
+Warning: Vehicle 'veh857' ends teleporting on edge 'E2D2', time=6242.00.
+Warning: Teleporting vehicle 'veh2256'; waited too long (jam), lane=':D2_16_0', time=6246.00.
+Warning: Vehicle 'veh2256' ends teleporting on edge 'D2E2', time=6246.00.
+Warning: Teleporting vehicle 'veh733'; waited too long (jam), lane=':C2D2_H_node_0_2', time=6247.00.
+Warning: Teleporting vehicle 'veh659'; waited too long (jam), lane='C2D2_1', time=6250.00.
+Warning: Teleporting vehicle 'veh1859'; waited too long (jam), lane=':B1_2_0', time=6252.00.
+Warning: Vehicle 'veh1859' ends teleporting on edge 'B1C1', time=6252.00.
+Warning: Teleporting vehicle 'veh478'; waited too long (yield), lane=':B1_17_0', time=6264.00.
+Warning: Vehicle 'veh478' ends teleporting on edge 'B1B2', time=6264.00.
+Warning: Vehicle 'veh733' ends teleporting on edge 'D2E2', time=6266.00.
+Warning: Vehicle 'veh659' ends teleporting on edge 'D2E2', time=6269.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6270: Phase map is empty at time 6270 - no traffic light states generated
+Warning: Vehicle 'veh2756' ends teleporting on edge 'C1C2', time=6273.00.
+Warning: Teleporting vehicle 'veh195'; waited too long (wrong lane), lane='A2B2_H_s_0', time=6275.00.
+Warning: Vehicle 'veh195' ends teleporting on edge 'B2C2', time=6275.00.
+Warning: Teleporting vehicle 'veh2746'; waited too long (yield), lane='A2B2_H_s_1', time=6276.00.
+Warning: Teleporting vehicle 'veh1637'; waited too long (yield), lane='B2C2_H_s_1', time=6276.00.
+Warning: Vehicle 'veh1637' ends teleporting on edge 'C2D2', time=6276.00.
+Warning: Vehicle 'veh2746' ends teleporting on edge 'B2C2', time=6276.00.
+Warning: Teleporting vehicle 'veh121'; waited too long (jam), lane=':A2B2_H_node_0_2', time=6277.00.
+Warning: Teleporting vehicle 'veh741'; waited too long (jam), lane=':A2B2_H_node_0_2', time=6278.00.
+Warning: Teleporting vehicle 'veh1046'; waited too long (yield), lane='B3B2_H_s_2', time=6279.00.
+Warning: Vehicle 'veh1046' ends teleporting on edge 'B2C2', time=6279.00.
+Warning: Vehicle 'veh121' ends teleporting on edge 'B2C2', time=6281.00.
+Warning: Vehicle 'veh741' ends teleporting on edge 'B2C2', time=6282.00.
+Warning: Teleporting vehicle 'veh2992'; waited too long (jam), lane='A2B2_0', time=6284.00.
+Warning: Vehicle 'veh2992' ends teleporting on edge 'B2C2', time=6288.00.
+Warning: Teleporting vehicle 'veh1138'; waited too long (wrong lane), lane='B2B1_H_s_0', time=6290.00.
+Warning: Vehicle 'veh1138' ends teleporting on edge 'B1C1', time=6290.00.
+Warning: Teleporting vehicle 'veh38'; waited too long (yield), lane='B2A2_H_s_2', time=6293.00.
+Warning: Vehicle 'veh38' ends teleporting on edge 'A2B2', time=6293.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 6300: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6300: Phase map is empty at time 6300 - no traffic light states generated
+INFO:TrafficSimulator:Step 6300: 728 vehicles active
+Step #6300.00 (3ms ~= 333.33*RT, ~242666.67UPS, TraCI: 118ms, vehicles TOT 3002 ACT 728 BU
+Warning: Teleporting vehicle 'veh2482'; waited too long (yield), lane='C0C1_H_s_2', time=6310.00.
+Warning: Vehicle 'veh2482' ends teleporting on edge 'C1B1', time=6310.00.
+Warning: Teleporting vehicle 'veh542'; waited too long (yield), lane='A3A2_H_s_1', time=6314.00.
+Warning: Vehicle 'veh542' ends teleporting on edge 'A2B2', time=6314.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6330: Phase map is empty at time 6330 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2464'; waited too long (wrong lane), lane='D1D2_H_s_0', time=6336.00.
+Warning: Vehicle 'veh2464' ends teleporting on edge 'D2C2', time=6336.00.
+Warning: Teleporting vehicle 'veh2654'; waited too long (wrong lane), lane='D0D1_H_s_1', time=6339.00.
+Warning: Vehicle 'veh2654' ends teleporting on edge 'D1C1', time=6339.00.
+Warning: Teleporting vehicle 'veh2061'; waited too long (wrong lane), lane='D0D1_H_s_0', time=6340.00.
+Warning: Teleporting vehicle 'veh481'; waited too long (jam), lane=':D0D1_H_node_0_1', time=6343.00.
+Warning: Teleporting vehicle 'veh2189'; waited too long (jam), lane=':D1D2_H_node_0_1', time=6345.00.
+Warning: Teleporting vehicle 'veh136'; waited too long (jam), lane=':D0D1_H_node_0_1', time=6345.00.
+Warning: Vehicle 'veh136' ends teleporting on edge 'D1D2', time=6353.00.
+Warning: Vehicle 'veh2189' ends teleporting on edge 'D2D3', time=6355.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6360: Phase map is empty at time 6360 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1655'; waited too long (wrong lane), lane='D1D2_H_s_1', time=6362.00.
+Warning: Vehicle 'veh1655' ends teleporting on edge 'D2C2', time=6362.00.
+Warning: Teleporting vehicle 'veh2593'; waited too long (wrong lane), lane='D1E1_H_s_1', time=6369.00.
+Warning: Vehicle 'veh2593' ends teleporting on edge 'E1D1', time=6369.00.
+Warning: Teleporting vehicle 'veh458'; waited too long (jam), lane='E3E2_H_s_0', time=6375.00.
+Warning: Vehicle 'veh458' ends teleporting on edge 'E2D2', time=6375.00.
+Warning: Teleporting vehicle 'veh828'; waited too long (wrong lane), lane='D1D2_H_s_1', time=6378.00.
+Warning: Vehicle 'veh828' ends teleporting on edge 'D2C2', time=6378.00.
+Warning: Teleporting vehicle 'veh1610'; waited too long (wrong lane), lane='D1E1_H_s_1', time=6382.00.
+Warning: Vehicle 'veh1610' ends teleporting on edge 'E1D1', time=6382.00.
+Warning: Teleporting vehicle 'veh708'; waited too long (jam), lane=':D1E1_H_node_0_1', time=6387.00.
+Warning: Teleporting vehicle 'veh2634'; waited too long (jam), lane='D1E1_1', time=6389.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6390: Phase map is empty at time 6390 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1523'; waited too long (yield), lane='D1D2_H_s_2', time=6393.00.
+Warning: Vehicle 'veh1523' ends teleporting on edge 'D2C2', time=6393.00.
+Warning: Vehicle 'veh708' ends teleporting on edge 'E1D1', time=6393.00.
+Warning: Vehicle 'veh2634' ends teleporting on edge 'E1D1', time=6394.00.
+Warning: Teleporting vehicle 'veh2285'; waited too long (wrong lane), lane='D1C1_H_s_0', time=6397.00.
+Warning: Teleporting vehicle 'veh2009'; waited too long (yield), lane='D1C1_H_s_1', time=6397.00.
+Warning: Teleporting vehicle 'veh1227'; waited too long (yield), lane='D0D1_H_s_2', time=6397.00.
+Warning: Vehicle 'veh2009' ends teleporting on edge 'C1B1', time=6397.00.
+Warning: Vehicle 'veh481' ends teleporting on edge 'D1C1_H_s', time=6397.00.
+Warning: Vehicle 'veh2285' ends teleporting on edge 'C1C0', time=6397.00.
+Warning: Teleporting vehicle 'veh1165'; waited too long (jam), lane=':D2_6_0', time=6398.00.
+Warning: Vehicle 'veh1165' ends teleporting on edge 'D2C2', time=6398.00.
+Step #6400.00Warning: Teleporting vehicle 'veh1884'; waited too long (jam), lane=':D1C1_H_node_0_1', time=6400.00.
+Warning: Teleporting vehicle 'veh1535'; waited too long (jam), lane=':D2_6_0', time=6400.00.
+Warning: Vehicle 'veh1535' ends teleporting on edge 'D2C2', time=6400.00.
+INFO:TrafficSimulator:Step 6400: 715 vehicles active
+ (3ms ~= 333.33*RT, ~239333.33UPS, TraCI: 4ms, vehicles TOT 3027 ACT 718 BUF 
+Warning: Vehicle 'veh1884' ends teleporting on edge 'C1B1', time=6404.00.
+Warning: Vehicle 'veh1227' ends teleporting on edge 'D1C1', time=6405.00.
+Warning: Vehicle 'veh2061' ends teleporting on edge 'D1C1', time=6411.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6420: Phase map is empty at time 6420 - no traffic light states generated
+Warning: Teleporting vehicle 'veh32'; waited too long (yield), lane='D1E1_H_s_2', time=6421.00.
+Warning: Vehicle 'veh32' ends teleporting on edge 'E1D1', time=6421.00.
+Warning: Teleporting vehicle 'veh729'; waited too long (yield), lane='B1C1_H_s_3', time=6422.00.
+Warning: Teleporting vehicle 'veh1039'; waited too long (yield), lane='C2C1_H_s_0', time=6443.00.
+Warning: Teleporting vehicle 'veh2398'; waited too long (jam), lane='E2D2_1', time=6448.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6450: Phase map is empty at time 6450 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2467'; waited too long (wrong lane), lane='E2D2_H_s_2', time=6451.00.
+Warning: Teleporting vehicle 'veh776'; waited too long (wrong lane), lane='E2D2_H_s_0', time=6451.00.
+Warning: Vehicle 'veh776' ends teleporting on edge 'D2C2', time=6451.00.
+Warning: Vehicle 'veh2467' ends teleporting on edge 'D2C2', time=6451.00.
+Warning: Vehicle 'veh2398' ends teleporting on edge 'D2C2', time=6458.00.
+Warning: Teleporting vehicle 'veh359'; waited too long (yield), lane='B0B1_H_s_2', time=6459.00.
+Warning: Vehicle 'veh359' ends teleporting on edge 'B1A1', time=6459.00.
+Warning: Teleporting vehicle 'veh377'; waited too long (jam), lane=':C1_6_0', time=6465.00.
+Warning: Vehicle 'veh377' ends teleporting on edge 'C1B1', time=6465.00.
+Warning: Teleporting vehicle 'veh1073'; waited too long (yield), lane='C1D1_H_s_3', time=6466.00.
+Warning: Vehicle 'veh1073' ends teleporting on edge 'D1C1', time=6466.00.
+Warning: Teleporting vehicle 'veh946'; waited too long (wrong lane), lane='E2D2_H_s_2', time=6467.00.
+Warning: Vehicle 'veh946' ends teleporting on edge 'D2C2', time=6467.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6480: Phase map is empty at time 6480 - no traffic light states generated
+Warning: Teleporting vehicle 'veh406'; waited too long (yield), lane='C2B2_H_s_3', time=6480.00.
+Warning: Vehicle 'veh406' ends teleporting on edge 'B2C2', time=6480.00.
+Warning: Teleporting vehicle 'veh1790'; waited too long (yield), lane='B0B1_H_s_1', time=6481.00.
+Warning: Vehicle 'veh1790' ends teleporting on edge 'B1B2', time=6481.00.
+Warning: Teleporting vehicle 'veh720'; waited too long (jam), lane=':B0B1_H_node_0_2', time=6486.00.
+Warning: Teleporting vehicle 'veh2647'; waited too long (yield), lane='E2D2_H_s_1', time=6486.00.
+Warning: Teleporting vehicle 'veh1563'; waited too long (jam), lane=':D2_6_0', time=6486.00.
+Warning: Vehicle 'veh1563' ends teleporting on edge 'D2C2', time=6486.00.
+Warning: Vehicle 'veh2647' ends teleporting on edge 'D2C2', time=6486.00.
+Warning: Vehicle 'veh720' ends teleporting on edge 'B1B2', time=6491.00.
+Warning: Teleporting vehicle 'veh2725'; waited too long (yield), lane='E2E1_H_s_0', time=6494.00.
+Warning: Vehicle 'veh2725' ends teleporting on edge 'E1D1', time=6494.00.
+INFO:TrafficSimulator:Step 6500: 693 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6510: Phase map is empty at time 6510 - no traffic light states generated
+Step #6500.00 (3ms ~= 333.33*RT, ~231666.67UPS, TraCI: 4ms, vehicles TOT 3039 ACT 695 BUF 
+Warning: Teleporting vehicle 'veh276'; waited too long (yield), lane='C3C2_H_s_2', time=6512.00.
+Warning: Vehicle 'veh276' ends teleporting on edge 'C2D2', time=6512.00.
+Warning: Teleporting vehicle 'veh2571'; waited too long (jam), lane=':C3C2_H_node_0_2', time=6516.00.
+Warning: Teleporting vehicle 'veh2664'; waited too long (jam), lane='C3C2_1', time=6519.00.
+Warning: Teleporting vehicle 'veh688'; waited too long (jam), lane='B0A0_H_s_0', time=6519.00.
+Warning: Vehicle 'veh2664' ends teleporting on edge 'C3C2_H_s', time=6519.00.
+Warning: Vehicle 'veh688' ends teleporting on edge 'A0A1', time=6519.00.
+Warning: Vehicle 'veh2571' ends teleporting on edge 'C2B2', time=6520.00.
+Warning: Teleporting vehicle 'veh260'; waited too long (yield), lane='B3A3_H_s_1', time=6528.00.
+Warning: Vehicle 'veh260' ends teleporting on edge 'A3A2', time=6528.00.
+Warning: Teleporting vehicle 'veh2543'; waited too long (jam), lane=':E1D1_H_node_0_2', time=6530.00.
+Warning: Teleporting vehicle 'veh521'; waited too long (yield), lane='E1D1_H_s_1', time=6530.00.
+Warning: Vehicle 'veh521' ends teleporting on edge 'D1C1', time=6530.00.
+Warning: Vehicle 'veh2543' ends teleporting on edge 'E1D1_H_s', time=6530.00.
+Warning: Teleporting vehicle 'veh1179'; waited too long (wrong lane), lane='C1B1_H_s_0', time=6538.00.
+Warning: Vehicle 'veh1179' ends teleporting on edge 'B1C1', time=6538.00.
+Warning: Teleporting vehicle 'veh286'; waited too long (jam), lane='C1B1_H_s_1', time=6539.00.
+Warning: Vehicle 'veh286' ends teleporting on edge 'B1A1', time=6539.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6540: Phase map is empty at time 6540 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2770'; waited too long (wrong lane), lane='E1D1_H_s_0', time=6541.00.
+Warning: Vehicle 'veh2770' ends teleporting on edge 'D1C1', time=6541.00.
+Warning: Vehicle 'veh729' ends teleporting on edge 'C1B1_H_s', time=6541.00.
+Warning: Teleporting vehicle 'veh1634'; waited too long (wrong lane), lane='E1D1_H_s_2', time=6542.00.
+Warning: Teleporting vehicle 'veh2347'; waited too long (jam), lane=':B1_6_0', time=6542.00.
+Warning: Teleporting vehicle 'veh412'; waited too long (jam), lane='C1B1_0', time=6544.00.
+Warning: Teleporting vehicle 'veh3191'; waited too long (jam), lane=':C1B1_H_node_0_2', time=6545.00.
+Warning: Teleporting vehicle 'veh1208'; waited too long (yield), lane='C2D2_H_s_0', time=6545.00.
+Warning: Vehicle 'veh1208' ends teleporting on edge 'D2D1', time=6545.00.
+Warning: Teleporting vehicle 'veh2073'; waited too long (wrong lane), lane='E1E2_H_s_0', time=6546.00.
+Warning: Teleporting vehicle 'veh2645'; waited too long (jam), lane='C1B1_1', time=6546.00.
+Warning: Vehicle 'veh1039' ends teleporting on edge 'C1B1', time=6546.00.
+Warning: Vehicle 'veh2073' ends teleporting on edge 'E2D2', time=6546.00.
+Warning: Vehicle 'veh3191' ends teleporting on edge 'B1B2', time=6550.00.
+Warning: Vehicle 'veh412' ends teleporting on edge 'B1A1_H_s', time=6553.00.
+Warning: Teleporting vehicle 'veh2129'; waited too long (jam), lane=':C2D2_H_node_0_1', time=6566.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6570: Phase map is empty at time 6570 - no traffic light states generated
+Warning: Teleporting vehicle 'veh222'; waited too long (yield), lane=':B1_17_0', time=6572.00.
+Warning: Vehicle 'veh222' ends teleporting on edge 'B1B2', time=6572.00.
+Warning: Teleporting vehicle 'veh568'; waited too long (yield), lane='A4A3_H_s_0', time=6573.00.
+Warning: Vehicle 'veh568' ends teleporting on edge 'A3A2', time=6573.00.
+Warning: Vehicle 'veh2129' ends teleporting on edge 'D2E2', time=6574.00.
+Warning: Teleporting vehicle 'veh478'; waited too long (yield), lane='B1B2_H_s_0', time=6581.00.
+Warning: Vehicle 'veh478' ends teleporting on edge 'B2C2', time=6581.00.
+Warning: Teleporting vehicle 'veh2355'; waited too long (jam), lane='B2B1_H_s_0', time=6595.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6600: Phase map is empty at time 6600 - no traffic light states generated
+INFO:TrafficSimulator:Step 6600: 665 vehicles active
+Step #6600.00 (4ms ~= 250.00*RT, ~167250.00UPS, TraCI: 40ms, vehicles TOT 3053 ACT 669 BUF
+Warning: Teleporting vehicle 'veh443'; waited too long (yield), lane='A1B1_H_s_3', time=6602.00.
+Warning: Teleporting vehicle 'veh1339'; waited too long (yield), lane='E1E2_H_s_1', time=6602.00.
+Warning: Vehicle 'veh1339' ends teleporting on edge 'E2D2', time=6602.00.
+Warning: Teleporting vehicle 'veh1145'; waited too long (wrong lane), lane='A3A2_H_s_0', time=6618.00.
+Warning: Vehicle 'veh1145' ends teleporting on edge 'A2B2', time=6618.00.
+Warning: Teleporting vehicle 'veh2225'; waited too long (yield), lane='A3A2_H_s_1', time=6624.00.
+Warning: Vehicle 'veh2225' ends teleporting on edge 'A2B2', time=6624.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6630: Phase map is empty at time 6630 - no traffic light states generated
+Warning: Teleporting vehicle 'veh751'; waited too long (wrong lane), lane='B2C2_H_s_0', time=6635.00.
+Warning: Teleporting vehicle 'veh459'; waited too long (yield), lane='B2C2_H_s_1', time=6635.00.
+Warning: Vehicle 'veh459' ends teleporting on edge 'C2D2', time=6635.00.
+Warning: Vehicle 'veh751' ends teleporting on edge 'C2C3', time=6635.00.
+Warning: Teleporting vehicle 'veh584'; waited too long (yield), lane='C0C1_H_s_2', time=6638.00.
+Warning: Vehicle 'veh584' ends teleporting on edge 'C1B1', time=6638.00.
+Warning: Teleporting vehicle 'veh1024'; waited too long (yield), lane=':D2_17_0', time=6639.00.
+Warning: Vehicle 'veh1024' ends teleporting on edge 'D2D3', time=6639.00.
+Warning: Teleporting vehicle 'veh3081'; waited too long (wrong lane), lane='D0D1_H_s_0', time=6645.00.
+Warning: Teleporting vehicle 'veh3125'; waited too long (jam), lane=':D1D2_H_node_0_3', time=6653.00.
+Warning: Teleporting vehicle 'veh2110'; waited too long (yield), lane='D3D2_H_s_0', time=6654.00.
+Warning: Vehicle 'veh2110' ends teleporting on edge 'D2C2', time=6654.00.
+Warning: Teleporting vehicle 'veh2619'; waited too long (yield), lane='A2B2_H_s_1', time=6656.00.
+Warning: Vehicle 'veh2619' ends teleporting on edge 'B2C2', time=6656.00.
+Warning: Teleporting vehicle 'veh2680'; waited too long (jam), lane=':D0D1_H_node_0_1', time=6658.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6660: Phase map is empty at time 6660 - no traffic light states generated
+Warning: Vehicle 'veh3125' ends teleporting on edge 'D2C2', time=6661.00.
+Warning: Teleporting vehicle 'veh341'; waited too long (wrong lane), lane='D1D2_H_s_1', time=6667.00.
+Warning: Vehicle 'veh341' ends teleporting on edge 'D2C2', time=6667.00.
+Warning: Teleporting vehicle 'veh136'; waited too long (jam), lane='D1D2_2', time=6670.00.
+Warning: Vehicle 'veh2645' ends teleporting on edge 'A1A2', time=6673.00.
+Warning: Vehicle 'veh136' ends teleporting on edge 'D2D3', time=6689.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6690: Phase map is empty at time 6690 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2088'; waited too long (yield), lane='A1A0_H_s_1', time=6691.00.
+Warning: Vehicle 'veh2088' ends teleporting on edge 'A0A1', time=6691.00.
+Warning: Teleporting vehicle 'veh2230'; waited too long (yield), lane='B3B2_H_s_2', time=6692.00.
+Warning: Vehicle 'veh2230' ends teleporting on edge 'B2C2', time=6692.00.
+Warning: Teleporting vehicle 'veh72'; waited too long (jam), lane='A1A2_H_s_0', time=6696.00.
+Warning: Vehicle 'veh72' ends teleporting on edge 'A2B2', time=6696.00.
+INFO:TrafficSimulator:Step 6700: 642 vehicles active
+Step #6700.00 (3ms ~= 333.33*RT, ~216000.00UPS, TraCI: 4ms, vehicles TOT 3061 ACT 648 BUF 
+Warning: Teleporting vehicle 'veh1202'; waited too long (jam), lane=':D0D1_H_node_0_2', time=6705.00.
+Warning: Teleporting vehicle 'veh737'; waited too long (jam), lane=':A0A1_H_node_0_1', time=6707.00.
+Warning: Teleporting vehicle 'veh958'; waited too long (jam), lane=':A0A1_H_node_0_2', time=6708.00.
+Warning: Teleporting vehicle 'veh1451'; waited too long (jam), lane='B1A1_H_s_0', time=6710.00.
+Warning: Vehicle 'veh1451' ends teleporting on edge 'A1A2', time=6710.00.
+Warning: Vehicle 'veh2347' ends teleporting on edge 'B1A1_H_s', time=6710.00.
+Warning: Teleporting vehicle 'veh1420'; waited too long (jam), lane=':B1A1_H_node_0_2', time=6714.00.
+Warning: Teleporting vehicle 'veh170'; waited too long (yield), lane='A2A1_H_s_2', time=6716.00.
+Warning: Vehicle 'veh170' ends teleporting on edge 'A1A2', time=6716.00.
+Warning: Vehicle 'veh1420' ends teleporting on edge 'A1A2', time=6718.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6720: Phase map is empty at time 6720 - no traffic light states generated
+Warning: Vehicle 'veh737' ends teleporting on edge 'A1A2', time=6720.00.
+Warning: Teleporting vehicle 'veh134'; waited too long (wrong lane), lane='D0D1_H_s_1', time=6721.00.
+Warning: Vehicle 'veh443' ends teleporting on edge 'B1A1_H_s', time=6721.00.
+Warning: Teleporting vehicle 'veh802'; waited too long (wrong lane), lane='A0A1_H_s_0', time=6722.00.
+Warning: Teleporting vehicle 'veh56'; waited too long (wrong lane), lane='D0D1_H_s_1', time=6722.00.
+Warning: Vehicle 'veh802' ends teleporting on edge 'A1A2', time=6722.00.
+Warning: Teleporting vehicle 'veh1679'; waited too long (wrong lane), lane='A0A1_H_s_0', time=6723.00.
+Warning: Vehicle 'veh1679' ends teleporting on edge 'A1A0', time=6723.00.
+Warning: Vehicle 'veh958' ends teleporting on edge 'A1A2', time=6725.00.
+Warning: Teleporting vehicle 'veh615'; waited too long (jam), lane=':D1E1_H_node_0_1', time=6726.00.
+Warning: Teleporting vehicle 'veh975'; waited too long (wrong lane), lane='D1E1_H_s_1', time=6729.00.
+Warning: Vehicle 'veh975' ends teleporting on edge 'E1D1', time=6729.00.
+Warning: Vehicle 'veh615' ends teleporting on edge 'E1D1', time=6734.00.
+Warning: Teleporting vehicle 'veh1327'; waited too long (yield), lane='D1C1_H_s_1', time=6740.00.
+Warning: Vehicle 'veh1327' ends teleporting on edge 'C1B1', time=6740.00.
+Warning: Vehicle 'veh1202' ends teleporting on edge 'D1C1_H_s', time=6740.00.
+Warning: Teleporting vehicle 'veh2061'; waited too long (jam), lane='D1C1_1', time=6746.00.
+Warning: Teleporting vehicle 'veh1328'; waited too long (wrong lane), lane='D1C1_H_s_0', time=6748.00.
+Warning: Vehicle 'veh1328' ends teleporting on edge 'C1D1', time=6748.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6750: Phase map is empty at time 6750 - no traffic light states generated
+Warning: Teleporting vehicle 'veh863'; waited too long (jam), lane='C2C1_H_s_0', time=6750.00.
+Warning: Vehicle 'veh863' ends teleporting on edge 'C1B1', time=6750.00.
+Warning: Teleporting vehicle 'veh2337'; waited too long (yield), lane='D1D2_H_s_2', time=6752.00.
+Warning: Vehicle 'veh2337' ends teleporting on edge 'D2C2', time=6752.00.
+Warning: Teleporting vehicle 'veh1227'; waited too long (jam), lane=':D1C1_H_node_0_2', time=6755.00.
+Warning: Teleporting vehicle 'veh2640'; waited too long (yield), lane='D0D1_H_s_2', time=6756.00.
+Warning: Vehicle 'veh1227' ends teleporting on edge 'C1C2', time=6759.00.
+Warning: Teleporting vehicle 'veh2805'; waited too long (yield), lane='E3E2_H_s_0', time=6768.00.
+Warning: Vehicle 'veh2805' ends teleporting on edge 'E2D2', time=6768.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6780: Phase map is empty at time 6780 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1496'; waited too long (yield), lane='A0A1_H_s_1', time=6782.00.
+Warning: Teleporting vehicle 'veh966'; waited too long (yield), lane='D1E1_H_s_2', time=6782.00.
+Warning: Vehicle 'veh966' ends teleporting on edge 'E1D1', time=6782.00.
+Warning: Vehicle 'veh1496' ends teleporting on edge 'A1A2', time=6782.00.
+Warning: Vehicle 'veh134' ends teleporting on edge 'D1C1', time=6782.00.
+Warning: Vehicle 'veh56' ends teleporting on edge 'D1C1', time=6782.00.
+INFO:TrafficSimulator:Step 6800: 614 vehicles active
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6810: Phase map is empty at time 6810 - no traffic light states generated
+Step #6800.00 (3ms ~= 333.33*RT, ~206666.67UPS, TraCI: 4ms, vehicles TOT 3065 ACT 620 BUF 
+Warning: Teleporting vehicle 'veh769'; waited too long (wrong lane), lane='C2D2_H_s_2', time=6820.00.
+Warning: Vehicle 'veh769' ends teleporting on edge 'D2C2', time=6820.00.
+Warning: Teleporting vehicle 'veh1547'; waited too long (wrong lane), lane='C0C1_H_s_0', time=6826.00.
+Warning: Vehicle 'veh2640' ends teleporting on edge 'D1C1', time=6827.00.
+Warning: Teleporting vehicle 'veh2974'; waited too long (yield), lane='C1D1_H_s_3', time=6831.00.
+Warning: Vehicle 'veh2355' ends teleporting on edge 'A1A2', time=6832.00.
+Warning: Teleporting vehicle 'veh2543'; waited too long (yield), lane='E1D1_H_s_1', time=6835.00.
+Warning: Vehicle 'veh2543' ends teleporting on edge 'D1C1', time=6835.00.
+Warning: Teleporting vehicle 'veh2464'; waited too long (yield), lane='D2C2_H_s_3', time=6837.00.
+Warning: Vehicle 'veh2464' ends teleporting on edge 'C2D2', time=6837.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6840: Phase map is empty at time 6840 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2948'; waited too long (wrong lane), lane='C2D2_H_s_0', time=6847.00.
+Warning: Vehicle 'veh2948' ends teleporting on edge 'D2D3', time=6847.00.
+Warning: Teleporting vehicle 'veh708'; waited too long (jam), lane='E1D1_1', time=6856.00.
+Warning: Teleporting vehicle 'veh2757'; waited too long (yield), lane='E2E1_H_s_0', time=6858.00.
+Warning: Vehicle 'veh2757' ends teleporting on edge 'E1D1', time=6858.00.
+Warning: Vehicle 'veh708' ends teleporting on edge 'D1D2', time=6861.00.
+Warning: Teleporting vehicle 'veh3103'; waited too long (jam), lane=':D2_16_0', time=6865.00.
+Warning: Vehicle 'veh3103' ends teleporting on edge 'D2E2', time=6865.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6870: Phase map is empty at time 6870 - no traffic light states generated
+Warning: Teleporting vehicle 'veh364'; waited too long (jam), lane=':D2_16_0', time=6873.00.
+Warning: Vehicle 'veh364' ends teleporting on edge 'D2E2', time=6873.00.
+Warning: Vehicle 'veh2061' ends teleporting on edge 'B1A1', time=6873.00.
+Warning: Teleporting vehicle 'veh1637'; waited too long (jam), lane='C2D2_1', time=6874.00.
+Warning: Vehicle 'veh1637' ends teleporting on edge 'D2E2', time=6893.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6900: Phase map is empty at time 6900 - no traffic light states generated
+INFO:TrafficSimulator:Step 6900: 599 vehicles active
+Step #6900.00 (3ms ~= 333.33*RT, ~201333.33UPS, TraCI: 32ms, vehicles TOT 3071 ACT 604 BUF
+Warning: Teleporting vehicle 'veh2'; waited too long (yield), lane='B2B1_H_s_0', time=6901.00.
+Warning: Vehicle 'veh2' ends teleporting on edge 'B1A1', time=6901.00.
+Warning: Teleporting vehicle 'veh645'; waited too long (wrong lane), lane='E1D1_H_s_0', time=6902.00.
+Warning: Teleporting vehicle 'veh2207'; waited too long (wrong lane), lane='E1E2_H_s_0', time=6904.00.
+Warning: Vehicle 'veh1634' ends teleporting on edge 'B1A1_H_s', time=6904.00.
+Warning: Vehicle 'veh2207' ends teleporting on edge 'E2D2', time=6904.00.
+Warning: Teleporting vehicle 'veh1720'; waited too long (yield), lane='C3C2_H_s_2', time=6907.00.
+Warning: Vehicle 'veh1720' ends teleporting on edge 'C2D2', time=6907.00.
+Warning: Teleporting vehicle 'veh3176'; waited too long (yield), lane='A1B1_H_s_3', time=6909.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6930: Phase map is empty at time 6930 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1490'; waited too long (wrong lane), lane='C0C1_H_s_1', time=6941.00.
+Warning: Teleporting vehicle 'veh2255'; waited too long (yield), lane='A3A2_H_s_1', time=6943.00.
+Warning: Vehicle 'veh2255' ends teleporting on edge 'A2B2', time=6943.00.
+Warning: Vehicle 'veh1547' ends teleporting on edge 'C1B1_H_s', time=6945.00.
+Warning: Teleporting vehicle 'veh2405'; waited too long (yield), lane='C0C1_H_s_2', time=6946.00.
+Warning: Teleporting vehicle 'veh1031'; waited too long (yield), lane=':D2_17_0', time=6946.00.
+Warning: Vehicle 'veh1031' ends teleporting on edge 'D2D3', time=6946.00.
+Warning: Teleporting vehicle 'veh2609'; waited too long (yield), lane='C1B1_H_s_1', time=6947.00.
+Warning: Teleporting vehicle 'veh260'; waited too long (jam), lane='A3A2_2', time=6948.00.
+Warning: Vehicle 'veh2974' teleports beyond arrival edge 'D1C1', time=6949.00.
+Warning: Teleporting vehicle 'veh1039'; waited too long (jam), lane=':C1B1_H_node_0_2', time=6950.00.
+Warning: Vehicle 'veh1039' ends teleporting on edge 'C1B1_H_s', time=6950.00.
+Warning: Vehicle 'veh260' ends teleporting on edge 'A2A1', time=6956.00.
+Warning: Teleporting vehicle 'veh558'; waited too long (jam), lane='A2B2_H_s_1', time=6959.00.
+Warning: Vehicle 'veh558' ends teleporting on edge 'B2C2', time=6959.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6960: Phase map is empty at time 6960 - no traffic light states generated
+Warning: Teleporting vehicle 'veh809'; waited too long (yield), lane='E1E2_H_s_1', time=6961.00.
+Warning: Vehicle 'veh2405' ends teleporting on edge 'C1B1', time=6962.00.
+Warning: Teleporting vehicle 'veh2323'; waited too long (jam), lane=':B1_16_0', time=6967.00.
+Warning: Vehicle 'veh2323' ends teleporting on edge 'B1C1', time=6967.00.
+Warning: Teleporting vehicle 'veh2826'; waited too long (wrong lane), lane='D1D2_H_s_1', time=6969.00.
+Warning: Teleporting vehicle 'veh1796'; waited too long (wrong lane), lane='D1D2_H_s_0', time=6969.00.
+Warning: Teleporting vehicle 'veh1900'; waited too long (jam), lane=':D1D2_H_node_0_1', time=6969.00.
+Warning: Vehicle 'veh2826' ends teleporting on edge 'D2C2', time=6969.00.
+Warning: Vehicle 'veh1796' ends teleporting on edge 'D2C2', time=6969.00.
+Warning: Teleporting vehicle 'veh648'; waited too long (yield), lane='B2B1_H_s_2', time=6974.00.
+Warning: Vehicle 'veh1900' ends teleporting on edge 'D2C2', time=6974.00.
+Warning: Vehicle 'veh648' ends teleporting on edge 'B1C1', time=6974.00.
+Warning: Teleporting vehicle 'veh1333'; waited too long (jam), lane=':B1C1_H_node_0_1', time=6976.00.
+Warning: Vehicle 'veh1333' ends teleporting on edge 'B1C1_H_s', time=6976.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 6990: Phase map is empty at time 6990 - no traffic light states generated
+Warning: Teleporting vehicle 'veh90'; waited too long (yield), lane='B2A2_H_s_2', time=6995.00.
+Warning: Vehicle 'veh90' ends teleporting on edge 'A2B2', time=6995.00.
+INFO:TrafficSimulator:Step 7000: 580 vehicles active
+Step #7000.00 (2ms ~= 500.00*RT, ~293500.00UPS, TraCI: 4ms, vehicles TOT 3076 ACT 587 BUF 
+Warning: Teleporting vehicle 'veh1078'; waited too long (jam), lane=':A1A2_H_node_0_2', time=7003.00.
+Warning: Vehicle 'veh1078' ends teleporting on edge 'A2B2', time=7007.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7020: Phase map is empty at time 7020 - no traffic light states generated
+Warning: Teleporting vehicle 'veh440'; waited too long (jam), lane=':A0A1_H_node_0_2', time=7020.00.
+Warning: Teleporting vehicle 'veh2134'; waited too long (jam), lane='B1A1_H_s_0', time=7021.00.
+Warning: Vehicle 'veh2134' ends teleporting on edge 'A1A2', time=7021.00.
+Warning: Teleporting vehicle 'veh2509'; waited too long (yield), lane='D1D2_H_s_3', time=7022.00.
+Warning: Vehicle 'veh2509' ends teleporting on edge 'D2D1', time=7022.00.
+Warning: Teleporting vehicle 'veh185'; waited too long (jam), lane=':B1_11_0', time=7023.00.
+Warning: Vehicle 'veh185' ends teleporting on edge 'B1B2', time=7023.00.
+Warning: Teleporting vehicle 'veh1478'; waited too long (wrong lane), lane='D0D1_H_s_0', time=7026.00.
+Warning: Teleporting vehicle 'veh2390'; waited too long (yield), lane='D0D1_H_s_1', time=7026.00.
+Warning: Vehicle 'veh2390' ends teleporting on edge 'D1D2', time=7026.00.
+Warning: Vehicle 'veh3176' teleports beyond arrival edge 'B1A1', time=7027.00.
+Warning: Teleporting vehicle 'veh2645'; waited too long (jam), lane='A1A2_1', time=7033.00.
+Warning: Vehicle 'veh440' ends teleporting on edge 'A1A2', time=7033.00.
+Warning: Vehicle 'veh2645' ends teleporting on edge 'A2B2', time=7037.00.
+Warning: Teleporting vehicle 'veh2748'; waited too long (yield), lane='E2D2_H_s_2', time=7041.00.
+Warning: Teleporting vehicle 'veh1202'; waited too long (yield), lane='D1C1_H_s_1', time=7041.00.
+Warning: Vehicle 'veh2748' ends teleporting on edge 'D2D1', time=7041.00.
+Warning: Teleporting vehicle 'veh1088'; waited too long (jam), lane=':A3A2_H_node_0_0', time=7042.00.
+Warning: Vehicle 'veh1202' ends teleporting on edge 'C1B1', time=7045.00.
+Warning: Teleporting vehicle 'veh1966'; waited too long (jam), lane='A3A2_0', time=7047.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7050: Phase map is empty at time 7050 - no traffic light states generated
+Warning: Vehicle 'veh1088' ends teleporting on edge 'A2B2', time=7051.00.
+Warning: Vehicle 'veh2680' ends teleporting on edge 'A1A2_H_s', time=7052.00.
+Warning: Vehicle 'veh1966' ends teleporting on edge 'A2B2', time=7056.00.
+Warning: Vehicle 'veh1490' ends teleporting on edge 'C1B1', time=7058.00.
+Warning: Teleporting vehicle 'veh3102'; waited too long (yield), lane='B3A3_H_s_1', time=7066.00.
+Warning: Vehicle 'veh3102' ends teleporting on edge 'A3A2', time=7066.00.
+Warning: Vehicle 'veh1478' ends teleporting on edge 'D1C1', time=7066.00.
+Warning: Teleporting vehicle 'veh374'; waited too long (jam), lane='E3E2_H_s_0', time=7076.00.
+Warning: Teleporting vehicle 'veh902'; waited too long (jam), lane=':B1_2_0', time=7076.00.
+Warning: Vehicle 'veh902' ends teleporting on edge 'B1C1', time=7076.00.
+Warning: Teleporting vehicle 'veh247'; waited too long (yield), lane='A2A1_H_s_2', time=7077.00.
+Warning: Vehicle 'veh247' ends teleporting on edge 'A1A2', time=7077.00.
+Warning: Teleporting vehicle 'veh2382'; waited too long (jam), lane=':A2A1_H_node_0_2', time=7078.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7080: Phase map is empty at time 7080 - no traffic light states generated
+Warning: Vehicle 'veh2382' ends teleporting on edge 'A1A2', time=7082.00.
+Warning: Vehicle 'veh809' teleports beyond arrival edge 'E2D2', time=7082.00.
+Warning: Teleporting vehicle 'veh1092'; waited too long (wrong lane), lane='A0A1_H_s_0', time=7084.00.
+Warning: Teleporting vehicle 'veh1906'; waited too long (wrong lane), lane='D2D1_H_s_1', time=7087.00.
+Warning: Teleporting vehicle 'veh1501'; waited too long (yield), lane='D2D1_H_s_0', time=7087.00.
+Warning: Vehicle 'veh1501' ends teleporting on edge 'D1C1', time=7087.00.
+Warning: Vehicle 'veh1906' ends teleporting on edge 'D1C1', time=7094.00.
+INFO:TrafficSimulator:Step 7100: 560 vehicles active
+Step #7100.00 (2ms ~= 500.00*RT, ~282500.00UPS, TraCI: 5ms, vehicles TOT 3083 ACT 565 BUF 
+Warning: Teleporting vehicle 'veh2823'; waited too long (jam), lane=':D1E1_H_node_0_1', time=7102.00.
+Warning: Vehicle 'veh2823' ends teleporting on edge 'E1D1', time=7107.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7110: Phase map is empty at time 7110 - no traffic light states generated
+Warning: Teleporting vehicle 'veh2728'; waited too long (yield), lane='D1D2_H_s_2', time=7112.00.
+Warning: Vehicle 'veh2728' ends teleporting on edge 'D2C2', time=7112.00.
+Warning: Teleporting vehicle 'veh2428'; waited too long (yield), lane='D0D1_H_s_2', time=7117.00.
+Warning: Vehicle 'veh3081' ends teleporting on edge 'A1A2_H_s', time=7129.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7140: Phase map is empty at time 7140 - no traffic light states generated
+Warning: Teleporting vehicle 'veh1839'; waited too long (yield), lane='E1D1_H_s_1', time=7140.00.
+Warning: Teleporting vehicle 'veh81'; waited too long (yield), lane='D1E1_H_s_2', time=7142.00.
+Warning: Teleporting vehicle 'veh2769'; waited too long (yield), lane='C1D1_H_s_3', time=7142.00.
+Warning: Vehicle 'veh81' ends teleporting on edge 'E1D1', time=7142.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7170: Phase map is empty at time 7170 - no traffic light states generated
+Warning: Vehicle 'veh374' ends teleporting on edge 'E2D2', time=7173.00.
+Warning: Teleporting vehicle 'veh736'; waited too long (wrong lane), lane='C2D2_H_s_0', time=7178.00.
+Warning: Vehicle 'veh736' ends teleporting on edge 'D2C2', time=7178.00.
+Warning: Teleporting vehicle 'veh1758'; waited too long (jam), lane=':D2_16_0', time=7184.00.
+Warning: Vehicle 'veh1758' ends teleporting on edge 'D2E2', time=7184.00.
+Warning: Vehicle 'veh2609' ends teleporting on edge 'A1A2_H_s', time=7187.00.
+Warning: Teleporting vehicle 'veh2281'; waited too long (yield), lane='E2E1_H_s_0', time=7188.00.
+Warning: Vehicle 'veh2281' ends teleporting on edge 'E1D1', time=7188.00.
+Warning: Teleporting vehicle 'veh2268'; waited too long (wrong lane), lane='C2D2_H_s_1', time=7191.00.
+Warning: Vehicle 'veh2268' ends teleporting on edge 'D2C2', time=7191.00.
+ERROR:TreeMethodController:Tree Method calculation failed at step 7200: 'list' object has no attribute 'values'
+ERROR:TreeMethodController:Traceback: Traceback (most recent call last):
+  File "/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py", line 149, in update
+    total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'values'
+
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7200: Phase map is empty at time 7200 - no traffic light states generated
+INFO:TrafficSimulator:Step 7200: 549 vehicles active
+Step #7200.00 (3ms ~= 333.33*RT, ~184666.67UPS, TraCI: 88ms, vehicles TOT 3083 ACT 554 BUF
+Warning: Teleporting vehicle 'veh3187'; waited too long (jam), lane='B2B1_H_s_0', time=7206.00.
+Warning: Vehicle 'veh1092' ends teleporting on edge 'A1A2_H_s', time=7206.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7230: Phase map is empty at time 7230 - no traffic light states generated
+Warning: Teleporting vehicle 'veh432'; waited too long (yield), lane='A1B1_H_s_3', time=7232.00.
+Warning: Teleporting vehicle 'veh1761'; waited too long (wrong lane), lane='A3A2_H_s_0', time=7246.00.
+Warning: Vehicle 'veh1761' ends teleporting on edge 'A2B2', time=7246.00.
+Warning: Teleporting vehicle 'veh1192'; waited too long (wrong lane), lane='C0C1_H_s_1', time=7247.00.
+Warning: Teleporting vehicle 'veh2926'; waited too long (yield), lane='A3A2_H_s_1', time=7247.00.
+Warning: Vehicle 'veh2926' ends teleporting on edge 'A2B2', time=7247.00.
+Warning: Vehicle 'veh1192' ends teleporting on edge 'C1B1', time=7247.00.
+Warning: Teleporting vehicle 'veh1635'; waited too long (yield), lane='C3C2_H_s_2', time=7248.00.
+Warning: Vehicle 'veh1635' ends teleporting on edge 'C2D2', time=7248.00.
+Warning: Teleporting vehicle 'veh1235'; waited too long (yield), lane=':D2_17_0', time=7250.00.
+Warning: Vehicle 'veh1235' ends teleporting on edge 'D2D3', time=7250.00.
+Warning: Teleporting vehicle 'veh2603'; waited too long (yield), lane='B2C2_H_s_1', time=7253.00.
+Warning: Vehicle 'veh2603' ends teleporting on edge 'C2D2', time=7253.00.
+Warning: Teleporting vehicle 'veh377'; waited too long (yield), lane='C1B1_H_s_1', time=7255.00.
+Warning: Vehicle 'veh377' ends teleporting on edge 'B1A1', time=7255.00.
+Warning: Teleporting vehicle 'veh478'; waited too long (jam), lane=':B2C2_H_node_0_2', time=7256.00.
+Warning: Vehicle 'veh478' ends teleporting on edge 'C2D2', time=7259.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7260: Phase map is empty at time 7260 - no traffic light states generated
+Warning: Vehicle 'veh2769' ends teleporting on edge 'D1C1_H_s', time=7261.00.
+Warning: Teleporting vehicle 'veh2975'; waited too long (wrong lane), lane='C1B1_H_s_2', time=7264.00.
+Warning: Teleporting vehicle 'veh542'; waited too long (jam), lane=':A2B2_H_node_0_2', time=7266.00.
+Warning: Teleporting vehicle 'veh12'; waited too long (yield), lane='A2B2_H_s_1', time=7266.00.
+Warning: Vehicle 'veh12' ends teleporting on edge 'B2C2', time=7266.00.
+Warning: Vehicle 'veh542' ends teleporting on edge 'A2B2_H_s', time=7266.00.
+Warning: Teleporting vehicle 'veh1121'; waited too long (jam), lane=':B1_16_0', time=7272.00.
+Warning: Vehicle 'veh1121' ends teleporting on edge 'B1C1', time=7272.00.
+Warning: Teleporting vehicle 'veh1253'; waited too long (jam), lane=':B1_16_0', time=7274.00.
+Warning: Vehicle 'veh1253' ends teleporting on edge 'B1C1', time=7274.00.
+Warning: Teleporting vehicle 'veh2027'; waited too long (jam), lane=':A1B1_H_node_0_1', time=7281.00.
+Warning: Teleporting vehicle 'veh3047'; waited too long (yield), lane='A1A2_H_s_0', time=7283.00.
+Warning: Vehicle 'veh3047' ends teleporting on edge 'A2B2', time=7283.00.
+Warning: Teleporting vehicle 'veh3155'; waited too long (yield), lane='A1B1_H_s_1', time=7285.00.
+Warning: Vehicle 'veh3155' ends teleporting on edge 'B1C1', time=7285.00.
+Warning: Vehicle 'veh2027' ends teleporting on edge 'A1B1_H_s', time=7285.00.
+Warning: Teleporting vehicle 'veh1225'; waited too long (yield), lane='C0C1_H_s_2', time=7288.00.
+WARNING:TreeMethodController:Algorithm runtime validation failed at step 7290: Phase map is empty at time 7290 - no traffic light states generated
+Warning: Teleporting vehicle 'veh89'; waited too long (jam), lane='A1B1_H_s_1', time=7290.00.
+Warning: Vehicle 'veh89' ends teleporting on edge 'B1C1', time=7290.00.
+Warning: Teleporting vehicle 'veh1072'; waited too long (yield), lane='D1D2_H_s_1', time=7292.00.
+Warning: Vehicle 'veh1072' ends teleporting on edge 'D2D3', time=7292.00.
+INFO:TrafficSimulator:=== SIMULATION COMPLETED ===
+INFO:TrafficSimulator:Total simulation steps: 7300
+INFO:TrafficSimulator:Vehicles still running: 533
+INFO:TrafficSimulator:Traffic control method: tree_method
+INFO:TrafficSimulator:Detailed statistics will be provided by SUMO output below:
+INFO:TreeMethodController:=== TREE METHOD CLEANUP STARTED ===
+INFO:TreeMethodController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
+INFO:TreeMethodController:Ended vehicles count: 2712
+INFO:TreeMethodController:Vehicle total time: 2166010
+INFO:TreeMethodController:=== TREE METHOD STATISTICS ===
+INFO:TreeMethodController:Tree Method - Vehicles completed: 2712
+INFO:TreeMethodController:Tree Method - Total driving time: 2166010
+INFO:TreeMethodController:Tree Method - Average duration: 798.68 steps
+INFO:TreeMethodController:Tree Method - Individual durations collected: 2712
+Step #7300.00 (2ms ~= 500.00*RT, ~270000.00UPS, TraCI: 0ms, vehicles TOT 3085 ACT 540 BUF 
+INFO:TrafficSimulator:Simulation completed successfully!
+INFO:StandardPipeline:=== SIMULATION COMPLETED ===
+INFO:StandardPipeline:total_simulation_steps: 7300
+INFO:StandardPipeline:vehicles_still_running: 533
+INFO:StandardPipeline:traffic_control_method: tree_method
+INFO:__main__:Pipeline execution completed successfully

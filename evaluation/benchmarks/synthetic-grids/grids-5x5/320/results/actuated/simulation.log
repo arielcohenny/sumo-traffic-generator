@@ -1,0 +1,669 @@
+INFO:StandardPipeline:Prepared output directory: workspace
+INFO:StandardPipeline:--- Step 1: Network Generation ---
+INFO:NetworkGenerationStep:Starting NetworkGenerationStep
+INFO:NetworkGenerationStep:Generating SUMO orthogonal grid network...
+INFO:NetworkGenerationStep:Using seed: 62
+Success.
+INFO:NetworkGenerationStep:Generated grid successfully
+INFO:NetworkGenerationStep:Completed NetworkGenerationStep successfully
+INFO:StandardPipeline:--- Step 2: Zone Generation ---
+INFO:ZoneGenerationStep:Starting ZoneGenerationStep
+INFO:ZoneGenerationStep:Generating synthetic network zones using traditional method...
+INFO:pyogrio._io:Created 1,024 records
+INFO:ZoneGenerationStep:Extracted land use zones successfully using traditional method with 25.0m blocks
+INFO:ZoneGenerationStep:Completed ZoneGenerationStep successfully
+INFO:StandardPipeline:--- Step 3: Integrated Edge Splitting with Lane Assignment ---
+Starting integrated edge splitting with flow-based lane assignment...
+Completed integrated edge splitting with flow-based lane assignment.
+INFO:StandardPipeline:Successfully completed integrated edge splitting with lane assignment
+Starting comprehensive split edges validation...
+✅ VALIDATION PASSED: 72 edges validated successfully
+INFO:StandardPipeline:Split edges validation passed successfully
+INFO:StandardPipeline:--- Step 4: Network Rebuild ---
+Network conversion completed successfully.
+INFO:StandardPipeline:Rebuilt the network successfully
+INFO:StandardPipeline:--- Step 6: Edge Attractiveness Assignment ---
+INFO:StandardPipeline:Assigned edge attractiveness successfully
+INFO:StandardPipeline:--- Step 7: Vehicle Route Generation ---
+Using routing strategies: {'shortest': 30.0, 'realtime': 50.0, 'fastest': 20.0}
+Using vehicle types: {'passenger': 50.0, 'commercial': 30.0, 'public': 20.0}
+Wrote 3200 vehicles → workspace/vehicles.rou.xml
+INFO:StandardPipeline:Generated vehicle routes successfully
+INFO:StandardPipeline:--- Step 8: SUMO Configuration Generation ---
+Creating SUMO configuration file.
+SUMO configuration file created successfully.
+INFO:StandardPipeline:Generated SUMO configuration file successfully
+INFO:StandardPipeline:--- Step 9: Dynamic Simulation ---
+INFO:TrafficSimulator:Initializing traffic simulation...
+INFO:TrafficSimulator:QA: Traffic control method selected: actuated
+INFO:TrafficSimulator:QA: Controller type: ActuatedController
+INFO:TrafficSimulator:Starting SUMO simulation with TraCI...
+ Retrying in 1 seconds
+INFO:ActuatedController:=== ACTUATED CONTROLLER INITIALIZATION ===
+INFO:ActuatedController:QA: ACTUATED - Initialized vehicle tracking system
+INFO:ActuatedController:QA: Found 24 traffic lights
+/Users/arielcohen/development/ariel_dev/sumo/Projects/sumo-traffic-generator/src/orchestration/traffic_controller.py:259: UserWarning: Call to deprecated function getCompleteRedYellowGreenDefinition, use getAllProgramLogics instead.
+  phase_count = len(traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0].phases)
+INFO:ActuatedController:QA: A0 - program: 0, phases: 4
+INFO:ActuatedController:QA: A1 - program: 0, phases: 4
+INFO:ActuatedController:QA: A2 - program: 0, phases: 4
+INFO:ActuatedController:QA: A3 - program: 0, phases: 4
+INFO:ActuatedController:QA: A4 - program: 0, phases: 4
+INFO:ActuatedController:QA: B0 - program: 0, phases: 4
+INFO:ActuatedController:QA: B1 - program: 0, phases: 4
+INFO:ActuatedController:QA: B2 - program: 0, phases: 4
+INFO:ActuatedController:QA: B3 - program: 0, phases: 4
+INFO:ActuatedController:QA: B4 - program: 0, phases: 4
+INFO:ActuatedController:QA: C0 - program: 0, phases: 4
+INFO:ActuatedController:QA: C1 - program: 0, phases: 4
+INFO:ActuatedController:QA: C2 - program: 0, phases: 4
+INFO:ActuatedController:QA: C3 - program: 0, phases: 4
+INFO:ActuatedController:QA: C4 - program: 0, phases: 4
+INFO:ActuatedController:QA: D0 - program: 0, phases: 4
+INFO:ActuatedController:QA: D1 - program: 0, phases: 4
+INFO:ActuatedController:QA: D2 - program: 0, phases: 4
+INFO:ActuatedController:QA: D4 - program: 0, phases: 3
+INFO:ActuatedController:QA: E0 - program: 0, phases: 4
+INFO:ActuatedController:QA: E1 - program: 0, phases: 4
+INFO:ActuatedController:QA: E2 - program: 0, phases: 4
+INFO:ActuatedController:QA: E3 - program: 0, phases: 3
+INFO:ActuatedController:QA: E4 - program: 0, phases: 4
+INFO:ActuatedController:QA: ACTUATED - Using native SUMO actuated behavior (no modifications)
+INFO:TrafficSimulator:QA: Traffic controller initialization completed
+INFO:ActuatedController:QA: ACTUATED step 0 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 42.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 42.0s
+INFO:TrafficSimulator:Step 0: 0 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 50 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 100: 21 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 22.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 22.0s
+INFO:TrafficSimulator:Step 200: 24 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 300: 30 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 350 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 2.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 2.0s
+INFO:TrafficSimulator:Step 400: 22 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 500: 25 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 550 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 27.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 27.0s
+INFO:TrafficSimulator:Step 600: 20 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 700: 19 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 750 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 7.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 7.0s
+INFO:TrafficSimulator:Step 800: 20 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 850 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 900: 26 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 950 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 32.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 32.0s
+INFO:TrafficSimulator:Step 1000: 37 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1050 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 1100: 34 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 12.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 12.0s
+INFO:TrafficSimulator:Step 1200: 21 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 1300: 12 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1350 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 37.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 37.0s
+INFO:TrafficSimulator:Step 1400: 13 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 1500: 16 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1550 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 17.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 17.0s
+INFO:TrafficSimulator:Step 1600: 19 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 1700: 21 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1750 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 3, remaining: 0.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 3, remaining: 0.0s
+INFO:TrafficSimulator:Step 1800: 17 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1850 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 1900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 1900: 20 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 1950 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 22.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 22.0s
+INFO:TrafficSimulator:Step 2000: 20 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2050 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 2100: 20 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 2.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 2.0s
+INFO:TrafficSimulator:Step 2200: 160 vehicles active
+Step #0.00 (0ms ?*RT. ?UPS, TraCI: 11ms, vehicles TOT 0 ACT 0 BUF 0)                      
+Step #100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 22 ACT 21 BUF 0)                   
+Step #200.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 34 ACT 24 BUF 0)                   
+Step #300.00 (1ms ~= 1000.00*RT, ~30000.00UPS, TraCI: 1ms, vehicles TOT 55 ACT 30 BUF 0)  
+Step #400.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 69 ACT 22 BUF 0)                   
+Step #500.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 89 ACT 25 BUF 0)                   
+Step #600.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 100 ACT 20 BUF 0)                  
+Step #700.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 107 ACT 19 BUF 0)                  
+Step #800.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 125 ACT 20 BUF 0)                  
+Step #900.00 (0ms ?*RT. ?UPS, TraCI: 4ms, vehicles TOT 143 ACT 26 BUF 0)                  
+Step #1000.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 167 ACT 37 BUF 0)                 
+Step #1100.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 183 ACT 34 BUF 0)                 
+Step #1200.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 195 ACT 21 BUF 0)                 
+Step #1300.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 204 ACT 12 BUF 0)                 
+Step #1400.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 210 ACT 13 BUF 0)                 
+Step #1500.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 225 ACT 16 BUF 0)                 
+Step #1600.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 238 ACT 19 BUF 0)                 
+Step #1700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 251 ACT 21 BUF 0)                 
+Step #1800.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 263 ACT 17 BUF 0)                 
+Step #1900.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 275 ACT 20 BUF 0)                 
+Step #2000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 288 ACT 20 BUF 0)                 
+Step #2100.00 (1ms ~= 1000.00*RT, ~20000.00UPS, TraCI: 1ms, vehicles TOT 303 ACT 20 BUF 0)
+Step #2200.00 (1ms ~= 1000.00*RT, ~160000.00UPS, TraCI: 1ms, vehicles TOT 464 ACT 160 BUF 
+Warning: Vehicle 'veh95' performs emergency braking on lane 'C2B2_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2241.00.
+INFO:ActuatedController:QA: ACTUATED step 2250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 2300: 297 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2350 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 27.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 27.0s
+INFO:TrafficSimulator:Step 2400: 395 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2450 - No action (SUMO native control)
+Step #2300.00 (2ms ~= 500.00*RT, ~148500.00UPS, TraCI: 0ms, vehicles TOT 672 ACT 297 BUF 1
+Step #2400.00 (2ms ~= 500.00*RT, ~197500.00UPS, TraCI: 19ms, vehicles TOT 865 ACT 395 BUF 
+Warning: Vehicle 'veh3166' performs emergency braking on lane 'D4C4_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=2476.00.
+INFO:ActuatedController:QA: ACTUATED step 2500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 2500: 506 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2550 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 7.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 7.0s
+INFO:TrafficSimulator:Step 2600: 614 vehicles active
+Step #2500.00 (2ms ~= 500.00*RT, ~253000.00UPS, TraCI: 1ms, vehicles TOT 1072 ACT 506 BUF 
+Step #2600.00 (2ms ~= 500.00*RT, ~307000.00UPS, TraCI: 1ms, vehicles TOT 1276 ACT 614 BUF 
+Warning: Teleporting vehicle 'veh405'; waited too long (wrong lane), lane='C1D1_H_s_2', time=2612.00.
+Warning: Vehicle 'veh405' ends teleporting on edge 'D1D0', time=2612.00.
+INFO:ActuatedController:QA: ACTUATED step 2650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 2700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 2700: 727 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 2750 - No action (SUMO native control)
+Step #2700.00 (3ms ~= 333.33*RT, ~242333.33UPS, TraCI: 110ms, vehicles TOT 1466 ACT 727 BU
+Warning: Teleporting vehicle 'veh253'; waited too long (wrong lane), lane='B1C1_H_s_1', time=2778.00.
+Warning: Vehicle 'veh253' ends teleporting on edge 'C1C2', time=2778.00.
+INFO:ActuatedController:QA: ACTUATED step 2800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 32.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 32.0s
+INFO:TrafficSimulator:Step 2800: 780 vehicles active
+Step #2800.00 (4ms ~= 250.00*RT, ~195000.00UPS, TraCI: 1ms, vehicles TOT 1577 ACT 780 BUF 
+Warning: Teleporting vehicle 'veh226'; waited too long (yield), lane='E3E2_H_s_0', time=2817.00.
+Warning: Vehicle 'veh226' ends teleporting on edge 'E2D2', time=2817.00.
+Warning: Teleporting vehicle 'veh2393'; waited too long (jam), lane='B0B1_H_s_0', time=2838.00.
+INFO:ActuatedController:QA: ACTUATED step 2850 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh2688'; waited too long (wrong lane), lane='B1C1_H_s_2', time=2856.00.
+Warning: Vehicle 'veh2688' ends teleporting on edge 'C1B1', time=2856.00.
+Warning: Teleporting vehicle 'veh2339'; waited too long (wrong lane), lane='A1B1_H_s_0', time=2869.00.
+Warning: Teleporting vehicle 'veh11'; waited too long (yield), lane='E2E1_H_s_0', time=2883.00.
+Warning: Vehicle 'veh11' ends teleporting on edge 'E1D1', time=2883.00.
+INFO:ActuatedController:QA: ACTUATED step 2900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 2900: 755 vehicles active
+Step #2900.00 (4ms ~= 250.00*RT, ~189250.00UPS, TraCI: 0ms, vehicles TOT 1626 ACT 757 BUF 
+Warning: Teleporting vehicle 'veh1165'; waited too long (wrong lane), lane='C1D1_H_s_2', time=2917.00.
+Warning: Vehicle 'veh1165' ends teleporting on edge 'D1C1', time=2917.00.
+Warning: Vehicle 'veh1840' performs emergency braking on lane 'B3B4_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=2943.00.
+Warning: Teleporting vehicle 'veh777'; waited too long (wrong lane), lane='A1B1_H_s_1', time=2946.00.
+Warning: Vehicle 'veh777' ends teleporting on edge 'B1A1', time=2946.00.
+INFO:ActuatedController:QA: ACTUATED step 2950 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh2090'; waited too long (wrong lane), lane='C1D1_H_s_2', time=2971.00.
+Warning: Vehicle 'veh2090' ends teleporting on edge 'D1D0', time=2971.00.
+INFO:ActuatedController:QA: ACTUATED step 3000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 12.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 12.0s
+INFO:TrafficSimulator:Step 3000: 718 vehicles active
+Step #3000.00 (3ms ~= 333.33*RT, ~240000.00UPS, TraCI: 36ms, vehicles TOT 1648 ACT 720 BUF
+Warning: Teleporting vehicle 'veh708'; waited too long (yield), lane='D1E1_H_s_2', time=3002.00.
+Warning: Vehicle 'veh708' ends teleporting on edge 'E1D1', time=3002.00.
+INFO:ActuatedController:QA: ACTUATED step 3050 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh2929'; waited too long (wrong lane), lane='A2A1_H_s_0', time=3066.00.
+Warning: Vehicle 'veh2929' ends teleporting on edge 'A1B1', time=3066.00.
+Warning: Teleporting vehicle 'veh1925'; waited too long (yield), lane='A2A1_H_s_1', time=3067.00.
+Warning: Vehicle 'veh1925' ends teleporting on edge 'A1B1', time=3067.00.
+Warning: Vehicle 'veh2393' ends teleporting on edge 'B1C1_H_s', time=3074.00.
+INFO:ActuatedController:QA: ACTUATED step 3100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 3100: 687 vehicles active
+Step #3100.00 (3ms ~= 333.33*RT, ~229333.33UPS, TraCI: 0ms, vehicles TOT 1673 ACT 688 BUF 
+Warning: Teleporting vehicle 'veh2110'; waited too long (yield), lane='B1A1_H_s_2', time=3103.00.
+Warning: Vehicle 'veh2110' ends teleporting on edge 'A1B1', time=3103.00.
+Warning: Vehicle 'veh2339' ends teleporting on edge 'C1B1', time=3106.00.
+Warning: Teleporting vehicle 'veh448'; waited too long (yield), lane=':D1_18_0', time=3129.00.
+Warning: Vehicle 'veh448' ends teleporting on edge 'D1C1', time=3129.00.
+INFO:ActuatedController:QA: ACTUATED step 3150 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh2775'; waited too long (wrong lane), lane='B1C1_H_s_0', time=3186.00.
+INFO:ActuatedController:QA: ACTUATED step 3200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 37.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 37.0s
+INFO:TrafficSimulator:Step 3200: 643 vehicles active
+Step #3200.00 (3ms ~= 333.33*RT, ~214666.67UPS, TraCI: 1ms, vehicles TOT 1693 ACT 644 BUF 
+Warning: Teleporting vehicle 'veh214'; waited too long (wrong lane), lane='C1D1_H_s_0', time=3224.00.
+Warning: Vehicle 'veh214' ends teleporting on edge 'D1C1', time=3224.00.
+Warning: Vehicle 'veh2775' ends teleporting on edge 'C1D1', time=3242.00.
+INFO:ActuatedController:QA: ACTUATED step 3250 - No action (SUMO native control)
+Warning: Vehicle 'veh1586' performs emergency braking on lane 'B3C3_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=3258.00.
+Warning: Teleporting vehicle 'veh2937'; waited too long (wrong lane), lane='E0E1_H_s_0', time=3281.00.
+Warning: Vehicle 'veh2937' ends teleporting on edge 'E1D1', time=3281.00.
+Warning: Teleporting vehicle 'veh1087'; waited too long (yield), lane='A1A2_H_s_0', time=3293.00.
+Warning: Vehicle 'veh1087' ends teleporting on edge 'A2B2', time=3293.00.
+INFO:ActuatedController:QA: ACTUATED step 3300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 3300: 594 vehicles active
+Step #3300.00 (2ms ~= 500.00*RT, ~297000.00UPS, TraCI: 28ms, vehicles TOT 1707 ACT 594 BUF
+Warning: Teleporting vehicle 'veh2823'; waited too long (wrong lane), lane='C1D1_H_s_1', time=3302.00.
+Warning: Vehicle 'veh2823' ends teleporting on edge 'D1C1', time=3302.00.
+Warning: Teleporting vehicle 'veh1365'; waited too long (jam), lane='B3A3_0', time=3314.00.
+Warning: Vehicle 'veh1365' ends teleporting on edge 'A3A2', time=3318.00.
+Warning: Teleporting vehicle 'veh1613'; waited too long (yield), lane='E2E1_H_s_0', time=3346.00.
+Warning: Vehicle 'veh1613' ends teleporting on edge 'E1D1', time=3346.00.
+INFO:ActuatedController:QA: ACTUATED step 3350 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh2811'; waited too long (yield), lane='B2B3_H_s_2', time=3354.00.
+Warning: Vehicle 'veh2811' ends teleporting on edge 'B3A3', time=3354.00.
+Warning: Teleporting vehicle 'veh1680'; waited too long (yield), lane='C0C1_H_s_0', time=3358.00.
+Warning: Vehicle 'veh1680' ends teleporting on edge 'C1D1', time=3358.00.
+Warning: Teleporting vehicle 'veh3013'; waited too long (yield), lane='E0E1_H_s_1', time=3365.00.
+Warning: Vehicle 'veh3013' ends teleporting on edge 'E1D1', time=3365.00.
+INFO:ActuatedController:QA: ACTUATED step 3400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 17.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 17.0s
+INFO:TrafficSimulator:Step 3400: 563 vehicles active
+Step #3400.00 (2ms ~= 500.00*RT, ~281500.00UPS, TraCI: 1ms, vehicles TOT 1730 ACT 563 BUF 
+Warning: Teleporting vehicle 'veh208'; waited too long (yield), lane=':B2_8_0', time=3409.00.
+Warning: Vehicle 'veh208' ends teleporting on edge 'B2C2', time=3409.00.
+Warning: Teleporting vehicle 'veh1738'; waited too long (jam), lane='B1B2_H_s_0', time=3416.00.
+Warning: Vehicle 'veh1738' ends teleporting on edge 'B2C2', time=3416.00.
+Warning: Teleporting vehicle 'veh1256'; waited too long (yield), lane='B0B1_H_s_0', time=3417.00.
+Warning: Vehicle 'veh1256' ends teleporting on edge 'B1C1', time=3417.00.
+Warning: Teleporting vehicle 'veh1943'; waited too long (wrong lane), lane='E1D1_H_s_0', time=3443.00.
+Warning: Teleporting vehicle 'veh708'; waited too long (jam), lane=':E1D1_H_node_0_2', time=3443.00.
+Warning: Vehicle 'veh1943' ends teleporting on edge 'D1C1', time=3443.00.
+Warning: Teleporting vehicle 'veh86'; waited too long (yield), lane='C1B1_H_s_1', time=3444.00.
+Warning: Vehicle 'veh86' ends teleporting on edge 'B1A1', time=3444.00.
+Warning: Vehicle 'veh708' ends teleporting on edge 'D1C1', time=3447.00.
+INFO:ActuatedController:QA: ACTUATED step 3450 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh1507'; waited too long (yield), lane='D1C1_H_s_1', time=3454.00.
+Warning: Vehicle 'veh1507' ends teleporting on edge 'C1B1', time=3454.00.
+Warning: Teleporting vehicle 'veh1236'; waited too long (jam), lane='A2B2_H_s_1', time=3456.00.
+Warning: Vehicle 'veh1236' ends teleporting on edge 'B2C2', time=3456.00.
+Warning: Teleporting vehicle 'veh2533'; waited too long (yield), lane='B2B1_H_s_2', time=3458.00.
+Warning: Vehicle 'veh2533' ends teleporting on edge 'B1C1', time=3458.00.
+Warning: Teleporting vehicle 'veh835'; waited too long (wrong lane), lane='A1B1_H_s_0', time=3466.00.
+Warning: Vehicle 'veh835' ends teleporting on edge 'B1B2', time=3466.00.
+Warning: Teleporting vehicle 'veh226'; waited too long (yield), lane='D2D1_H_s_0', time=3476.00.
+Warning: Vehicle 'veh226' ends teleporting on edge 'D1C1', time=3476.00.
+Warning: Teleporting vehicle 'veh1032'; waited too long (yield), lane=':C1_18_0', time=3484.00.
+Warning: Vehicle 'veh1032' ends teleporting on edge 'C1B1', time=3484.00.
+INFO:ActuatedController:QA: ACTUATED step 3500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 3500: 544 vehicles active
+Step #3500.00 (2ms ~= 500.00*RT, ~272000.00UPS, TraCI: 1ms, vehicles TOT 1746 ACT 544 BUF 
+Warning: Teleporting vehicle 'veh1214'; waited too long (yield), lane='E1D1_H_s_1', time=3520.00.
+Warning: Vehicle 'veh1214' ends teleporting on edge 'D1C1', time=3520.00.
+Warning: Teleporting vehicle 'veh1607'; waited too long (wrong lane), lane='D0D1_H_s_1', time=3524.00.
+Warning: Vehicle 'veh1607' ends teleporting on edge 'D1C1', time=3524.00.
+Warning: Teleporting vehicle 'veh1432'; waited too long (yield), lane='D0D1_H_s_2', time=3525.00.
+Warning: Vehicle 'veh1432' ends teleporting on edge 'D1C1', time=3525.00.
+INFO:ActuatedController:QA: ACTUATED step 3550 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh12'; waited too long (yield), lane='A0A1_H_s_1', time=3554.00.
+Warning: Vehicle 'veh12' ends teleporting on edge 'A1A2', time=3554.00.
+INFO:ActuatedController:QA: ACTUATED step 3600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 3, remaining: 0.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 3, remaining: 0.0s
+INFO:TrafficSimulator:Step 3600: 521 vehicles active
+Step #3600.00 (2ms ~= 500.00*RT, ~260500.00UPS, TraCI: 78ms, vehicles TOT 1773 ACT 521 BUF
+Warning: Teleporting vehicle 'veh1279'; waited too long (jam), lane='A1A2_H_s_0', time=3606.00.
+Warning: Vehicle 'veh1279' ends teleporting on edge 'A2B2', time=3606.00.
+Warning: Teleporting vehicle 'veh2895'; waited too long (yield), lane='C2B2_H_s_1', time=3635.00.
+Warning: Vehicle 'veh2895' ends teleporting on edge 'B2A2', time=3635.00.
+INFO:ActuatedController:QA: ACTUATED step 3650 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh82'; waited too long (wrong lane), lane='E0E1_H_s_0', time=3670.00.
+Warning: Vehicle 'veh82' ends teleporting on edge 'E1D1', time=3670.00.
+Warning: Teleporting vehicle 'veh3094'; waited too long (jam), lane=':B2A2_H_node_0_0', time=3671.00.
+Warning: Teleporting vehicle 'veh394'; waited too long (yield), lane='E0E1_H_s_1', time=3672.00.
+Warning: Vehicle 'veh394' ends teleporting on edge 'E1D1', time=3672.00.
+Warning: Teleporting vehicle 'veh3038'; waited too long (yield), lane='B2A2_H_s_1', time=3675.00.
+Warning: Vehicle 'veh3038' ends teleporting on edge 'A2A1', time=3675.00.
+Warning: Vehicle 'veh3094' ends teleporting on edge 'A2A1', time=3681.00.
+Warning: Teleporting vehicle 'veh2914'; waited too long (jam), lane=':B2_0_0', time=3690.00.
+Warning: Vehicle 'veh2914' ends teleporting on edge 'B2A2', time=3690.00.
+Warning: Teleporting vehicle 'veh1443'; waited too long (jam), lane=':B2_0_0', time=3691.00.
+Warning: Vehicle 'veh1443' ends teleporting on edge 'B2A2', time=3692.00.
+INFO:ActuatedController:QA: ACTUATED step 3700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 3700: 495 vehicles active
+Step #3700.00 (3ms ~= 333.33*RT, ~165000.00UPS, TraCI: 0ms, vehicles TOT 1787 ACT 495 BUF 
+Warning: Teleporting vehicle 'veh2630'; waited too long (jam), lane=':D2_9_0', time=3711.00.
+Warning: Vehicle 'veh2630' ends teleporting on edge 'D2E2', time=3711.00.
+Warning: Teleporting vehicle 'veh970'; waited too long (yield), lane='A3A2_H_s_0', time=3720.00.
+Warning: Vehicle 'veh970' ends teleporting on edge 'A2A1', time=3720.00.
+INFO:ActuatedController:QA: ACTUATED step 3750 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh397'; waited too long (yield), lane='B1B2_H_s_0', time=3781.00.
+Warning: Vehicle 'veh397' ends teleporting on edge 'B2C2', time=3781.00.
+INFO:ActuatedController:QA: ACTUATED step 3800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 22.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 22.0s
+INFO:TrafficSimulator:Step 3800: 485 vehicles active
+Step #3800.00 (2ms ~= 500.00*RT, ~242500.00UPS, TraCI: 1ms, vehicles TOT 1799 ACT 485 BUF 
+Warning: Teleporting vehicle 'veh1954'; waited too long (jam), lane='A3A2_0', time=3814.00.
+Warning: Vehicle 'veh1954' ends teleporting on edge 'A3A2_H_s', time=3814.00.
+Warning: Teleporting vehicle 'veh55'; waited too long (jam), lane='B2C2_H_s_1', time=3819.00.
+Warning: Vehicle 'veh55' ends teleporting on edge 'C2D2', time=3819.00.
+Warning: Teleporting vehicle 'veh1236'; waited too long (jam), lane=':B2C2_H_node_0_2', time=3820.00.
+Warning: Vehicle 'veh1236' ends teleporting on edge 'B2C2_H_s', time=3820.00.
+Warning: Teleporting vehicle 'veh2722'; waited too long (jam), lane='B3A3_1', time=3828.00.
+Warning: Teleporting vehicle 'veh388'; waited too long (jam), lane=':B3A3_H_node_0_0', time=3835.00.
+Warning: Teleporting vehicle 'veh1519'; waited too long (yield), lane='A2B2_H_s_1', time=3835.00.
+Warning: Vehicle 'veh1519' ends teleporting on edge 'B2C2', time=3835.00.
+Warning: Vehicle 'veh2722' ends teleporting on edge 'A3A2', time=3835.00.
+Warning: Teleporting vehicle 'veh1314'; waited too long (jam), lane='B3A3_1', time=3837.00.
+Warning: Teleporting vehicle 'veh208'; waited too long (wrong lane), lane='C2B2_H_s_2', time=3842.00.
+Warning: Vehicle 'veh388' ends teleporting on edge 'A3A2', time=3842.00.
+Warning: Vehicle 'veh208' ends teleporting on edge 'B2A2', time=3842.00.
+Warning: Vehicle 'veh1314' ends teleporting on edge 'A3A2', time=3844.00.
+Warning: Teleporting vehicle 'veh2129'; waited too long (yield), lane='B3B2_H_s_2', time=3846.00.
+Warning: Vehicle 'veh2129' ends teleporting on edge 'B2C2', time=3846.00.
+INFO:ActuatedController:QA: ACTUATED step 3850 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh508'; waited too long (jam), lane='A3A2_H_s_1', time=3864.00.
+Warning: Vehicle 'veh508' ends teleporting on edge 'A2B2', time=3864.00.
+Warning: Teleporting vehicle 'veh1383'; waited too long (yield), lane='C1C2_H_s_0', time=3881.00.
+Warning: Vehicle 'veh1383' ends teleporting on edge 'C2D2', time=3881.00.
+Warning: Teleporting vehicle 'veh1568'; waited too long (yield), lane='B0B1_H_s_0', time=3898.00.
+INFO:ActuatedController:QA: ACTUATED step 3900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 3900: 462 vehicles active
+Step #3900.00 (2ms ~= 500.00*RT, ~231500.00UPS, TraCI: 21ms, vehicles TOT 1822 ACT 463 BUF
+Warning: Teleporting vehicle 'veh157'; waited too long (jam), lane='A1A2_H_s_0', time=3910.00.
+Warning: Vehicle 'veh157' ends teleporting on edge 'A2B2', time=3910.00.
+Warning: Vehicle 'veh1568' ends teleporting on edge 'B1C1', time=3921.00.
+Warning: Teleporting vehicle 'veh2705'; waited too long (jam), lane='B1A1_H_s_0', time=3941.00.
+Warning: Vehicle 'veh2705' ends teleporting on edge 'A1A2', time=3941.00.
+Warning: Teleporting vehicle 'veh86'; waited too long (jam), lane=':B1A1_H_node_0_1', time=3942.00.
+Warning: Vehicle 'veh86' ends teleporting on edge 'B1A1_H_s', time=3942.00.
+INFO:ActuatedController:QA: ACTUATED step 3950 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh1510'; waited too long (yield), lane='B2B1_H_s_0', time=3958.00.
+Warning: Vehicle 'veh1510' ends teleporting on edge 'B1A1', time=3958.00.
+Warning: Teleporting vehicle 'veh1057'; waited too long (wrong lane), lane='B1C1_H_s_1', time=3977.00.
+Warning: Vehicle 'veh1057' ends teleporting on edge 'C1C2', time=3977.00.
+Warning: Teleporting vehicle 'veh1283'; waited too long (yield), lane='B2B1_H_s_2', time=3999.00.
+Warning: Vehicle 'veh1283' ends teleporting on edge 'B1C1', time=3999.00.
+INFO:ActuatedController:QA: ACTUATED step 4000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 2.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 2.0s
+INFO:TrafficSimulator:Step 4000: 430 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4050 - No action (SUMO native control)
+Step #4000.00 (2ms ~= 500.00*RT, ~215000.00UPS, TraCI: 1ms, vehicles TOT 1839 ACT 430 BUF 
+Warning: Teleporting vehicle 'veh125'; waited too long (yield), lane='D2C2_H_s_1', time=4061.00.
+Warning: Vehicle 'veh125' ends teleporting on edge 'C2B2', time=4061.00.
+Warning: Teleporting vehicle 'veh1214'; waited too long (yield), lane='C1C2_H_s_2', time=4066.00.
+Warning: Vehicle 'veh1214' ends teleporting on edge 'C2B2', time=4066.00.
+Warning: Teleporting vehicle 'veh2714'; waited too long (yield), lane='E2E1_H_s_0', time=4075.00.
+Warning: Vehicle 'veh2714' ends teleporting on edge 'E1D1', time=4075.00.
+INFO:ActuatedController:QA: ACTUATED step 4100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 4100: 383 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4150 - No action (SUMO native control)
+Step #4100.00 (2ms ~= 500.00*RT, ~191500.00UPS, TraCI: 0ms, vehicles TOT 1856 ACT 383 BUF 
+Warning: Teleporting vehicle 'veh208'; waited too long (jam), lane='B2A2_2', time=4156.00.
+Warning: Vehicle 'veh208' ends teleporting on edge 'A2A1', time=4160.00.
+INFO:ActuatedController:QA: ACTUATED step 4200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 27.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 27.0s
+INFO:TrafficSimulator:Step 4200: 355 vehicles active
+Step #4200.00 (2ms ~= 500.00*RT, ~177500.00UPS, TraCI: 16ms, vehicles TOT 1871 ACT 355 BUF
+Warning: Teleporting vehicle 'veh2716'; waited too long (yield), lane='E0E1_H_s_1', time=4206.00.
+Warning: Teleporting vehicle 'veh2562'; waited too long (yield), lane=':B2_18_0', time=4206.00.
+Warning: Vehicle 'veh2562' ends teleporting on edge 'B2A2', time=4206.00.
+Warning: Vehicle 'veh2716' ends teleporting on edge 'E1D1', time=4206.00.
+Warning: Teleporting vehicle 'veh3062'; waited too long (jam), lane=':B2_11_0', time=4213.00.
+Warning: Vehicle 'veh3062' ends teleporting on edge 'B2B3', time=4213.00.
+Warning: Teleporting vehicle 'veh2742'; waited too long (yield), lane=':B2_7_0', time=4223.00.
+Warning: Vehicle 'veh2742' ends teleporting on edge 'B2B1', time=4223.00.
+Warning: Teleporting vehicle 'veh767'; waited too long (wrong lane), lane='C1C2_H_s_0', time=4224.00.
+Warning: Vehicle 'veh767' ends teleporting on edge 'C2B2', time=4224.00.
+Warning: Teleporting vehicle 'veh1698'; waited too long (jam), lane=':B2_11_0', time=4238.00.
+Warning: Vehicle 'veh1698' ends teleporting on edge 'B2B3', time=4238.00.
+Warning: Teleporting vehicle 'veh2687'; waited too long (yield), lane='B1B2_H_s_2', time=4240.00.
+Warning: Vehicle 'veh2687' ends teleporting on edge 'B2A2', time=4240.00.
+Warning: Teleporting vehicle 'veh532'; waited too long (wrong lane), lane='B1B2_H_s_2', time=4241.00.
+Warning: Vehicle 'veh532' ends teleporting on edge 'B2B3', time=4241.00.
+INFO:ActuatedController:QA: ACTUATED step 4250 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh215'; waited too long (yield), lane=':B2_17_0', time=4267.00.
+Warning: Vehicle 'veh215' ends teleporting on edge 'B2B3', time=4267.00.
+Warning: Teleporting vehicle 'veh2211'; waited too long (yield), lane='B2C2_H_s_3', time=4278.00.
+Warning: Vehicle 'veh2211' ends teleporting on edge 'C2B2', time=4278.00.
+Warning: Teleporting vehicle 'veh2417'; waited too long (wrong lane), lane='A2B2_H_s_2', time=4282.00.
+Warning: Vehicle 'veh2417' ends teleporting on edge 'B2B1', time=4282.00.
+INFO:ActuatedController:QA: ACTUATED step 4300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 4300: 334 vehicles active
+Step #4300.00 (2ms ~= 500.00*RT, ~167000.00UPS, TraCI: 0ms, vehicles TOT 1885 ACT 334 BUF 
+Warning: Teleporting vehicle 'veh1288'; waited too long (yield), lane='A1A2_H_s_0', time=4304.00.
+Warning: Vehicle 'veh1288' ends teleporting on edge 'A2B2', time=4304.00.
+Warning: Teleporting vehicle 'veh1159'; waited too long (yield), lane='A3A2_H_s_1', time=4317.00.
+Warning: Vehicle 'veh1159' ends teleporting on edge 'A2B2', time=4317.00.
+Warning: Teleporting vehicle 'veh1314'; waited too long (jam), lane='A3A2_2', time=4328.00.
+Warning: Vehicle 'veh1314' ends teleporting on edge 'A2A1', time=4335.00.
+Warning: Teleporting vehicle 'veh2825'; waited too long (yield), lane='C1B1_H_s_1', time=4336.00.
+Warning: Vehicle 'veh2825' ends teleporting on edge 'B1A1', time=4336.00.
+INFO:ActuatedController:QA: ACTUATED step 4350 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh2330'; waited too long (yield), lane=':C1_18_0', time=4352.00.
+Warning: Teleporting vehicle 'veh1860'; waited too long (yield), lane='C1D1_H_s_3', time=4352.00.
+Warning: Vehicle 'veh2330' ends teleporting on edge 'C1B1', time=4352.00.
+Warning: Vehicle 'veh1860' ends teleporting on edge 'D1C1', time=4352.00.
+Warning: Teleporting vehicle 'veh533'; waited too long (wrong lane), lane='D2C2_H_s_0', time=4365.00.
+Warning: Vehicle 'veh533' ends teleporting on edge 'C2C1', time=4365.00.
+Warning: Teleporting vehicle 'veh2470'; waited too long (yield), lane='D2D1_H_s_0', time=4366.00.
+Warning: Vehicle 'veh2470' ends teleporting on edge 'D1C1', time=4366.00.
+INFO:ActuatedController:QA: ACTUATED step 4400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 7.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 7.0s
+INFO:TrafficSimulator:Step 4400: 287 vehicles active
+Step #4400.00 (1ms ~= 1000.00*RT, ~287000.00UPS, TraCI: 1ms, vehicles TOT 1913 ACT 287 BUF
+Warning: Teleporting vehicle 'veh3086'; waited too long (yield), lane='E2E1_H_s_0', time=4443.00.
+Warning: Vehicle 'veh3086' ends teleporting on edge 'E1D1', time=4443.00.
+INFO:ActuatedController:QA: ACTUATED step 4450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 4500: 224 vehicles active
+Step #4500.00 (1ms ~= 1000.00*RT, ~224000.00UPS, TraCI: 32ms, vehicles TOT 1930 ACT 224 BU
+Warning: Vehicle 'veh2773' performs emergency braking on lane 'B2C2_H_s_1' with decel=9.00, wished=4.50, severity=1.00, time=4534.00.
+INFO:ActuatedController:QA: ACTUATED step 4550 - No action (SUMO native control)
+Warning: Vehicle 'veh1057' performs emergency braking on lane 'B3A3_H_s_0' with decel=9.00, wished=4.50, severity=1.00, time=4591.00.
+INFO:ActuatedController:QA: ACTUATED step 4600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 32.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 32.0s
+INFO:TrafficSimulator:Step 4600: 145 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 4700: 69 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4750 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 12.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 12.0s
+INFO:TrafficSimulator:Step 4800: 25 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4850 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 4900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 4900: 19 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 4950 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 37.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 37.0s
+INFO:TrafficSimulator:Step 5000: 19 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5050 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 5100: 19 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 17.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 17.0s
+INFO:TrafficSimulator:Step 5200: 60 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 5300: 192 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5350 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 3, remaining: 0.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 3, remaining: 0.0s
+INFO:TrafficSimulator:Step 5400: 284 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 5500: 366 vehicles active
+Step #4600.00 (1ms ~= 1000.00*RT, ~145000.00UPS, TraCI: 1ms, vehicles TOT 1960 ACT 145 BUF
+Step #4700.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 1979 ACT 69 BUF 0)                
+Step #4800.00 (0ms ?*RT. ?UPS, TraCI: 2ms, vehicles TOT 1990 ACT 25 BUF 0)                
+Step #4900.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 2003 ACT 19 BUF 0)                
+Step #5000.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 2019 ACT 19 BUF 0)                
+Step #5100.00 (1ms ~= 1000.00*RT, ~19000.00UPS, TraCI: 1ms, vehicles TOT 2029 ACT 19 BUF 0
+Step #5200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 2086 ACT 60 BUF 0)                
+Step #5300.00 (1ms ~= 1000.00*RT, ~192000.00UPS, TraCI: 0ms, vehicles TOT 2253 ACT 192 BUF
+Step #5400.00 (1ms ~= 1000.00*RT, ~284000.00UPS, TraCI: 44ms, vehicles TOT 2426 ACT 284 BU
+Step #5500.00 (2ms ~= 500.00*RT, ~183000.00UPS, TraCI: 0ms, vehicles TOT 2604 ACT 366 BUF 
+Warning: Vehicle 'veh1699' performs emergency braking on lane ':E2_4_0' with decel=9.00, wished=4.50, severity=1.00, time=5520.00.
+INFO:ActuatedController:QA: ACTUATED step 5550 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 22.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 22.0s
+INFO:TrafficSimulator:Step 5600: 432 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 5700: 484 vehicles active
+Step #5600.00 (2ms ~= 500.00*RT, ~216000.00UPS, TraCI: 1ms, vehicles TOT 2770 ACT 432 BUF 
+Step #5700.00 (3ms ~= 333.33*RT, ~161333.33UPS, TraCI: 22ms, vehicles TOT 2914 ACT 484 BUF
+Warning: Teleporting vehicle 'veh1645'; waited too long (yield), lane='D2D1_H_s_0', time=5744.00.
+Warning: Vehicle 'veh1645' ends teleporting on edge 'D1C1', time=5744.00.
+INFO:ActuatedController:QA: ACTUATED step 5750 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh2440'; waited too long (yield), lane='B2C2_H_s_3', time=5753.00.
+Warning: Vehicle 'veh2440' ends teleporting on edge 'C2B2', time=5753.00.
+Warning: Vehicle 'veh2232' performs emergency braking on lane 'B1B0_H_s_0' with decel=9.00, wished=4.00, severity=1.00, time=5792.00.
+INFO:ActuatedController:QA: ACTUATED step 5800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 2.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 2.0s
+INFO:TrafficSimulator:Step 5800: 542 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5850 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 5900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 5900: 470 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 5950 - No action (SUMO native control)
+Step #5800.00 (2ms ~= 500.00*RT, ~271000.00UPS, TraCI: 1ms, vehicles TOT 3062 ACT 542 BUF 
+Step #5900.00 (2ms ~= 500.00*RT, ~235000.00UPS, TraCI: 1ms, vehicles TOT 3087 ACT 470 BUF 
+Warning: Vehicle 'veh343' performs emergency braking on lane ':B1_15_0' with decel=9.00, wished=4.50, severity=1.00, time=5983.00.
+INFO:ActuatedController:QA: ACTUATED step 6000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 27.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 27.0s
+INFO:TrafficSimulator:Step 6000: 385 vehicles active
+Step #6000.00 (1ms ~= 1000.00*RT, ~385000.00UPS, TraCI: 19ms, vehicles TOT 3109 ACT 385 BU
+Warning: Teleporting vehicle 'veh1115'; waited too long (wrong lane), lane='C1D1_H_s_2', time=6031.00.
+Warning: Vehicle 'veh1115' ends teleporting on edge 'D1D0', time=6031.00.
+Warning: Teleporting vehicle 'veh2788'; waited too long (yield), lane='E3E2_H_s_0', time=6042.00.
+Warning: Vehicle 'veh2788' ends teleporting on edge 'E2D2', time=6042.00.
+INFO:ActuatedController:QA: ACTUATED step 6050 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 6100: 317 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 7.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 7.0s
+INFO:TrafficSimulator:Step 6200: 263 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6250 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6300 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 6300: 227 vehicles active
+Step #6100.00 (2ms ~= 500.00*RT, ~158500.00UPS, TraCI: 0ms, vehicles TOT 3127 ACT 317 BUF 
+Step #6200.00 (2ms ~= 500.00*RT, ~131500.00UPS, TraCI: 0ms, vehicles TOT 3146 ACT 263 BUF 
+Step #6300.00 (1ms ~= 1000.00*RT, ~227000.00UPS, TraCI: 34ms, vehicles TOT 3163 ACT 227 BU
+Warning: Teleporting vehicle 'veh1189'; waited too long (yield), lane='C0C1_H_s_0', time=6329.00.
+Warning: Vehicle 'veh1189' ends teleporting on edge 'C1D1', time=6329.00.
+INFO:ActuatedController:QA: ACTUATED step 6350 - No action (SUMO native control)
+Warning: Teleporting vehicle 'veh1249'; waited too long (yield), lane='C2C1_H_s_2', time=6365.00.
+Warning: Vehicle 'veh1249' ends teleporting on edge 'C1D1', time=6365.00.
+INFO:ActuatedController:QA: ACTUATED step 6400 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 32.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 32.0s
+INFO:TrafficSimulator:Step 6400: 183 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6450 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6500 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 6500: 124 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6550 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6600 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 0, remaining: 12.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 0, remaining: 12.0s
+INFO:TrafficSimulator:Step 6600: 46 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6650 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6700 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 6700: 19 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6750 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6800 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 37.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 37.0s
+INFO:TrafficSimulator:Step 6800: 7 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6850 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 6900 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 6900: 2 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 6950 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 7000 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 2, remaining: 17.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 2, remaining: 17.0s
+INFO:TrafficSimulator:Step 7000: 1 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 7050 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 7100 - No action (SUMO native control)
+INFO:TrafficSimulator:Step 7100: 1 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 7150 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED step 7200 - No action (SUMO native control)
+INFO:ActuatedController:QA: ACTUATED A0 - phase: 3, remaining: 0.0s
+INFO:ActuatedController:QA: ACTUATED A1 - phase: 3, remaining: 0.0s
+INFO:TrafficSimulator:Step 7200: 1 vehicles active
+INFO:ActuatedController:QA: ACTUATED step 7250 - No action (SUMO native control)
+INFO:TrafficSimulator:=== SIMULATION COMPLETED ===
+INFO:TrafficSimulator:Total simulation steps: 7300
+INFO:TrafficSimulator:Vehicles still running: 1
+INFO:TrafficSimulator:Traffic control method: actuated
+INFO:TrafficSimulator:Detailed statistics will be provided by SUMO output below:
+INFO:ActuatedController:=== ACTUATED CLEANUP STARTED ===
+INFO:ActuatedController:Graph object exists: <class 'src.traffic_control.decentralized_traffic_bottlenecks.classes.graph.Graph'>
+INFO:ActuatedController:Ended vehicles count: 3212
+INFO:ActuatedController:Vehicle total time: 1710028
+INFO:ActuatedController:=== ACTUATED STATISTICS ===
+INFO:ActuatedController:Actuated - Vehicles completed: 3212
+INFO:ActuatedController:Actuated - Total driving time: 1710028
+INFO:ActuatedController:Actuated - Average duration: 532.39 steps
+INFO:ActuatedController:Actuated - Individual durations collected: 3212
+INFO:ActuatedController:QA: ACTUATED cleanup completed
+Step #6400.00 (1ms ~= 1000.00*RT, ~183000.00UPS, TraCI: 0ms, vehicles TOT 3183 ACT 183 BUF
+Step #6500.00 (1ms ~= 1000.00*RT, ~124000.00UPS, TraCI: 0ms, vehicles TOT 3194 ACT 124 BUF
+Step #6600.00 (0ms ?*RT. ?UPS, TraCI: 3ms, vehicles TOT 3200 ACT 46 BUF 0)                
+Step #6700.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3200 ACT 19 BUF 0)                
+Step #6800.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 3200 ACT 7 BUF 0)                 
+Step #6900.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 3200 ACT 2 BUF 0)                 
+Step #7000.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3200 ACT 1 BUF 0)                 
+Step #7100.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 3200 ACT 1 BUF 0)                 
+Step #7200.00 (0ms ?*RT. ?UPS, TraCI: 1ms, vehicles TOT 3200 ACT 1 BUF 0)                 
+Step #7300.00 (0ms ?*RT. ?UPS, TraCI: 0ms, vehicles TOT 3200 ACT 1 BUF 0)                 
+INFO:TrafficSimulator:Simulation completed successfully!
+INFO:StandardPipeline:=== SIMULATION COMPLETED ===
+INFO:StandardPipeline:total_simulation_steps: 7300
+INFO:StandardPipeline:vehicles_still_running: 1
+INFO:StandardPipeline:traffic_control_method: actuated
+INFO:__main__:Pipeline execution completed successfully
