@@ -22,12 +22,11 @@ synthetic-grids/
 ├── experiment_config.json           # Central configuration
 ├── run_all_experiments.sh          # Master execution script
 ├── analyze_all_experiments.py      # Master analysis script
-├── master_analysis_results.json    # Generated master results
 ├── grids-5x5/                      # 5x5 grid experiments
 │   ├── run_all_runs.sh
 │   ├── analyze_experiment.py
 │   └── [1/, 2/, 3/, ... experiment folders]
-├── grids-7x7/                      # 7x7 grid experiments  
+├── grids-7x7/                      # 7x7 grid experiments
 │   ├── run_all_runs.sh
 │   ├── analyze_experiment.py
 │   └── [1/, 2/, 3/, ... experiment folders]
@@ -40,11 +39,13 @@ synthetic-grids/
 ## Experiment Matrix
 
 ### Grid Configurations
+
 - **5x5 Grid**: Light (400), Moderate (800), Heavy (1600) vehicles
 - **7x7 Grid**: Light (800), Moderate (1600), Heavy (3200) vehicles
 - **9x9 Grid**: Light (1400), Moderate (2800), Heavy (5600) vehicles
 
 ### Parameter Variations
+
 - **Vehicle Types**: 2 realistic variations (Mixed Urban, Transit-Heavy)
 - **Routing Strategies**: 3 GPS usage patterns (Conservative, Balanced, Aggressive)
 - **Departure Patterns**: 3 temporal distributions (Rush Hour, Uniform, Peak-Focused)
@@ -52,6 +53,7 @@ synthetic-grids/
 - **Network Disruption**: 3 levels (0, 1, 2 junctions removed)
 
 ### Totals
+
 - **324 unique scenarios per grid**
 - **972 total experiments across all grids**
 - **2,916 total simulations (×3 traffic control methods)**
@@ -60,7 +62,9 @@ synthetic-grids/
 ## Quick Start
 
 ### 1. Configuration
+
 Edit the central configuration file to customize experiments:
+
 ```bash
 vim experiment_config.json
 ```
@@ -68,11 +72,12 @@ vim experiment_config.json
 ### 2. Run Experiments
 
 #### Single Grid Size
+
 ```bash
 # Run all experiments for 5x5 grid
 cd grids-5x5 && ./run_all_runs.sh
 
-# Run all experiments for 7x7 grid  
+# Run all experiments for 7x7 grid
 cd grids-7x7 && ./run_all_runs.sh
 
 # Run all experiments for 9x9 grid
@@ -80,6 +85,7 @@ cd grids-9x9 && ./run_all_runs.sh
 ```
 
 #### All Grid Sizes
+
 ```bash
 # Run all experiments across all grid sizes
 ./run_all_experiments.sh
@@ -88,12 +94,14 @@ cd grids-9x9 && ./run_all_runs.sh
 ### 3. Analyze Results
 
 #### Individual Grid Analysis
+
 ```bash
 # Analyze specific grid
 cd grids-5x5 && python analyze_experiment.py
 ```
 
 #### Master Analysis
+
 ```bash
 # Comprehensive analysis across all grids
 python analyze_all_experiments.py
@@ -108,9 +116,18 @@ The framework uses a single configuration file that controls all experimental pa
 ```json
 {
   "grid_configurations": {
-    "5x5": {"dimension": 5, "vehicle_counts": {"light": 400, "moderate": 800, "heavy": 1600}},
-    "7x7": {"dimension": 7, "vehicle_counts": {"light": 800, "moderate": 1600, "heavy": 3200}},
-    "9x9": {"dimension": 9, "vehicle_counts": {"light": 1400, "moderate": 2800, "heavy": 5600}}
+    "5x5": {
+      "dimension": 5,
+      "vehicle_counts": { "light": 400, "moderate": 800, "heavy": 1600 }
+    },
+    "7x7": {
+      "dimension": 7,
+      "vehicle_counts": { "light": 800, "moderate": 1600, "heavy": 3200 }
+    },
+    "9x9": {
+      "dimension": 9,
+      "vehicle_counts": { "light": 1400, "moderate": 2800, "heavy": 5600 }
+    }
   },
   "shared_parameters": {
     "vehicle_types": [
@@ -119,10 +136,14 @@ The framework uses a single configuration file that controls all experimental pa
     ],
     "routing_strategies": [
       "shortest 80 realtime 20",
-      "shortest 50 realtime 40 fastest 10", 
+      "shortest 50 realtime 40 fastest 10",
       "shortest 30 realtime 50 fastest 20"
     ],
-    "departure_patterns": ["six_periods", "uniform", "rush_hours:7-9:40,17-19:30,rest:20"],
+    "departure_patterns": [
+      "six_periods",
+      "uniform",
+      "rush_hours:7-9:40,17-19:30,rest:20"
+    ],
     "simulation_durations": [7300, 86400],
     "junctions_removed": [0, 1, 2]
   }
@@ -138,6 +159,7 @@ To modify experimental parameters:
 3. **Run Experiments**: Changes take effect immediately
 
 Example - Adding a new vehicle type:
+
 ```bash
 # Edit the config file
 vim experiment_config.json
@@ -150,14 +172,16 @@ vim experiment_config.json
 ## Execution Flow
 
 ### Hierarchical Execution
+
 ```
 run_all_experiments.sh
 └── grids-5x5/run_all_runs.sh → individual run_experiment.sh scripts
-└── grids-7x7/run_all_runs.sh → individual run_experiment.sh scripts  
+└── grids-7x7/run_all_runs.sh → individual run_experiment.sh scripts
 └── grids-9x9/run_all_runs.sh → individual run_experiment.sh scripts
 ```
 
 ### Hierarchical Analysis
+
 ```
 analyze_all_experiments.py
 └── grids-5x5/analyze_experiment.py → individual analyze_results.py scripts
@@ -168,29 +192,34 @@ analyze_all_experiments.py
 ## Built-in Safety Features
 
 ### Validation and Confirmation
+
 - **JSON Validation**: Automatic syntax checking before execution
 - **Experiment Counting**: Shows total runs and estimated time before starting
 - **User Confirmation**: Requires explicit approval for expensive computations
 - **Timeout Protection**: Prevents runaway simulations
 
 ### Error Handling
+
 - **Graceful Failures**: Individual experiment failures don't stop the entire suite
-- **Progress Tracking**: Real-time status updates during execution  
+- **Progress Tracking**: Real-time status updates during execution
 - **Comprehensive Logging**: Detailed logs for debugging failed experiments
 - **Automatic Recovery**: Analysis scripts regenerate missing JSON files
 
 ## Performance Characteristics
 
 ### Execution Time Estimates
+
 - **Per Run**: ~45 minutes average (varies by grid size and traffic load)
 - **Per Grid**: ~250 hours (324 experiments × 3 methods × 20 runs × 45min)
 - **Full Suite**: ~750 hours across all 3 grids
 
 ### Storage Requirements
+
 - **Per Run**: ~0.5 MB (simulation logs)
 - **Full Suite**: ~30 GB total storage
 
 ### Computational Requirements
+
 - **CPU**: Multi-core recommended for reasonable execution times
 - **Memory**: 4-8 GB RAM depending on grid size
 - **Disk I/O**: Moderate (primarily log file writing)
@@ -198,39 +227,39 @@ analyze_all_experiments.py
 ## Analysis Capabilities
 
 ### Individual Run Analysis
+
 - Vehicle metrics (entered, arrived, completion rate)
 - Travel time statistics (mean, std, range)
 - Traffic control method comparison
 - Configuration tracking
 
 ### Grid-Level Analysis
+
 - Aggregated statistics across all experiments in a grid
 - Method performance comparisons
 - Tree Method validation metrics
 - Scalability insights
 
-### Master Analysis
-- Cross-grid performance comparison
-- Scalability analysis across grid sizes
-- Comprehensive Tree Method validation
-- Publication-ready statistical summaries
-
 ## Research Applications
 
 ### Tree Method Validation
+
 - **Baseline Comparison**: Systematic comparison vs SUMO Actuated and Fixed Timing
 - **Scalability Analysis**: Performance across different network complexities
 - **Parameter Sensitivity**: Impact of vehicle mix, routing, temporal patterns
 - **Network Resilience**: Performance under junction removal/disruption
 
 ### Expected Results
+
 Based on research literature, Tree Method should demonstrate:
+
 - **20-45% improvement** in travel times vs fixed timing
 - **10-25% improvement** vs SUMO actuated timing
 - **Better completion rates** under high congestion scenarios
 - **Consistent performance** across different grid sizes
 
 ### Statistical Validity
+
 - **20 runs per scenario** provide robust confidence intervals
 - **Controlled variables** ensure fair comparison between methods
 - **Realistic parameters** based on real-world traffic patterns
@@ -241,12 +270,14 @@ Based on research literature, Tree Method should demonstrate:
 ### Common Issues
 
 1. **Configuration Errors**
+
    ```bash
    # Validate JSON syntax
    python -c "import json; json.load(open('experiment_config.json'))"
    ```
 
 2. **Missing Results**
+
    ```bash
    # Check experiment execution logs
    grep -r "ERROR\|Failed" grids-*/*/results/
