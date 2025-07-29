@@ -1,7 +1,7 @@
 # src/config.py
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 
 @dataclass(frozen=True)
@@ -85,6 +85,137 @@ class NetworkConfig:
     """Unified config for both grid and OSM networks"""
     source_type: str = "grid"  # "grid" or "osm"
     osm_config: Optional[OSMConfig] = None
+
+
+@dataclass
+class CustomLaneConfig:
+    """Configuration for custom edge lane definitions"""
+    edge_configs: Dict[str, Dict] = field(default_factory=dict)
+    
+    @classmethod
+    def parse_custom_lanes(cls, custom_lanes_str: str) -> 'CustomLaneConfig':
+        """Parse custom lanes string into structured configuration."""
+        if not custom_lanes_str:
+            return cls()
+        
+        config = cls()
+        
+        # Split by semicolon to get individual edge configurations
+        edge_configs = [cfg.strip() for cfg in custom_lanes_str.split(';') if cfg.strip()]
+        
+        for edge_config in edge_configs:
+            edge_id, edge_data = cls._parse_single_edge_config(edge_config)
+            config.edge_configs[edge_id] = edge_data
+        
+        return config
+    
+    @classmethod
+    def parse_custom_lanes_file(cls, file_path: str) -> 'CustomLaneConfig':
+        """Parse custom lanes file into structured configuration."""
+        if not file_path:
+            return cls()
+        
+        config = cls()
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+        except Exception as e:
+            raise ValueError(f"Error reading custom lanes file {file_path}: {e}")
+        
+        for line_num, line in enumerate(lines, 1):
+            line = line.strip()
+            
+            # Skip comments and empty lines
+            if not line or line.startswith('#'):
+                continue
+            
+            try:
+                # Handle multiple edge configs on same line (separated by semicolon)
+                edge_configs = [cfg.strip() for cfg in line.split(';') if cfg.strip()]
+                for edge_config in edge_configs:
+                    edge_id, edge_data = cls._parse_single_edge_config(edge_config)
+                    config.edge_configs[edge_id] = edge_data
+            except Exception as e:
+                raise ValueError(f"Invalid custom lanes syntax on line {line_num}: {e}")
+        
+        return config
+    
+    @classmethod
+    def _parse_single_edge_config(cls, edge_config: str) -> tuple:
+        """Parse a single edge configuration into structured data."""
+        if '=' not in edge_config:
+            raise ValueError(f"Missing '=' in configuration: {edge_config}")
+        
+        edge_id, specification = edge_config.split('=', 1)
+        edge_id = edge_id.strip()
+        specification = specification.strip()
+        
+        # Parse specification - need to handle tail: and head: properly
+        edge_data = {}
+        
+        # Look for tail: section
+        if 'tail:' in specification:
+            tail_start = specification.find('tail:')
+            tail_end = specification.find(',head:', tail_start)
+            if tail_end == -1:
+                tail_end = len(specification)
+            tail_part = specification[tail_start:tail_end].strip()
+            
+            tail_value = tail_part[5:].strip()  # Remove 'tail:'
+            edge_data['tail_lanes'] = int(tail_value)
+        
+        # Look for head: section
+        if 'head:' in specification:
+            head_start = specification.find('head:')
+            head_part = specification[head_start:].strip()
+            
+            head_value = head_part[5:].strip()  # Remove 'head:'
+            
+            # Handle dead-end case (empty head:)
+            if not head_value:
+                edge_data['movements'] = {}  # Empty movements = dead-end
+            else:
+                # Parse movement specifications: ToEdge1:N,ToEdge2:M
+                movements = {}
+                for movement in head_value.split(','):
+                    movement = movement.strip()
+                    if ':' not in movement:
+                        raise ValueError(f"Invalid movement format '{movement}' - must be ToEdge:N")
+                    
+                    to_edge, lane_count = movement.split(':', 1)
+                    movements[to_edge.strip()] = int(lane_count.strip())
+                
+                edge_data['movements'] = movements
+        
+        return edge_id, edge_data
+    
+    def get_tail_lanes(self, edge_id: str) -> Optional[int]:
+        """Get tail lane count for specific edge."""
+        return self.edge_configs.get(edge_id, {}).get('tail_lanes')
+    
+    def get_movement_lanes(self, edge_id: str, to_edge: str) -> Optional[int]:
+        """Get movement lane count for specific edge-to-edge movement."""
+        movements = self.edge_configs.get(edge_id, {}).get('movements')
+        if movements is None:
+            return None
+        return movements.get(to_edge)
+    
+    def get_movements(self, edge_id: str) -> Optional[Dict[str, int]]:
+        """Get all movements for specific edge."""
+        return self.edge_configs.get(edge_id, {}).get('movements')
+    
+    def has_custom_config(self, edge_id: str) -> bool:
+        """Check if edge has custom configuration."""
+        return edge_id in self.edge_configs
+    
+    def has_tail_config(self, edge_id: str) -> bool:
+        """Check if edge has custom tail configuration."""
+        return 'tail_lanes' in self.edge_configs.get(edge_id, {})
+    
+    def has_head_config(self, edge_id: str) -> bool:
+        """Check if edge has custom head configuration."""
+        return 'movements' in self.edge_configs.get(edge_id, {})
 
 
 CONFIG = _Config()

@@ -46,6 +46,9 @@ class StandardPipeline(BasePipeline):
         self._log_step(3, "Integrated Edge Splitting with Lane Assignment")
         self._execute_edge_splitting()
         
+        # Step 3.5: Apply Custom Lane Configurations (if provided)
+        self._execute_custom_lanes()
+        
         # Step 4: Network Rebuild
         self._log_step(4, "Network Rebuild")
         self._execute_network_rebuild()
@@ -96,6 +99,20 @@ class StandardPipeline(BasePipeline):
                 raise
         else:
             self.logger.info("Skipping lane assignment (lane_count is 0)")
+    
+    def _execute_custom_lanes(self) -> None:
+        """Execute custom lane configuration application."""
+        from src.network.custom_lanes import create_custom_lane_config_from_args, apply_custom_lane_configs
+        
+        # Create custom lane configuration from arguments
+        custom_lane_config = create_custom_lane_config_from_args(self.args)
+        
+        if custom_lane_config and custom_lane_config.edge_configs:
+            self._log_step(3.5, "Applying Custom Lane Configurations")
+            apply_custom_lane_configs(custom_lane_config)
+            self.logger.info(f"Successfully applied custom lane configurations for {len(custom_lane_config.edge_configs)} edges")
+        else:
+            self.logger.info("No custom lane configurations to apply")
     
     def _execute_network_rebuild(self) -> None:
         """Execute network rebuild."""

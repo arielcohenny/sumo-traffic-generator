@@ -71,6 +71,16 @@ def _add_network_arguments(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="Path to OSM file to use instead of generating synthetic grid network"
     )
+    parser.add_argument(
+        "--custom_lanes",
+        type=str,
+        help="Custom lane definitions for specific edges (format: 'EdgeID=tail:N,head:ToEdge1:N,ToEdge2:N;EdgeID2=...')"
+    )
+    parser.add_argument(
+        "--custom_lanes_file", 
+        type=str,
+        help="File containing custom lane definitions (one configuration per line, same format as --custom_lanes)"
+    )
 
 
 def _add_traffic_arguments(parser: argparse.ArgumentParser) -> None:

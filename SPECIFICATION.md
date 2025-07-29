@@ -165,6 +165,46 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/dataset
 env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control actuated --gui
 ```
 
+#### 0.4.21 `--custom_lanes` (str, optional)
+
+Custom lane definitions for specific edges in synthetic grid networks.
+
+**Format**: `"EdgeID=tail:N,head:ToEdge1:N,ToEdge2:N;EdgeID2=..."`
+
+**Supported Syntax**:
+- **Full Specification**: `A1B1=tail:2,head:B1B0:1,B1C1:2` (custom tail + explicit head movements)
+- **Tail-Only**: `A1B1=tail:2` (custom tail lanes, preserve existing movements)
+- **Head-Only**: `A1B1=head:B1B0:1,B1C1:2` (automatic tail, custom movements)
+- **Dead-End**: `A1B1=tail:2,head:` (create dead-end street)
+
+**Multiple Edges**: Separate configurations with semicolons
+
+**Constraints**: 
+- Synthetic networks only (not compatible with `--osm_file`)
+- Edge IDs must match grid pattern (A1B1, B2C2, etc.)
+- Lane counts must be 1-3
+- Mutually exclusive with `--custom_lanes_file`
+
+#### 0.4.22 `--custom_lanes_file` (str, optional)
+
+File containing custom lane definitions for complex scenarios.
+
+**Format**: Same syntax as `--custom_lanes`, one configuration per line
+**Features**: 
+- Supports comments (lines starting with #)
+- UTF-8 encoding required
+- Line-specific error reporting
+- Mutually exclusive with `--custom_lanes`
+
+**Example File Content**:
+```
+# Custom lane configuration file
+A1B1=tail:2,head:B1B0:1,B1C1:2
+A2B2=tail:3,head:B2C2:2,B2B1:1
+# Dead-end creation
+D1E1=tail:2,head:
+```
+
 ### 0.5 Argument Validation
 
 - **Step**: Validate all CLI arguments before processing
@@ -2738,6 +2778,82 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 ```
 
 This experimental framework represents the most comprehensive traffic control evaluation system available, providing statistically rigorous validation of the Tree Method algorithm across multiple network scales and traffic conditions.
+
+## Advanced Features
+
+### Custom Edge Lane Definition System
+
+#### Overview
+The system supports manual specification of lane configurations for specific edges in synthetic grid networks, overriding automatic lane assignment algorithms. This is implemented as a post-processing step after the standard edge splitting with flow-based lane assignment.
+
+#### Feature Specification
+
+##### CLI Arguments
+- `--custom_lanes`: Direct specification of custom lane configurations
+  - Format: `"EdgeID=tail:N,head:ToEdge1:N,ToEdge2:N;EdgeID2=..."`
+  - Supports flexible syntax: tail-only, head-only, full specification, dead-end creation
+  - Multiple edge configurations separated by semicolons
+
+- `--custom_lanes_file`: File-based configuration for complex scenarios
+  - Same syntax as CLI argument, one configuration per line
+  - Supports comments (lines starting with #) and empty lines
+  - UTF-8 encoding required
+  - Mutually exclusive with `--custom_lanes`
+
+##### Supported Configuration Types
+1. **Full Specification**: `A1B1=tail:2,head:B1B0:1,B1C1:2`
+   - Custom tail lanes + explicit head movement assignments
+   - Complete edge reconfiguration with bidirectional impact
+
+2. **Tail-Only Customization**: `A1B1=tail:2`
+   - Custom tail lanes, preserve all existing head movements
+   - Minimal impact scope, only affects upstream junction
+
+3. **Head Movements Only**: `A1B1=head:B1B0:1,B1C1:2`
+   - Automatic tail lanes, custom movement assignments
+   - Only affects downstream junction
+
+4. **Dead-End Creation**: `A1B1=tail:2,head:`
+   - Custom tail lanes, remove ALL head movements
+   - Creates dead-end street (vehicles can enter but not exit)
+
+##### Technical Implementation
+- **Integration Point**: Step 3.5 in pipeline (after edge splitting, before traffic generation)
+- **Shared Code Architecture**: Reuses existing spatial logic functions from `split_edges_with_lanes.py`
+- **Complete Deletion/Regeneration Strategy**: Avoids partial update conflicts
+- **Bidirectional Impact Management**: Updates both upstream and downstream junctions
+- **Traffic Light System Regeneration**: Complete recalculation of state strings and linkIndex values
+
+##### Constraints and Limitations
+- **Synthetic Networks Only**: Not supported with OSM files (`--osm_file`)
+- **Grid Network Requirement**: Edge IDs must follow pattern `A1B1`, `B2C2`, etc.
+- **Lane Count Bounds**: Tail and movement lane counts must be 1-3
+- **Movement Selection**: Only user-specified movements exist, others are deleted
+- **Precedence**: Overrides `--lane_count` for specified edges
+
+##### Validation Rules
+- Edge ID format validation (must match grid pattern)
+- Lane count bounds checking (1-3 range)
+- Movement destination validation
+- File existence and readability (for file-based config)
+- Mutual exclusivity between CLI and file options
+- Cross-argument compatibility checking
+
+##### Error Handling
+- Immediate exit on validation errors with descriptive messages
+- Line-specific error reporting for file-based configurations
+- Network validation using SUMO's built-in tools
+- No automatic error recovery or rollback mechanisms
+
+##### Use Cases
+- **Research Applications**: Test specific lane configurations for algorithm validation
+- **Scenario Testing**: Create controlled traffic conditions for Tree Method evaluation
+- **Construction Simulation**: Block or restrict specific routes
+- **Intersection Modeling**: Match real-world intersection configurations
+- **Edge Case Testing**: Validate system behavior under unusual conditions
+
+#### Integration Notes
+This specification should be added to the "Advanced Features" section of SPECIFICATION.md, maintaining consistency with existing documentation style and cross-referencing related features like `--lane_count` and traffic control methods.
 
 ### Development Tools
 - **`tools/scripts/`**: Development utilities and data management scripts

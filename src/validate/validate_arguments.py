@@ -39,9 +39,16 @@ def validate_arguments(args) -> None:
     _validate_junctions_to_remove(args.junctions_to_remove)
     _validate_lane_count(args.lane_count)
     
+    # NEW: Custom lanes validation
+    _validate_custom_lanes(getattr(args, 'custom_lanes', None))
+    _validate_custom_lanes_file(getattr(args, 'custom_lanes_file', None))
+    
     # Cross-argument validations
     _validate_cross_arguments(args)
     _validate_sample_arguments(args)
+    
+    # NEW: Custom lanes cross-validation
+    _validate_custom_lanes_cross_arguments(args)
 
 
 def _validate_numeric_ranges(args) -> None:
@@ -411,6 +418,163 @@ def _validate_cross_arguments(args) -> None:
     
     # Traffic light strategy compatibility (currently no restrictions)
     # Could add future constraints here if needed
+
+
+def _validate_custom_lanes(custom_lanes: str) -> None:
+    """Validate custom lanes argument format and values."""
+    if not custom_lanes:
+        return
+    
+    # Split by semicolon to get individual edge configurations
+    edge_configs = [config.strip() for config in custom_lanes.split(';') if config.strip()]
+    
+    for config in edge_configs:
+        _validate_single_edge_config(config)
+
+
+def _validate_custom_lanes_file(custom_lanes_file: str) -> None:
+    """Validate custom lanes file argument."""
+    if not custom_lanes_file:
+        return
+    
+    # Check file existence
+    file_path = Path(custom_lanes_file)
+    if not file_path.exists():
+        raise ValidationError(f"Custom lanes file does not exist: {custom_lanes_file}")
+    
+    # Check file readability
+    if not file_path.is_file():
+        raise ValidationError(f"Custom lanes path is not a file: {custom_lanes_file}")
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    except PermissionError:
+        raise ValidationError(f"Cannot read custom lanes file: {custom_lanes_file}")
+    except UnicodeDecodeError:
+        raise ValidationError(f"Custom lanes file must be UTF-8 encoded: {custom_lanes_file}")
+    except Exception as e:
+        raise ValidationError(f"Error reading custom lanes file {custom_lanes_file}: {e}")
+    
+    # Validate file content line by line
+    for line_num, line in enumerate(lines, 1):
+        line = line.strip()
+        
+        # Skip comments and empty lines
+        if not line or line.startswith('#'):
+            continue
+        
+        try:
+            _validate_single_edge_config(line)
+        except ValidationError as e:
+            raise ValidationError(f"Invalid custom lanes syntax on line {line_num}: {e}")
+
+
+def _validate_single_edge_config(config: str) -> None:
+    """Validate a single edge configuration string."""
+    import re
+    
+    # Split by semicolon for multiple edges in one config
+    edge_configs = [cfg.strip() for cfg in config.split(';') if cfg.strip()]
+    
+    for edge_config in edge_configs:
+        # Pattern: EdgeID=tail:N,head:ToEdge:N,ToEdge2:N OR EdgeID=tail:N OR EdgeID=head:ToEdge:N
+        if '=' not in edge_config:
+            raise ValidationError(f"Missing '=' in configuration: {edge_config}")
+        
+        edge_id, specification = edge_config.split('=', 1)
+        edge_id = edge_id.strip()
+        specification = specification.strip()
+        
+        # Validate edge ID format (A1B1, B2C2, etc.)
+        edge_pattern = re.compile(r'^[A-Z]+\d+[A-Z]+\d+$')
+        if not edge_pattern.match(edge_id):
+            raise ValidationError(f"Invalid edge ID format: {edge_id} - Must match pattern A1B1, B2C2, etc.")
+        
+        # Parse specification - need to handle tail: and head: properly
+        tail_found = False
+        head_found = False
+        
+        # Split by comma but be careful about head: movements
+        tail_part = None
+        head_part = None
+        
+        # Look for tail: and head: sections
+        if 'tail:' in specification:
+            tail_found = True
+            tail_start = specification.find('tail:')
+            tail_end = specification.find(',head:', tail_start)
+            if tail_end == -1:
+                tail_end = len(specification)
+            tail_part = specification[tail_start:tail_end].strip()
+            
+            tail_value = tail_part[5:].strip()  # Remove 'tail:'
+            if not tail_value:
+                raise ValidationError(f"Empty tail specification in: {edge_config}")
+            
+            try:
+                tail_lanes = int(tail_value)
+                if tail_lanes < 1 or tail_lanes > 3:
+                    raise ValidationError(f"Tail lanes must be 1-3, got {tail_lanes} in: {edge_config}")
+            except ValueError:
+                raise ValidationError(f"Invalid tail lane count '{tail_value}' in: {edge_config}")
+        
+        if 'head:' in specification:
+            if head_found:
+                raise ValidationError(f"Duplicate head specification in: {edge_config}")
+            head_found = True
+            
+            head_start = specification.find('head:')
+            head_part = specification[head_start:].strip()
+            
+            head_value = head_part[5:].strip()  # Remove 'head:'
+            
+            # Handle dead-end case (empty head:)
+            if not head_value:
+                pass  # Valid dead-end syntax
+            else:
+                # Parse movement specifications: ToEdge1:N,ToEdge2:M
+                movements = [mov.strip() for mov in head_value.split(',') if mov.strip()]
+                
+                for movement in movements:
+                    if ':' not in movement:
+                        raise ValidationError(f"Invalid movement format '{movement}' - must be ToEdge:N")
+                    
+                    to_edge, lane_count = movement.split(':', 1)
+                    to_edge = to_edge.strip()
+                    lane_count = lane_count.strip()
+                    
+                    # Validate destination edge ID
+                    if not edge_pattern.match(to_edge):
+                        raise ValidationError(f"Invalid destination edge ID: {to_edge}")
+                    
+                    # Validate lane count
+                    try:
+                        lanes = int(lane_count)
+                        if lanes < 1 or lanes > 3:
+                            raise ValidationError(f"Movement lanes must be 1-3, got {lanes} for {to_edge}")
+                    except ValueError:
+                        raise ValidationError(f"Invalid lane count '{lane_count}' for movement {to_edge}")
+        
+        # Ensure at least one specification (tail or head)
+        if not tail_found and not head_found:
+            raise ValidationError(f"Configuration must specify at least tail: or head: - got: {edge_config}")
+
+
+def _validate_custom_lanes_cross_arguments(args) -> None:
+    """Validate cross-argument constraints for custom lanes."""
+    
+    # Mutually exclusive: cannot use both --custom_lanes and --custom_lanes_file
+    if getattr(args, 'custom_lanes', None) and getattr(args, 'custom_lanes_file', None):
+        raise ValidationError("Cannot use both --custom_lanes and --custom_lanes_file simultaneously")
+    
+    # Custom lanes only work with synthetic grids (not OSM files)
+    custom_lanes_provided = getattr(args, 'custom_lanes', None) or getattr(args, 'custom_lanes_file', None)
+    if custom_lanes_provided and args.osm_file:
+        raise ValidationError("Custom lanes are not supported with OSM files (--osm_file)")
+    
+    # Custom lanes override --lane_count but both can be specified
+    # (custom lanes take precedence for specified edges, --lane_count for others)
 
 
 def _validate_sample_arguments(args) -> None:
