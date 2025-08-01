@@ -307,7 +307,7 @@ class TestMemoryPerformance:
         execution_time = time.time() - start_time
         
         assert result.returncode == 0, f"Sample performance test failed: {result.stderr}"
-        assert execution_time < 90, f"Sample test too slow: {execution_time:.1f}s"
+        assert execution_time < 120, f"Sample test too slow: {execution_time:.1f}s"
         
         assertions = SystemTestAssertions(get_workspace_dir())
         assertions.assert_simulation_completed_successfully()

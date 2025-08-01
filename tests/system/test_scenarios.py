@@ -147,7 +147,7 @@ class TestTreeMethodSample:
         Uses Tree Method sample data from evaluation/datasets/networks/
         """
         result = run_cli_command([
-            "--tree_method_sample", "evaluation/datasets/networks/",
+            "--tree_method_sample", "evaluation/datasets/decentralized_traffic_bottleneck/Experiment1-realistic-high-load/1/",
             "--traffic_control", "tree_method",
             "--end-time", "180",      # 3 minutes instead of full 2 hours
             "--seed", "42"
@@ -171,7 +171,7 @@ class TestTreeMethodSample:
         Tests all three control methods on identical pre-built network.
         """
         result = run_cli_command([
-            "--tree_method_sample", "evaluation/datasets/networks/",
+            "--tree_method_sample", "evaluation/datasets/decentralized_traffic_bottleneck/Experiment1-realistic-high-load/1/",
             "--traffic_control", traffic_control,
             "--end-time", "120",      # 2 minutes for comparison
             "--seed", "42"

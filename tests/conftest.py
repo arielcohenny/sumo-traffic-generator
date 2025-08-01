@@ -70,8 +70,9 @@ def sample_networks_path() -> str:
     Path to Tree Method sample networks directory.
     
     Returns the path for testing Tree Method sample functionality.
+    Uses existing experiment data from decentralized_traffic_bottleneck.
     """
-    return "evaluation/datasets/networks/"
+    return "evaluation/datasets/decentralized_traffic_bottleneck/Experiment1-realistic-high-load/1/"
 
 
 @pytest.fixture

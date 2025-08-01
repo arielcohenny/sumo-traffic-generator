@@ -19,12 +19,14 @@ from src.config import CONFIG, OSMConfig, NetworkConfig
 class TestGlobalConfig:
     """Test global CONFIG instance and defaults."""
     
+    @pytest.mark.unit
     def test_config_instance_exists(self):
         """Test that CONFIG instance is accessible."""
         assert CONFIG is not None
         assert hasattr(CONFIG, 'output_dir')
         assert hasattr(CONFIG, 'vehicle_types')
 
+    @pytest.mark.unit
     def test_vehicle_types_configuration(self):
         """Test vehicle types configuration."""
         assert 'passenger' in CONFIG.vehicle_types
@@ -36,6 +38,7 @@ class TestGlobalConfig:
         assert passenger['length'] == 5.0
         assert passenger['maxSpeed'] == 13.9
 
+    @pytest.mark.unit
     def test_default_values(self):
         """Test default configuration values."""
         assert CONFIG.DEFAULT_NUM_VEHICLES == 300
@@ -44,6 +47,7 @@ class TestGlobalConfig:
         assert CONFIG.MAX_LANES == 3
         assert CONFIG.HEAD_DISTANCE == 50
 
+    @pytest.mark.unit
     def test_file_paths(self):
         """Test configured file paths."""
         assert str(CONFIG.output_dir) == "workspace"
@@ -55,6 +59,7 @@ class TestGlobalConfig:
 class TestOSMConfig:
     """Test OSM configuration class."""
     
+    @pytest.mark.unit
     def test_osm_config_creation(self):
         """Test creation of OSM configuration."""
         osm_config = OSMConfig()
@@ -64,6 +69,7 @@ class TestOSMConfig:
         assert osm_config.preserve_osm_lanes is True
         assert osm_config.min_edge_length == 20.0
 
+    @pytest.mark.unit
     def test_osm_config_with_values(self):
         """Test OSM config with custom values."""
         osm_config = OSMConfig(
@@ -76,6 +82,7 @@ class TestOSMConfig:
         assert osm_config.preserve_osm_lanes is False
         assert osm_config.min_edge_length == 30.0
 
+    @pytest.mark.unit
     def test_highway_types_filter(self):
         """Test highway types filter configuration."""
         osm_config = OSMConfig()
@@ -87,6 +94,7 @@ class TestOSMConfig:
 class TestNetworkConfig:
     """Test NetworkConfig class."""
     
+    @pytest.mark.unit
     def test_network_config_grid(self):
         """Test network config for grid networks."""
         net_config = NetworkConfig(source_type="grid")
@@ -94,6 +102,7 @@ class TestNetworkConfig:
         assert net_config.source_type == "grid"
         assert net_config.osm_config is None
 
+    @pytest.mark.unit
     def test_network_config_osm(self):
         """Test network config for OSM networks."""
         osm_config = OSMConfig(osm_file_path="test.osm")
@@ -110,6 +119,7 @@ class TestNetworkConfig:
 class TestConfigIntegration:
     """Test configuration integration and combinations."""
     
+    @pytest.mark.unit
     def test_global_config_with_network_config(self):
         """Test global CONFIG with network configurations."""
         # Test grid network config
@@ -128,6 +138,7 @@ class TestConfigIntegration:
         assert CONFIG.DEFAULT_NUM_VEHICLES == 300
         assert CONFIG.RNG_SEED == 42
 
+    @pytest.mark.unit
     def test_vehicle_type_distribution(self):
         """Test default vehicle type distribution."""
         distribution = CONFIG.default_vehicle_distribution
@@ -141,6 +152,7 @@ class TestConfigIntegration:
         assert "commercial" in distribution
         assert "public" in distribution
 
+    @pytest.mark.unit
     def test_land_use_configuration(self):
         """Test land use configuration."""
         land_uses = CONFIG.land_uses

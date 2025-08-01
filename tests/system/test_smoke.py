@@ -62,7 +62,7 @@ class TestQuickValidation:
         Quick validation of sample data processing pipeline.
         """
         result = run_cli_command([
-            "--tree_method_sample", "evaluation/datasets/networks/",
+            "--tree_method_sample", "evaluation/datasets/decentralized_traffic_bottleneck/Experiment1-realistic-high-load/1/",
             "--traffic_control", "tree_method",
             "--end-time", "30",    # 30 seconds
             "--seed", "1"
