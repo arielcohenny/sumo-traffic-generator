@@ -91,18 +91,20 @@ def generate_sumo_conf_file(
         net_name = Path(network_file).name
         route_name = Path(route_file).name if route_file else None
         zones_name = Path(zones_file).name if zones_file else None
+        
+        # Build the configuration content step by step to avoid f-string backslash issues
+        config_content = f"<configuration>\n    <input>\n        <net-file value=\"{net_name}\"/>\n"
+        
+        if route_name:
+            config_content += f"        <route-files value=\"{route_name}\"/>\n"
+        
+        if zones_name:
+            config_content += f"        <additional-files value=\"{zones_name}\"/>\n"
+            
+        config_content += "    </input>\n    <time>\n        <begin value=\"0\"/>\n        <end value=\"3600\"/>\n    </time>\n</configuration>"
+        
         with open(config_file, "w") as f:
-            f.write(f"""<configuration>
-    <input>
-        <net-file value=\"{net_name}\"/>
-{f'        <route-files value=\"{route_name}\"/>' if route_name else ''}
-{f'        <additional-files value="{zones_name}"/>' if zones_name else ''}
-    </input>
-    <time>
-        <begin value=\"0\"/>
-        <end value=\"3600\"/>
-    </time>
-</configuration>""")
+            f.write(config_content)
         print("SUMO configuration file created successfully.")
         return str(config_file)
     except Exception as e:

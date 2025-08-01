@@ -28,6 +28,7 @@ pip install -r requirements.txt
 ## Quick Start
 
 ### Synthetic Grid Network
+
 ```bash
 # Basic 5x5 grid with 500 vehicles
 env PYTHONUNBUFFERED=1 python -m src.cli --num_vehicles 500 --gui
@@ -41,7 +42,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --gui
 ```
 
-### Real-World OSM Network
+<!-- ### Real-World OSM Network
 ```bash
 # Manhattan street network with Tree Method optimization
 env PYTHONUNBUFFERED=1 python -m src.cli \
@@ -49,9 +50,10 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --num_vehicles 500 \
   --traffic_control tree_method \
   --gui
-```
+``` -->
 
 ### Tree Method Research Datasets
+
 ```bash
 # Validate against original Tree Method research networks
 env PYTHONUNBUFFERED=1 python -m src.cli \
@@ -65,7 +67,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 ```
 ├── src/                    # Core application code
 │   ├── network/           # Network generation and processing
-│   ├── traffic/           # Vehicle routing and generation  
+│   ├── traffic/           # Vehicle routing and generation
 │   ├── orchestration/     # High-level simulation coordination
 │   └── sumo_integration/  # SUMO/TraCI interface layer
 ├── evaluation/            # Research validation framework
