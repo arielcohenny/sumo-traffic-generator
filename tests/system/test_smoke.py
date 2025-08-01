@@ -69,7 +69,7 @@ class TestQuickValidation:
         ])
         
         # Skip if sample data doesn't exist
-        if result.returncode != 0 and "not found" in result.stderr.lower():
+        if result.returncode != 0 and ("not found" in result.stderr.lower() or "required file missing" in result.stderr.lower()):
             pytest.skip("Tree Method sample data not available")
         
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
