@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 from src.config import CONFIG
 
 # Convert the generated network files to the final .net.xml format
@@ -76,8 +76,8 @@ def run_sumo(
 def generate_sumo_conf_file(
     config_file,
     network_file,
-    route_file: str | None = None,
-    zones_file: str | None = None,
+    route_file: Optional[str] = None,
+    zones_file: Optional[str] = None,
 ) -> str:
     """
     Create a SUMO configuration file (.sumocfg).

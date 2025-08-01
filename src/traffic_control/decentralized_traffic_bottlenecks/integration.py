@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from types import SimpleNamespace
+from typing import Optional
 
 from .enums import CostType, AlgoType
 from .classes.run_config import RunConfig
@@ -14,7 +15,7 @@ def load_tree(
     *,
     cost_type: CostType = CostType.TREE_CURRENT,
     algo_type: AlgoType = AlgoType.BABY_STEPS,
-    sumo_cfg: str | None = None
+    sumo_cfg: Optional[str] = None
 ) -> tuple[SimpleNamespace, RunConfig]:
     """
     Instead of Tree Method’s JSON-based loader, we:
