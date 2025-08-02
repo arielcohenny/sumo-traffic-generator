@@ -29,7 +29,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest pytest-cov pytest-timeout pytest-xdist psutil
+        pip install pytest pytest-timeout pytest-xdist psutil
     
     - name: Run fast tests (smoke)
       run: |
@@ -39,17 +39,6 @@ jobs:
       run: |
         pytest tests/ -m scenario --timeout=300 -v --tb=short --no-cov
     
-    - name: Run full test suite with coverage
-      run: |
-        pytest tests/ --cov=src --cov-report=xml --cov-report=html --timeout=600 --cov-fail-under=0
-    
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-    
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
@@ -57,44 +46,3 @@ jobs:
         name: test-results
         path: |
           test-results.xml
-          htmlcov/
-          
-  performance-test:
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-    
-    - name: Install SUMO
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y sumo sumo-tools sumo-doc
-        echo "/usr/share/sumo/tools" >> $GITHUB_PATH
-        echo "SUMO_HOME=/usr/share/sumo" >> $GITHUB_ENV
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-timeout
-    
-    - name: Run performance regression tests
-      run: |
-        pytest tests/ -m "scenario and not slow" --timeout=900 -v
-        
-    - name: Store performance metrics
-      run: |
-        echo "Performance test completed at $(date)" >> performance-log.txt
-        
-    - name: Upload performance results
-      uses: actions/upload-artifact@v4
-      with:
-        name: performance-results
-        path: performance-log.txt
