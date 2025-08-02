@@ -1,3 +1,28 @@
+# Fast New Feature Development Commands
+
+## 1. Start Fresh
+
+git checkout main
+git pull
+git checkout -b feature/your-feature-name
+
+## 2. Develop Your Feature
+
+(Make your changes to files)
+git add .
+git commit -m "Describe your changes"
+
+## 3. Push and Create PR
+
+git push -u origin HEAD
+Then visit the GitHub link that appears in the terminal output to create your PR.
+
+## 4. After PR is Merged
+
+git checkout main
+git pull
+git branch -d feature/your-feature-name
+
 # Branching Workflow Guide
 
 This document explains the feature branch workflow for the SUMO Traffic Generator project.
@@ -52,6 +77,7 @@ gh pr create --title "Your PR Title" --body "Description of changes"
 ### 4. CI Validation
 
 GitHub Actions will automatically:
+
 - Run smoke tests (< 1 minute)
 - Run scenario tests (2-5 minutes)
 - Report results on the PR
@@ -59,6 +85,7 @@ GitHub Actions will automatically:
 ### 5. Merge to Main
 
 Once CI passes and you're satisfied:
+
 - Merge the PR on GitHub
 - Delete the feature branch
 - Switch back to main locally
