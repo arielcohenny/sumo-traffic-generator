@@ -33,11 +33,11 @@ jobs:
     
     - name: Run fast tests (smoke)
       run: |
-        pytest tests/ -m smoke --timeout=60 -v --tb=short --no-cov
+        pytest tests/ -m smoke --timeout=60 -v --tb=short
     
     - name: Run scenario tests
       run: |
-        pytest tests/ -m scenario --timeout=300 -v --tb=short --no-cov
+        pytest tests/ -m scenario --timeout=300 -v --tb=short
     
     - name: Upload test results
       uses: actions/upload-artifact@v4
