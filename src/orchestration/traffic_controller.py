@@ -273,7 +273,6 @@ class ActuatedController(TrafficController):
             import traceback
             self.logger.error(f"Traceback: {traceback.format_exc()}")
         
-        self.logger.info("QA: ACTUATED cleanup completed")
 
 
 class FixedController(TrafficController):
@@ -292,7 +291,6 @@ class FixedController(TrafficController):
         # Initialize Graph object for vehicle tracking (same as Tree Method)
         from src.traffic_control.decentralized_traffic_bottlenecks.classes.graph import Graph
         self.graph = Graph(self.args.end_time)
-        self.logger.info("QA: FIXED - Initialized vehicle tracking system")
         
         try:
             import traci
@@ -311,8 +309,6 @@ class FixedController(TrafficController):
                     'total_cycle': total_cycle,
                     'current_target_phase': 0
                 }
-
-            self.logger.info("QA: FIXED - Initialization complete, will use setPhase + setPhaseDuration")
                 
         except Exception as e:
             self.logger.error(f"FIXED INITIALIZATION ERROR: {e}")
@@ -388,8 +384,6 @@ class FixedController(TrafficController):
             import traceback
             self.logger.error(f"Traceback: {traceback.format_exc()}")
         
-        self.logger.info("QA: FIXED cleanup completed")
-
 
 class TrafficControllerFactory:
     """Factory for creating traffic controllers."""

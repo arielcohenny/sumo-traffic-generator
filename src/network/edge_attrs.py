@@ -258,9 +258,9 @@ def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root, 
         weighted_arrive = 0
 
         for zone in adjacent_zones:
-            zone_type = zone['properties'].get('type', 'Mixed')
+            zone_type = zone.get('type', 'Mixed')
             attractiveness = float(
-                zone['properties'].get('attractiveness', 0.5))
+                zone.get('attractiveness', 0.5))
 
             multipliers = land_use_multipliers.get(
                 zone_type, {'depart': 1.0, 'arrive': 1.0})

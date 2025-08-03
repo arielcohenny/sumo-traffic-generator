@@ -54,10 +54,6 @@ class TrafficSimulator:
     def _initialize_simulation(self) -> None:
         """Initialize simulation components."""
         self.logger.info("Initializing traffic simulation...")
-        self.logger.info(
-            f"QA: Traffic control method selected: {self.args.traffic_control}")
-        self.logger.info(
-            f"QA: Controller type: {type(self.traffic_controller).__name__}")
 
         # Choose SUMO binary based on GUI flag
         if self.args.gui:
@@ -71,7 +67,6 @@ class TrafficSimulator:
 
         # Initialize traffic controller AFTER TraCI is connected
         self.traffic_controller.initialize()
-        self.logger.info("QA: Traffic controller initialization completed")
 
     def _run_simulation_loop(self) -> Dict[str, Any]:
         """Run the main simulation loop.
