@@ -36,6 +36,14 @@ Simple 5x5 grid simulation for quick testing.
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 500 --end-time 1800 --gui
 ```
 
+### Basic Grid with custom lanes
+
+Simple 5x5 grid with custom lanes simulation for quick testing.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 500 --end-time 1800 --gui --custom_lanes A1B1=head:B1C1:3,B1B2:1,B1B0:1;
+```
+
 ### High Density Test
 
 Stress test with 1200 vehicles and mixed routing strategies.

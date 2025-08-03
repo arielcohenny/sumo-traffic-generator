@@ -64,7 +64,7 @@ def apply_custom_lane_configs(custom_lane_config: CustomLaneConfig) -> None:
     _update_edges_file(edg_root, custom_lane_config)
     
     # 3b. Complete regeneration of connections file
-    _regenerate_connections_file(con_root, custom_lane_config, movement_data, edge_coords)
+    _regenerate_connections_file(con_root, edg_root, custom_lane_config, movement_data, edge_coords)
     
     # 3c. Complete regeneration of traffic lights file
     _regenerate_traffic_lights_file(tll_root, con_root, affected_junctions)
@@ -125,13 +125,13 @@ def _update_edges_file(edg_root, custom_lane_config: CustomLaneConfig) -> None:
                         head_lanes = sum(movements.values())
                     edge.set("numLanes", str(head_lanes))
             else:
-                # Tail segment - update based on tail specification
+                # Tail segment - update based on tail specification only
                 tail_lanes = custom_lane_config.get_tail_lanes(base_edge_id)
                 if tail_lanes is not None:
                     edge.set("numLanes", str(tail_lanes))
 
 
-def _regenerate_connections_file(con_root, custom_lane_config: CustomLaneConfig, 
+def _regenerate_connections_file(con_root, edg_root, custom_lane_config: CustomLaneConfig, 
                                 movement_data: Dict[str, Dict], 
                                 edge_coords: Dict[str, Tuple[float, float, float, float]]) -> None:
     """
@@ -148,7 +148,10 @@ def _regenerate_connections_file(con_root, custom_lane_config: CustomLaneConfig,
     
     # Step 2: Regenerate connections for each customized edge
     for edge_id, edge_config in custom_lane_config.edge_configs.items():
-        _regenerate_edge_connections(con_root, edge_id, edge_config, movement_data, edge_coords)
+        _regenerate_edge_connections(con_root, edg_root, edge_id, edge_config, movement_data, edge_coords)
+    
+    # Step 3: Validate all connections have valid lane indices
+    _validate_all_connections(con_root, edg_root)
 
 
 def _delete_connections_for_affected_edges(con_root, custom_lane_config: CustomLaneConfig) -> None:
@@ -185,7 +188,7 @@ def _delete_connections_for_affected_edges(con_root, custom_lane_config: CustomL
         con_root.remove(connection)
 
 
-def _regenerate_edge_connections(con_root, edge_id: str, edge_config: Dict,
+def _regenerate_edge_connections(con_root, edg_root, edge_id: str, edge_config: Dict,
                                movement_data: Dict[str, Dict], 
                                edge_coords: Dict[str, Tuple[float, float, float, float]]) -> None:
     """Regenerate all connections for a single customized edge."""
@@ -223,16 +226,17 @@ def _regenerate_edge_connections(con_root, edge_id: str, edge_config: Dict,
         head_lanes = max(original_total_lanes, tail_lanes if tail_lanes else 1)
         movements_to_use = original_movements
     
-    # Use default tail lanes if not specified
+    # Use original tail lanes if not specified (head-only configuration)
     if tail_lanes is None:
-        tail_lanes = head_lanes
+        # For head-only configurations, preserve original tail lane count
+        tail_lanes = _get_edge_lane_count(edg_root, edge_id)
     
     # Generate internal tail→head connections
     _generate_internal_connections(con_root, edge_id, tail_lanes, head_lanes)
     
     # Generate head→downstream connections using shared spatial logic
     if movements_to_use:
-        _generate_downstream_connections(con_root, edge_id, movements_to_use, 
+        _generate_downstream_connections(con_root, edg_root, edge_id, movements_to_use, 
                                        head_lanes, edge_coords)
     
     # Generate upstream→tail connections (bidirectional impact)
@@ -284,7 +288,7 @@ def _generate_internal_connections(con_root, edge_id: str, tail_lanes: int, head
                     tail_lane_idx += 1
 
 
-def _generate_downstream_connections(con_root, edge_id: str, movements: List[Dict],
+def _generate_downstream_connections(con_root, edg_root, edge_id: str, movements: List[Dict],
                                    head_lanes: int, edge_coords: Dict) -> None:
     """Generate head→downstream connections using shared spatial logic."""
     if not movements or head_lanes == 0:
@@ -310,12 +314,17 @@ def _generate_downstream_connections(con_root, edge_id: str, movements: List[Dic
             if to_edge in movement_to_head_lanes:
                 assigned_head_lanes = movement_to_head_lanes[to_edge]
                 
-                for head_lane in assigned_head_lanes:
+                for head_lane_idx, head_lane in enumerate(assigned_head_lanes):
+                    # Get actual lane count for destination edge
+                    destination_lanes = _get_edge_lane_count(edg_root, to_edge)
+                    # Distribute connections across available destination lanes
+                    target_lane = head_lane_idx % max(1, destination_lanes)
+                    
                     conn_elem = ET.SubElement(con_root, "connection")
                     conn_elem.set("from", head_segment_id)
                     conn_elem.set("to", to_edge)
                     conn_elem.set("fromLane", str(head_lane))
-                    conn_elem.set("toLane", "0")  # Default to first lane of destination
+                    conn_elem.set("toLane", str(target_lane))
 
 
 def _generate_upstream_connections(con_root, edge_id: str, tail_lanes: int) -> None:
@@ -411,15 +420,17 @@ def _regenerate_traffic_lights_file(tll_root, con_root, affected_junctions: Set[
 def _recreate_junction_traffic_light(tll_root, con_root, junction_id: str) -> None:
     """Recreate complete traffic light logic for a single junction."""
     
-    # Find all connections going into this junction (only head edges for Tree Method compatibility)
+    # Find all connections going into this junction (from head segments ending at junction)
     junction_connections = []
     for connection in con_root.findall("connection"):
-        to_edge = connection.get("to")
-        # Only include connections TO head edges (_H_s suffix) to ensure Tree Method compatibility
-        # Tree Method expects only head edges in traffic light phases since only head edges 
-        # have entries in the all_connections dictionary
-        if to_edge and to_edge.startswith(junction_id) and to_edge.endswith("_H_s"):
-            junction_connections.append(connection)
+        from_edge = connection.get("from")
+        # Include connections FROM head segments that end at this junction
+        if from_edge and from_edge.endswith("_H_s"):
+            # Extract base edge ID (e.g., A1B1_H_s → A1B1)
+            base_edge = from_edge.replace("_H_s", "")
+            # Check if this head segment ends at the target junction (e.g., A1B1 ends at B1)
+            if base_edge.endswith(junction_id):
+                junction_connections.append(connection)
     
     if not junction_connections:
         return  # No connections to this junction
@@ -469,6 +480,33 @@ def _recreate_junction_traffic_light(tll_root, con_root, junction_id: str) -> No
         tl_connection.set("toLane", connection.get("toLane"))
         tl_connection.set("tl", junction_id)
         tl_connection.set("linkIndex", str(link_idx))
+
+
+def _get_edge_lane_count(edg_root, edge_id: str) -> int:
+    """Get the current lane count for an edge from the edges file."""
+    for edge in edg_root.findall("edge"):
+        if edge.get("id") == edge_id:
+            return int(edge.get("numLanes", "1"))
+    return 1  # Default fallback
+
+
+def _validate_all_connections(con_root, edg_root):
+    """Validate all connections have valid lane indices."""
+    for connection in con_root.findall("connection"):
+        from_edge = connection.get("from")
+        to_edge = connection.get("to")
+        from_lane = int(connection.get("fromLane", "0"))
+        to_lane = int(connection.get("toLane", "0"))
+        
+        # Get actual lane counts
+        from_lanes = _get_edge_lane_count(edg_root, from_edge)
+        to_lanes = _get_edge_lane_count(edg_root, to_edge)
+        
+        # Validate indices
+        if from_lane >= from_lanes:
+            raise ValueError(f"Invalid fromLane {from_lane} for edge {from_edge} (has {from_lanes} lanes)")
+        if to_lane >= to_lanes:
+            raise ValueError(f"Invalid toLane {to_lane} for edge {to_edge} (has {to_lanes} lanes)")
 
 
 def _write_xml_files(nod_tree, edg_tree, con_tree, tll_tree) -> None:
