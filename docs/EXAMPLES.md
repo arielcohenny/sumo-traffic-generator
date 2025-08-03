@@ -1,0 +1,111 @@
+# SUMO Traffic Generator Examples
+
+## Tree Method Dataset Examples
+
+### High Traffic Load (Realistic)
+
+Runs pre-built research network with high traffic density using Tree Method algorithm.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/decentralized_traffic_bottleneck/Experiment1-realistic-high-load/1 --traffic_control tree_method --end-time 7300 --gui
+```
+
+### High Traffic Load (Random)
+
+Tests Tree Method performance on randomized high-density traffic patterns.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/decentralized_traffic_bottleneck/Experiment2-rand-high-load/1 --traffic_control tree_method --end-time 7300 --gui
+```
+
+### Moderate Traffic Load (Realistic)
+
+Validates Tree Method on moderate traffic with realistic flow patterns.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/decentralized_traffic_bottleneck/Experiment3-realistic-moderate-load/1 --traffic_control tree_method --end-time 7300 --gui
+```
+
+## Synthetic Grid Examples
+
+### Basic Grid
+
+Simple 5x5 grid simulation for quick testing.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 500 --end-time 1800 --gui
+```
+
+### High Density Test
+
+Stress test with 1200 vehicles and mixed routing strategies.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 6 --num_vehicles 1200 --end-time 3600 --routing_strategy 'shortest 60 realtime 40' --traffic_control actuated --gui
+```
+
+### Infrastructure Test
+
+Network resilience test with removed junctions and realistic lanes.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 6 --junctions_to_remove 2 --num_vehicles 1000 --lane_count realistic --end-time 5400 --gui
+```
+
+### Rush Hour Simulation
+
+Morning rush hour pattern with Tree Method optimization.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 200 --num_vehicles 2000 --departure_pattern six_periods --start_time_hour 7.0 --traffic_control tree_method --end-time 3600 --gui
+```
+
+### Multi-Modal Traffic
+
+Mixed vehicle types with Poisson attractiveness model.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 850 --vehicle_types 'passenger 50 commercial 40 public 10' --attractiveness poisson --gui
+```
+
+### Advanced Routing
+
+Three-strategy routing mix with time-dependent traffic patterns.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 4 --num_vehicles 600 --routing_strategy 'shortest 40 realtime 30 fastest 30' --time_dependent --end-time 3600 --gui
+```
+
+### Extended Simulation
+
+Full 24-hour city simulation with temporal traffic patterns.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 7500 --end-time 86400 --departure_pattern six_periods --time_dependent --gui
+```
+
+## OpenStreetMap Examples
+
+### Washington DC Downtown
+
+Simulates real DC street network with Tree Method traffic control.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file evaluation/datasets/osm/dc_downtown.osm --num_vehicles 800 --end-time 3600 --traffic_control tree_method --gui
+```
+
+### Manhattan Upper West Side
+
+Tests actuated signals on Manhattan street topology.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file evaluation/datasets/osm/manhattan_upper_west.osm --num_vehicles 600 --end-time 3600 --traffic_control actuated --gui
+```
+
+### San Francisco Downtown
+
+Multi-modal traffic simulation on SF downtown streets.
+
+```bash
+env PYTHONUNBUFFERED=1 python -m src.cli --osm_file evaluation/datasets/osm/sf_downtown.osm --num_vehicles 900 --end-time 7200 --vehicle_types 'passenger 50 commercial 40 public 10' --gui
+```

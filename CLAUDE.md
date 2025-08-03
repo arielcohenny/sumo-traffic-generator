@@ -16,6 +16,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **STICK TO** exactly what the user asks for - nothing more, nothing less
 - When the user asks a question, answer it directly without implementing unsolicited "improvements"
 
+**COMMIT BEHAVIOR:**
+
+- **DO NOT** include co-author lines in commit messages
+- **DO NOT** include "Generated with Claude Code" references
+- **DO NOT** include "Co-Authored-By: Claude <noreply@anthropic.com>" lines
+- **KEEP COMMITS SIMPLE**: Only include the user as the commit author
+- Commit messages should be clear and descriptive without AI attribution
+
 ## Project Overview
 
 This is a Python-based SUMO traffic generator that creates dynamic traffic simulations with intelligent signal control. It supports both synthetic orthogonal grid networks and real-world OpenStreetMap (OSM) data, applies configurable lane assignments, and uses Tree Method's decentralized traffic control algorithm for dynamic signal optimization. The system seamlessly integrates with Manhattan street networks and other real urban topologies.

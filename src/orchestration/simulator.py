@@ -93,9 +93,6 @@ class TrafficSimulator:
             # Core simulation step
             traci.simulationStep()
 
-            # Metrics collection
-            self._collect_metrics(step)
-
             step += 1
 
         # Calculate final metrics
@@ -130,13 +127,6 @@ class TrafficSimulator:
             except traci.exceptions.TraCIException:
                 # Vehicle might have left the simulation
                 continue
-
-    def _collect_metrics(self, step: int) -> None:
-        """Collect simulation metrics at given step."""
-        if step % 100 == 0:  # Log every 100 steps
-            current_vehicles = len(traci.vehicle.getIDList())
-            self.logger.info(
-                f"Step {step}: {current_vehicles} vehicles active")
 
     def _calculate_final_metrics(self, final_step: int) -> Dict[str, Any]:
         """Calculate basic simulation metrics.

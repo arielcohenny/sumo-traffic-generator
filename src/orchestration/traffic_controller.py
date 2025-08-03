@@ -67,12 +67,10 @@ class TreeMethodController(TrafficController):
         from pathlib import Path
         
         self.logger.info("=== TREE METHOD CONTROLLER INITIALIZATION ===")
-        self.logger.info("QA: TREE METHOD - Initializing Tree Method objects...")
         
         # Build network JSON for Tree Method
         json_file = Path(CONFIG.network_file).with_suffix(".json")
         build_network_json(CONFIG.network_file, json_file)
-        self.logger.info(f"QA: TREE METHOD - Built network JSON file: {json_file}")
         
         # Load Tree Method objects with original configuration parameters
         from src.traffic_control.decentralized_traffic_bottlenecks.enums import CostType, AlgoType
@@ -82,38 +80,18 @@ class TreeMethodController(TrafficController):
             algo_type=AlgoType.BABY_STEPS,           # Match original: BABY_STEPS
             sumo_cfg=CONFIG.config_file
         )
-        self.logger.info("QA: TREE METHOD - Loaded network tree and run configuration successfully")
         
         self.network_data = Network(json_file)
-        self.logger.info("QA: TREE METHOD - Loaded network data from JSON")
         
         self.graph = Graph(self.args.end_time)
-        self.logger.info("QA: TREE METHOD - Initialized Tree Method Graph object")
         
         self.graph.build(self.network_data.edges_list, self.network_data.junctions_dict)
-        self.logger.info("QA: TREE METHOD - Built Tree Method Graph from network data")
         
         self.seconds_in_cycle = self.network_data.calc_cycle_time()
-        self.logger.info(f"QA: TREE METHOD - Built network graph and calculated cycle time: {self.seconds_in_cycle}s")
         
         # Verify Tree Method integration setup
         verify_tree_method_integration_setup(
             self.tree_data, self.run_config, self.network_data, self.graph, self.seconds_in_cycle)
-        self.logger.info("QA: TREE METHOD - Integration setup verified successfully")
-        
-        # Add QA validation at end of initialization
-        try:
-            import traci
-            traffic_lights = traci.trafficlight.getIDList()
-            self.logger.info(f"QA: TREE METHOD - Connected to {len(traffic_lights)} traffic lights")
-            
-            if hasattr(self, 'graph') and self.graph:
-                self.logger.info(f"QA: TREE METHOD - Graph initialized with {len(self.graph.tl_node_ids) if hasattr(self.graph, 'tl_node_ids') else 'unknown'} traffic light nodes")
-            
-            self.logger.info("QA: TREE METHOD - Initialization complete, ready for algorithm control")
-            
-        except Exception as e:
-            self.logger.error(f"TREE METHOD QA CHECK FAILED: {e}")
     
     def update(self, step: int) -> None:
         """Update Tree Method traffic control at given step."""
@@ -143,12 +121,7 @@ class TreeMethodController(TrafficController):
                     )
                     
                     self.graph.calc_nodes_statistics(ended_iteration, self.seconds_in_cycle)
-                    
-                    # Algorithm verification logging (every 10th iteration)
-                    if iteration % 10 == 0:
-                        total_cost = sum(this_iter_trees_costs.values()) if this_iter_trees_costs else 0
-                        self.logger.info(f"VERIFY: Iter {iteration}, Step {step}, Total Cost: {total_cost:.2f}, Cost Type: {self.run_config.cost_type.value}, Algo: {self.run_config.algo_type.value}")
-                    
+
                 except ZeroDivisionError as zde:
                     import traceback
                     self.logger.error(f"Tree Method division by zero at step {step}: {zde}")
@@ -188,10 +161,16 @@ class TreeMethodController(TrafficController):
                 # Save phase data - get_traffic_lights_phases doesn't return data, just saves it
                 if self.graph:
                     self.graph.get_traffic_lights_phases(step)
-                    # Use empty dict as phase_map since the method doesn't return phase data
-                    phase_map = {}
-                else:
-                    phase_map = {}
+                
+                # Get actual traffic light states from TraCI
+                phase_map = {}
+                try:
+                    tls_ids = traci.trafficlight.getIDList()
+                    for tls_id in tls_ids:
+                        current_state = traci.trafficlight.getRedYellowGreenState(tls_id)
+                        phase_map[tls_id] = current_state
+                except traci.TraCIException:
+                    phase_map = {}  # Fallback to empty if TraCI fails
                     
                 verify_algorithm_runtime_behavior(
                     step, phase_map, self.graph, CONFIG.SIMULATION_VERIFICATION_FREQUENCY
@@ -204,7 +183,7 @@ class TreeMethodController(TrafficController):
         try:
             self.logger.info("=== TREE METHOD CLEANUP STARTED ===")
             if hasattr(self, 'graph') and self.graph:
-                self.logger.info(f"Graph object exists: {type(self.graph)}")
+                # self.logger.info(f"Graph object exists: {type(self.graph)}")
                 self.logger.info(f"Ended vehicles count: {getattr(self.graph, 'ended_vehicles_count', 'N/A')}")
                 self.logger.info(f"Vehicle total time: {getattr(self.graph, 'vehicle_total_time', 'N/A')}")
                 
@@ -246,20 +225,10 @@ class ActuatedController(TrafficController):
         # Initialize Graph object for vehicle tracking (same as Tree Method)
         from src.traffic_control.decentralized_traffic_bottlenecks.classes.graph import Graph
         self.graph = Graph(self.args.end_time)
-        self.logger.info("QA: ACTUATED - Initialized vehicle tracking system")
         
         try:
             import traci
             traffic_lights = traci.trafficlight.getIDList()
-            self.logger.info(f"QA: Found {len(traffic_lights)} traffic lights")
-            
-            # Log traffic light details for QA
-            for tl_id in traffic_lights:
-                program = traci.trafficlight.getProgram(tl_id)
-                phase_count = len(traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[0].phases)
-                self.logger.info(f"QA: {tl_id} - program: {program}, phases: {phase_count}")
-            
-            self.logger.info("QA: ACTUATED - Using native SUMO actuated behavior (no modifications)")
             
         except Exception as e:
             self.logger.error(f"ACTUATED INITIALIZATION ERROR: {e}")
@@ -274,21 +243,6 @@ class ActuatedController(TrafficController):
         except Exception as e:
             if step % 100 == 0:  # Only log every 100 steps to avoid spam
                 self.logger.warning(f"Actuated vehicle tracking failed at step {step}: {e}")
-        
-        # QA logging every 50 steps
-        if step % 50 == 0:
-            self.logger.info(f"QA: ACTUATED step {step} - No action (SUMO native control)")
-            
-            # Log current traffic light states for QA
-            try:
-                import traci
-                if step % 200 == 0:  # Every 200 steps log detailed state
-                    for tl_id in traci.trafficlight.getIDList()[:2]:  # Just first 2 to avoid spam
-                        current_phase = traci.trafficlight.getPhase(tl_id)
-                        remaining_duration = traci.trafficlight.getNextSwitch(tl_id) - step
-                        self.logger.info(f"QA: ACTUATED {tl_id} - phase: {current_phase}, remaining: {remaining_duration}s")
-            except:
-                pass
     
     def cleanup(self) -> None:
         """Clean up actuated controller resources and report Actuated statistics."""
@@ -343,7 +297,6 @@ class FixedController(TrafficController):
         try:
             import traci
             traffic_lights = traci.trafficlight.getIDList()
-            self.logger.info(f"QA: FIXED - Found {len(traffic_lights)} traffic lights")
             
             for tl_id in traffic_lights:
                 # Get original phase information without modifying
@@ -358,9 +311,7 @@ class FixedController(TrafficController):
                     'total_cycle': total_cycle,
                     'current_target_phase': 0
                 }
-                
-                self.logger.info(f"QA: FIXED {tl_id} - {len(phases)} phases, {total_cycle}s cycle, durations: {durations}")
-                
+
             self.logger.info("QA: FIXED - Initialization complete, will use setPhase + setPhaseDuration")
                 
         except Exception as e:
