@@ -100,8 +100,8 @@ class CustomLaneConfig:
         
         config = cls()
         
-        # Split by semicolon to get individual edge configurations
-        edge_configs = [cfg.strip() for cfg in custom_lanes_str.split(';') if cfg.strip()]
+        # Split by semicolon to get individual edge configurations (handle trailing semicolon)
+        edge_configs = [cfg.strip() for cfg in custom_lanes_str.rstrip(';').split(';') if cfg.strip()]
         
         for edge_config in edge_configs:
             edge_id, edge_data = cls._parse_single_edge_config(edge_config)
