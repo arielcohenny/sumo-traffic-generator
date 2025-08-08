@@ -1179,3 +1179,31 @@ if __name__ == "__main__":
             print(f"Failed to generate intelligent zones: {e}")
     else:
         print(f"Network JSON file not found: {network_json}")
+
+
+def execute_zone_conversion(args) -> None:
+    """Execute zone coordinate conversion for OSM networks."""
+    import logging
+    from pathlib import Path
+    from src.config import CONFIG
+    from src.validate.validate_intelligent_zones import verify_convert_zones_to_projected_coordinates
+    from src.validate.errors import ValidationError
+    
+    logger = logging.getLogger(__name__)
+    
+    if Path(CONFIG.zones_file).exists():
+        logger.info("Converting OSM zone coordinates from geographic to projected...")
+        try:
+            convert_zones_to_projected_coordinates(CONFIG.zones_file, CONFIG.network_file)
+            logger.info("Successfully converted zone coordinates to projected system")
+        except Exception as e:
+            logger.warning(f"Failed to convert zone coordinates: {e}")
+            logger.warning("Zones will remain in geographic coordinates")
+        
+        logger.info("Validating zone coverage against network bounds...")
+        try:
+            verify_convert_zones_to_projected_coordinates(CONFIG.zones_file, CONFIG.network_file)
+            logger.info("Zone coverage validation passed")
+        except (ValidationError, Exception) as e:
+            logger.error(f"Zone coverage validation failed: {e}")
+            raise
