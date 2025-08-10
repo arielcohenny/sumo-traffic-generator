@@ -49,12 +49,7 @@ This document captures our discussion about using Reinforcement Learning (RL) fo
    - 7.8 [Federated Learning for Traffic Control](#8-federated-learning-for-traffic-control)
 8. [Advanced RL Techniques](#advanced-rl-techniques)
    - 8.1 [Hierarchical Reinforcement Learning (HRL)](#1-hierarchical-reinforcement-learning-hrl)
-   - 8.2 [Meta-Learning and Few-Shot Adaptation](#2-meta-learning-and-few-shot-adaptation)
-   - 8.3 [Imitation Learning](#3-imitation-learning)
-   - 8.4 [Transfer Learning](#4-transfer-learning)
-   - 8.5 [Robust and Risk-Aware RL](#5-robust-and-risk-aware-rl)
-   - 8.6 [Continual/Lifelong Learning](#6-continuallifelong-learning)
-   - 8.7 [Curiosity-Driven and Exploration Methods](#7-curiosity-driven-and-exploration-methods)
+   - 8.2 [Robust and Risk-Aware RL](#2-robust-and-risk-aware-rl)
 9. [Safety and Constraint Handling in RL](#safety-and-constraint-handling-in-rl)
    - 9.1 [Safe Exploration Methods](#1-safe-exploration-methods)
    - 9.2 [Constrained Policy Optimization](#2-constrained-policy-optimization)
@@ -191,6 +186,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ✅ **Excellent library support** - Available in all major RL libraries (Stable Baselines3, Ray RLlib)
 - ✅ **Fast prototyping** - Can get basic traffic light learning in hours/days
 - ✅ **Easy debugging** - Simple Q-value inspection, clear learning signals
@@ -198,6 +194,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ✅ **Low computational cost** - Trains quickly, works on laptops
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Perfect for SUMO data** - Handles step-by-step simulation data naturally
 - ✅ **Good state representation** - Works well with queue lengths, phase info, flow rates
 - ✅ **Discrete action match** - Perfect fit for phase switching (green/red/yellow transitions)
@@ -222,6 +219,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ✅ **Same excellent support as DQN** - Available in all major RL libraries
 - ✅ **Fast prototyping** - Minimal additional complexity over DQN
 - ✅ **Easy debugging** - Same debugging tools as DQN, more reliable Q-values
@@ -229,6 +227,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ✅ **Low computational cost** - Negligible overhead over standard DQN
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Perfect for SUMO data** - Same data compatibility as DQN
 - ✅ **Good state representation** - Same state handling as DQN
 - ✅ **Discrete action match** - Perfect for phase switching
@@ -249,6 +248,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ✅ **Good library support** - Available in major libraries but less common than standard DQN
 - ✅ **Reasonable prototyping time** - Slightly more complex architecture but manageable
 - ❌ **More complex debugging** - Harder to interpret separate value/advantage networks
@@ -256,6 +256,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ✅ **Low computational cost** - Minimal overhead over DQN
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Perfect for SUMO data** - Same data compatibility as DQN
 - ✅ **Excellent state representation** - Particularly good when state value matters more than action differences
 - ✅ **Discrete action match** - Perfect for phase switching
@@ -283,6 +284,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ❌ **Limited library support** - Complex to implement, fewer ready-to-use versions
 - ❌ **Slow prototyping** - Weeks to months due to implementation complexity
 - ❌ **Very difficult debugging** - Multiple interacting components make troubleshooting hard
@@ -290,6 +292,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ❌ **High computational cost** - Significant overhead from multiple advanced techniques
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Excellent for SUMO data** - Prioritized replay focuses on important traffic scenarios
 - ✅ **Advanced state representation** - Distributional learning captures traffic uncertainty
 - ✅ **Discrete action match** - Still perfect for phase switching
@@ -318,6 +321,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ✅ **Excellent library support** - Available in all RL libraries as baseline algorithm
 - ✅ **Very fast prototyping** - Simple algorithm, can implement in hours
 - ✅ **Easy debugging** - Simple policy gradients, easy to understand what's happening
@@ -325,6 +329,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ✅ **Low computational cost** - Simple algorithm, fast training
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Good SUMO data compatibility** - Works with step-by-step simulation data
 - ✅ **Flexible state representation** - Can handle various traffic state formats
 - ✅ **Both discrete and continuous actions** - Handles phase switching or continuous timing
@@ -345,6 +350,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ✅ **Excellent library support** - Standard in all major RL libraries (Stable Baselines3, Ray RLlib)
 - ✅ **Fast prototyping** - Well-documented, can get traffic learning running in 1-2 days
 - ✅ **Good debugging tools** - Clear policy ratio metrics, stable learning curves
@@ -352,10 +358,11 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ✅ **Reasonable computational cost** - More expensive than DQN but manageable
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Perfect SUMO data compatibility** - Designed for step-by-step online learning
 - ✅ **Excellent state representation** - Flexible with various traffic state formats
 - ✅ **Best action space versatility** - Handles discrete phases AND continuous timing perfectly
-- ✅ **Good delayed reward learning** - Stable updates help with traffic's long-term consequences  
+- ✅ **Good delayed reward learning** - Stable updates help with traffic's long-term consequences
 - ✅ **Excellent safety for constraints** - Conservative updates prevent dangerous signal behavior
 - ✅ **Perfect continuous simulation** - Designed for ongoing learning without episodes
 
@@ -376,6 +383,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ❌ **Limited library support** - Available but less maintained than PPO
 - ❌ **Slow prototyping** - Complex conjugate gradient implementation takes weeks
 - ❌ **Difficult debugging** - Complex mathematical operations harder to troubleshoot
@@ -383,6 +391,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ❌ **High computational cost** - Significantly more expensive than PPO
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Good SUMO data compatibility** - Same online learning benefits as PPO
 - ✅ **Good state representation** - Similar flexibility to PPO
 - ✅ **Good action space match** - Handles discrete and continuous actions like PPO
@@ -411,6 +420,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ✅ **Good library support** - Available in major libraries, well-documented
 - ✅ **Fast prototyping** - Simpler than advanced methods, can implement in 2-3 days
 - ✅ **Reasonable debugging** - Actor and critic can be inspected separately
@@ -418,6 +428,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ✅ **Moderate computational cost** - More than DQN, less than SAC
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Good SUMO data compatibility** - Handles step-by-step simulation data well
 - ✅ **Good state representation** - Flexible with traffic state formats
 - ✅ **Decent action space match** - Handles both discrete phases and continuous timing
@@ -443,6 +454,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ✅ **Good library support** - Available in major libraries but fewer examples than PPO/DQN
 - ✅ **Moderate prototyping time** - More complex than A2C, typically 3-5 days to get working
 - ❌ **Difficult debugging** - Unstable training makes it hard to identify problems
@@ -450,6 +462,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ✅ **Moderate computational cost** - Similar to other actor-critic methods
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Good SUMO data compatibility** - Off-policy learning works well with simulation data
 - ✅ **Good state representation** - Flexible with various traffic state inputs
 - ✅ **Excellent continuous action match** - Perfect for exact signal timing (e.g., 27.3 seconds green)
@@ -474,6 +487,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ✅ **Good library support** - Available in major libraries with good documentation
 - ✅ **Reasonable prototyping time** - More stable than DDPG, typically 3-4 days
 - ✅ **Better debugging than DDPG** - More stable training curves, easier to troubleshoot
@@ -481,6 +495,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ✅ **Moderate computational cost** - Twin critics add some overhead but manageable
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Good SUMO data compatibility** - Off-policy learning benefits from simulation data reuse
 - ✅ **Good state representation** - Handles traffic state inputs well
 - ✅ **Excellent continuous action match** - Perfect for precise signal timing control
@@ -501,6 +516,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ✅ **Excellent library support** - Well-maintained implementations in all major libraries
 - ✅ **Reasonable prototyping time** - Stable algorithm, typically 2-4 days to get working
 - ✅ **Good debugging experience** - Stable training, clear entropy/temperature metrics
@@ -508,6 +524,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ✅ **Moderate computational cost** - More complex than DDPG but manageable
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Excellent SUMO data compatibility** - Off-policy learning perfect for simulation data
 - ✅ **Excellent state representation** - Flexible with various traffic state formats
 - ✅ **Perfect continuous action match** - Best-in-class for precise signal timing control
@@ -541,6 +558,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ❌ **Limited library support** - Complex multi-agent implementations less common
 - ❌ **Very slow prototyping** - Multi-agent coordination takes weeks to implement properly
 - ❌ **Very difficult debugging** - Multiple interacting agents make troubleshooting complex
@@ -548,6 +566,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ❌ **High computational cost** - Training multiple agents simultaneously is expensive
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Good SUMO data compatibility** - Can handle multi-intersection simulation data
 - ✅ **Complex state representation** - Handles both local and global traffic state information
 - ✅ **Good continuous action match** - Each intersection can have precise timing control
@@ -572,6 +591,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ❌ **Very limited library support** - Cutting-edge algorithm, few implementations available
 - ❌ **Extremely slow prototyping** - Attention mechanisms + multi-agent = months of development
 - ❌ **Extremely difficult debugging** - Attention weights and multi-agent interactions very complex
@@ -579,6 +599,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ❌ **Very high computational cost** - Attention computation expensive for multiple agents
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Good SUMO data compatibility** - Can process complex multi-intersection data
 - ✅ **Advanced state representation** - Attention naturally handles variable traffic state complexity
 - ✅ **Good action space match** - Flexible with different intersection action requirements
@@ -611,6 +632,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ❌ **Limited library support** - Specialized algorithm, fewer implementations available
 - ❌ **Slow prototyping** - Distributional mechanics require weeks of careful implementation
 - ❌ **Difficult debugging** - Hard to interpret distributional outputs and training issues
@@ -618,6 +640,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ❌ **High computational cost** - Modeling full distributions is computationally expensive
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Good SUMO data compatibility** - Can process standard traffic simulation data
 - ✅ **Advanced state representation** - Distributional learning captures traffic uncertainty well
 - ✅ **Good discrete action match** - Works with phase switching like other DQN variants
@@ -642,6 +665,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 **Traffic Control Relevance**:
 
 **Implementation & Development** (Factors 1-5):
+
 - ❌ **Limited library support** - Specialized quantile regression implementations less common
 - ❌ **Slow prototyping** - Quantile regression mechanics require weeks of development
 - ❌ **Difficult debugging** - Quantile outputs harder to interpret than standard Q-values
@@ -649,6 +673,7 @@ This section covers all major RL approaches applicable to traffic control, organ
 - ❌ **High computational cost** - Computing multiple quantiles is expensive
 
 **Traffic Control Fit** (Factors 6-11):
+
 - ✅ **Good SUMO data compatibility** - Works with standard traffic simulation data
 - ✅ **Advanced state representation** - Quantile learning captures detailed traffic outcome distributions
 - ✅ **Good discrete action match** - Works with phase switching like other DQN variants
@@ -667,18 +692,21 @@ A practical approach to algorithm selection involves first eliminating algorithm
 #### **Eliminate Due to Implementation Complexity:**
 
 **Rainbow DQN** ❌
+
 - Weeks to months of implementation time
 - Multiple interacting advanced techniques make debugging extremely difficult
 - High computational overhead
 - **Verdict**: Academic interest only - too complex for practical traffic control
 
-**MADDPG** ❌  
+**MADDPG** ❌
+
 - Complex multi-agent coordination requiring weeks of development
 - Centralized training infrastructure needed
 - Very difficult debugging with multiple interacting agents
 - **Verdict**: Only for large-scale multi-intersection research projects
 
 **MAAC** ❌
+
 - Extremely complex attention mechanisms combined with multi-agent learning
 - Months of development time required
 - Cutting-edge research with very limited library support
@@ -687,12 +715,14 @@ A practical approach to algorithm selection involves first eliminating algorithm
 #### **Eliminate Due to Poor Traffic Control Fit:**
 
 **REINFORCE** ❌
+
 - High variance makes learning unstable for traffic control
 - Poor performance with delayed rewards (traffic consequences happen minutes later)
 - Episodic learning doesn't fit continuous traffic simulation well
 - **Verdict**: Educational value only - too unstable for practical traffic applications
 
 **TRPO** ❌
+
 - Complex conjugate gradient implementation
 - Computationally expensive compared to PPO
 - PPO achieves the same theoretical benefits with much simpler implementation
@@ -701,12 +731,14 @@ A practical approach to algorithm selection involves first eliminating algorithm
 #### **Eliminate for Specialized Research Use Only:**
 
 **C51 (Categorical DQN)** ❌
+
 - Complex distributional mechanics requiring specialized knowledge
 - Primarily valuable for risk analysis and safety studies
 - High computational overhead for modeling full distributions
 - **Verdict**: Research tool for safety analysis, not general traffic control
 
 **QR-DQN (Quantile Regression DQN)** ❌
+
 - Complex quantile regression implementation
 - Mainly useful for risk-sensitive scenarios requiring worst-case analysis
 - Specialized application, not general-purpose traffic control
@@ -717,15 +749,18 @@ A practical approach to algorithm selection involves first eliminating algorithm
 After eliminating 7 algorithms, **8 viable candidates** remain that can be realistically implemented for traffic control applications:
 
 #### **Value-Based Methods (Discrete Actions):**
+
 1. **DQN** - Simple, reliable baseline
 2. **Double DQN** - More conservative than DQN, prevents overestimation
 3. **Dueling DQN** - Better when state values matter more than action differences
 
 #### **Policy-Based Methods:**
+
 4. **PPO** - Most popular modern RL algorithm, excellent stability
 5. **A2C** - Simpler actor-critic, good stepping stone
 
 #### **Actor-Critic Methods (Continuous Actions):**
+
 6. **DDPG** - First deep continuous control, but can be unstable
 7. **TD3** - More stable version of DDPG
 8. **SAC** - State-of-the-art continuous control with entropy regularization
@@ -737,14 +772,16 @@ After eliminating 7 algorithms, **8 viable candidates** remain that can be reali
 A practical traffic control implementation involves periodic consultation: **Every X seconds, the algorithm determines the duration each signal phase should remain active**
 
 This **periodic duration control** approach has the following characteristics:
+
 - **Decision Frequency**: Every X seconds (e.g., every 5-10 seconds)
-- **Action Space**: Duration in seconds (e.g., 5-60 seconds) 
+- **Action Space**: Duration in seconds (e.g., 5-60 seconds)
 - **State**: Current traffic conditions at decision time
 - **Output**: Exact duration for each signal phase
 
 #### **Algorithm Suitability for Periodic Duration Control:**
 
 **🏆 Primary Recommendation: PPO (Proximal Policy Optimization)**
+
 - ✅ **Optimal for duration outputs** - naturally outputs continuous duration values (e.g., 23.7 seconds)
 - ✅ **Excellent periodic decision handling** - designed for variable time intervals
 - ✅ **Stable learning characteristics** - prevents erratic duration decisions that disrupt traffic
@@ -752,6 +789,7 @@ This **periodic duration control** approach has the following characteristics:
 - **Action Space**: Continuous duration values or discretized duration bins
 
 **🥈 Secondary Recommendation: SAC (Soft Actor-Critic)**
+
 - ✅ **Superior continuous duration control** - outputs precise duration values naturally
 - ✅ **Entropy regularization** - prevents convergence to rigid duration patterns
 - ✅ **High stability and sample efficiency** - learns effective duration policies quickly
@@ -759,6 +797,7 @@ This **periodic duration control** approach has the following characteristics:
 - **Action Space**: Continuous duration values (optimal for exact timing)
 
 **🥉 Alternative Option: A2C (Advantage Actor-Critic)**
+
 - ✅ **Adequate duration output capability** - simpler than PPO but handles continuous actions
 - ✅ **Fast prototyping** - 2-3 days to working duration control
 - ✅ **Simplified debugging** - simpler architecture than SAC
@@ -774,16 +813,19 @@ This **periodic duration control** approach has the following characteristics:
 #### **Implementation Approach for Periodic Duration Control:**
 
 **Recommended Action Space Design:**
-- **Continuous**: Duration in seconds (5.0 to 60.0 seconds) 
+
+- **Continuous**: Duration in seconds (5.0 to 60.0 seconds)
 - **Or Discretized**: [5s, 10s, 15s, 20s, 25s, 30s, 45s, 60s] bins
 
 **Periodic Decision Pattern:**
+
 1. Every X seconds, observe current traffic state
 2. Algorithm outputs: duration for next period
 3. Implement that signal state for the specified duration
 4. Repeat consultation after duration expires
 
 **Reward Design:**
+
 - Based on traffic performance during each duration period
 - Considers throughput, delay, queue length during the chosen duration
 - Can incorporate duration efficiency (shorter durations preferred if performance equal)
@@ -791,6 +833,7 @@ This **periodic duration control** approach has the following characteristics:
 #### **Summary Recommendation for Periodic Duration Control:**
 
 **PPO represents the optimal choice** for periodic duration control applications due to:
+
 - Natural compatibility with periodic duration decisions
 - Stable learning characteristics that prevent traffic disruption
 - Rapid implementation timeline (2-4 days to working system)
@@ -805,235 +848,659 @@ This systematic analysis eliminates 7 algorithms with fundamental limitations, f
 
 This section addresses the fundamental challenge of attributing rewards to actions that were taken earlier in time, particularly relevant for traffic control where decisions affect vehicles minutes later.
 
+### Inter-Run Policy Comparison Reward Structure
+
+This section uses Inter-Run Policy Comparison as the reward structure for all credit assignment methods. This approach compares the same vehicles under different traffic control policies in controlled experiments, providing the cleanest possible learning signal.
+
+#### Inter-Run Comparison Methodology
+
+**Concept**: Compare identical vehicle sets under different traffic control policies to measure pure policy improvement.
+
+**Key Advantages for Traffic Control**:
+
+- ✅ **Clean Signal**: Same conditions, only policy differs - eliminates random variation
+- ✅ **Statistical Validity**: Can apply standard significance tests to policy comparisons
+- ✅ **Interpretable Results**: Direct measurement of policy effectiveness
+- ✅ **Research Standard**: Matches academic RL evaluation and validation practices
+- ✅ **Controlled Experiments**: Enables rigorous A/B testing of traffic control strategies
+
+**Implementation Framework**:
+
+- **Deterministic Vehicle Generation**: Use fixed seeds to ensure identical vehicle sets
+- **Controlled Conditions**: Same traffic demand, weather, incidents across runs
+- **Policy Isolation**: Only traffic control decisions differ between runs
+- **Statistical Analysis**: Multiple run pairs for confidence intervals and significance testing
+
 ### 1. Monte Carlo Returns (Complete Episode Learning)
 
 **Best For**: Learning from complete vehicle trajectories
 
-**Core Concept**: Wait for vehicles to complete their journeys, then propagate rewards backwards through all traffic light decisions that affected them.
+**Core Concept**: Monte Carlo returns use complete vehicle journey information to calculate precise credit assignment. When a vehicle completes its trip from origin to destination, the method calculates the total return (cumulative reward/penalty) for that entire journey, then propagates this value backwards to all traffic light decisions that influenced the vehicle along its route.
 
-```python
-def calculate_backwards_rewards(vehicle_trajectory):
-    """
-    When vehicle completes journey, propagate reward backwards
-    through all traffic light decisions that affected it
-    """
-    total_travel_time = vehicle_trajectory.end_time - vehicle_trajectory.start_time
-    base_reward = -total_travel_time  # Negative because we want to minimize
+**Traffic Control Example**: Vehicle travels A→B→C→D:
 
-    # Decay reward as we go backwards in time
-    discounted_rewards = []
-    for step in reversed(vehicle_trajectory.intersection_encounters):
-        reward = base_reward * (gamma ** steps_since_completion)
-        discounted_rewards.append(reward)
+- Baseline Policy Run: Journey time 180 seconds
+- New RL Policy Run: Journey time 150 seconds (same vehicle, same route/timing)
+- Return for RL policy: +30 seconds improvement
+- This +30 reward is attributed back to signal timing decisions at A, B, C, D that contributed to the improvement
 
-    return reversed(discounted_rewards)
-```
+**Traffic Control Correspondence**:
 
-**Advantages**:
+**For Centralized Network Control**: Monte Carlo returns are particularly powerful for centralized architecture because they capture the full network-wide impact of coordinated signal decisions. When centralized controller makes decisions for all intersections simultaneously, Monte Carlo returns provide clear feedback about how these coordinated decisions affected overall network performance.
 
-- Direct connection between final outcomes and all contributing decisions
-- No bootstrapping errors
-- Natural handling of variable episode lengths
+- **Network-Wide Learning**: Each completed vehicle journey provides feedback about the effectiveness of the entire sequence of centralized decisions
+- **Long-Term Consequences**: Captures how early intersection decisions cascade through the network to affect final outcomes
+- **Coordination Assessment**: Reveals whether coordinated timing across multiple intersections actually improved or hindered overall traffic flow
 
-**Disadvantages**:
+**Algorithm Compatibility Analysis**:
 
-- High variance
-- Must wait for episode completion
-- Memory intensive for long trajectories
+**PPO (Proximal Policy Optimization)**:
+
+- ✅ **Natural Integration**: PPO's policy gradient formulation directly uses Monte Carlo returns for policy updates
+- ✅ **Variance Handling**: PPO's clipped objective helps manage the high variance inherent in Monte Carlo estimates
+- ✅ **Episode Collection**: PPO typically collects complete trajectories before updates, making Monte Carlo returns a natural fit
+- **Implementation**: Use complete vehicle journeys as "episodes" for PPO's trajectory collection and policy updates
+
+**SAC (Soft Actor-Critic)**:
+
+- ❌ **Poor Integration**: SAC uses off-policy learning with experience replay, making Monte Carlo returns less natural
+- ❌ **Sample Efficiency Loss**: Monte Carlo returns don't leverage SAC's sample efficiency advantages from experience replay
+- ⚠️ **Adaptation Required**: Would need to modify SAC's update mechanism to incorporate complete trajectory returns
+- **Better Alternative**: SAC works better with TD-learning methods that don't require complete episodes
+
+**A2C (Advantage Actor-Critic)**:
+
+- ✅ **Good Integration**: A2C can use Monte Carlo returns to estimate advantages, reducing bias in advantage calculations
+- ✅ **Variance Reduction**: When combined with baseline subtraction, Monte Carlo returns provide unbiased advantage estimates
+- ❌ **High Variance**: A2C already suffers from variance issues; Monte Carlo returns may exacerbate this problem
+- **Implementation**: Use Monte Carlo returns to calculate advantage values: A(s,a) = G_t - V(s)
+
+**Detailed Advantages**:
+
+- **Unbiased Estimates**: Monte Carlo returns provide the true expected return without approximation errors
+- **Complete Information**: Uses all available information about vehicle journeys for maximum learning signal
+- **Natural Episode Boundaries**: Vehicle journeys have clear start/end points, making episodes well-defined
+- **Direct Policy Feedback**: Each completed journey provides direct feedback about policy effectiveness
+- **Handles Variable Journey Lengths**: Naturally accommodates different trip durations and route complexities
+
+**Detailed Disadvantages**:
+
+- **High Variance**: Different vehicles experience vastly different journey outcomes due to random traffic patterns
+- **Delayed Learning**: Must wait for complete vehicle journeys before any learning can occur
+- **Memory Requirements**: Must store all state-action pairs for active vehicles until journey completion
+- **Computational Overhead**: Processing thousands of completed vehicle trajectories simultaneously
+- **Incomplete Information**: Vehicles that exit the network provide no learning signal
+- **Slow Adaptation**: Changes to traffic patterns only reflected after vehicle completion cycles
 
 ### 2. Eligibility Traces (TD-Lambda)
 
 **Best For**: Bridging the gap between TD and Monte Carlo methods
 
-**Core Concept**: Maintains a "memory trace" of which states/actions recently contributed to the current situation, allowing rapid credit assignment when rewards are received.
+**Core Concept**: Eligibility traces maintain a decaying "memory" of all recently encountered states and actions, creating a trail that indicates which decisions are eligible for credit when rewards are eventually received. Each time a state-action pair is visited, its eligibility trace is set to 1.0, then all traces decay exponentially by factor λ at each time step. When a reward is received, all states/actions with non-zero traces get updated proportionally to their trace values.
 
-```python
-class EligibilityTrace:
-    def __init__(self, lambda_decay=0.9):
-        self.traces = {}  # (state, action) -> eligibility value
-        self.lambda_decay = lambda_decay
+**Mathematical Foundation**: The eligibility trace e_t(s,a) represents how much credit state-action pair (s,a) should receive for reward observed at time t:
 
-    def update_traces(self, current_state, current_action):
-        # Decay all existing traces
-        for key in self.traces:
-            self.traces[key] *= self.lambda_decay
+- When (s,a) is visited: e_t(s,a) = 1.0
+- At each step: e_t+1(s,a) = γλ × e_t(s,a)
+- Credit received: Δ = α × δ_t × e_t(s,a), where δ_t is the TD error
 
-        # Set current state-action to maximum eligibility
-        self.traces[(current_state, current_action)] = 1.0
+**Traffic Control Example**: Vehicle approaches intersections A and B:
 
-    def apply_reward(self, reward):
-        # Apply reward to all traced state-actions
-        updates = {}
-        for (state, action), eligibility in self.traces.items():
-            updates[(state, action)] = reward * eligibility
-        return updates
-```
+- Baseline Policy: Green at A (t=0), red wait at B (t=30), total improvement = 0
+- New RL Policy: Green at A (t=0), green wave at B (t=30), total improvement = +25 seconds
+- With λ=0.7: trace for A = 0.7³⁰ ≈ 0.001, trace for B = 1.0
+- The +25 reward gives small credit to A (0.001×25 ≈ 0) and full credit to B (1.0×25 = 25)
 
-**Lambda Parameter**:
+**Traffic Control Correspondence**:
 
-- λ = 0: Pure TD (only immediate predecessor gets credit)
-- λ = 1: Pure Monte Carlo (all steps get equal credit)
-- λ ∈ (0,1): Exponentially decaying credit assignment
+**For Centralized Network Control**: Eligibility traces are exceptionally well-suited for your centralized control architecture because they automatically handle the temporal credit assignment challenge across multiple intersections. When your centralized controller makes simultaneous decisions affecting the entire network, eligibility traces create natural "breadcrumbs" that track which decisions contributed to eventual outcomes.
+
+- **Temporal Decay**: As vehicles progress through the network, early intersection decisions naturally receive less credit than recent decisions
+- **Multi-Intersection Tracking**: Maintains separate traces for each intersection's contribution to vehicle outcomes
+- **Immediate Updates**: Unlike Monte Carlo methods, learning occurs immediately when any vehicle experiences rewards/penalties
+- **Network Coordination**: Reveals how decisions at upstream intersections influence downstream performance
+
+**Lambda Parameter Selection for Traffic Control**:
+
+- **λ = 0.0 (Pure TD)**: Only the most recent intersection decision gets credit - useful for reactive traffic control
+- **λ = 0.3-0.5**: Moderate memory - good for local coordination (2-3 intersection influence)
+- **λ = 0.7-0.9**: Long memory - captures network-wide coordination effects across many intersections
+- **λ = 1.0 (Pure Monte Carlo)**: All decisions get equal credit - may be too noisy for traffic control
+
+**Algorithm Compatibility Analysis**:
+
+**PPO (Proximal Policy Optimization)**:
+
+- ✅ **Excellent Integration**: PPO naturally supports GAE (Generalized Advantage Estimation) which is built on eligibility traces
+- ✅ **Built-in Implementation**: Standard PPO implementations include λ parameter for advantage calculation
+- ✅ **Variance Control**: Eligibility traces help reduce variance in PPO's policy gradient estimates
+- **Implementation**: Use GAE with λ parameter to control bias-variance trade-off in advantage estimation
+
+**SAC (Soft Actor-Critic)**:
+
+- ⚠️ **Moderate Integration**: SAC doesn't natively use eligibility traces but can be adapted
+- ❌ **Off-Policy Conflict**: Eligibility traces assume on-policy learning; SAC's off-policy nature creates complications
+- ⚠️ **Custom Implementation Required**: Would need to modify SAC's critic updates to incorporate trace information
+- **Alternative**: Better to use n-step returns with SAC rather than full eligibility traces
+
+**A2C (Advantage Actor-Critic)**:
+
+- ✅ **Natural Integration**: A2C can directly use eligibility traces for both policy and value function updates
+- ✅ **Variance Reduction**: Traces help stabilize A2C's often high-variance updates
+- ✅ **Easy Implementation**: Standard A2C can be extended with eligibility traces with minimal code changes
+- **Implementation**: Apply traces to both actor gradients and critic TD errors for consistent learning
+
+**Detailed Advantages**:
+
+- **Immediate Learning**: Updates occur as soon as any vehicle experiences rewards, not waiting for journey completion
+- **Balanced Bias-Variance**: λ parameter allows tuning between biased but low-variance (low λ) and unbiased but high-variance (high λ) estimates
+- **Memory Efficiency**: Only needs to store trace values, not complete trajectory histories
+- **Temporal Flexibility**: Naturally handles variable timing between actions and consequences
+- **Continuous Learning**: Works seamlessly with ongoing traffic simulation without episode boundaries
+- **Tunable Memory**: λ parameter allows matching trace decay to typical traffic flow patterns
+
+**Detailed Disadvantages**:
+
+- **Hyperparameter Sensitivity**: λ value significantly affects learning performance and must be tuned carefully
+- **Trace Maintenance**: Must update trace values for all state-action pairs at every time step
+- **Memory Requirements**: Still needs to maintain traces for all recently visited states across the network
+- **Approximation Errors**: λ < 1 introduces bias by cutting off long-term dependencies
+- **Implementation Complexity**: More complex than simple TD learning, requires careful trace bookkeeping
+- **Computational Overhead**: Trace decay calculations at every time step add computational cost
 
 ### 3. Vehicle-Specific Reward Attribution
 
 **Best For**: Tracking individual vehicle experiences through traffic network
 
-**Core Concept**: Explicitly track each vehicle's journey and attribute final performance back to specific intersection decisions.
+**Core Concept**: Vehicle-Specific Reward Attribution creates detailed individual profiles for each vehicle in the network, tracking exactly which intersections each vehicle encounters, what signal states it experiences, and how these specific encounters contribute to its final performance metrics. This method maintains a complete history for every vehicle ID, enabling precise attribution of rewards back to the specific signal timing decisions that affected each individual vehicle's journey.
 
-```python
-class VehicleTrajectoryTracker:
-    def __init__(self):
-        self.active_vehicles = {}  # vehicle_id -> trajectory
+**Traffic Control Example**: Vehicle ID "car_123" (same route, start time across runs):
 
-    def record_intersection_encounter(self, vehicle_id, intersection_id,
-                                    traffic_light_state, waiting_time):
-        if vehicle_id not in self.active_vehicles:
-            self.active_vehicles[vehicle_id] = []
+- Baseline Policy: A(2s wait), B(25s wait), C(0s wait) → Total: 90s
+- New RL Policy: A(1s wait), B(15s wait), C(0s wait) → Total: 75s
+- Per-intersection improvement: A(+1s), B(+10s), C(+0s) → Total improvement: +15s
+- Attribution: A gets +1s reward, B gets +10s reward, C gets 0 reward
 
-        self.active_vehicles[vehicle_id].append({
-            'intersection': intersection_id,
-            'timestamp': current_time,
-            'light_state': traffic_light_state,
-            'waiting_time': waiting_time,
-            'action_taken': current_action  # What the RL agent decided
-        })
+**Traffic Control Correspondence**:
 
-    def vehicle_completed(self, vehicle_id, total_travel_time):
-        trajectory = self.active_vehicles.pop(vehicle_id)
+**For Centralized Network Control**: Vehicle-Specific Attribution provides the most granular feedback possible for your centralized controller. Since your system makes simultaneous decisions for all intersections, this method reveals exactly how each intersection component of your centralized decision affected individual vehicles, enabling fine-tuned learning about coordination effectiveness.
 
-        # Calculate backwards rewards
-        final_reward = self.calculate_performance_reward(total_travel_time)
+- **Individual Impact Analysis**: Shows how each intersection's timing contributed to specific vehicle experiences
+- **Coordination Quality Assessment**: Reveals whether coordinated timing helped or hindered individual vehicle progressions
+- **Heterogeneous Feedback**: Different vehicle types (emergency, commercial, passenger) can provide specialized feedback
+- **Route-Specific Learning**: Learns different coordination strategies for different origin-destination pairs
 
-        # Propagate backwards through all intersections this vehicle encountered
-        for encounter in reversed(trajectory):
-            intersection_id = encounter['intersection']
-            action_taken = encounter['action_taken']
+**Vehicle Tracking Implementation**:
 
-            # Reward the specific action taken for this vehicle
-            self.reward_intersection_action(intersection_id, action_taken, final_reward)
+- **Vehicle Lifecycle Management**: Track vehicles from network entry to exit
+- **Intersection Encounter Logging**: Record state-action-reward for each intersection encounter
+- **Performance Metric Calculation**: Calculate individual journey metrics (travel time, delays, stops)
+- **Attribution Algorithm**: Distribute final vehicle performance across encountered intersections
 
-            # Decay reward for earlier decisions
-            final_reward *= self.discount_factor
-```
+**Algorithm Compatibility Analysis**:
+
+**PPO (Proximal Policy Optimization)**:
+
+- ✅ **Excellent Individual Feedback**: Each vehicle provides a separate trajectory for PPO's batch learning
+- ✅ **Natural Episode Structure**: Vehicle journeys create well-defined episodes for PPO updates
+- ✅ **Rich Experience Collection**: Thousands of individual vehicle experiences provide diverse training data
+- **Implementation**: Use individual vehicle journeys as separate episodes in PPO's trajectory collection
+
+**SAC (Soft Actor-Critic)**:
+
+- ✅ **Rich Experience Replay**: Individual vehicle experiences provide diverse samples for SAC's replay buffer
+- ✅ **Continuous Learning**: Vehicle-specific rewards arrive continuously, fitting SAC's off-policy learning
+- ✅ **Sample Efficiency**: Each intersection-vehicle interaction provides learning signal without waiting for journey completion
+- **Implementation**: Store individual vehicle encounters (s,a,r,s') in experience replay buffer
+
+**A2C (Advantage Actor-Critic)**:
+
+- ✅ **Detailed Advantage Calculation**: Individual vehicle outcomes provide precise advantage estimates
+- ✅ **Reduced Variance**: Large number of individual vehicles provides more stable gradient estimates
+- ❌ **Memory Requirements**: Tracking thousands of individual vehicles simultaneously may be memory intensive
+- **Implementation**: Use individual vehicle rewards for advantage calculation: A(s,a) = R_vehicle - V(s)
+
+**Detailed Advantages**:
+
+- **Maximum Granularity**: Provides the most detailed possible feedback about intersection decision effectiveness
+- **Individual Vehicle Types**: Can treat different vehicle classes (emergency, commercial, passenger) with appropriate reward functions
+- **Route-Specific Learning**: Learns different strategies for different origin-destination patterns
+- **Real-Time Attribution**: Partial rewards available as vehicles progress, not just at journey completion
+- **Heterogeneous Feedback**: Different vehicles provide diverse learning signals based on their specific experiences
+- **Clear Causality**: Direct causal links between specific intersection decisions and individual vehicle outcomes
+- **Debugging Capability**: Individual vehicle tracking enables detailed analysis of policy effectiveness
+
+**Detailed Disadvantages**:
+
+- **Massive Memory Requirements**: Must maintain detailed records for thousands of simultaneous vehicles
+- **Computational Overhead**: Processing individual vehicle attribution calculations for every intersection encounter
+- **Implementation Complexity**: Requires sophisticated vehicle tracking and data management infrastructure
+- **Data Management**: Must handle vehicle lifecycle events (spawning, routing changes, early exits)
+- **Attribution Complexity**: Challenging to fairly distribute vehicle performance across multiple intersection encounters
+- **Variance Issues**: Individual vehicles provide noisy signals; need large numbers for stable learning
+- **Scalability Concerns**: Memory and computation requirements scale linearly with vehicle count
 
 ### 4. Multi-Vehicle Credit Assignment
 
 **Best For**: Aggregating rewards from multiple vehicles to reduce variance
 
-**Core Concept**: Process batches of completed vehicles to get more stable reward signals for intersection policies.
+**Core Concept**: Multi-Vehicle Credit Assignment collects performance data from groups of vehicles that pass through each intersection within a specified time window, then aggregates these individual outcomes into stable statistical measures for policy updates. Instead of learning from each vehicle individually, this method batches multiple vehicle experiences to compute more reliable estimates of intersection performance, reducing the noise inherent in individual vehicle outcomes while maintaining clear causal attribution.
 
-```python
-def calculate_joint_vehicle_rewards(completed_vehicles_batch):
-    """
-    Process multiple vehicles that completed in this time window
-    """
-    intersection_contributions = defaultdict(list)
+**Traffic Control Example**: At intersection A during 08:15:00-08:20:00, 45 vehicles pass through:
 
-    for vehicle in completed_vehicles_batch:
-        travel_time_reward = calculate_individual_reward(vehicle)
+- Baseline Policy: Average delay 21.7 seconds (975s total / 45 vehicles)
+- New RL Policy: Average delay 18.3 seconds (824s total / 45 vehicles)
+- Batch improvement: +3.4 seconds average per vehicle (+151s total)
+- Aggregated reward: +151 seconds attributed to intersection A's signal decisions during this window
 
-        # For each intersection this vehicle passed through
-        for encounter in vehicle.trajectory:
-            intersection_id = encounter['intersection']
-            action = encounter['action']
-            contribution = travel_time_reward / len(vehicle.trajectory)
+**Traffic Control Correspondence**:
 
-            intersection_contributions[intersection_id].append({
-                'action': action,
-                'contribution': contribution,
-                'vehicle_id': vehicle.id
-            })
+**For Centralized Network Control**: Multi-Vehicle Credit Assignment strikes an optimal balance for your centralized architecture by providing stable statistical feedback about network-wide coordination effectiveness while maintaining tractable computational and memory requirements. Your centralized controller can receive reliable performance feedback about how coordinated timing decisions affected groups of vehicles across multiple intersections.
 
-    # Aggregate rewards by intersection
-    for intersection_id, contributions in intersection_contributions.items():
-        aggregate_reward = sum(c['contribution'] for c in contributions)
-        update_intersection_policy(intersection_id, aggregate_reward)
-```
+- **Statistical Stability**: Aggregating multiple vehicles reduces noise in performance measurements
+- **Batch Processing**: Aligns well with periodic decision-making (every X seconds, evaluate Y vehicles)
+- **Network-Wide Coordination**: Reveals how centralized decisions affected overall traffic flow patterns
+- **Manageable Complexity**: More stable than individual tracking, simpler than full network analysis
+
+**Batching Strategies**:
+
+- **Time-Based Batching**: Aggregate all vehicles passing through each intersection in fixed time windows (e.g., 30-60 seconds)
+- **Count-Based Batching**: Process groups of N vehicles (e.g., every 20 vehicles) for consistent sample sizes
+- **Completion-Based Batching**: Wait for a set of vehicles to complete their journeys, then process batch
+- **Hybrid Batching**: Combine time and count criteria (whichever threshold is reached first)
+
+**Algorithm Compatibility Analysis**:
+
+**PPO (Proximal Policy Optimization)**:
+
+- ✅ **Excellent Batch Learning**: PPO naturally works with batched experiences, making multi-vehicle aggregation ideal
+- ✅ **Stable Gradient Estimates**: Aggregated rewards provide more stable policy gradient calculations
+- ✅ **Reduced Variance**: Multiple vehicle outcomes average out individual randomness in PPO updates
+- **Implementation**: Collect vehicle batches as "episodes" and use aggregated rewards for policy updates
+
+**SAC (Soft Actor-Critic)**:
+
+- ✅ **Good Experience Replay**: Batched vehicle outcomes provide diverse, stable samples for replay buffer
+- ✅ **Sample Efficiency**: Aggregated experiences reduce noise without requiring more environment interaction
+- ⚠️ **Timing Alignment**: Need to ensure batched rewards align properly with SAC's continuous learning timeline
+- **Implementation**: Store aggregated state-action-reward experiences in replay buffer with batch identifiers
+
+**A2C (Advantage Actor-Critic)**:
+
+- ✅ **Excellent Variance Reduction**: Multi-vehicle aggregation directly addresses A2C's high variance problem
+- ✅ **Stable Value Estimates**: Averaged rewards provide more reliable targets for value function training
+- ✅ **Natural Batch Size**: Vehicle batches provide natural mini-batch sizes for A2C updates
+- **Implementation**: Use multi-vehicle averages for both advantage calculation and value function targets
+
+**Aggregation Methods**:
+
+- **Simple Average**: Mean performance across all vehicles in batch
+- **Weighted Average**: Weight vehicles by importance (e.g., emergency vehicles get higher weights)
+- **Median-Based**: Use median to reduce impact of outlier vehicles
+- **Performance Percentiles**: Focus on worst-case (10th percentile) or typical (50th percentile) outcomes
+
+**Detailed Advantages**:
+
+- **Variance Reduction**: Aggregating multiple vehicles smooths out random individual outcomes
+- **Statistical Significance**: Batched results provide more reliable performance measurements
+- **Computational Efficiency**: Processing batches reduces per-vehicle computational overhead
+- **Memory Management**: Requires much less memory than full individual vehicle tracking
+- **Implementation Simplicity**: Easier to implement than vehicle-specific attribution systems
+- **Stable Learning**: Provides consistent reward signals for stable policy learning
+- **Flexible Batch Sizing**: Can adjust batch size to balance stability vs. responsiveness
+
+**Detailed Disadvantages**:
+
+- **Reduced Granularity**: Loses detailed information about individual vehicle experiences
+- **Temporal Lag**: Must wait for batch completion before learning can occur
+- **Attribution Ambiguity**: Cannot determine which specific actions within the batch period caused outcomes
+- **Batch Composition Effects**: Different vehicle mixes in batches can bias learning
+- **Lost Individual Insights**: Cannot learn vehicle-type-specific or route-specific behaviors
+- **Timing Sensitivity**: Batch boundaries may not align well with traffic pattern boundaries
+- **Coordination Feedback Loss**: Harder to identify specific intersection coordination issues
 
 ### 5. Trajectory-Based Policy Gradients
 
 **Best For**: Direct policy optimization using complete trajectory information
 
-**Core Concept**: Collect complete vehicle trajectories and use them to directly update intersection policies via policy gradients.
+**Core Concept**: Trajectory-Based Policy Gradients collect complete sequences of state-action-reward tuples for entire vehicle journeys through the traffic network, then use these full trajectories to compute policy gradient updates that directly optimize the policy parameters. This method leverages the complete temporal structure of vehicle experiences to provide unbiased gradient estimates, using the full return from each trajectory to weight policy updates according to actual long-term outcomes.
 
-```python
-class TrajectoryPolicyGradient:
-    def __init__(self):
-        self.completed_trajectories = []
+**Traffic Control Example**: Vehicle trajectory through 4 intersections, comparing policies:
 
-    def add_completed_trajectory(self, vehicle_trajectory):
-        """Add a complete vehicle journey for batch processing"""
-        self.completed_trajectories.append(vehicle_trajectory)
+- Baseline Policy trajectory return: G_baseline = -5.2 (poor coordination)
+- New RL Policy trajectory return: G_new = +3.8 (good coordination)
+- Policy improvement: ΔG = +9.0
+- Policy gradient update: ∇θ J = ∑ᵗ ∇θ log π(Aₜ|Sₜ) × ΔG, weighted by policy improvement
 
-    def update_policy(self):
-        """Update all intersection policies based on completed trajectories"""
-        for trajectory in self.completed_trajectories:
-            total_return = self.calculate_return(trajectory)
+**Traffic Control Correspondence**:
 
-            # Update each intersection's policy based on this trajectory
-            for step in trajectory.steps:
-                intersection = step.intersection
-                state = step.state
-                action = step.action
+**For Centralized Network Control**: Trajectory-Based Policy Gradients are exceptionally well-suited for your centralized architecture because they naturally capture the sequential dependencies between coordinated intersection decisions. Your centralized controller's sequence of network-wide decisions creates natural trajectories that can be directly optimized using policy gradients.
 
-                # Policy gradient update
-                log_prob = intersection.policy.log_probability(state, action)
-                loss = -log_prob * total_return
-                intersection.policy.backward(loss)
+- **Sequential Decision Optimization**: Optimizes the entire sequence of centralized decisions rather than individual intersection choices
+- **Coordination Learning**: Learns how early network decisions influence later network states and outcomes
+- **End-to-End Learning**: Direct optimization from network state to final vehicle outcomes
+- **Natural Episode Structure**: Vehicle journeys provide clear episode boundaries for trajectory collection
 
-        self.completed_trajectories.clear()
-```
+**Trajectory Collection Strategies**:
+
+- **Individual Vehicle Trajectories**: Each vehicle's journey provides a complete state-action-reward sequence
+- **Time-Window Trajectories**: Collect all decisions within fixed time periods as trajectory segments
+- **Intersection-Specific Trajectories**: Track how individual intersections contribute to multiple vehicle trajectories
+- **Network-Wide Trajectories**: Combine multiple vehicle experiences into network-level trajectory descriptions
+
+**Algorithm Compatibility Analysis**:
+
+**PPO (Proximal Policy Optimization)**:
+
+- ✅ **Perfect Integration**: PPO is fundamentally designed around trajectory-based policy gradients
+- ✅ **Natural Implementation**: Standard PPO directly uses complete trajectories for policy updates
+- ✅ **Advantage Estimation**: Can combine trajectory returns with value function baselines for variance reduction
+- **Implementation**: Use vehicle trajectories as episodes for PPO's standard trajectory collection and policy updates
+
+**SAC (Soft Actor-Critic)**:
+
+- ❌ **Poor Integration**: SAC uses off-policy learning, making trajectory-based gradients less applicable
+- ❌ **Sample Efficiency Loss**: Trajectory gradients don't leverage SAC's experience replay advantages
+- ❌ **Entropy Regularization Conflict**: Trajectory gradients may conflict with SAC's entropy maximization objective
+- **Alternative**: SAC works better with individual state-action-reward transitions rather than complete trajectories
+
+**A2C (Advantage Actor-Critic)**:
+
+- ✅ **Good Integration**: A2C can use trajectory returns for advantage calculation and policy updates
+- ✅ **Variance Reduction**: Trajectory returns combined with value function baselines reduce gradient variance
+- ✅ **Natural Episode Structure**: Vehicle trajectories provide natural episode boundaries for A2C updates
+- **Implementation**: Use trajectory returns G for advantage: A(s,a) = G - V(s), then update policy with trajectory gradients
+
+**Policy Gradient Variants**:
+
+- **REINFORCE-Style**: Use raw trajectory returns for policy gradient weights
+- **Actor-Critic Style**: Subtract value function baseline to reduce variance
+- **Natural Policy Gradients**: Use Fisher information matrix for more stable updates
+- **Trust Region Methods**: Constrain policy updates using trajectory-based trust regions
+
+**Detailed Advantages**:
+
+- **Unbiased Gradient Estimates**: Trajectory returns provide unbiased estimates of policy gradient
+- **Complete Information Utilization**: Uses all available trajectory information for maximum learning signal
+- **Natural Episode Structure**: Vehicle journeys provide well-defined trajectory boundaries
+- **Direct Policy Optimization**: Optimizes policy parameters directly using actual trajectory outcomes
+- **Temporal Structure Preservation**: Maintains complete temporal relationships in trajectory data
+- **Flexible Baseline Subtraction**: Can combine with various baseline methods for variance reduction
+- **Clear Performance Attribution**: Trajectory outcomes provide clear feedback about policy effectiveness
+
+**Detailed Disadvantages**:
+
+- **High Variance**: Policy gradient estimates can have high variance, especially with individual trajectories
+- **Sample Inefficiency**: Requires many complete trajectories for stable policy updates
+- **Delayed Learning**: Must wait for trajectory completion before policy updates can occur
+- **Memory Requirements**: Must store complete state-action-reward sequences for active trajectories
+- **Computational Overhead**: Processing complete trajectories for policy gradient calculations is expensive
+- **Baseline Dependency**: Performance heavily depends on quality of baseline for variance reduction
+- **Trajectory Length Sensitivity**: Very long or short trajectories can bias policy gradient estimates
 
 ### 6. N-Step Returns
 
 **Best For**: Balancing bias and variance in temporal difference learning
 
-**Core Concept**: Use n-step lookahead for reward calculation, bridging gap between 1-step TD and full Monte Carlo.
+**Core Concept**: N-Step Returns compute the return by looking ahead exactly N steps into the future, then using the value function estimate to approximate the remaining return. This creates a spectrum between 1-step TD learning (low variance, high bias) and Monte Carlo methods (high variance, low bias). The N-step return is calculated as: G*t^(n) = R*{t+1} + γR*{t+2} + ... + γ^{n-1}R*{t+n} + γ^n V(S\_{t+n}), providing a tunable parameter to balance bias and variance according to the specific characteristics of the traffic control problem.
 
-```python
-def calculate_n_step_return(states, rewards, values, n=3, gamma=0.99):
-    """
-    Calculate n-step return for temporal difference learning
-    """
-    n_step_return = 0
-    for i in range(n):
-        if i < len(rewards):
-            n_step_return += (gamma ** i) * rewards[i]
+**Traffic Control Example**: For n=3 steps, comparing baseline vs new policy:
 
-    # Add bootstrapped value if episode continues
-    if len(states) > n:
-        n_step_return += (gamma ** n) * values[states[n]]
+- Step 1: Intersection A - Baseline: -2s, New Policy: +1s → Reward R₁ = +3s improvement
+- Step 2: Travel time - Baseline: 0s, New Policy: 0s → Reward R₂ = 0s
+- Step 3: Intersection B - Baseline: -8s, New Policy: +2s → Reward R₃ = +10s improvement
+- Step 4: Estimated remaining improvement V(S₄) = +5s
+- 3-step return: G₃ = 3 + 0.95×0 + 0.95²×10 + 0.95³×5 = 16.3s total improvement
 
-    return n_step_return
-```
+**Traffic Control Correspondence**:
+
+**For Centralized Network Control**: N-Step Returns provide an ideal compromise for your centralized architecture by capturing multi-intersection coordination effects while maintaining computational tractability. The N parameter can be tuned to match typical vehicle travel patterns - for example, n=5 might capture the typical time for a vehicle to traverse 2-3 intersections, providing feedback about short-term coordination effectiveness without waiting for complete journeys.
+
+- **Coordination Horizon**: N can be set to match typical intersection spacing (e.g., n=4-6 steps for 2-intersection coordination)
+- **Response Speed**: Faster learning than Monte Carlo while capturing more coordination than 1-step TD
+- **Tunable Trade-off**: Adjust N based on traffic density and coordination requirements
+- **Computational Balance**: More efficient than full trajectories, more informative than immediate rewards
+
+**N-Value Selection for Traffic Control**:
+
+- **N = 1-2**: Reactive control, good for isolated intersections, fast learning
+- **N = 3-5**: Local coordination, captures 1-2 intersection interactions, balanced approach
+- **N = 6-10**: Network coordination, captures multi-intersection effects, higher variance
+- **N = 10+**: Approaching Monte Carlo, captures long-term network effects, slower learning
+
+**Algorithm Compatibility Analysis**:
+
+**PPO (Proximal Policy Optimization)**:
+
+- ✅ **Excellent Integration**: PPO can use n-step returns for advantage estimation via GAE (Generalized Advantage Estimation)
+- ✅ **Built-in Support**: Standard PPO implementations support n-step returns through the GAE λ parameter
+- ✅ **Variance Control**: N-step returns help balance bias-variance in PPO's policy gradient estimates
+- **Implementation**: Use n-step returns in GAE calculation: A*t = ∑*{l=0}^{∞} (γλ)^l δ\_{t+l}, where δ uses n-step returns
+
+**SAC (Soft Actor-Critic)**:
+
+- ✅ **Good Integration**: SAC can use n-step returns for critic target calculation and experience replay
+- ✅ **Sample Efficiency**: N-step returns provide richer learning signals for SAC's off-policy learning
+- ✅ **Flexible Implementation**: Can mix n-step returns with 1-step returns in experience replay buffer
+- **Implementation**: Use n-step returns as targets for critic network: y = G_t^(n), store in replay buffer
+
+**A2C (Advantage Actor-Critic)**:
+
+- ✅ **Natural Integration**: A2C can directly use n-step returns for advantage calculation and value targets
+- ✅ **Variance Reduction**: N-step returns help reduce A2C's typically high variance
+- ✅ **Tunable Performance**: Can adjust N to optimize A2C's bias-variance trade-off
+- **Implementation**: Use n-step returns for advantage: A(s,a) = G_t^(n) - V(s), and value targets: V(s) ← G_t^(n)
+
+**Implementation Considerations**:
+
+- **Circular Buffer**: Use circular buffer to efficiently maintain n-step history
+- **Bootstrap Handling**: Handle cases where n steps extend beyond episode boundaries
+- **Discount Factor**: Ensure γ^n doesn't become too small for large N values
+- **Mixed N-Step**: Can use different N values for different learning components
+
+**Detailed Advantages**:
+
+- **Tunable Bias-Variance**: N parameter allows optimization for specific traffic control requirements
+- **Faster Learning**: Learns faster than Monte Carlo while capturing more information than 1-step TD
+- **Memory Efficiency**: Requires only N-step buffer, much less than full trajectory storage
+- **Computational Efficiency**: Regular updates every step, no waiting for episode completion
+- **Coordination Capture**: Can be tuned to capture typical intersection coordination timescales
+- **Implementation Flexibility**: Compatible with most RL algorithms with minimal modifications
+- **Bootstrap Benefits**: Uses learned value function to reduce variance in return estimation
+
+**Detailed Disadvantages**:
+
+- **N-Value Sensitivity**: Performance heavily depends on choosing appropriate N value
+- **Bias Introduction**: N < ∞ introduces bias through value function bootstrapping
+- **Buffer Management**: Requires careful management of n-step circular buffers
+- **Boundary Handling**: Complex handling when n steps extend beyond episode boundaries
+- **Hyperparameter Tuning**: N becomes another hyperparameter that needs optimization
+- **Value Function Dependency**: Quality of n-step returns depends on accuracy of value function estimates
+- **Implementation Complexity**: More complex than simple 1-step TD but simpler than full Monte Carlo
 
 ### 7. Distributed Rewards
 
 **Best For**: Handling networks with multiple intersections affecting the same vehicles
 
-**Core Concept**: Distribute a vehicle's final reward proportionally among all intersections that influenced its journey.
+**Core Concept**: Distributed Rewards tackle the multi-intersection credit assignment challenge by algorithmically distributing each vehicle's final performance outcome across all intersections that contributed to its journey. This method recognizes that in traffic networks, multiple intersection decisions collectively determine vehicle outcomes, so the final reward must be fairly apportioned among all contributing decision points based on their relative influence, timing, and impact magnitude.
 
-```python
-def distribute_vehicle_reward(vehicle_trajectory, final_reward):
-    """
-    Distribute final reward among all intersections proportional to their influence
-    """
-    total_delay_caused = sum(encounter['waiting_time']
-                           for encounter in vehicle_trajectory)
+**Traffic Control Example**: Vehicle improvement of +45 seconds across 4 intersections:
 
-    for encounter in vehicle_trajectory:
-        # Proportion of delay caused at this intersection
-        delay_proportion = encounter['waiting_time'] / total_delay_caused
+- Intersection A: Baseline wait 20s, New Policy wait 15s → Improvement +5s, influence = 5/45 = 0.11
+- Intersection B: Baseline wait 25s, New Policy wait 5s → Improvement +20s, influence = 20/45 = 0.44
+- Intersection C: Baseline wait 15s, New Policy wait 10s → Improvement +5s, influence = 5/45 = 0.11
+- Intersection D: Baseline wait 30s, New Policy wait 15s → Improvement +15s, influence = 15/45 = 0.33
+- Distributed rewards: A gets +5s, B gets +20s, C gets +5s, D gets +15s (proportional to contribution)
 
-        # Reward is inversely related to delay caused
-        intersection_reward = final_reward * (1 - delay_proportion)
+**Traffic Control Correspondence**:
 
-        update_intersection_value(encounter['intersection'],
-                                encounter['state'],
-                                encounter['action'],
-                                intersection_reward)
+**For Centralized Network Control**: Distributed Rewards are perfectly aligned with your centralized architecture because they explicitly model the cooperative/competitive dynamics between intersections within your unified decision-making framework. When your centralized controller makes simultaneous decisions for all intersections, distributed rewards provide clear feedback about how each intersection component contributed to overall network performance.
+
+- **Coordination Accountability**: Reveals which intersections help vs. hinder network-wide coordination
+- **Resource Allocation**: Guides attention toward intersections that have the most impact on vehicle outcomes
+- **Balanced Learning**: Prevents blame concentration on a few intersections while others don't learn
+- **Network Understanding**: Builds understanding of intersection interdependencies and influence patterns
+
+**Distribution Algorithms**:
+
+- **Proportional Impact**: Distribute reward proportional to actual delay/benefit caused at each intersection
+- **Temporal Weighting**: Weight recent intersections more heavily (recency bias in credit assignment)
+- **Shapley Value**: Use game theory to compute fair contribution of each intersection to final outcome
+- **Causal Attribution**: Model causal relationships between intersection decisions and final outcomes
+
+**Algorithm Compatibility Analysis**:
+
+**PPO (Proximal Policy Optimization)**:
+
+- ✅ **Good Network Learning**: Distributed rewards provide balanced feedback across all network components for PPO updates
+- ✅ **Stable Policy Updates**: Distributed rewards reduce variance compared to winner-take-all attribution schemes
+- ✅ **Coordination Learning**: PPO can learn coordinated policies when all intersections receive appropriate credit/blame
+- **Implementation**: Use distributed rewards as returns for policy gradient calculation across all intersection actions
+
+**SAC (Soft Actor-Critic)**:
+
+- ✅ **Rich Experience Diversity**: Distributed rewards create diverse learning signals for SAC's experience replay
+- ✅ **Balanced Exploration**: All intersections receive learning signal, promoting balanced exploration across network
+- ✅ **Continuous Learning**: Distributed rewards arrive continuously as vehicles complete journeys
+- **Implementation**: Store distributed state-action-reward tuples for each intersection in experience replay buffer
+
+**A2C (Advantage Actor-Critic)**:
+
+- ✅ **Variance Reduction**: Distributed rewards provide more balanced learning signals compared to sparse rewards
+- ✅ **Network-Wide Learning**: All intersections receive feedback, preventing some intersections from not learning
+- ✅ **Advantage Calculation**: Distributed rewards provide better baseline for advantage calculation across network
+- **Implementation**: Use distributed rewards for advantage calculation: A(s,a) = R_distributed - V(s)
+
+**Distribution Strategies**:
+
+- **Equal Distribution**: Simple 1/N split among all intersections (baseline approach)
+- **Impact-Weighted**: Weight by actual delay/benefit contribution (reflects true causality)
+- **Distance-Weighted**: Weight by proximity to vehicle origin/destination (accounts for network position)
+- **Complexity-Weighted**: Weight by intersection complexity (busier intersections get more credit/blame)
+
+**Detailed Advantages**:
+
+- **Fair Credit Assignment**: Ensures all contributing intersections receive appropriate learning signal
+- **Prevents Learning Stagnation**: Avoids situations where some intersections don't receive feedback and stop learning
+- **Network-Wide Learning**: Promotes balanced learning across entire traffic network
+- **Causal Modeling**: Can incorporate sophisticated models of intersection interdependencies
+- **Reduced Variance**: Distributed rewards typically have lower variance than winner-take-all schemes
+- **Coordination Promotion**: Encourages intersections to consider their impact on downstream performance
+- **Interpretability**: Clear understanding of which intersections contribute most to network performance
+
+**Detailed Disadvantages**:
+
+- **Distribution Complexity**: Requires sophisticated algorithms to fairly distribute rewards across intersections
+- **Attribution Accuracy**: Difficult to accurately model true causal contribution of each intersection
+- **Computational Overhead**: Reward distribution calculations for every vehicle and intersection combination
+- **Implementation Complexity**: More complex than simple local rewards or global rewards
+- **Hyperparameter Sensitivity**: Distribution weights and algorithms require careful tuning
+- **Diluted Learning Signal**: Individual intersection rewards may be diluted compared to concentrated attribution
+- **Interaction Modeling**: Requires accurate models of how intersections influence each other's effectiveness
+
+## Credit Assignment Method Selection Guide
+
+### Comparison Matrix
+
+| Method                  | Learning Speed  | Memory Requirements | Implementation Complexity | PPO Compatibility | SAC Compatibility | A2C Compatibility     | Best For                           |
+| ----------------------- | --------------- | ------------------- | ------------------------- | ----------------- | ----------------- | --------------------- | ---------------------------------- |
+| **Monte Carlo Returns** | ⭐⭐ (Slow)     | ⭐⭐ (High)         | ⭐⭐⭐ (Medium)           | ✅ Excellent      | ❌ Poor           | ✅ Good               | Complete journey policy comparison |
+| **Eligibility Traces**  | ⭐⭐⭐⭐ (Fast) | ⭐⭐⭐ (Medium)     | ⭐⭐ (Complex)            | ✅ Excellent      | ⚠️ Moderate       | ✅ Natural            | Temporal credit assignment         |
+| **Vehicle-Specific**    | ⭐⭐⭐ (Medium) | ⭐ (Very High)      | ⭐ (Very Complex)         | ✅ Excellent      | ✅ Rich replay    | ❌ Memory intensive   | Maximum granularity comparison     |
+| **Multi-Vehicle**       | ⭐⭐⭐⭐ (Fast) | ⭐⭐⭐⭐ (Low)      | ⭐⭐⭐⭐ (Simple)         | ✅ Excellent      | ✅ Good           | ✅ Excellent          | Stable batch policy comparison     |
+| **Trajectory-Based**    | ⭐⭐ (Slow)     | ⭐⭐ (High)         | ⭐⭐⭐ (Medium)           | ✅ Perfect        | ❌ Poor           | ✅ Good               | Policy gradient optimization       |
+| **N-Step Returns**      | ⭐⭐⭐⭐ (Fast) | ⭐⭐⭐⭐ (Low)      | ⭐⭐⭐ (Medium)           | ✅ Excellent      | ✅ Good           | ✅ Natural            | Balanced bias-variance             |
+| **Distributed Rewards** | ⭐⭐⭐ (Medium) | ⭐⭐⭐ (Medium)     | ⭐⭐ (Complex)            | ✅ Good           | ✅ Rich diversity | ✅ Variance reduction | Network-wide fair attribution      |
+
+### Selection Decision Framework
+
+#### **For PPO (Primary Recommendation):**
+
+- 🏆 **Vehicle-Specific Attribution**: Perfect individual policy comparison + excellent PPO batch learning
+- 🥈 **Trajectory-Based Policy Gradients**: Natural fit for PPO's policy gradient methodology
+- 🥉 **Multi-Vehicle Credit Assignment**: Great statistical significance + stable batch learning
+
+#### **For SAC (Secondary Recommendation):**
+
+- 🏆 **Vehicle-Specific Attribution**: Rich individual comparisons for experience replay
+- 🥈 **N-Step Returns**: Good improvement capture + off-policy learning compatibility
+- 🥉 **Multi-Vehicle Credit Assignment**: Stable batch comparisons for replay buffer
+
+#### **For A2C (Alternative Option):**
+
+- 🏆 **Multi-Vehicle Credit Assignment**: Direct variance reduction (A2C's main weakness) + stable estimates
+- 🥈 **Vehicle-Specific Attribution**: Detailed advantage calculation + reduced variance
+- 🥉 **N-Step Returns**: Tunable bias-variance optimization + natural advantage calculation
+
+### Scenario-Based Recommendations
+
+#### **High-Frequency Decisions (Every 5-10 seconds):**
+
+- ✅ **N-Step Returns**: Fast updates, captures coordination without delays
+- ✅ **Eligibility Traces**: Immediate learning, tunable temporal memory
+- ❌ **Monte Carlo**: Too slow for high-frequency updates
+
+#### **Centralized Network Control (Your Use Case):**
+
+- ✅ **Multi-Vehicle Credit Assignment**: Balanced network-wide learning, statistical stability
+- ✅ **Distributed Rewards**: Models intersection cooperation/competition explicitly
+- ✅ **Vehicle-Specific Attribution**: Maximum coordination granularity (if resources allow)
+
+#### **Memory-Constrained Environments:**
+
+- ✅ **Multi-Vehicle Credit Assignment**: Minimal memory, statistical aggregation
+- ✅ **N-Step Returns**: Small circular buffer only
+- ❌ **Vehicle-Specific**: Massive individual vehicle tracking requirements
+
+#### **Implementation Timeline Priorities:**
+
+**Fast Prototyping (1-2 days):**
+
+- ✅ **Multi-Vehicle Credit Assignment + Rolling Baseline**: Simple aggregation, proven results
+
+**Moderate Development (1-2 weeks):**
+
+- ✅ **N-Step Returns**: Circular buffer management, GAE integration
+- ✅ **Eligibility Traces**: Trace bookkeeping, lambda tuning
+
+**Research Projects (1+ months):**
+
+- ✅ **Vehicle-Specific Attribution + Inter-Run**: Full tracking infrastructure, policy comparison framework
+- ✅ **Trajectory-Based Policy Gradients**: Complete policy gradient implementation
+
+### Final Recommendation for Your Centralized Periodic Duration Control
+
+#### **🎯 Optimal Combination: Vehicle-Specific Attribution + PPO + Inter-Run Comparison**
+
+**Why This Combination:**
+
+- ✅ **Maximum Signal Quality**: Same vehicles, same conditions, only policy differs - eliminates all noise
+- ✅ **Statistical Validity**: Clean policy comparison enables rigorous significance testing
+- ✅ **Perfect PPO Integration**: Individual vehicle trajectories provide excellent batch learning for PPO
+- ✅ **Granular Coordination Insights**: Reveals exactly how centralized decisions affect individual vehicle outcomes
+- ✅ **Research Standard**: Matches academic RL evaluation and validation methodology
+- ✅ **Centralized Architecture Fit**: Individual vehicle analysis perfect for understanding network-wide coordination
+
+**Implementation Approach:**
+
 ```
+1. Generate deterministic vehicle set with fixed seed (same routes, start times)
+2. Run baseline policy (current traffic control method)
+3. Run new RL policy with identical vehicle set and conditions
+4. Compare corresponding vehicle performance (car_123_baseline vs car_123_new)
+5. Use individual vehicle improvement signals for PPO policy gradient updates
+6. Iterate: update policy, repeat comparison, measure improvement
+```
+
+**Alternative for Memory-Constrained Scenarios:**
+If vehicle-specific tracking proves too memory-intensive, **Multi-Vehicle Credit Assignment + PPO** provides an excellent alternative with:
+
+- ✅ **Same clean inter-run comparison signals**
+- ✅ **Reduced memory requirements** through batch aggregation
+- ✅ **Faster implementation** (2-3 days vs 1-2 weeks)
+- ✅ **Statistical robustness** through vehicle batch comparisons
+
+This approach provides the cleanest possible learning signal for your centralized periodic duration control architecture while maintaining practical implementability.
 
 ### Traffic Control Implementation Considerations
 
@@ -1445,185 +1912,7 @@ class HighLevelManager:
         return self.strategy_network(network_state)
 ```
 
-### 2. Meta-Learning and Few-Shot Adaptation
-
-#### Model-Agnostic Meta-Learning (MAML)
-
-**Best For**: Quickly adapting to new traffic patterns or incidents
-
-```python
-class MAMLTrafficController:
-    def __init__(self):
-        self.meta_policy = PolicyNetwork(state_size, action_size)
-        self.adaptation_lr = 0.01
-
-    def meta_train(self, task_distribution):
-        for batch in task_distribution:
-            # Inner loop: adapt to specific task
-            adapted_policies = []
-            for task in batch:
-                adapted_policy = self.adapt_to_task(task)
-                adapted_policies.append(adapted_policy)
-
-            # Outer loop: update meta-parameters
-            meta_loss = self.compute_meta_loss(adapted_policies, batch)
-            self.meta_policy.update(meta_loss)
-
-    def adapt_to_task(self, task):
-        # Few-shot adaptation to new traffic scenario
-        adapted_policy = copy.deepcopy(self.meta_policy)
-        for _ in range(few_shot_steps):
-            loss = compute_task_loss(adapted_policy, task)
-            adapted_policy.update(loss, lr=self.adaptation_lr)
-        return adapted_policy
-```
-
-#### Contextual Bandits for Traffic Scenarios
-
-**Best For**: Rapid adaptation to different time-of-day or weather conditions
-
-```python
-class ContextualTrafficBandit:
-    def __init__(self):
-        self.context_encoder = ContextEncoder()  # Time, weather, events
-        self.policy = ContextualPolicy()
-
-    def act(self, traffic_state, context):
-        # Context includes: hour, day_of_week, weather, special_events
-        context_embedding = self.context_encoder(context)
-        combined_input = torch.cat([traffic_state, context_embedding])
-        return self.policy(combined_input)
-```
-
-### 3. Imitation Learning
-
-#### Behavioral Cloning from Expert Controllers
-
-**Best For**: Learning from existing traffic control systems or human operators
-
-```python
-class TrafficControlBC:
-    def __init__(self):
-        self.policy = PolicyNetwork(state_size, action_size)
-        self.expert_data = []  # (state, action) pairs from Tree Method
-
-    def learn_from_expert(self, expert_controller):
-        # Collect expert demonstrations
-        states, actions = collect_expert_data(expert_controller)
-
-        # Supervised learning to mimic expert
-        for state, action in zip(states, actions):
-            predicted_action = self.policy(state)
-            loss = cross_entropy_loss(predicted_action, action)
-            self.policy.update(loss)
-```
-
-#### Inverse Reinforcement Learning (IRL)
-
-**Best For**: Learning reward functions from expert behavior
-
-```python
-class TrafficIRL:
-    def __init__(self):
-        self.reward_network = RewardNetwork(state_size, action_size)
-        self.policy = PolicyNetwork(state_size, action_size)
-
-    def learn_reward_from_expert(self, expert_trajectories):
-        for iteration in range(max_iterations):
-            # Learn reward function that explains expert behavior
-            current_policy_trajectories = self.collect_trajectories()
-
-            # Update reward to make expert trajectories more rewarding
-            reward_loss = self.compute_reward_loss(
-                expert_trajectories, current_policy_trajectories
-            )
-            self.reward_network.update(reward_loss)
-
-            # Update policy using learned reward
-            policy_loss = self.compute_policy_loss(self.reward_network)
-            self.policy.update(policy_loss)
-```
-
-#### Generative Adversarial Imitation Learning (GAIL)
-
-**Best For**: Learning complex policies from demonstrations without explicit reward engineering
-
-```python
-class TrafficGAIL:
-    def __init__(self):
-        self.generator = PolicyNetwork(state_size, action_size)  # Traffic controller
-        self.discriminator = DiscriminatorNetwork(state_size + action_size)  # Expert vs agent classifier
-
-    def train(self, expert_trajectories):
-        for epoch in range(num_epochs):
-            # Generate agent trajectories
-            agent_trajectories = self.collect_trajectories(self.generator)
-
-            # Train discriminator to distinguish expert from agent
-            discriminator_loss = self.train_discriminator(
-                expert_trajectories, agent_trajectories
-            )
-
-            # Train generator to fool discriminator
-            generator_loss = self.train_generator(agent_trajectories)
-```
-
-### 4. Transfer Learning
-
-#### Domain Adaptation
-
-**Best For**: Adapting policies from synthetic networks to real-world traffic
-
-```python
-class DomainAdaptiveTrafficRL:
-    def __init__(self):
-        self.feature_extractor = FeatureExtractor()
-        self.domain_classifier = DomainClassifier()
-        self.policy = PolicyNetwork()
-
-    def domain_adversarial_training(self, source_data, target_data):
-        # Learn domain-invariant features
-        for batch in combined_data:
-            # Extract features
-            features = self.feature_extractor(batch.states)
-
-            # Policy loss (main task)
-            policy_loss = compute_policy_loss(features, batch.actions, batch.rewards)
-
-            # Domain classification loss (adversarial)
-            domain_pred = self.domain_classifier(features)
-            domain_loss = domain_classification_loss(domain_pred, batch.domain_labels)
-
-            # Gradient reversal for adversarial training
-            total_loss = policy_loss - lambda_domain * domain_loss
-            update_parameters(total_loss)
-```
-
-#### Progressive Networks
-
-**Best For**: Sequential learning across different traffic scenarios
-
-```python
-class ProgressiveTrafficNetworks:
-    def __init__(self):
-        self.columns = []  # Each column for different task
-        self.lateral_connections = []
-
-    def learn_new_task(self, task_data):
-        # Create new column for new task
-        new_column = PolicyNetwork()
-
-        # Add lateral connections from previous columns
-        for prev_column in self.columns:
-            lateral_conn = LateralConnection(prev_column, new_column)
-            self.lateral_connections.append(lateral_conn)
-
-        # Train new column while keeping previous columns frozen
-        self.train_column(new_column, task_data)
-        self.columns.append(new_column)
-```
-
-### 5. Robust and Risk-Aware RL
+### 2. Robust and Risk-Aware RL
 
 #### Distributionally Robust RL
 
@@ -1668,80 +1957,6 @@ class RiskSensitiveTrafficController:
         cvar_objective = sum(worst_returns) / len(worst_returns)
         self.policy.update(cvar_objective)
 ```
-
-### 6. Continual/Lifelong Learning
-
-#### Elastic Weight Consolidation (EWC)
-
-**Best For**: Learning new traffic patterns without forgetting old ones
-
-```python
-class ContinualTrafficLearning:
-    def __init__(self):
-        self.policy = PolicyNetwork()
-        self.fisher_information = {}
-        self.optimal_params = {}
-
-    def learn_new_task(self, new_task_data):
-        # Compute Fisher Information Matrix for previous task
-        self.compute_fisher_information()
-        self.store_optimal_parameters()
-
-        # Learn new task with regularization
-        for batch in new_task_data:
-            # Standard loss for new task
-            new_task_loss = compute_policy_loss(batch)
-
-            # Regularization to prevent forgetting
-            ewc_loss = self.compute_ewc_penalty()
-
-            total_loss = new_task_loss + lambda_ewc * ewc_loss
-            self.policy.update(total_loss)
-
-    def compute_ewc_penalty(self):
-        penalty = 0
-        for param_name, param in self.policy.named_parameters():
-            if param_name in self.fisher_information:
-                penalty += (self.fisher_information[param_name] *
-                          (param - self.optimal_params[param_name])**2).sum()
-        return penalty
-```
-
-### 7. Curiosity-Driven and Exploration Methods
-
-#### Intrinsic Curiosity Module (ICM)
-
-**Best For**: Exploring novel traffic scenarios and edge cases
-
-```python
-class CuriosityDrivenTrafficAgent:
-    def __init__(self):
-        self.policy = PolicyNetwork()
-        self.forward_model = ForwardModel()
-        self.inverse_model = InverseModel()
-
-    def compute_intrinsic_reward(self, state, action, next_state):
-        # Predict next state given current state and action
-        predicted_next_state = self.forward_model(state, action)
-
-        # Curiosity reward based on prediction error
-        prediction_error = mse_loss(predicted_next_state, next_state)
-        intrinsic_reward = prediction_error
-
-        return intrinsic_reward
-
-    def update_curiosity_modules(self, transitions):
-        for state, action, next_state in transitions:
-            # Update inverse model: predict action from state transition
-            predicted_action = self.inverse_model(state, next_state)
-            inverse_loss = cross_entropy_loss(predicted_action, action)
-
-            # Update forward model: predict next state
-            predicted_next_state = self.forward_model(state, action)
-            forward_loss = mse_loss(predicted_next_state, next_state)
-```
-
-These advanced techniques provide sophisticated approaches to handle the complex challenges in traffic control RL, from learning hierarchical policies to adapting to new scenarios and managing uncertainty.
 
 ## Safety and Constraint Handling in RL
 
