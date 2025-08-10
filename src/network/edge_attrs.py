@@ -545,3 +545,30 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
             edge.set("arrive_attractiveness", str(arrive_attr))
 
     tree.write(net_file, encoding="utf-8")
+
+
+def execute_attractiveness_assignment(args) -> None:
+    """Execute edge attractiveness assignment."""
+    import logging
+    from src.utils.seed_utils import get_cached_seed
+    from src.validate.validate_network import verify_assign_edge_attractiveness
+    from src.validate.errors import ValidationError
+    
+    logger = logging.getLogger(__name__)
+    
+    assign_edge_attractiveness(
+        get_cached_seed(args), 
+        args.attractiveness, 
+        args.time_dependent, 
+        args.start_time_hour
+    )
+    try:
+        verify_assign_edge_attractiveness(
+            get_cached_seed(args), 
+            args.attractiveness, 
+            args.time_dependent
+        )
+    except ValidationError as ve:
+        logger.error(f"Failed to assign edge attractiveness: {ve}")
+        raise
+    logger.info("Assigned edge attractiveness successfully")

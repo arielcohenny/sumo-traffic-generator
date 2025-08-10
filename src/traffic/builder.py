@@ -276,3 +276,36 @@ def _generate_hourly_departure(rng, pattern: str, end_time: int) -> int:
     departure_time = rng.uniform(hour_start, min(hour_end, end_time * SIMULATION_END_FACTOR_SIX_PERIODS))
     
     return int(departure_time)
+
+
+def execute_route_generation(args) -> None:
+    """Execute vehicle route generation."""
+    import logging
+    from src.utils.seed_utils import get_cached_seed
+    from src.config import CONFIG
+    from src.validate.validate_traffic import verify_generate_vehicle_routes
+    from src.validate.errors import ValidationError
+    
+    logger = logging.getLogger(__name__)
+    
+    generate_vehicle_routes(
+        net_file=CONFIG.network_file,
+        output_file=CONFIG.routes_file,
+        num_vehicles=args.num_vehicles,
+        seed=get_cached_seed(args),
+        routing_strategy=args.routing_strategy,
+        vehicle_types=args.vehicle_types,
+        end_time=args.end_time,
+        departure_pattern=args.departure_pattern
+    )
+    try:
+        verify_generate_vehicle_routes(
+            net_file=CONFIG.network_file,
+            output_file=CONFIG.routes_file,
+            num_vehicles=args.num_vehicles,
+            seed=get_cached_seed(args),
+        )
+    except ValidationError as ve:
+        logger.error(f"Failed to generate vehicle routes: {ve}")
+        raise
+    logger.info("Generated vehicle routes successfully")

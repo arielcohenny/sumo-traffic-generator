@@ -581,3 +581,37 @@ def write_xml_files(nod_tree, edg_tree, con_tree, tll_tree):
                    encoding="UTF-8", xml_declaration=True)
     tll_tree.write(CONFIG.network_tll_file,
                    encoding="UTF-8", xml_declaration=True)
+
+
+def execute_edge_splitting(args) -> None:
+    """Execute edge splitting with lane assignment."""
+    import logging
+    from src.utils.seed_utils import get_cached_seed
+    from src.validate.validate_split_edges_with_lanes import verify_split_edges_with_flow_based_lanes
+    from src.validate.errors import ValidationError
+    
+    logger = logging.getLogger(__name__)
+    
+    if args.lane_count != "0" and not (args.lane_count.isdigit() and args.lane_count == "0"):
+        split_edges_with_flow_based_lanes(
+            seed=get_cached_seed(args),
+            min_lanes=CONFIG.MIN_LANES,
+            max_lanes=CONFIG.MAX_LANES,
+            algorithm=args.lane_count,
+            block_size_m=args.block_size_m
+        )
+        logger.info("Successfully completed integrated edge splitting with lane assignment")
+        
+        # Validate the split edges
+        try:
+            verify_split_edges_with_flow_based_lanes(
+                connections_file=str(CONFIG.network_con_file),
+                edges_file=str(CONFIG.network_edg_file),
+                nodes_file=str(CONFIG.network_nod_file)
+            )
+            logger.info("Split edges validation passed successfully")
+        except (ValidationError, ValueError) as ve:
+            logger.error(f"Split edges validation failed: {ve}")
+            raise
+    else:
+        logger.info("Skipping lane assignment (lane_count is 0)")

@@ -172,3 +172,46 @@ class TrafficSimulator:
                 percentage = float(parts[i + 1])
                 strategies[strategy] = percentage
         return strategies
+
+
+def execute_standard_simulation(args) -> None:
+    """Execute standard dynamic simulation."""
+    import logging
+    from .traffic_controller import TrafficControllerFactory
+    
+    logger = logging.getLogger(__name__)
+    
+    # Create traffic controller
+    traffic_controller = TrafficControllerFactory.create(args.traffic_control, args)
+    
+    # Create and run simulator
+    simulator = TrafficSimulator(args, traffic_controller)
+    metrics = simulator.run()
+    
+    # Log final metrics
+    logger.info("=== SIMULATION COMPLETED ===")
+    for key, value in metrics.items():
+        logger.info(f"{key}: {value}")
+
+
+def execute_sample_simulation(args) -> None:
+    """Execute sample dynamic simulation using pre-built sample network."""
+    import logging
+    from .traffic_controller import TrafficControllerFactory
+    
+    logger = logging.getLogger(__name__)
+    
+    # Validate traffic control compatibility
+    if args.traffic_control and args.traffic_control != 'tree_method':
+        logger.warning("Tree Method samples optimized for tree_method control")
+        logger.warning(f"Proceeding with: {args.traffic_control}")
+    
+    # Create traffic controller
+    traffic_controller = TrafficControllerFactory.create(args.traffic_control, args)
+    
+    # Create and run simulator
+    simulator = TrafficSimulator(args, traffic_controller)
+    metrics = simulator.run()
+    
+    # Final metrics are provided by SUMO's automatic statistics output
+    logger.info("=== SAMPLE SIMULATION COMPLETED ===")

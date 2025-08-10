@@ -537,3 +537,20 @@ def create_custom_lane_config_from_args(args) -> Optional[CustomLaneConfig]:
         return CustomLaneConfig.parse_custom_lanes_file(args.custom_lanes_file)
     else:
         return None
+
+
+def execute_custom_lanes(args) -> None:
+    """Execute custom lane configuration application."""
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
+    # Create custom lane configuration from arguments
+    custom_lane_config = create_custom_lane_config_from_args(args)
+    
+    if custom_lane_config and custom_lane_config.edge_configs:
+        logger.info("Applying custom lane configurations...")
+        apply_custom_lane_configs(custom_lane_config)
+        logger.info(f"Successfully applied custom lane configurations for {len(custom_lane_config.edge_configs)} edges")
+    else:
+        logger.info("No custom lane configurations to apply")
