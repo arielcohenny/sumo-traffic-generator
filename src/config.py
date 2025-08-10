@@ -66,6 +66,15 @@ class _Config:
     # Verify algorithm every N simulation steps
     SIMULATION_VERIFICATION_FREQUENCY: int = 30
 
+    # ---------- Tree Method algorithm timing ----------
+    # Tree Method calculations occur every N seconds to balance efficiency with responsiveness
+    # This is independent of traffic light cycle timing
+    TREE_METHOD_ITERATION_INTERVAL_SEC: int = 90
+    
+    # Valid range for Tree Method interval (in seconds)
+    TREE_METHOD_MIN_INTERVAL_SEC: int = 30   # Minimum for responsiveness
+    TREE_METHOD_MAX_INTERVAL_SEC: int = 300  # Maximum for efficiency
+
 
 @dataclass
 class OSMConfig:

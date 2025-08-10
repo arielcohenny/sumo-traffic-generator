@@ -122,6 +122,33 @@ Dynamic signal control. Three methods available:
 - `actuated`: SUMO gap-based control
 - `fixed`: Static timing from configuration
 
+### `--tree-method-interval` (int, default: 90)
+
+Tree Method calculation interval in seconds. Controls how often the Tree Method algorithm runs its optimization calculations.
+
+**Performance Configuration:**
+- **Lower values (30-60s)**: More responsive traffic control, higher CPU usage
+- **Higher values (120-300s)**: More efficient computation, less responsive control
+- **Default (90s)**: Balanced efficiency and responsiveness
+
+**Valid Range:** 30-300 seconds
+
+**Independence:** Tree Method timing is completely independent of traffic light cycle timing.
+
+**Technical Implementation:** Overrides `TREE_METHOD_ITERATION_INTERVAL_SEC` constant in `src/config.py`.
+
+**Examples:**
+```bash
+# Responsive control (every 60 seconds)
+python -m src.cli --traffic_control tree_method --tree-method-interval 60
+
+# Efficient control (every 2 minutes)  
+python -m src.cli --traffic_control tree_method --tree-method-interval 120
+
+# High-performance scenarios (every 3 minutes)
+python -m src.cli --traffic_control tree_method --tree-method-interval 180
+```
+
 ### `--gui` (flag)
 
 Launch SUMO GUI.

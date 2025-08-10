@@ -1,10 +1,30 @@
 
-def is_calculation_time(step, seconds_in_cycle):
-    return step > 0 and step % seconds_in_cycle == 0
+def is_calculation_time(step, tree_method_interval):
+    """
+    Check if it's time to run Tree Method calculations.
+    
+    Args:
+        step: Current simulation step
+        tree_method_interval: Tree Method calculation interval in seconds
+        
+    Returns:
+        bool: True if Tree Method calculations should run at this step
+    """
+    return step > 0 and step % tree_method_interval == 0
 
 
-def calc_iteration_from_step(step, seconds_in_cycle):
-    return (step + 1) // seconds_in_cycle
+def calc_iteration_from_step(step, tree_method_interval):
+    """
+    Calculate Tree Method iteration number from simulation step.
+    
+    Args:
+        step: Current simulation step
+        tree_method_interval: Tree Method calculation interval in seconds
+        
+    Returns:
+        int: Tree Method iteration number
+    """
+    return (step + 1) // tree_method_interval
 
 
 def get_vehicle_inx(vehicle_id):

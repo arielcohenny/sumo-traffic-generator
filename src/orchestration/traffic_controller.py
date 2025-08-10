@@ -87,11 +87,15 @@ class TreeMethodController(TrafficController):
         
         self.graph.build(self.network_data.edges_list, self.network_data.junctions_dict)
         
-        self.seconds_in_cycle = self.network_data.calc_cycle_time()
+        # Use explicit Tree Method interval (independent of traffic light cycles)
+        self.tree_method_interval = getattr(self.args, 'tree_method_interval', CONFIG.TREE_METHOD_ITERATION_INTERVAL_SEC)
+        
+        # Log Tree Method timing configuration
+        self.logger.info(f"Tree Method interval: {self.tree_method_interval} seconds ({self.tree_method_interval/60:.1f} minutes between calculations)")
         
         # Verify Tree Method integration setup
         verify_tree_method_integration_setup(
-            self.tree_data, self.run_config, self.network_data, self.graph, self.seconds_in_cycle)
+            self.tree_data, self.run_config, self.network_data, self.graph, self.tree_method_interval)
     
     def update(self, step: int) -> None:
         """Update Tree Method traffic control at given step."""
@@ -101,10 +105,14 @@ class TreeMethodController(TrafficController):
         
         
         # Tree Method: Calculation time check
-        is_calc_time = is_calculation_time(step, self.seconds_in_cycle)
+        is_calc_time = is_calculation_time(step, self.tree_method_interval)
+        
+        # Log Tree Method calculations (debug only)
+        if is_calc_time:
+            self.logger.debug(f"Tree Method calculation at step {step}")
         
         if is_calc_time:
-            iteration = calc_iteration_from_step(step, self.seconds_in_cycle)
+            iteration = calc_iteration_from_step(step, self.tree_method_interval)
             
             if iteration > 0:  # Skip first iteration
                 try:
@@ -115,12 +123,12 @@ class TreeMethodController(TrafficController):
                         ended_iteration, 
                         self.iteration_trees, 
                         step, 
-                        self.seconds_in_cycle,
+                        self.tree_method_interval,
                         self.run_config.cost_type if self.run_config else CostType.TREE_CURRENT, 
                         self.run_config.algo_type if self.run_config else AlgoType.BABY_STEPS
                     )
                     
-                    self.graph.calc_nodes_statistics(ended_iteration, self.seconds_in_cycle)
+                    self.graph.calc_nodes_statistics(ended_iteration, self.tree_method_interval)
 
                 except ZeroDivisionError as zde:
                     import traceback
@@ -133,7 +141,7 @@ class TreeMethodController(TrafficController):
         
         # Tree Method traffic light updates
         try:
-            self.graph.update_traffic_lights(step, self.seconds_in_cycle, 
+            self.graph.update_traffic_lights(step, self.tree_method_interval, 
                                            self.run_config.algo_type if self.run_config else AlgoType.BABY_STEPS)
         except Exception as e:
             self.logger.warning(f"Tree Method traffic light update failed at step {step}: {e}")
@@ -148,7 +156,7 @@ class TreeMethodController(TrafficController):
             
             self.graph.add_vehicles_to_step()
             self.graph.close_prev_vehicle_step(step)
-            current_iteration = calc_iteration_from_step(step, self.seconds_in_cycle)
+            current_iteration = calc_iteration_from_step(step, self.tree_method_interval)
             self.graph.fill_head_iteration()
         except Exception as e:
             # Only print every 100 steps to avoid spam

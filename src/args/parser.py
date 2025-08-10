@@ -181,6 +181,13 @@ def _add_traffic_control_arguments(parser: argparse.ArgumentParser) -> None:
         choices=["tree_method", "actuated", "fixed"],
         help="Traffic control method: 'tree_method' (default, Tree Method algorithm), 'actuated' (SUMO gap-based), or 'fixed' (static timing)."
     )
+    parser.add_argument(
+        "--tree-method-interval",
+        type=int,
+        default=90,
+        metavar="SECONDS",
+        help="Tree Method calculation interval in seconds (default: 90). Controls how often Tree Method algorithm runs its optimization calculations. Valid range: 30-300 seconds."
+    )
 
 
 def _add_sample_arguments(parser: argparse.ArgumentParser) -> None:
