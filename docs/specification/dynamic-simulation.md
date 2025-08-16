@@ -119,10 +119,17 @@
 
 **Runtime Behavior:**
 
-- **Step Frequency**: Updates traffic light states every simulation step
-- **Algorithm Execution**: Calls `graph.update_traffic_lights()` with current time and cycle parameters
+- **Traffic Light Updates**: Updates traffic light states every simulation step (default: 1 second)
+- **Algorithm Execution Timing**: Tree Method calculations occur every `tree_method_interval` seconds (default: 90 seconds, configurable via `--tree-method-interval`)
+- **Calculation Independence**: Tree Method timing is completely independent of traffic light cycle timing for optimal performance
+- **Performance Configuration**: 
+  - Default 90 seconds balances efficiency with responsiveness
+  - Lower intervals (30-60s) provide more responsive control with higher CPU usage
+  - Higher intervals (120-300s) improve efficiency but reduce responsiveness
+- **Algorithm Execution**: Calls `graph.calculate_iteration()` and `graph.update_traffic_lights()` with current time and interval parameters
 - **Phase Translation**: Converts algorithm decisions to SUMO traffic light color strings based on cost calculations
 - **Signal Application**: Pushes new traffic light states to SUMO via TraCI
+- **Technical Implementation**: Uses `TREE_METHOD_ITERATION_INTERVAL_SEC` constant in `src/config.py` (overridable via CLI)
 
 **Key Advantages:**
 

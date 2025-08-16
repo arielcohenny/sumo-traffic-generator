@@ -55,14 +55,3 @@ def load_tree(
     return tree_data, rc
 
 
-def compute_phases(
-    tree_data: SimpleNamespace,
-    sim_time: int,
-    run_config: RunConfig
-) -> dict[str, str]:
-    """
-    A trivial 2-phase static policy:
-      - All lights show "GGrr" (green for north-south, red for east-west).
-      - Replace or extend this with your dynamic logic later.
-    """
-    return {tls_id: "GGrr" for tls_id in tree_data.tls_ids}

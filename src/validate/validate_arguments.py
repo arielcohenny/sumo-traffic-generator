@@ -8,6 +8,8 @@ ensuring consistency and format correctness before pipeline execution.
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+from src.config import CONFIG
 from typing import Tuple, List, Dict, Any
 
 try:
@@ -85,6 +87,13 @@ def _validate_numeric_ranges(args) -> None:
     # Start time hour validation
     if args.start_time_hour < 0 or args.start_time_hour >= 24:
         raise ValidationError(f"Start time hour must be 0-24, got {args.start_time_hour}")
+    
+    # Tree Method interval validation (only validate if using tree_method)
+    if hasattr(args, 'tree_method_interval') and args.tree_method_interval is not None:
+        if args.tree_method_interval <= 0:
+            raise ValidationError(f"Tree Method interval must be > 0, got {args.tree_method_interval}")
+        if args.tree_method_interval < CONFIG.TREE_METHOD_MIN_INTERVAL_SEC or args.tree_method_interval > CONFIG.TREE_METHOD_MAX_INTERVAL_SEC:
+            raise ValidationError(f"Tree Method interval should be {CONFIG.TREE_METHOD_MIN_INTERVAL_SEC}-{CONFIG.TREE_METHOD_MAX_INTERVAL_SEC} seconds, got {args.tree_method_interval}")
     
     # Land use block size validation
     if args.land_use_block_size_m <= 0:

@@ -121,3 +121,38 @@ Starting comprehensive split edges validation...
 **CLI Argument Validation Functions:**
 
 - **validate_arguments()**: Validates command-line arguments for consistency and format correctness
+
+**Key Validation Rules:**
+
+- **Grid Dimensions**: Must be between 2-15 (inclusive)
+- **Block Size**: Must be 50-500 meters for realistic street networks
+- **Vehicle Count**: Must be > 0 and ≤ 10,000 for performance
+- **Step Length**: Must be 0.1-10.0 seconds for reasonable simulation granularity
+- **Time Parameters**: End time > 0, start time hour 0-24
+- **Tree Method Interval**: Must be 30-300 seconds for balanced performance
+- **Land Use Block Size**: Must be 10-100 meters following research methodology
+
+**Tree Method Interval Validation:**
+
+The `--tree-method-interval` argument has specialized validation:
+
+- **Range Check**: Validates 30-300 seconds using `CONFIG.TREE_METHOD_MIN_INTERVAL_SEC` and `CONFIG.TREE_METHOD_MAX_INTERVAL_SEC`
+- **Performance Guidance**: Lower values (30-60s) provide responsive control with higher CPU usage
+- **Efficiency Optimization**: Higher values (120-300s) optimize computation but reduce responsiveness
+- **Default Validation**: Uses `CONFIG.TREE_METHOD_ITERATION_INTERVAL_SEC = 90` when argument not provided
+
+**Error Examples:**
+
+```bash
+# Invalid interval - too low
+ValidationError: Tree Method interval should be 30-300 seconds, got 10
+
+# Invalid interval - too high  
+ValidationError: Tree Method interval should be 30-300 seconds, got 500
+```
+
+**Integration:**
+
+- **Error Handling**: Uses existing `ValidationError` class for consistent error reporting
+- **CLI Integration**: Validation occurs before pipeline execution starts
+- **Configuration**: References constants from `src/config.py` for maintainable validation bounds
