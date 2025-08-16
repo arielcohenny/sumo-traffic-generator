@@ -91,11 +91,6 @@ class RoutingStrategy(ABC):
     @abstractmethod
     def compute_route(self, start_edge: str, end_edge: str) -> List[str]:
         pass
-
-    @property
-    @abstractmethod
-    def supports_dynamic_rerouting(self) -> bool:
-        pass
 ```
 
 **Shortest Path Strategy** provides static route computation using SUMO's Dijkstra algorithm, optimizing for distance minimization. **Realtime Routing Strategy** mimics GPS navigation applications with dynamic rerouting at 30-second intervals. **Fastest Routing Strategy** optimizes for travel time rather than distance, with 45-second rerouting intervals. **Attractiveness Routing Strategy** implements multi-criteria optimization balancing path efficiency with destination attractiveness.
@@ -578,11 +573,6 @@ The routing system demonstrates the Strategy pattern with interchangeable algori
 class RoutingStrategy(ABC):
     @abstractmethod
     def compute_route(self, start_edge: str, end_edge: str) -> List[str]:
-        pass
-
-    @property
-    @abstractmethod
-    def supports_dynamic_rerouting(self) -> bool:
         pass
 ```
 

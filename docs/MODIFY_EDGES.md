@@ -852,9 +852,6 @@ class CustomLaneConfig:
     def get_tail_lanes(self, edge_id: str) -> Optional[int]:
         """Get tail lane count for specific edge."""
 
-    def get_movement_lanes(self, edge_id: str, to_edge: str) -> Optional[int]:
-        """Get movement lane count for specific edge-to-edge movement."""
-
     def has_custom_config(self, edge_id: str) -> bool:
         """Check if edge has custom configuration."""
 ```

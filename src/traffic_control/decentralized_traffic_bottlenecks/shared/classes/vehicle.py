@@ -1,6 +1,6 @@
 class Vehicle:
-    def __init__(self, vehicle_inx, step):
-        self.vehicle_id: int = vehicle_inx
+    def __init__(self, vehicle_id, step):
+        self.vehicle_id: str = vehicle_id
         self.start_step: int = step
         self.end_step = None
         self.time = 0

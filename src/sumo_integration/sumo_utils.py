@@ -44,35 +44,6 @@ def build_sumo_command(
     return cmd
 
 
-def run_sumo(
-    config_file: str,
-    step_length: float,
-    zones_file: str,
-    sumo_binary: str = "sumo-gui"
-) -> None:
-    """
-    Run a single SUMO simulation using subprocess.
-
-    :param config_file: Path to the SUMO .sumocfg file
-    :param step_length: Simulation step length in seconds
-    :param zones_file: Path to additional files (e.g., zones) to include
-    :param sumo_binary: SUMO executable ("sumo" or "sumo-gui")
-    """
-    # Build the command using the shared helper
-    cmd = build_sumo_command(
-        config_file,
-        step_length,
-        additional_args=["--additional-files", zones_file],
-        sumo_binary=sumo_binary
-    )
-    try:
-        subprocess.run(cmd, check=True, capture_output=True, text=True)
-        print("SUMO simulation completed successfully.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error running SUMO: {e.stderr}")
-        exit(1)
-
-
 def generate_sumo_conf_file(
     config_file,
     network_file,
@@ -91,18 +62,18 @@ def generate_sumo_conf_file(
         net_name = Path(network_file).name
         route_name = Path(route_file).name if route_file else None
         zones_name = Path(zones_file).name if zones_file else None
-        
+
         # Build the configuration content step by step to avoid f-string backslash issues
         config_content = f"<configuration>\n    <input>\n        <net-file value=\"{net_name}\"/>\n"
-        
+
         if route_name:
             config_content += f"        <route-files value=\"{route_name}\"/>\n"
-        
+
         if zones_name:
             config_content += f"        <additional-files value=\"{zones_name}\"/>\n"
-            
+
         config_content += "    </input>\n    <time>\n        <begin value=\"0\"/>\n        <end value=\"3600\"/>\n    </time>\n</configuration>"
-        
+
         with open(config_file, "w") as f:
             f.write(config_content)
         print("SUMO configuration file created successfully.")
@@ -117,16 +88,15 @@ def execute_network_rebuild(args) -> None:
     import logging
     from src.validate.validate_network import verify_rebuild_network
     from src.validate.errors import ValidationError
-    
+
     logger = logging.getLogger(__name__)
-    
+
     rebuild_network()
     try:
         verify_rebuild_network()
     except ValidationError as ve:
         logger.error(f"Failed to rebuild the network: {ve}")
         raise
-    logger.info("Rebuilt the network successfully")
 
 
 def execute_config_generation(args) -> None:
@@ -134,9 +104,9 @@ def execute_config_generation(args) -> None:
     import logging
     from src.validate.validate_network import verify_generate_sumo_conf_file
     from src.validate.errors import ValidationError
-    
+
     logger = logging.getLogger(__name__)
-    
+
     sumo_cfg_path = generate_sumo_conf_file(
         CONFIG.config_file,
         CONFIG.network_file,
@@ -148,29 +118,28 @@ def execute_config_generation(args) -> None:
     except ValidationError as ve:
         logger.error(f"SUMO configuration validation failed: {ve}")
         raise
-    logger.info("Generated SUMO configuration file successfully")
 
 
 def update_sumo_config_paths() -> None:
     """Update SUMO config file to reference our file naming convention."""
     import logging
     import xml.etree.ElementTree as ET
-    
+
     logger = logging.getLogger(__name__)
-    
+
     tree = ET.parse(CONFIG.config_file)
     root = tree.getroot()
-    
+
     # Update file paths to match our naming
     for input_elem in root.findall('.//input'):
         net_file = input_elem.find('net-file')
         if net_file is not None:
             net_file.set('value', 'grid.net.xml')
-            
+
         route_files = input_elem.find('route-files')
         if route_files is not None:
             route_files.set('value', 'vehicles.rou.xml')
-    
+
     # Save updated config
     tree.write(CONFIG.config_file, encoding='utf-8', xml_declaration=True)
     logger.info("Updated SUMO config file paths")
@@ -180,31 +149,34 @@ def override_end_time_from_config(args) -> None:
     """Extract end time from SUMO config and override CLI argument."""
     import logging
     import xml.etree.ElementTree as ET
-    
+
     logger = logging.getLogger(__name__)
-    
+
     try:
         tree = ET.parse(CONFIG.config_file)
         root = tree.getroot()
-        
+
         # Find the end time in the config
         for time_elem in root.findall('.//time'):
             end_elem = time_elem.find('end')
             if end_elem is not None:
                 config_end_time = int(end_elem.get('value'))
-                
-                logger.info(f"Found SUMO config end time: {config_end_time} seconds")
+
+                logger.info(
+                    f"Found SUMO config end time: {config_end_time} seconds")
                 logger.info(f"CLI end time was: {args.end_time} seconds")
-                
+
                 # Override the CLI argument with the config value
                 args.end_time = config_end_time
-                
-                logger.info(f"Overriding end time to match SUMO config: {config_end_time} seconds")
+
+                logger.info(
+                    f"Overriding end time to match SUMO config: {config_end_time} seconds")
                 return
-        
+
         # If no end time found in config, warn but continue with CLI value
-        logger.warning(f"No end time found in SUMO config, using CLI value: {args.end_time}")
-        
+        logger.warning(
+            f"No end time found in SUMO config, using CLI value: {args.end_time}")
+
     except (ET.ParseError, ValueError, AttributeError) as e:
         logger.warning(f"Error parsing end time from SUMO config: {e}")
         logger.warning(f"Continuing with CLI end time: {args.end_time}")

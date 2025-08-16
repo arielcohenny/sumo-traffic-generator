@@ -16,8 +16,3 @@ class Network:
         data = json.load(f)
         self.junctions_dict = data['junctions_dict']
         self.edges_list = data['edges_list']
-
-    def calc_cycle_time(self):
-        first_key = list(self.junctions_dict.keys())[0]
-        phases = self.junctions_dict[first_key]["phases"]
-        return sum(phase['duration'] for phase in phases)

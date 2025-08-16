@@ -6,8 +6,8 @@ import xml.etree.ElementTree as ET
 from types import SimpleNamespace
 from typing import Optional
 
-from .enums import CostType, AlgoType
-from .classes.run_config import RunConfig
+from ..shared.enums import CostType, AlgoType
+from ..shared.classes.run_config import RunConfig
 
 
 def load_tree(
@@ -53,5 +53,3 @@ def load_tree(
     )
 
     return tree_data, rc
-
-

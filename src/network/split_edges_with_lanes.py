@@ -589,9 +589,9 @@ def execute_edge_splitting(args) -> None:
     from src.utils.seed_utils import get_cached_seed
     from src.validate.validate_split_edges_with_lanes import verify_split_edges_with_flow_based_lanes
     from src.validate.errors import ValidationError
-    
+
     logger = logging.getLogger(__name__)
-    
+
     if args.lane_count != "0" and not (args.lane_count.isdigit() and args.lane_count == "0"):
         split_edges_with_flow_based_lanes(
             seed=get_cached_seed(args),
@@ -600,8 +600,9 @@ def execute_edge_splitting(args) -> None:
             algorithm=args.lane_count,
             block_size_m=args.block_size_m
         )
-        logger.info("Successfully completed integrated edge splitting with lane assignment")
-        
+        logger.info(
+            "Successfully completed integrated edge splitting with lane assignment")
+
         # Validate the split edges
         try:
             verify_split_edges_with_flow_based_lanes(
@@ -609,7 +610,6 @@ def execute_edge_splitting(args) -> None:
                 edges_file=str(CONFIG.network_edg_file),
                 nodes_file=str(CONFIG.network_nod_file)
             )
-            logger.info("Split edges validation passed successfully")
         except (ValidationError, ValueError) as ve:
             logger.error(f"Split edges validation failed: {ve}")
             raise

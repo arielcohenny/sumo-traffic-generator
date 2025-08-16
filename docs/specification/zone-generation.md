@@ -8,23 +8,19 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 
 - **Residential**: 34% distribution, max 1000 cells, orange color (#FFA500)
   - Multiplier: 1.0, departure_weight: 1.5, arrival_weight: 0.8
-  
 - **Employment**: 10% distribution, max 500 cells, dark red color (#8B0000)
   - Multiplier: 1.8, departure_weight: 0.9, arrival_weight: 1.8
-  
 - **Public Buildings**: 12% distribution, max 200 cells, dark blue color (#000080)
   - Multiplier: 3.0, departure_weight: 0.5, arrival_weight: 3.5
-  
 - **Mixed** (Residential + Employment + Retail): 24% distribution, max 300 cells, yellow color (#FFFF00)
   - Multiplier: 2.0, departure_weight: 1.2, arrival_weight: 1.8
-  
 - **Entertainment/Retail**: 8% distribution, max 40 cells, dark green color (#006400)
   - Multiplier: 2.5, departure_weight: 0.8, arrival_weight: 2.0
-  
 - **Public Open Space**: 12% distribution, max 100 cells, light green color (#90EE90)
   - Multiplier: 1.0, departure_weight: 1.5, arrival_weight: 0.8
 
 ### Universal Application:
+
 - **Non-OSM Mode**: Uses clustering algorithm to assign these types to synthetic grid cells
 - **OSM Mode**: Maps OSM land use tags to these standard types, falls back to intelligent inference when data insufficient
 
@@ -295,7 +291,7 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 - **Step**: Confirm successful traditional zone generation
 - **Function**: Success logging in `src/cli.py`
 - **Output**: `workspace/zones.poly.xml` with traditional zone extraction
-- **Success Message**: `f"Extracted land use zones successfully using traditional method with {args.land_use_block_size_m}m blocks."`
+- **Success Message**: `f"Extracted land use zones successfully with {args.land_use_block_size_m}m blocks."`
 - **Zone Information**: Log zone count, land use distribution, and file size
 
 ## Common Zone Generation Outputs

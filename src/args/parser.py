@@ -178,8 +178,20 @@ def _add_traffic_control_arguments(parser: argparse.ArgumentParser) -> None:
         "--traffic_control",
         type=str,
         default="tree_method",
-        choices=["tree_method", "actuated", "fixed"],
-        help="Traffic control method: 'tree_method' (default, Tree Method algorithm), 'actuated' (SUMO gap-based), or 'fixed' (static timing)."
+        choices=["tree_method", "atlcs", "actuated", "fixed"],
+        help="Traffic control method: 'tree_method' (default, Tree Method algorithm), 'atlcs' (Adaptive Traffic Light Control System with T6/T7 research), 'actuated' (SUMO gap-based), or 'fixed' (static timing)."
+    )
+    parser.add_argument(
+        "--t6_interval",
+        type=int,
+        default=10,
+        help="T6 bottleneck detection interval in seconds for ATLCS (default: 10)."
+    )
+    parser.add_argument(
+        "--t7_interval", 
+        type=int,
+        default=5,
+        help="T7 pricing update interval in seconds for ATLCS (default: 5)."
     )
     parser.add_argument(
         "--tree-method-interval",

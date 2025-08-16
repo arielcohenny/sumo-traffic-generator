@@ -34,3 +34,9 @@ This fix was part of commit bc84a5d "Fixing benchmarks from the tree method
 experiments" which reduced the file size by 65 lines (87 → 22
 insertions/deletions), indicating significant cleanup along with this critical
 bug fix.
+
+## Change to graph.py
+
+Added lists to prevent double counting that rarely happens when many vehicles are teleported (and sometimes brought back):
+ended_ids_list
+started_ids_list
