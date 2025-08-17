@@ -69,9 +69,9 @@ class TreeMethodController(TrafficController):
         verify_tree_method_integration_setup(
             self.tree_data, self.run_config, self.network_data, self.graph, self.tree_method_interval)
 
-        # Initialize T6 bottleneck detector for junction control decisions
+        # Initialize enhanced bottleneck detector for junction control decisions
         from ..atlcs.enhancements.detector import BottleneckDetector
-        self.t6_detector = BottleneckDetector(self.graph, self.network_data)
+        self.bottleneck_detector = BottleneckDetector(self.graph, self.network_data)
 
     def update(self, step: int) -> None:
         """Update Tree Method traffic control at given step."""
@@ -212,8 +212,8 @@ class TreeMethodController(TrafficController):
             # Clear current control state - recalculate based on bottlenecks
             self.controlled_junctions.clear()
 
-            # Use existing T6 bottleneck detection to identify bottleneck trees
-            bottleneck_data = self.t6_detector.detect_and_prioritize(
+            # Use existing enhanced bottleneck detection to identify bottleneck trees
+            bottleneck_data = self.bottleneck_detector.detect_and_prioritize(
                 step, self.graph, self.iteration_trees)
 
             # Find trees that contain bottleneck edges

@@ -1,1 +1,1 @@
-# T7 dynamic pricing system components
+# ATLCS dynamic pricing system components

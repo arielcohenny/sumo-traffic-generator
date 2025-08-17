@@ -25,10 +25,10 @@ class ATLCSController(TreeMethodController):
         self.coordinator = None      # → Used in update() every step
 
         # Configuration from CLI arguments
-        # T6 calculations interval from CLI argument (in seconds)
-        self.t6_interval = args.t6_interval
-        # T7 pricing updates interval from CLI argument (in seconds)
-        self.t7_interval = args.t7_interval
+        # Bottleneck detection interval from CLI argument (in seconds)
+        self.bottleneck_detection_interval = args.bottleneck_detection_interval
+        # ATLCS pricing updates interval from CLI argument (in seconds)
+        self.atlcs_interval = args.atlcs_interval
 
         # Control state tracking - junctions controlled by Tree Method
         self.tree_method_controlled_junctions = set()
@@ -89,12 +89,12 @@ class ATLCSController(TreeMethodController):
             )
 
     def _is_calculation_time(self, step: int) -> bool:
-        """Check if it's time for T6 bottleneck detection."""
-        return step % self.t6_interval == 0
+        """Check if it's time for enhanced bottleneck detection."""
+        return step % self.bottleneck_detection_interval == 0
 
     def _is_pricing_update_time(self, step: int) -> bool:
-        """Check if it's time for T7 pricing updates."""
-        return step % self.t7_interval == 0
+        """Check if it's time for ATLCS pricing updates."""
+        return step % self.atlcs_interval == 0
 
     def _apply_pricing_to_traffic_lights(self, pricing_updates, step: int) -> int:
         """Apply dynamic pricing to traffic light control via TraCI."""

@@ -4,8 +4,8 @@ ATLCS (Adaptive Traffic Light Control System) Configuration
 This module contains configuration constants for the ATLCS implementation,
 including pricing thresholds and signal extension parameters.
 
-Note: T6/T7 timing intervals are now configured via CLI arguments:
---t6_interval and --t7_interval (both in seconds)
+Note: Bottleneck detection and ATLCS timing intervals are now configured via CLI arguments:
+--bottleneck-detection-interval and --atlcs-interval (both in seconds)
 """
 
 

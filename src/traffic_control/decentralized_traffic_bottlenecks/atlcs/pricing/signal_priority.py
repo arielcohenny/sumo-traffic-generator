@@ -1,6 +1,6 @@
 """
-Traffic light signal priority calculation for T7 ATLCS implementation.
-Replaces route_choice.py - T7 is about traffic light control, not vehicle routing.
+Traffic light signal priority calculation for ATLCS implementation.
+Replaces route_choice.py - ATLCS is about traffic light control, not vehicle routing.
 """
 
 import logging

@@ -1,16 +1,16 @@
 """
-Coordinates T6 bottleneck detection with T7 pricing for traffic light control optimization.
+Coordinates enhanced bottleneck detection with ATLCS pricing for traffic light control optimization.
 """
 
 import traci
 
 
 class DemandSupplyCoordinator:
-    """Coordinates T6 bottleneck detection with T7 pricing for traffic light control optimization."""
+    """Coordinates enhanced bottleneck detection with ATLCS pricing for traffic light control optimization."""
 
-    def __init__(self, t6_detector, t7_pricing):
-        self.t6_detector = t6_detector    # T6 integration
-        self.t7_pricing = t7_pricing      # T7 integration
+    def __init__(self, bottleneck_detector, atlcs_pricing):
+        self.bottleneck_detector = bottleneck_detector    # Enhanced bottleneck detection integration
+        self.atlcs_pricing = atlcs_pricing      # ATLCS integration
 
     def coordinate(self, step: int, bottleneck_data, pricing_updates) -> None:
         """MAIN COORDINATION METHOD - Called by ATLCSController.update() every step."""
@@ -81,7 +81,7 @@ class DemandSupplyCoordinator:
         import logging
         logger = logging.getLogger(self.__class__.__name__)
 
-        # Coordinate T6 bottleneck detection with T7 pricing for unified signal control
+        # Coordinate enhanced bottleneck detection with ATLCS pricing for unified signal control
         bottleneck_count = len(
             bottleneck_data.prioritized_bottlenecks) if bottleneck_data.prioritized_bottlenecks else 0
         pricing_count = len(pricing_updates.edge_prices) if pricing_updates and hasattr(

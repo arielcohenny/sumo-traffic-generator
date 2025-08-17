@@ -116,9 +116,10 @@ Applied strategies for traffic lights. Two strategies available. Not applicable 
 
 ### `--traffic_control` (str, default: "tree_method")
 
-Dynamic signal control. Three methods available:
+Dynamic signal control. Four methods available:
 
 - `tree_method`: Tree Method (Decentralized Bottleneck Prioritization Algorithm)
+- `atlcs`: ATLCS (Adaptive Traffic Light Control System with Tree Method coordination)
 - `actuated`: SUMO gap-based control
 - `fixed`: Static timing from configuration
 
@@ -147,6 +148,56 @@ python -m src.cli --traffic_control tree_method --tree-method-interval 120
 
 # High-performance scenarios (every 3 minutes)
 python -m src.cli --traffic_control tree_method --tree-method-interval 180
+```
+
+### `--bottleneck-detection-interval` (int, default: 60)
+
+Enhanced bottleneck detection interval in seconds for ATLCS. Controls how often the ATLCS enhanced bottleneck detector runs its analysis.
+
+**Enhanced Bottleneck Detection Features:**
+- **Advanced Metrics**: Uses density, speed, queue length, and waiting time (vs Tree Method's speed-only)
+- **Predictive Analysis**: Identifies bottlenecks before they fully form
+- **Multi-Criteria Assessment**: Combines multiple traffic indicators for robust detection
+- **Real-Time Responsiveness**: More frequent updates than Tree Method's strategic intervals
+
+**Performance Configuration:**
+- **Lower values (30-45s)**: More responsive bottleneck detection, higher CPU usage
+- **Higher values (90-120s)**: More efficient computation, less responsive detection
+- **Default (60s)**: Balanced detection frequency and computational efficiency
+
+**Valid Range:** 30-120 seconds
+
+**Integration:** Works alongside Tree Method's 90-second strategic calculations to provide tactical bottleneck prevention.
+
+### `--atlcs-interval` (int, default: 5)
+
+ATLCS dynamic pricing update interval in seconds for ATLCS. Controls how often the ATLCS pricing engine calculates congestion-based pricing updates.
+
+**ATLCS Dynamic Pricing Features:**
+- **Congestion-Based Pricing**: Higher congestion severity receives higher priority scores
+- **Signal Priority Calculation**: Converts pricing data to traffic light extension recommendations
+- **Real-Time Adaptation**: Rapid response to changing traffic conditions
+- **Bottleneck Prevention**: Extends green phases dynamically to prevent jam formation
+
+**Performance Configuration:**
+- **Lower values (1-3s)**: Maximum responsiveness, highest CPU usage
+- **Higher values (10-15s)**: More efficient computation, reduced responsiveness
+- **Default (5s)**: Optimal balance for real-time traffic light control
+
+**Valid Range:** 1-15 seconds
+
+**Technical Implementation:** Updates shared phase durations that Tree Method can access, enabling coordinated traffic control.
+
+**Examples:**
+```bash
+# Responsive ATLCS configuration
+python -m src.cli --traffic_control atlcs --bottleneck-detection-interval 45 --atlcs-interval 3
+
+# Efficient ATLCS configuration  
+python -m src.cli --traffic_control atlcs --bottleneck-detection-interval 90 --atlcs-interval 10
+
+# Balanced ATLCS with Tree Method coordination
+python -m src.cli --traffic_control atlcs --tree-method-interval 90 --bottleneck-detection-interval 60 --atlcs-interval 5
 ```
 
 ### `--gui` (flag)

@@ -1,11 +1,11 @@
 """
-Dynamic road pricing engine implementing research proposal T7 objectives.
+Dynamic road pricing engine implementing ATLCS objectives.
 """
 
 from typing import Dict, List
 from dataclasses import dataclass
 
-# T7 is for traffic light control, not vehicle routing
+# ATLCS is for traffic light control, not vehicle routing
 
 
 @dataclass
@@ -17,7 +17,7 @@ class PricingUpdates:
 
 
 class PricingEngine:
-    """Dynamic road pricing engine implementing research proposal T7 objectives."""
+    """Dynamic road pricing engine implementing ATLCS objectives."""
 
     def __init__(self):
         # → Updated by calculate_dynamic_prices()
@@ -26,9 +26,9 @@ class PricingEngine:
         self.signal_priority_calculator = None
 
     def calculate_dynamic_prices(self, bottleneck_data, step: int) -> PricingUpdates:
-        """MAIN T7 METHOD - Called by ATLCSController.update() every 30s."""
+        """MAIN ATLCS METHOD - Called by ATLCSController.update() every 30s."""
 
-        # Use T6 bottleneck data to calculate congestion-based pricing
+        # Use enhanced bottleneck detection data to calculate congestion-based pricing
         edge_prices = self._calculate_congestion_pricing(
             bottleneck_data.prioritized_bottlenecks)
 
@@ -93,6 +93,6 @@ class PricingEngine:
 
         if signal_priorities:
             logger.debug(
-                f"ATLCS T7: Generated signal priorities for {len(signal_priorities)} edges at step {step}")
+                f"ATLCS: Generated signal priorities for {len(signal_priorities)} edges at step {step}")
 
         return signal_priorities
