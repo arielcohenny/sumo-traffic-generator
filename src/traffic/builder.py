@@ -5,6 +5,7 @@ from pathlib import Path
 from sumolib.net import readNet
 
 from ..config import CONFIG
+from src.constants import DEFAULT_VEHICLE_TYPES
 from .edge_sampler import AttractivenessBasedEdgeSampler
 from .routing import RoutingMixStrategy, parse_routing_strategy
 from .vehicle_types import parse_vehicle_types, get_vehicle_weights
@@ -46,8 +47,8 @@ def generate_vehicle_routes(net_file: str | Path,
                             num_vehicles: int,
                             seed: int = CONFIG.RNG_SEED,
                             routing_strategy: str = "shortest 100",
-                            vehicle_types: str = CONFIG.DEFAULT_VEHICLE_TYPES,
-                            end_time: int = 86400,
+                            vehicle_types: str = DEFAULT_VEHICLE_TYPES,
+                            end_time: int = 7200,
                             departure_pattern: str = "six_periods") -> None:
     """
     Orchestrates vehicle creation and writes a .rou.xml.

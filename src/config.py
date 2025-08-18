@@ -2,6 +2,10 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional, Dict
+from src.constants import (
+    DEFAULT_NUM_VEHICLES, DEFAULT_VEHICLE_TYPES, MIN_LANE_COUNT, MAX_LANE_COUNT,
+    MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL
+)
 
 
 @dataclass(frozen=True)
@@ -45,19 +49,21 @@ class _Config:
     default_vehicle_distribution: dict = field(
         default_factory=lambda: {"passenger": 60.0, "commercial": 30.0, "public": 10.0})
 
-    DEFAULT_NUM_VEHICLES: int = 300
+    # Use centralized constant
+    # DEFAULT_NUM_VEHICLES defined in src.constants
     RNG_SEED: int = 42
 
-    # Default vehicle types string for CLI
-    DEFAULT_VEHICLE_TYPES: str = "passenger 60 commercial 30 public 10"
+    # Use centralized constant
+    # DEFAULT_VEHICLE_TYPES defined in src.constants
 
     # ---------- simulation parameters ----------
     DEFAULT_JUNCTION_RADIUS: float = 10.0  # meters
     # ---------- head distance from the downstream end when splitting edges ----------
     HEAD_DISTANCE = 50
-    # ---------- default number of lanes ---------
-    MIN_LANES: int = 1
-    MAX_LANES: int = 3
+    # Use centralized constants
+    # MIN_LANE_COUNT and MAX_LANE_COUNT defined in src.constants
+    MIN_LANES: int = MIN_LANE_COUNT  # Backward compatibility alias
+    MAX_LANES: int = MAX_LANE_COUNT  # Backward compatibility alias
     # ---------- edge attractiveness ----------
     LAMBDA_DEPART = 3.5
     LAMBDA_ARRIVE = 2.0
@@ -71,9 +77,10 @@ class _Config:
     # This is independent of traffic light cycle timing
     TREE_METHOD_ITERATION_INTERVAL_SEC: int = 90
 
-    # Valid range for Tree Method interval (in seconds)
-    TREE_METHOD_MIN_INTERVAL_SEC: int = 30   # Minimum for responsiveness
-    TREE_METHOD_MAX_INTERVAL_SEC: int = 300  # Maximum for efficiency
+    # Use centralized constants
+    # MIN_TREE_METHOD_INTERVAL and MAX_TREE_METHOD_INTERVAL defined in src.constants
+    TREE_METHOD_MIN_INTERVAL_SEC: int = MIN_TREE_METHOD_INTERVAL  # Backward compatibility alias
+    TREE_METHOD_MAX_INTERVAL_SEC: int = MAX_TREE_METHOD_INTERVAL  # Backward compatibility alias
 
 
 @dataclass

@@ -763,7 +763,7 @@ pytest>=7.0.0        # Unit testing framework
 --routing_strategy STR         # Routing mix (default: "shortest 100")
 --vehicle_types STR            # Vehicle distribution (default: "passenger 60 commercial 30 public 10")
 --departure_pattern STR        # Temporal distribution (default: "six_periods")
---end_time INT                 # Simulation duration in seconds (default: 86400)
+--end_time INT                 # Simulation duration in seconds (default: 7200)
 --step_length FLOAT            # Time step size (default: 1.0s)
 ```
 

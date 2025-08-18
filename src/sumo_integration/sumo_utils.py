@@ -72,7 +72,7 @@ def generate_sumo_conf_file(
         if zones_name:
             config_content += f"        <additional-files value=\"{zones_name}\"/>\n"
 
-        config_content += "    </input>\n    <time>\n        <begin value=\"0\"/>\n        <end value=\"3600\"/>\n    </time>\n</configuration>"
+        config_content += "    </input>\n    <time>\n        <begin value=\"0\"/>\n        <end value=\"3600\"/>\n    </time>\n    <output>\n        <tripinfo-output value=\"tripinfo.xml\"/>\n        <summary-output value=\"summary.xml\"/>\n        <log value=\"simulation.log\"/>\n    </output>\n</configuration>"
 
         with open(config_file, "w") as f:
             f.write(config_content)

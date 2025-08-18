@@ -63,7 +63,7 @@ class TrafficSimulator:
 
         # Start TraCI FIRST
         self.logger.info("Starting SUMO simulation with TraCI...")
-        traci.start([sumo_binary, '-c', str(CONFIG.config_file)])
+        traci.start([sumo_binary, '-c', str(CONFIG.config_file), '--statistic-output', 'workspace/sumo_statistics.xml', '--tripinfo-output.write-unfinished', 'true', '--error-log', 'workspace/sumo_errors.log'])
 
         # Initialize traffic controller AFTER TraCI is connected
         self.traffic_controller.initialize()

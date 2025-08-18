@@ -59,7 +59,7 @@ Controls randomization. If not provided, random seed is generated.
 
 Simulation step length in seconds for TraCI control loop.
 
-### `--end-time` (int, default: 86400)
+### `--end-time` (int, default: 7200)
 
 Simulation duration in seconds.
 
@@ -128,6 +128,7 @@ Dynamic signal control. Four methods available:
 Tree Method calculation interval in seconds. Controls how often the Tree Method algorithm runs its optimization calculations.
 
 **Performance Configuration:**
+
 - **Lower values (30-60s)**: More responsive traffic control, higher CPU usage
 - **Higher values (120-300s)**: More efficient computation, less responsive control
 - **Default (90s)**: Balanced efficiency and responsiveness
@@ -139,11 +140,12 @@ Tree Method calculation interval in seconds. Controls how often the Tree Method 
 **Technical Implementation:** Overrides `TREE_METHOD_ITERATION_INTERVAL_SEC` constant in `src/config.py`.
 
 **Examples:**
+
 ```bash
 # Responsive control (every 60 seconds)
 python -m src.cli --traffic_control tree_method --tree-method-interval 60
 
-# Efficient control (every 2 minutes)  
+# Efficient control (every 2 minutes)
 python -m src.cli --traffic_control tree_method --tree-method-interval 120
 
 # High-performance scenarios (every 3 minutes)
@@ -155,12 +157,14 @@ python -m src.cli --traffic_control tree_method --tree-method-interval 180
 Enhanced bottleneck detection interval in seconds for ATLCS. Controls how often the ATLCS enhanced bottleneck detector runs its analysis.
 
 **Enhanced Bottleneck Detection Features:**
+
 - **Advanced Metrics**: Uses density, speed, queue length, and waiting time (vs Tree Method's speed-only)
 - **Predictive Analysis**: Identifies bottlenecks before they fully form
 - **Multi-Criteria Assessment**: Combines multiple traffic indicators for robust detection
 - **Real-Time Responsiveness**: More frequent updates than Tree Method's strategic intervals
 
 **Performance Configuration:**
+
 - **Lower values (30-45s)**: More responsive bottleneck detection, higher CPU usage
 - **Higher values (90-120s)**: More efficient computation, less responsive detection
 - **Default (60s)**: Balanced detection frequency and computational efficiency
@@ -174,12 +178,14 @@ Enhanced bottleneck detection interval in seconds for ATLCS. Controls how often 
 ATLCS dynamic pricing update interval in seconds for ATLCS. Controls how often the ATLCS pricing engine calculates congestion-based pricing updates.
 
 **ATLCS Dynamic Pricing Features:**
+
 - **Congestion-Based Pricing**: Higher congestion severity receives higher priority scores
 - **Signal Priority Calculation**: Converts pricing data to traffic light extension recommendations
 - **Real-Time Adaptation**: Rapid response to changing traffic conditions
 - **Bottleneck Prevention**: Extends green phases dynamically to prevent jam formation
 
 **Performance Configuration:**
+
 - **Lower values (1-3s)**: Maximum responsiveness, highest CPU usage
 - **Higher values (10-15s)**: More efficient computation, reduced responsiveness
 - **Default (5s)**: Optimal balance for real-time traffic light control
@@ -189,11 +195,12 @@ ATLCS dynamic pricing update interval in seconds for ATLCS. Controls how often t
 **Technical Implementation:** Updates shared phase durations that Tree Method can access, enabling coordinated traffic control.
 
 **Examples:**
+
 ```bash
 # Responsive ATLCS configuration
 python -m src.cli --traffic_control atlcs --bottleneck-detection-interval 45 --atlcs-interval 3
 
-# Efficient ATLCS configuration  
+# Efficient ATLCS configuration
 python -m src.cli --traffic_control atlcs --bottleneck-detection-interval 90 --atlcs-interval 10
 
 # Balanced ATLCS with Tree Method coordination
@@ -222,7 +229,8 @@ Path to folder containing pre-built Tree Method sample files for bypass mode.
 
 **Purpose**: Enables testing and validation using original research networks without generating new networks.
 
-**Behavior**: 
+**Behavior**:
+
 - **Bypass Mode**: Skips Steps 1-8 entirely, goes directly to Step 9 (Dynamic Simulation)
 - **File Requirements**: Folder must contain `network.net.xml`, `vehicles.trips.xml`, and `simulation.sumocfg.xml`
 - **File Management**: Automatically copies and adapts sample files to our pipeline naming convention
@@ -231,6 +239,7 @@ Path to folder containing pre-built Tree Method sample files for bypass mode.
 **Incompatible Arguments**: Cannot be used with network generation arguments (`--osm_file`, `--grid_dimension`, `--block_size_m`, `--junctions_to_remove`, `--lane_count`)
 
 **Usage Examples**:
+
 ```bash
 # Basic Tree Method validation
 env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control tree_method --gui
@@ -246,6 +255,7 @@ Custom lane definitions for specific edges in synthetic grid networks.
 **Format**: `"EdgeID=tail:N,head:ToEdge1:N,ToEdge2:N;EdgeID2=..."`
 
 **Supported Syntax**:
+
 - **Full Specification**: `A1B1=tail:2,head:B1B0:1,B1C1:2` (custom tail + explicit head movements)
 - **Tail-Only**: `A1B1=tail:2` (custom tail lanes, preserve existing movements)
 - **Head-Only**: `A1B1=head:B1B0:1,B1C1:2` (automatic tail, custom movements)
@@ -253,7 +263,8 @@ Custom lane definitions for specific edges in synthetic grid networks.
 
 **Multiple Edges**: Separate configurations with semicolons
 
-**Constraints**: 
+**Constraints**:
+
 - Synthetic networks only (not compatible with `--osm_file`)
 - Edge IDs must match grid pattern (A1B1, B2C2, etc.)
 - Lane counts must be 1-3
@@ -264,13 +275,15 @@ Custom lane definitions for specific edges in synthetic grid networks.
 File containing custom lane definitions for complex scenarios.
 
 **Format**: Same syntax as `--custom_lanes`, one configuration per line
-**Features**: 
+**Features**:
+
 - Supports comments (lines starting with #)
 - UTF-8 encoding required
 - Line-specific error reporting
 - Mutually exclusive with `--custom_lanes`
 
 **Example File Content**:
+
 ```
 # Custom lane configuration file
 A1B1=tail:2,head:B1B0:1,B1C1:2

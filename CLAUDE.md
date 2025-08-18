@@ -61,7 +61,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --num_vehicles 300 \
   --seed 42 \
   --step-length 1.0 \
-  --end-time 86400 \
+  --end-time 7200 \
   --attractiveness poisson \
   --time_dependent \
   --start_time_hour 7.0 \
@@ -163,7 +163,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/dataset
 
 # Compare different traffic control methods on same pre-built network
 env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control tree_method --gui
-env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control actuated --gui  
+env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control actuated --gui
 env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control fixed --gui
 
 # Performance testing without GUI
@@ -178,6 +178,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/dataset
 ```
 
 **Tree Method Sample Features:**
+
 - **Bypass Mode**: Skips Steps 1-8, goes directly to Step 9 (Dynamic Simulation)
 - **Pre-built Networks**: Uses original complex urban networks (946 vehicles, 2-hour simulation)
 - **Research Validation**: Test our Tree Method implementation against established benchmarks

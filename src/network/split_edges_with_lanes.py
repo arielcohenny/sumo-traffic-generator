@@ -5,6 +5,7 @@ import math
 from pathlib import Path
 from typing import Dict, List, Tuple, Set
 from src.config import CONFIG
+from src.constants import MIN_LANE_COUNT, MAX_LANE_COUNT
 from src.network.lane_counts import calculate_lane_count
 
 
@@ -595,8 +596,8 @@ def execute_edge_splitting(args) -> None:
     if args.lane_count != "0" and not (args.lane_count.isdigit() and args.lane_count == "0"):
         split_edges_with_flow_based_lanes(
             seed=get_cached_seed(args),
-            min_lanes=CONFIG.MIN_LANES,
-            max_lanes=CONFIG.MAX_LANES,
+            min_lanes=MIN_LANE_COUNT,
+            max_lanes=MAX_LANE_COUNT,
             algorithm=args.lane_count,
             block_size_m=args.block_size_m
         )
