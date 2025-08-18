@@ -4,9 +4,15 @@ This document provides the formal specification for the SUMO Traffic Generator, 
 
 ## Project Overview
 
-The SUMO Traffic Generator is a sophisticated Python-based framework that creates dynamic traffic simulations with intelligent signal control. It supports both synthetic orthogonal grid networks and real-world OpenStreetMap (OSM) data, applies configurable lane assignments, and uses Tree Method's decentralized traffic control algorithm for dynamic signal optimization. The system seamlessly integrates with Manhattan street networks and other real urban topologies.
+The SUMO Traffic Generator is a sophisticated Python-based framework that creates dynamic traffic simulations with intelligent signal control. It provides both command-line and web-based GUI interfaces for configuration and execution. The system supports synthetic orthogonal grid networks and real-world OpenStreetMap (OSM) data, applies configurable lane assignments, and uses Tree Method's decentralized traffic control algorithm for dynamic signal optimization. The framework seamlessly integrates with Manhattan street networks and other real urban topologies.
 
 ## Table of Contents
+
+### Running and Interfaces
+
+- **[Command Line Interface](specification/command-line-interface.md)** - CLI arguments and execution
+- **[Web GUI Interface](specification/web-gui-interface.md)** - Streamlit-based graphical interface
+- **[SUMO GUI Integration](specification/sumo-gui-integration.md)** - Built-in SUMO visualization
 
 ### Pipeline Steps
 

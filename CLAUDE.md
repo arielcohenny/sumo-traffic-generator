@@ -37,8 +37,35 @@ This is a Python-based SUMO traffic generator that creates dynamic traffic simul
 python3 -m venv .venv
 source .venv/bin/activate
 
-# Install dependencies
+# Install dependencies and GUI support
 pip install -r requirements.txt
+pip install -e .  # Installs 'dbps' command for GUI
+
+# Verify GUI installation
+dbps --help
+```
+
+### GUI Interface
+
+#### Web GUI (Recommended)
+
+```bash
+# Launch the visual web interface (recommended for most users)
+dbps
+
+# The GUI provides:
+# - Interactive parameter configuration with real-time validation
+# - Automatic CLI command generation for scripting
+# - Real-time simulation monitoring with progress updates
+# - Integrated results visualization and log display
+# - Chrome app mode for desktop-like experience
+
+# GUI workflow:
+# 1. Run 'dbps' to launch web interface
+# 2. Configure parameters using visual widgets
+# 3. Optionally enable "SUMO GUI" checkbox for traffic visualization
+# 4. Click "Run Simulation" to execute
+# 5. Monitor progress and view results in real-time
 ```
 
 ### Running the Application
@@ -424,15 +451,34 @@ All generated files are placed in `workspace/` directory:
 
 ### Development Workflow
 
+#### GUI-First Development (Recommended)
+1. Launch web GUI with `dbps`
+2. Configure parameters using visual widgets with real-time validation
+3. Enable "SUMO GUI" checkbox for traffic visualization
+4. Run simulation and monitor progress in web interface
+5. Analyze results using integrated log display and file browser
+
+#### CLI Development
 1. Modify configuration in `src/config.py`
 2. Run pipeline with `python -m src.cli`
 3. Check generated files in `workspace/` directory
-4. Use `--gui` flag for visual debugging
+4. Use `--gui` flag for SUMO visual debugging
 5. Validate results using the validation functions (when enabled)
+
+#### Dual GUI Testing
+```bash
+# Launch web GUI first
+dbps
+# Configure parameters and enable SUMO GUI option
+# Both interfaces will work together:
+# - Web GUI: Parameter control, progress monitoring, log display
+# - SUMO GUI: Real-time traffic visualization and analysis
+```
 
 ## Memory
 
 - This project is a sophisticated SUMO traffic simulation framework with intelligent grid network generation and dynamic traffic control
+- **Dual GUI System**: Provides both web-based parameter configuration (`dbps` command) and SUMO traffic visualization (`--gui` flag) that work together
 - Uses a comprehensive 7-step pipeline for network and traffic generation
 - Implements advanced algorithms for zone extraction, land use assignment, and traffic routing
 - Designed with multiple architectural patterns including Strategy, Adapter, and Pipeline patterns
