@@ -4,7 +4,7 @@ A comprehensive Python-based SUMO traffic simulation framework with intelligent 
 
 ## Key Features
 
-- **Triple Network Support**: Synthetic grids and Tree Method research datasets
+- **Dual Network Support**: Synthetic grids and Tree Method research datasets
 - **Intelligent Traffic Control**: Tree Method decentralized algorithm for dynamic signal optimization
 - **Advanced Traffic Generation**: Multi-strategy routing, vehicle types, and temporal patterns
 - **Configurable Lane Assignment**: Flow-based lane allocation with realistic traffic demand

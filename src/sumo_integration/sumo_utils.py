@@ -16,7 +16,6 @@ def rebuild_network() -> None:
         "--edge-files",       str(CONFIG.network_edg_file),
         "--connection-files", str(CONFIG.network_con_file),
         "--tllogic-files",    str(CONFIG.network_tll_file),
-        # "--junctions.join=true", # Joins junctions that are close to each other (recommended for OSM import); default: false
         "--output-file",      str(CONFIG.network_file)
     ]
 

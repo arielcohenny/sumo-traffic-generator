@@ -11,7 +11,6 @@ from .steps.zone_generation_step import ZoneGenerationStep
 from src.network.split_edges_with_lanes import execute_edge_splitting
 from src.network.custom_lanes import execute_custom_lanes
 from src.network.edge_attrs import execute_attractiveness_assignment
-from src.network.intelligent_zones import execute_zone_conversion
 from src.sumo_integration.sumo_utils import execute_network_rebuild, execute_config_generation
 from src.traffic.builder import execute_route_generation
 from src.orchestration.simulator import execute_standard_simulation
@@ -45,24 +44,19 @@ class StandardPipeline(BasePipeline):
         self._log_step(4, "Network Rebuild")
         execute_network_rebuild(self.args)
         
-        # Step 5: Zone Coordinate Conversion (OSM Mode Only)
-        if self.args.osm_file:
-            self._log_step(5, "Zone Coordinate Conversion")
-            execute_zone_conversion(self.args)
-        
-        # Step 6: Edge Attractiveness Assignment
-        self._log_step(6, "Edge Attractiveness Assignment")
+        # Step 5: Edge Attractiveness Assignment
+        self._log_step(5, "Edge Attractiveness Assignment")
         execute_attractiveness_assignment(self.args)
         
-        # Step 7: Vehicle Route Generation
-        self._log_step(7, "Vehicle Route Generation")
+        # Step 6: Vehicle Route Generation
+        self._log_step(6, "Vehicle Route Generation")
         execute_route_generation(self.args)
         
-        # Step 8: SUMO Configuration Generation
-        self._log_step(8, "SUMO Configuration Generation")
+        # Step 7: SUMO Configuration Generation
+        self._log_step(7, "SUMO Configuration Generation")
         execute_config_generation(self.args)
         
-        # Step 9: Dynamic Simulation
-        self._log_step(9, "Dynamic Simulation")
+        # Step 8: Dynamic Simulation
+        self._log_step(8, "Dynamic Simulation")
         execute_standard_simulation(self.args)
     

@@ -6,17 +6,6 @@
 - **Location**: `tools/scripts/` directory in project root
 - **Usage**: Support development workflow and provide verified test data for users
 
-### OSM Sample Data Download Script
-
-- **Script**: `tools/scripts/download_osm_samples.py`
-- **Function**: Download verified working OSM areas for testing and demonstration
-- **Usage**: `python tools/scripts/download_osm_samples.py`
-
-#### Sample Areas Provided:
-
-- **Manhattan Upper West**: Grid pattern, 300/300 vehicle success rate (40.7800, -73.9850, 40.7900, -73.9750)
-- **San Francisco Downtown**: Strong grid layout, 298/300 vehicle success rate (37.7850, -122.4100, 37.7950, -122.4000)
-- **Washington DC Downtown**: Planned grid system, 300/300 vehicle success rate (38.8950, -77.0350, 38.9050, -77.0250)
 
 ## Testing Infrastructure Scripts
 

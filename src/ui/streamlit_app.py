@@ -4,6 +4,19 @@ DBPS Streamlit GUI Application.
 Main Streamlit interface for the Decentralised Bottleneck Prioritization Simulation.
 """
 
+from src.constants import (
+    # Default Parameter Values
+    DEFAULT_GRID_DIMENSION, DEFAULT_BLOCK_SIZE_M, DEFAULT_JUNCTIONS_TO_REMOVE,
+    DEFAULT_LANE_COUNT, DEFAULT_NUM_VEHICLES, DEFAULT_ROUTING_STRATEGY,
+    DEFAULT_VEHICLE_TYPES, DEFAULT_DEPARTURE_PATTERN, DEFAULT_STEP_LENGTH,
+    DEFAULT_END_TIME, DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_ATTRACTIVENESS,
+    DEFAULT_START_TIME_HOUR, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL,
+    DEFAULT_BOTTLENECK_DETECTION_INTERVAL, DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL,
+
+    # Progress Bar Values
+    PROGRESS_START, PROGRESS_PIPELINE_CREATED, PROGRESS_EXECUTION_STARTED,
+    PROGRESS_EXECUTION_RUNNING, PROGRESS_COMPLETED
+)
 from src.utils.logging import setup_logging, get_logger
 from src.pipeline.pipeline_factory import PipelineFactory
 from src.validate.errors import ValidationError
@@ -23,19 +36,6 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import constants from centralized module
-from src.constants import (
-    # Default Parameter Values
-    DEFAULT_GRID_DIMENSION, DEFAULT_BLOCK_SIZE_M, DEFAULT_JUNCTIONS_TO_REMOVE,
-    DEFAULT_LANE_COUNT, DEFAULT_NUM_VEHICLES, DEFAULT_ROUTING_STRATEGY,
-    DEFAULT_VEHICLE_TYPES, DEFAULT_DEPARTURE_PATTERN, DEFAULT_STEP_LENGTH,
-    DEFAULT_END_TIME, DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_ATTRACTIVENESS,
-    DEFAULT_START_TIME_HOUR, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL,
-    DEFAULT_BOTTLENECK_DETECTION_INTERVAL, DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL,
-    
-    # Progress Bar Values
-    PROGRESS_START, PROGRESS_PIPELINE_CREATED, PROGRESS_EXECUTION_STARTED,
-    PROGRESS_EXECUTION_RUNNING, PROGRESS_COMPLETED
-)
 
 
 def generate_command_line(params: Dict[str, Any]) -> str:
@@ -43,7 +43,7 @@ def generate_command_line(params: Dict[str, Any]) -> str:
     cmd_parts = ["env PYTHONUNBUFFERED=1 python -m src.cli"]
 
     # Add parameters in logical order
-    # Network parameters (no OSM support)
+    # Network parameters
     cmd_parts.append(
         f"--grid_dimension {params.get('grid_dimension', DEFAULT_GRID_DIMENSION)}")
     cmd_parts.append(
@@ -122,7 +122,7 @@ def convert_params_to_args(params: Dict[str, Any]) -> argparse.Namespace:
     # Create a mock argument list
     args_list = []
 
-    # Network parameters (no OSM support)
+    # Network parameters
     args_list.extend(
         ["--grid_dimension", str(params.get("grid_dimension", DEFAULT_GRID_DIMENSION))])
     args_list.extend(

@@ -37,7 +37,6 @@ def validate_arguments(args) -> None:
     _validate_routing_strategy(args.routing_strategy)
     _validate_vehicle_types(args.vehicle_types)
     _validate_departure_pattern(args.departure_pattern)
-    _validate_osm_file(args.osm_file)
     _validate_junctions_to_remove(args.junctions_to_remove)
     _validate_lane_count(args.lane_count)
     
@@ -285,64 +284,6 @@ def _validate_hourly_pattern(pattern: str) -> None:
         raise ValidationError(f"Hourly percentages must sum to 100, got {total_percentage}")
 
 
-def _validate_osm_file(osm_file: str) -> None:
-    """Validate OSM file if provided."""
-    
-    if osm_file is None:
-        return
-    
-    osm_path = Path(osm_file)
-    
-    # Check file existence
-    if not osm_path.exists():
-        raise ValidationError(f"OSM file does not exist: {osm_file}")
-    
-    # Check file readability
-    if not osm_path.is_file():
-        raise ValidationError(f"OSM path is not a file: {osm_file}")
-    
-    try:
-        with open(osm_path, 'r') as f:
-            f.read(1)  # Try to read first character
-    except PermissionError:
-        raise ValidationError(f"OSM file is not readable: {osm_file}")
-    except Exception as e:
-        raise ValidationError(f"Error accessing OSM file {osm_file}: {e}")
-    
-    # Validate XML structure and OSM content
-    try:
-        tree = ET.parse(osm_path)
-        root = tree.getroot()
-        
-        if root.tag != "osm":
-            raise ValidationError(f"OSM file root element must be 'osm', got '{root.tag}'")
-        
-        # Check for required elements
-        nodes = root.findall("node")
-        ways = root.findall("way")
-        
-        if len(nodes) == 0:
-            raise ValidationError(f"OSM file must contain at least one node")
-        
-        if len(ways) == 0:
-            raise ValidationError(f"OSM file must contain at least one way")
-        
-        # Check for highway ways (minimum 10 required)
-        highway_ways = []
-        for way in ways:
-            for tag in way.findall("tag"):
-                if tag.get("k") == "highway":
-                    highway_ways.append(way)
-                    break
-        
-        if len(highway_ways) < 10:
-            raise ValidationError(f"OSM file must contain at least 10 highway ways for viable network, got {len(highway_ways)}")
-        
-    except ET.ParseError as e:
-        raise ValidationError(f"OSM file is not valid XML: {e}")
-    except Exception as e:
-        raise ValidationError(f"Error validating OSM file: {e}")
-
 
 def _validate_junctions_to_remove(junctions_to_remove: str) -> None:
     """Validate junctions to remove format."""
@@ -398,32 +339,21 @@ def _validate_lane_count(lane_count: str) -> None:
 def _validate_cross_arguments(args) -> None:
     """Validate cross-argument constraints."""
     
-    # OSM file vs grid parameters (mutually exclusive usage)
-    if args.osm_file:
-        # When using OSM file, grid parameters should not be used
-        if args.grid_dimension != 5:  # Default value
-            raise ValidationError("Cannot use --grid_dimension with --osm_file")
-        if args.block_size_m != 200:  # Default value
-            raise ValidationError("Cannot use --block_size_m with --osm_file")
-        if args.junctions_to_remove != "0":  # Default value
-            raise ValidationError("Cannot use --junctions_to_remove with --osm_file")
-    
     # Time-dependent features requiring appropriate end-time duration
     if args.time_dependent and args.end_time < 3600:
         raise ValidationError("Time-dependent features require end_time ≥ 3600 seconds (1 hour)")
     
     # Grid dimension vs junctions to remove capacity limits
-    if not args.osm_file:
-        max_removable = max(0, int(args.grid_dimension - 2) ** 2)  # Interior junctions only
-        
-        # Check if junctions_to_remove is a number
-        try:
-            count = int(args.junctions_to_remove)
-            if count > max_removable:
-                raise ValidationError(f"Cannot remove {count} junctions from {args.grid_dimension}x{args.grid_dimension} grid. "
-                                     f"Maximum removable interior junctions: {max_removable}")
-        except ValueError:
-            pass  # It's junction IDs, not a count
+    max_removable = max(0, int(args.grid_dimension - 2) ** 2)  # Interior junctions only
+    
+    # Check if junctions_to_remove is a number
+    try:
+        count = int(args.junctions_to_remove)
+        if count > max_removable:
+            raise ValidationError(f"Cannot remove {count} junctions from {args.grid_dimension}x{args.grid_dimension} grid. "
+                                 f"Maximum removable interior junctions: {max_removable}")
+    except ValueError:
+        pass  # It's junction IDs, not a count
     
     # Traffic light strategy compatibility (currently no restrictions)
     # Could add future constraints here if needed
@@ -577,10 +507,8 @@ def _validate_custom_lanes_cross_arguments(args) -> None:
     if getattr(args, 'custom_lanes', None) and getattr(args, 'custom_lanes_file', None):
         raise ValidationError("Cannot use both --custom_lanes and --custom_lanes_file simultaneously")
     
-    # Custom lanes only work with synthetic grids (not OSM files)
+    # Custom lanes validation (synthetic grids only)
     custom_lanes_provided = getattr(args, 'custom_lanes', None) or getattr(args, 'custom_lanes_file', None)
-    if custom_lanes_provided and args.osm_file:
-        raise ValidationError("Custom lanes are not supported with OSM files (--osm_file)")
     
     # Custom lanes override --lane_count but both can be specified
     # (custom lanes take precedence for specified edges, --lane_count for others)
@@ -600,8 +528,6 @@ def _validate_sample_arguments(args) -> None:
     
     # Check for incompatible arguments (network generation related)
     incompatible = []
-    if args.osm_file:
-        incompatible.append('--osm_file')
     if args.grid_dimension != 5:  # non-default
         incompatible.append('--grid_dimension')
     if args.block_size_m != 200:  # non-default

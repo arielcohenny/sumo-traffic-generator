@@ -261,58 +261,6 @@ def compare_metrics(metrics1: Dict[str, Any], metrics2: Dict[str, Any], toleranc
     return True
 
 
-def create_minimal_osm_content() -> str:
-    """
-    Create minimal OSM XML content for testing.
-    
-    Returns:
-        OSM XML content as string
-    """
-    return '''<?xml version="1.0" encoding="UTF-8"?>
-<osm version="0.6" generator="test">
-  <bounds minlat="40.7200" minlon="-74.0100" maxlat="40.7250" maxlon="-74.0050"/>
-  
-  <!-- Nodes -->
-  <node id="1" lat="40.7200" lon="-74.0100"/>
-  <node id="2" lat="40.7200" lon="-74.0075"/>
-  <node id="3" lat="40.7200" lon="-74.0050"/>
-  <node id="4" lat="40.7225" lon="-74.0100"/>
-  <node id="5" lat="40.7225" lon="-74.0075"/>
-  <node id="6" lat="40.7225" lon="-74.0050"/>
-  
-  <!-- Ways -->
-  <way id="101">
-    <nd ref="1"/>
-    <nd ref="2"/>
-    <nd ref="3"/>
-    <tag k="highway" v="primary"/>
-  </way>
-  
-  <way id="102">
-    <nd ref="4"/>
-    <nd ref="5"/>
-    <nd ref="6"/>
-    <tag k="highway" v="primary"/>
-  </way>
-  
-  <way id="201">
-    <nd ref="1"/>
-    <nd ref="4"/>
-    <tag k="highway" v="secondary"/>
-  </way>
-  
-  <way id="202">
-    <nd ref="2"/>
-    <nd ref="5"/>
-    <tag k="highway" v="secondary"/>
-  </way>
-  
-  <way id="203">
-    <nd ref="3"/>
-    <nd ref="6"/>
-    <tag k="highway" v="secondary"/>
-  </way>
-</osm>'''
 
 
 def setup_test_environment() -> Path:

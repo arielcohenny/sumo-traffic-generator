@@ -26,12 +26,11 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --vehicle_types "passenger 60 commercial 30 public 10" \
   --gui
 
-# Real-world network simulation
+# Tree Method research sample
 env PYTHONUNBUFFERED=1 python -m src.cli \
-  --osm_file evaluation/datasets/osm/manhattan_upper_west.osm \
-  --num_vehicles 500 \
+  --tree_method_sample evaluation/datasets/networks/ \
   --traffic_control tree_method \
-  --end-time 3600
+  --end-time 7200
 ```
 
 ## Command Line Arguments
@@ -41,14 +40,12 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 #### `--grid_dimension` (int, default: 5)
 Defines the grid's number of rows and columns for synthetic network generation.
 - **Range**: 1-20
-- **Not applicable**: When `--osm_file` is provided
 - **Example**: `--grid_dimension 7` creates a 7×7 grid
 
 #### `--block_size_m` (int, default: 200)
 Sets block size in meters for grid network generation.
 - **Range**: 50-500 meters
 - **Step**: 25 meter increments
-- **Not applicable**: When `--osm_file` is provided
 - **Example**: `--block_size_m 150` creates 150m×150m city blocks
 
 #### `--junctions_to_remove` (str, default: "0")
@@ -56,7 +53,6 @@ Number of junctions to remove or comma-separated list of specific junction IDs.
 - **Formats**:
   - Integer: `"5"` (remove 5 random junctions)
   - Specific IDs: `"A0,B1,C2"` (remove specific junctions)
-- **Not applicable**: When `--osm_file` is provided
 
 #### `--lane_count` (str, default: "realistic")
 Sets the lane assignment algorithm.
@@ -66,11 +62,6 @@ Sets the lane assignment algorithm.
   - Integer value: Fixed count for all edges (1-5)
 - **Example**: `--lane_count realistic`
 
-#### `--osm_file` (str, optional)
-Path to OpenStreetMap file that replaces synthetic grid generation.
-- **Format**: .osm XML file
-- **Incompatible**: With grid generation arguments
-- **Example**: `--osm_file data/manhattan.osm`
 
 ### Traffic Generation Arguments
 
@@ -179,7 +170,6 @@ Traffic signal phasing strategy for synthetic networks.
 - **Strategies**:
   - `opposites`: Opposing directions signal together (more efficient)
   - `incoming`: Each edge gets separate phase (more flexible)
-- **Not applicable**: When `--osm_file` is provided (preserves OSM signals)
 - **Example**: `--traffic_light_strategy opposites`
 
 #### `--traffic_control` (str, default: "tree_method")
@@ -264,10 +254,10 @@ env PYTHONUNBUFFERED=1 python -m src.cli --num_vehicles 800 --seed 42 --traffic_
 env PYTHONUNBUFFERED=1 python -m src.cli --traffic_control atlcs --bottleneck-detection-interval 30 --atlcs-interval 2
 ```
 
-### Real-World Scenarios
+### Advanced Scenarios
 ```bash
-# Manhattan street network simulation
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file data/manhattan.osm --num_vehicles 1000 --traffic_control tree_method
+# Large grid simulation
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 6 --num_vehicles 1000 --traffic_control tree_method
 
 # Rush hour simulation (morning peak)
 env PYTHONUNBUFFERED=1 python -m src.cli \
@@ -311,9 +301,9 @@ python -m src.cli --routing_strategy "shortest 60 realtime 40"
 
 ### File Errors
 ```bash
-# OSM file not found
-python -m src.cli --osm_file missing.osm
-# Error: OSM file not found: missing.osm
+# Invalid grid dimension
+python -m src.cli --grid_dimension 0
+# Error: grid_dimension must be between 1 and 20
 
 # Custom lanes file error
 python -m src.cli --custom_lanes_file invalid.txt
@@ -337,7 +327,7 @@ python -m src.cli --grid_dimension 25
 ### Memory Usage
 - **Vehicle Count**: ~1MB per 1000 vehicles
 - **Grid Size**: ~10MB per 100 edges
-- **OSM Networks**: Varies by network complexity
+- **Tree Method Samples**: Varies by network complexity
 
 ### CPU Usage
 - **Tree Method**: Higher CPU usage with lower intervals

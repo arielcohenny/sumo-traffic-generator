@@ -100,28 +100,3 @@ Low-density weekend traffic with uniform departure timing.
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 400 --departure_pattern uniform --start_time_hour 10.0 --attractiveness hybrid --end-time 7200 --gui
 ```
 
-## OpenStreetMap Examples
-
-### Washington DC Downtown
-
-Simulates real DC street network with Tree Method traffic control.
-
-```bash
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file evaluation/datasets/osm/dc_downtown.osm --num_vehicles 800 --end-time 3600 --traffic_control tree_method --gui
-```
-
-### Manhattan Upper West Side
-
-Tests actuated signals on Manhattan street topology.
-
-```bash
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file evaluation/datasets/osm/manhattan_upper_west.osm --num_vehicles 600 --end-time 3600 --traffic_control actuated --gui
-```
-
-### San Francisco Downtown
-
-Multi-modal traffic simulation on SF downtown streets.
-
-```bash
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file evaluation/datasets/osm/sf_downtown.osm --num_vehicles 900 --end-time 7200 --vehicle_types 'passenger 50 commercial 40 public 10' --gui
-```

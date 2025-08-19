@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Python-based SUMO traffic generator that creates dynamic traffic simulations with intelligent signal control. It supports both synthetic orthogonal grid networks and real-world OpenStreetMap (OSM) data, applies configurable lane assignments, and uses Tree Method's decentralized traffic control algorithm for dynamic signal optimization. The system seamlessly integrates with Manhattan street networks and other real urban topologies.
+This is a Python-based SUMO traffic generator that creates dynamic traffic simulations with intelligent signal control. It supports synthetic orthogonal grid networks, applies configurable lane assignments, and uses Tree Method's decentralized traffic control algorithm for dynamic signal optimization.
 
 ## Common Commands
 
@@ -99,35 +99,6 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --gui
 ```
 
-#### OpenStreetMap (OSM) Networks
-
-```bash
-# Basic OSM run with GUI
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 500 --end-time 3600 --gui
-
-# OSM with Tree Method traffic control
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 500 --end-time 3600 --traffic_control tree_method --gui
-
-# OSM with different traffic control methods for comparison
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 800 --end-time 3600 --traffic_control tree_method --seed 42
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 800 --end-time 3600 --traffic_control actuated --seed 42
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 800 --end-time 3600 --traffic_control fixed --seed 42
-
-# OSM with advanced features
-env PYTHONUNBUFFERED=1 python -m src.cli \
-  --osm_file src/osm/export.osm \
-  --num_vehicles 1000 \
-  --end-time 7200 \
-  --routing_strategy 'shortest 60 realtime 40' \
-  --vehicle_types 'passenger 50 commercial 40 public 10' \
-  --departure_pattern six_periods \
-  --traffic_control tree_method \
-  --gui
-
-# Manhattan East Village test scenarios
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 300 --end-time 1800 --gui  # Quick test
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file src/osm/export.osm --num_vehicles 1200 --end-time 7200 --traffic_control tree_method --gui  # Stress test
-```
 
 ### Tested Scenarios (5x5 Grid, 150m Blocks)
 
@@ -290,18 +261,14 @@ The application follows a sequential 7-step pipeline with support for both synth
 1. **Network Generation** (`src/network/generate_grid.py`): Creates orthogonal grid using SUMO's netgenerate (always 1-lane)
 2. **Integrated Edge Splitting with Flow-Based Lane Assignment** (`src/network/split_edges_with_lanes.py`): Splits edges and assigns lanes based on traffic flow requirements with sophisticated movement distribution
 
-#### For OpenStreetMap (OSM) Networks:
-
-1. **OSM Import** (`src/network/import_osm.py`): Imports real-world street networks from OSM data using SUMO's netconvert with specialized parameters for urban networks
-2. **Integrated Edge Splitting with Flow-Based Lane Assignment** (`src/network/split_edges_with_lanes.py`): Same algorithm works seamlessly with real street topology, including dead-end streets and irregular intersections
-
-#### Common Pipeline Steps (3-7):
+#### Pipeline Steps (3-8):
 
 3. **Zone Extraction** (`src/network/zones.py`): Extracts polygonal zones from junctions (currently disabled)
 4. **Edge Attractiveness** (`src/network/edge_attrs.py`): Computes departure/arrival weights using multiple research-based methods with 4-phase temporal system
-5. **Traffic Light Injection** (`src/network/traffic_lights.py`): Adds default four-phase signal plans (preserves existing OSM signals)
+5. **Traffic Light Injection** (`src/network/traffic_lights.py`): Adds default four-phase signal plans
 6. **Route Generation** (`src/traffic/`): Generates vehicle routes using 4-strategy routing system and 3-type vehicle assignment
-7. **Dynamic Simulation** (`src/sumo_integration/sumo_controller.py`): Runs SUMO with TraCI integration, Tree Method algorithm, and real-time phase switching
+7. **SUMO Configuration Generation**: Creates SUMO configuration files
+8. **Dynamic Simulation** (`src/sumo_integration/sumo_controller.py`): Runs SUMO with TraCI integration, Tree Method algorithm, and real-time phase switching
 
 ### Key Modules
 
@@ -313,11 +280,9 @@ The application follows a sequential 7-step pipeline with support for both synth
 **Network Generation**:
 
 - `src/network/`: All network manipulation and generation logic
-- `src/network/import_osm.py`: OSM data import with comprehensive netconvert parameters
-- `src/network/split_edges_with_lanes.py`: Universal edge splitting algorithm for both synthetic and real networks
-- Uses SUMO's netgenerate, netconvert tools
+- `src/network/split_edges_with_lanes.py`: Edge splitting algorithm for synthetic networks
+- Uses SUMO's netgenerate tools
 - Validates network structure at each step
-- Handles complex real-world topologies including dead-end streets
 
 **Traffic Generation**:
 
@@ -364,42 +329,12 @@ Central configuration in `src/config.py` using dataclasses:
 
 ### Land Use Zone Generation System
 
-**Intelligent Land Use Zone Assignment**: The system uses a sophisticated approach for generating land use zones:
+**Zone-Based Traffic Generation**: The system creates land use zones for traffic generation:
 
-#### OSM Networks (Real Land Use Data):
-
-- **Primary Source**: Extracts actual land use tags from OSM data (residential, commercial, industrial, education, healthcare)
-- **Building Analysis**: Converts OSM building polygons into traffic generation zones with capacity estimation
-- **POI Integration**: Incorporates points of interest (shops, restaurants, schools, hospitals) as zone enhancers
-- **Clustering**: Groups nearby zones of similar types for optimized polygon generation
-
-#### Non-OSM Networks (Intelligent Inference):
-
-When OSM land use data is insufficient (<15% coverage), the system uses intelligent inference combining:
-
-1. **Network Topology Analysis** (including lane count):
-
-   - **Centrality Analysis**: Uses edge betweenness centrality to identify main corridors vs residential streets
-   - **Lane Count Analysis**: Higher lane counts indicate commercial/arterial roads, lower counts suggest residential
-   - **Junction Connectivity**: Intersections with more connections likely commercial hubs
-   - **Distance from Center**: Central locations more likely commercial, periphery more residential
-
-2. **Accessibility Analysis**:
-
-   - **Shortest Path Analysis**: Well-connected areas more likely commercial
-   - **Traffic Flow Simulation**: Areas with high predicted traffic suitable for commercial zones
-   - **Public Transit Access**: Areas near transit stops favor mixed-use development
-
-3. **OSM Infrastructure Analysis**:
-   - **POI Density**: Areas with shops, restaurants, schools get appropriate zone types
-   - **Building Types**: Office buildings, residential buildings inform zone classification
-   - **Transit Infrastructure**: Bus stops, parking areas influence zone types
-
-#### Configuration Parameters:
-
-- **`--land_use_block_size_m`**: Controls zone resolution (default 25.0m for both network types, following research paper methodology), creates fine-grained cells for detailed spatial analysis
-- **Unified System**: Same intelligent inference works for both OSM-enhanced and purely synthetic networks
-- **Score-Based Classification**: Multi-factor scoring system determines optimal zone type for each grid cell
+- **Junction-Based Zones**: Creates zones based on network topology using proven cellular grid methodology
+- **Research-Based Land Use**: Six land use types with clustering algorithm (Residential, Mixed, Employment, Public Buildings, Public Open Space, Entertainment/Retail)
+- **Configurable Subdivision**: Zone size independent of junction spacing, controlled by `--land_use_block_size_m` (default 25.0m)
+- **Variety & Realism**: Generates diverse zone types with appropriate colors and attractiveness values
 
 ### Generated Files Structure
 
@@ -408,7 +343,7 @@ All generated files are placed in `workspace/` directory:
 - `grid.net.xml`: SUMO network file
 - `grid.nod.xml`, `grid.edg.xml`, `grid.con.xml`, `grid.tll.xml`: Network components
 - `vehicles.rou.xml`: Vehicle routes with types and routing strategies
-- `zones.poly.xml`: Zone polygons with intelligent land use classification
+- `zones.poly.xml`: Zone polygons with land use classification
 - `grid.sumocfg`: SUMO configuration file
 
 ## Development Notes
@@ -479,7 +414,7 @@ dbps
 
 - This project is a sophisticated SUMO traffic simulation framework with intelligent grid network generation and dynamic traffic control
 - **Dual GUI System**: Provides both web-based parameter configuration (`dbps` command) and SUMO traffic visualization (`--gui` flag) that work together
-- Uses a comprehensive 7-step pipeline for network and traffic generation
+- Uses a comprehensive 8-step pipeline for network and traffic generation
 - Implements advanced algorithms for zone extraction, land use assignment, and traffic routing
 - Designed with multiple architectural patterns including Strategy, Adapter, and Pipeline patterns
 - Supports reproducible simulations through seeded random generation
@@ -555,19 +490,6 @@ dbps
   - ✅ **File Removal**: Can safely delete `split_edges.py` (no longer referenced)
   - ✅ **Working System**: All components now operational with successful test runs
   - ✅ **Traffic Control Implementation**: Successfully implemented traffic control method switching with tested examples
-- **OpenStreetMap (OSM) Integration**:
-  - ✅ **COMPLETED & WORKING**: Full OSM data support integrated into existing pipeline
-  - **CLI Parameter**: `--osm_file` argument replaces synthetic grid generation with real street network import
-  - **Comprehensive Import**: Uses SUMO netconvert with 14 specialized parameters for urban networks (geometry removal, roundabout detection, signal guessing, ramp detection, passenger vehicle filtering)
-  - **File Management**: Automatic file movement from netconvert output location to expected pipeline locations
-  - **Universal Algorithm Compatibility**: Existing `split_edges_with_lanes.py` works seamlessly with real street topology
-  - **Dynamic Head Distance**: `min(HEAD_DISTANCE, edge_length/3)` prevents issues with short urban streets
-  - **Dead-End Street Handling**: Modified Tree Method algorithm to gracefully handle missing connections using `.get()` method instead of direct dictionary access
-  - **Traffic Signal Preservation**: Maintains original OSM traffic light IDs and timing in SUMO network
-  - **Real-World Testing**: Successfully tested with 4.6MB Manhattan East Village OSM data (52 edges, 16 signalized intersections)
-  - **Performance Metrics**: 500 vehicles, 96% departure rate, 63% completion rate, 340.6s average travel time on real Manhattan streets
-  - **Integration**: Works with all existing features (vehicle types, routing strategies, departure patterns, traffic control methods)
-  - **Research Application**: Enables testing Tree Method algorithm on real urban topologies vs synthetic grids
 - **Experimental Framework**:
   - ✅ **COMPLETED & WORKING**: Comprehensive experimental framework for traffic control method comparison
   - **Two Main Experiments**: moderate-traffic (600 vehicles) and high-traffic (1200 vehicles) over 2-hour simulations
@@ -593,26 +515,13 @@ dbps
   - **Virtual Environment Fix**: Resolved shapely import issues by adding proper virtual environment activation to experiment scripts
   - **Expected Results**: Tree Method should demonstrate 20-45% improvement in travel times vs fixed timing, 10-25% vs actuated
   - **Publication Ready**: Framework generates publication-quality statistical analysis with confidence intervals and significance tests
-- **Configurable Land Use Zone Generation System**:
-  - ✅ **COMPLETED & WORKING**: Dual-mode zone system optimized for both network types
-  - **OSM Networks - Intelligent Zone Generation**: For real-world street networks
-    - **Real OSM Land Use Data**: Extracts actual land use tags from OSM data (residential, commercial, industrial, education, healthcare)
-    - **Building Analysis**: Converts OSM building polygons into traffic generation zones with capacity estimation
-    - **POI Integration**: Incorporates points of interest (shops, restaurants, schools, hospitals) as zone enhancers
-    - **Smart Zone Clustering**: Groups nearby zones of similar types for optimized polygon generation
-    - **Intelligent Inference System**: When OSM land use data coverage is <15%, combines:
-      1. **Network Topology Analysis** (including lane count): Edge betweenness centrality, lane count analysis, junction connectivity, distance from center
-      2. **Accessibility Analysis**: Shortest path analysis, traffic flow prediction, public transit access
-      3. **OSM Infrastructure Analysis**: POI density, building type classification, transit infrastructure
-    - **Score-Based Classification**: Multi-factor scoring system determines optimal zone type for each grid cell
-    - **File**: `src/network/intelligent_zones.py` - Complete implementation with research-based algorithms
-  - **Synthetic Networks - Traditional Zone Extraction**: For grid-based networks
-    - **Junction-Based Zones**: Creates zones based on network topology using proven cellular grid methodology
-    - **Research-Based Land Use**: Six land use types with clustering algorithm (Residential, Mixed, Employment, Public Buildings, Public Open Space, Entertainment/Retail)
-    - **Configurable Subdivision**: Zone size independent of junction spacing, controlled by `--land_use_block_size_m`
-    - **Variety & Realism**: Generates diverse zone types with appropriate colors and attractiveness values
-    - **File**: `src/network/zones.py` - Updated `extract_zones_from_junctions` function with configurable cell size
-  - **Unified Configuration**: `--land_use_block_size_m` parameter (default 25.0m for both network types) controls zone resolution following research paper methodology
+- **Land Use Zone Generation System**:
+  - ✅ **COMPLETED & WORKING**: Zone system for synthetic grid networks
+  - **Junction-Based Zones**: Creates zones based on network topology using proven cellular grid methodology
+  - **Research-Based Land Use**: Six land use types with clustering algorithm (Residential, Mixed, Employment, Public Buildings, Public Open Space, Entertainment/Retail)
+  - **Configurable Subdivision**: Zone size controlled by `--land_use_block_size_m` (default 25.0m)
+  - **Variety & Realism**: Generates diverse zone types with appropriate colors and attractiveness values
+  - **File**: `src/network/zones.py` - Updated `extract_zones_from_junctions` function with configurable cell size
   - **Updated Validation**: Fixed zone count validation in `src/validate/validate_network.py` to work with configurable zone sizes
-  - **Integration**: Seamlessly works in CLI pipeline - Step 2 for synthetic networks, Step 7.5 for OSM networks
+  - **Integration**: Works in CLI pipeline Step 2
 - **Reminder**: make sure to periodically update CLAUDE.md and README.md to reflect project developments and improvements

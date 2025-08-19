@@ -2669,7 +2669,6 @@ def train_traffic_agent():
 
 - Use existing SUMO simulation framework
 - Start with synthetic grids for controlled experiments
-- Progress to real-world OSM networks for validation
 
 ### Performance Metrics
 
@@ -2682,6 +2681,6 @@ def train_traffic_agent():
 1. **Proof of Concept**: Single intersection, simple state/action spaces
 2. **Algorithm Comparison**: DQN vs PPO vs Actor-Critic
 3. **Multi-Agent Extension**: Network-level coordination
-4. **Real-World Validation**: OSM networks, complex traffic patterns
+4. **Real-World Validation**: Complex traffic patterns on synthetic networks
 
 This document serves as the foundation for understanding how RL could revolutionize traffic control decision-making, moving from heuristic-based algorithms to learned optimal policies.

@@ -29,16 +29,13 @@
 
 ### `--grid_dimension` (float, default: 5)
 
-Defines the grid's number of rows and columns for synthetic network generation. Not applicable when `--osm_file` is provided.
-
+Defines the grid's number of rows and columns for synthetic network generation. 
 ### `--block_size_m` (int, default: 200)
 
-Sets block size in meters for grid network generation. Not applicable when `--osm_file` is provided.
-
+Sets block size in meters for grid network generation. 
 ### `--junctions_to_remove` (str, default: "0")
 
-Number of junctions to remove or comma-separated list of specific junction IDs (e.g., "5" or "A0,B1,C2"). Not applicable when `--osm_file` is provided.
-
+Number of junctions to remove or comma-separated list of specific junction IDs (e.g., "5" or "A0,B1,C2"). 
 ### `--lane_count` (str, default: "realistic")
 
 Sets the lane count. 3 algorithms are available:
@@ -109,8 +106,7 @@ Vehicle type distribution. Three types with percentage assignment:
 
 ### `--traffic_light_strategy` (str, default: "opposites")
 
-Applied strategies for traffic lights. Two strategies available. Not applicable when `--osm_file` is provided.
-
+Applied strategies for traffic lights. Two strategies available. 
 - `opposites`: Opposing directions signal together
 - `incoming`: Each edge gets separate phase
 
@@ -211,13 +207,10 @@ python -m src.cli --traffic_control atlcs --tree-method-interval 90 --bottleneck
 
 Launch SUMO GUI.
 
-### `--osm_file` (str, optional)
-
-Path to OSM file that replaces synthetic grid generation.
 
 ### `--land_use_block_size_m` (float, default: 25.0)
 
-Zone cell size in meters for both OSM (intelligent zones) and non-OSM (traditional zones) mode.
+Zone cell size in meters for land use zone generation.
 
 **Default**: 25.0m for both network types (following research paper methodology from "A Simulation Model for Intra-Urban Movements")
 
@@ -236,7 +229,7 @@ Path to folder containing pre-built Tree Method sample files for bypass mode.
 - **File Management**: Automatically copies and adapts sample files to our pipeline naming convention
 - **Validation**: Tests our Tree Method implementation against established research benchmarks
 
-**Incompatible Arguments**: Cannot be used with network generation arguments (`--osm_file`, `--grid_dimension`, `--block_size_m`, `--junctions_to_remove`, `--lane_count`)
+**Incompatible Arguments**: Cannot be used with network generation arguments (`--grid_dimension`, `--block_size_m`, `--junctions_to_remove`, `--lane_count`)
 
 **Usage Examples**:
 
@@ -265,7 +258,7 @@ Custom lane definitions for specific edges in synthetic grid networks.
 
 **Constraints**:
 
-- Synthetic networks only (not compatible with `--osm_file`)
+- Synthetic networks only
 - Edge IDs must match grid pattern (A1B1, B2C2, etc.)
 - Lane counts must be 1-3
 - Mutually exclusive with `--custom_lanes_file`
@@ -330,14 +323,6 @@ D1E1=tail:2,head:
   - Percentage validation for custom patterns
   - Time range validation (start < end hours)
 
-### OSM File Validation
-
-- **Current**: Not implemented
-- **Needed Checks**:
-  - File existence verification
-  - File format validation (XML structure)
-  - OSM-specific validation (nodes, ways, bounds elements present)
-  - File readability and permissions
 
 ### Numeric Range Validations
 
@@ -372,7 +357,7 @@ D1E1=tail:2,head:
 
 - **Current**: Not implemented
 - **Needed Checks**:
-  - OSM file vs grid parameters (mutually exclusive usage)
+  - Tree Method sample vs grid parameters (mutually exclusive usage)
   - Time-dependent features requiring appropriate end-time duration
   - Grid dimension vs junctions to remove capacity limits
   - Traffic light strategy compatibility with network type

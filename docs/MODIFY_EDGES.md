@@ -785,7 +785,7 @@ def validate_arguments(args) -> None:
     _validate_routing_strategy(args.routing_strategy)
     _validate_vehicle_types(args.vehicle_types)
     _validate_departure_pattern(args.departure_pattern)
-    _validate_osm_file(args.osm_file)
+    _validate_tree_method_sample(args.tree_method_sample)
     _validate_junctions_to_remove(args.junctions_to_remove)
     _validate_lane_count(args.lane_count)
 
@@ -807,10 +807,10 @@ def _validate_custom_lanes_cross_arguments(args) -> None:
     if getattr(args, 'custom_lanes', None) and getattr(args, 'custom_lanes_file', None):
         raise ValidationError("Cannot use both --custom_lanes and --custom_lanes_file simultaneously")
 
-    # Custom lanes only work with synthetic grids (not OSM files)
+    # Custom lanes only work with synthetic grids (not sample data)
     custom_lanes_provided = getattr(args, 'custom_lanes', None) or getattr(args, 'custom_lanes_file', None)
-    if custom_lanes_provided and args.osm_file:
-        raise ValidationError("Custom lanes are not supported with OSM files (--osm_file)")
+    if custom_lanes_provided and args.tree_method_sample:
+        raise ValidationError("Custom lanes are not supported with Tree Method samples (--tree_method_sample)")
 
     # Custom lanes override --lane_count but both can be specified
     # (custom lanes take precedence for specified edges, --lane_count for others)
@@ -972,7 +972,7 @@ def _execute_custom_lanes(self) -> None:
 1. **Tail Lanes > Head Lanes**: When tail-only customization creates imbalance
 2. **Single Lane Movements**: When custom specification results in 0-lane movements
 3. **U-turn Conflicts**: Special handling for U-turn lane assignments
-4. **Dead-end Streets**: OSM compatibility with irregular topologies
+4. **Dead-end Streets**: Sample data compatibility with irregular topologies
 5. **Minimum Lane Requirements**: Ensuring at least 1 lane per movement
 
 ## Expected Complexity and Challenges
@@ -1153,7 +1153,7 @@ The system supports manual specification of lane configurations for specific edg
 
 #### Constraints and Limitations
 
-- **Synthetic Networks Only**: Not supported with OSM files (`--osm_file`)
+- **Synthetic Networks Only**: Not supported with Tree Method samples (`--tree_method_sample`)
 - **Grid Network Requirement**: Edge IDs must follow pattern `A1B1`, `B2C2`, etc.
 - **Lane Count Bounds**: Tail and movement lane counts must be 1-3
 - **Movement Selection**: Only user-specified movements exist, others are deleted

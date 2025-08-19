@@ -84,25 +84,9 @@ class _Config:
 
 
 @dataclass
-class OSMConfig:
-    """Configuration for OSM import and processing"""
-    osm_file_path: str = ""
-    filter_highway_types: List[str] = field(default_factory=lambda: [
-        "primary", "secondary", "tertiary", "residential", "unclassified"
-    ])
-    preserve_osm_lanes: bool = True
-    min_edge_length: float = 20.0  # Minimum edge length for splitting
-    # "osm_landuse", "hybrid", "cellular"
-    zone_extraction_method: str = "osm_landuse"
-    # "osm_preserve", "generate_all", "hybrid"
-    traffic_light_strategy: str = "osm_preserve"
-
-
-@dataclass
 class NetworkConfig:
-    """Unified config for both grid and OSM networks"""
-    source_type: str = "grid"  # "grid" or "osm"
-    osm_config: Optional[OSMConfig] = None
+    """Configuration for grid networks"""
+    source_type: str = "grid"
 
 
 @dataclass

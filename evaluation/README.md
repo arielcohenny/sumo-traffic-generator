@@ -30,8 +30,6 @@ evaluation/
 │   │   ├── Experiment3-realistic-moderate-load/
 │   │   ├── Experiment4-and-moderate-load/
 │   │   └── README.md                       # Dataset documentation
-│   └── osm/                                # Real-world OpenStreetMap files
-│       └── export.osm                      # Manhattan East Village network
 └── README.md                               # This master guide
 ```
 
@@ -163,32 +161,6 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/dataset
 - **Experiment3**: Realistic moderate load (~15,000 vehicles, 7,300s)
 - **Experiment4**: Additional moderate load scenarios (~15,000 vehicles, 7,300s)
 
-### Real-World OSM Data (`datasets/osm/`)
-
-**🌍 Purpose**: Validate algorithms on actual street topologies
-
-**📁 Contents**:
-- **Manhattan East Village**: Real NYC street network (52 edges, 16 signals)
-- **Complex topologies**: Dead-end streets, irregular intersections
-- **Realistic constraints**: Actual urban road network limitations
-
-**🚀 Usage**:
-```bash
-# OSM real-world networks with Tree Method
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file evaluation/datasets/osm/export.osm --num_vehicles 500 --traffic_control tree_method --gui
-
-# Performance testing on real streets
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file evaluation/datasets/osm/export.osm --num_vehicles 1200 --end-time 7200 --traffic_control tree_method
-
-# Method comparison on real urban topology
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file evaluation/datasets/osm/export.osm --num_vehicles 800 --end-time 3600 --seed 42 --traffic_control tree_method
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file evaluation/datasets/osm/export.osm --num_vehicles 800 --end-time 3600 --seed 42 --traffic_control actuated
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file evaluation/datasets/osm/export.osm --num_vehicles 800 --end-time 3600 --seed 42 --traffic_control fixed
-```
-
-**🎯 Real-World Testing Results**:
-- **500 vehicles**: 96% departure rate, 63% completion rate
-- **Average travel time**: 340.6 seconds on Manhattan streets
 - **Realistic performance**: Algorithm tested on actual urban constraints
 
 ## 🎯 Specialized Framework Documentation
@@ -269,7 +241,7 @@ All evaluation frameworks integrate seamlessly with the main SUMO traffic genera
 
 - **CLI Compatibility**: Uses `python -m src.cli` with standard parameters
 - **Traffic Control Switching**: All frameworks support `--traffic_control` parameter
-- **Dataset Compatibility**: Works with `--osm_file` and `--tree_method_sample` modes
+- **Dataset Compatibility**: Works with `--tree_method_sample` and synthetic grid modes
 - **Configuration Consistency**: Uses same parameter syntax across all frameworks
 
 ### Quality Assurance & Validation
@@ -292,7 +264,7 @@ All evaluation frameworks integrate seamlessly with the main SUMO traffic genera
 ### File Management
 
 #### Dataset Processing
-- **OSM Integration**: Automatic processing through SUMO netconvert pipeline
+- **Network Integration**: Automatic processing through SUMO pipeline
 - **Network Files**: Direct integration with simulation bypass mode
 - **Result Organization**: Systematic storage by method, experiment, and iteration
 

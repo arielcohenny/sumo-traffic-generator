@@ -32,10 +32,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --traffic_control tree_method \
   --gui
 
-# OSM network with GUI visualization  
+# Tree Method sample with GUI visualization  
 env PYTHONUNBUFFERED=1 python -m src.cli \
-  --osm_file evaluation/datasets/osm/manhattan.osm \
-  --num_vehicles 500 \
+  --tree_method_sample evaluation/datasets/networks/ \
   --traffic_control tree_method \
   --gui
 ```
@@ -189,8 +188,8 @@ env PYTHONUNBUFFERED=1 python -m src.cli --traffic_control actuated --gui
 # Large-scale performance analysis
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 10 --num_vehicles 2000 --gui
 
-# Real-world network analysis
-env PYTHONUNBUFFERED=1 python -m src.cli --osm_file data/manhattan.osm --num_vehicles 1000 --gui
+# Large grid network analysis
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 8 --num_vehicles 1000 --gui
 ```
 
 ### Demonstration and Education

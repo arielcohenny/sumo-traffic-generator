@@ -7,6 +7,7 @@ Professional test suite for the SUMO Traffic Generator with comprehensive covera
 ### Prerequisites
 
 Ensure you have:
+
 - Python 3.9+ with virtual environment activated
 - SUMO installed and accessible (`sumo`, `netgenerate`, `netconvert` in PATH)
 - All project dependencies installed (`pip install -r requirements.txt`)
@@ -18,7 +19,7 @@ Ensure you have:
 # Run all fast tests (< 1 minute each)
 pytest tests/ -m smoke -v
 
-# Run scenario tests (2-5 minutes each)  
+# Run scenario tests (2-5 minutes each)
 pytest tests/ -m scenario -v
 
 # Run complete test suite with coverage
@@ -28,6 +29,7 @@ pytest tests/ --cov=src --cov-report=html -v
 ## 📋 Test Categories
 
 ### 🔥 Smoke Tests (Ultra-Fast: < 30 seconds each)
+
 Quick validation tests for immediate feedback:
 
 ```bash
@@ -41,6 +43,7 @@ pytest tests/system/test_smoke.py::TestQuickValidation::test_tree_method_sample_
 ```
 
 ### 🎯 Scenario Tests (Medium: 2-5 minutes each)
+
 Full pipeline validation based on proven CLAUDE.md scenarios:
 
 ```bash
@@ -50,7 +53,7 @@ pytest tests/ -m scenario -v
 # Synthetic grid scenarios
 pytest tests/system/test_scenarios.py::TestSyntheticGridScenarios -v
 
-# Tree Method sample scenarios  
+# Tree Method sample scenarios
 pytest tests/system/test_scenarios.py::TestTreeMethodSample -v
 
 # Traffic control method comparison
@@ -58,6 +61,7 @@ pytest tests/system/test_scenarios.py::TestTrafficControlComparison -v
 ```
 
 ### 🔧 Integration Tests (Medium: 1-3 minutes each)
+
 Pipeline step validation and component interactions:
 
 ```bash
@@ -74,6 +78,7 @@ pytest tests/integration/test_pipeline_steps.py::TestPipelineSequence -v
 ```
 
 ### ⚡ Performance Tests (Extended: 2-10 minutes each)
+
 Performance baselines and regression detection:
 
 ```bash
@@ -88,6 +93,7 @@ pytest tests/ -m slow -v
 ```
 
 ### 🧪 Unit Tests (Fast: < 5 seconds each)
+
 Individual function and class testing:
 
 ```bash
@@ -101,6 +107,7 @@ pytest tests/unit/test_config.py -v
 ## 🎛️ Test Execution Options
 
 ### By Test Type
+
 ```bash
 # Fast feedback loop (development)
 pytest tests/ -m "smoke or unit" -v --tb=short
@@ -116,6 +123,7 @@ pytest tests/ -m "scenario and not slow" -v --timeout=900
 ```
 
 ### By Network Type
+
 ```bash
 # Synthetic grid networks only
 pytest tests/ -k "synthetic or grid" -v
@@ -128,6 +136,7 @@ pytest tests/ -k "traffic_control" -v
 ```
 
 ### By Component
+
 ```bash
 # Network generation pipeline
 pytest tests/ -k "network" -v
@@ -145,6 +154,7 @@ pytest tests/ -k "config" -v
 ## 🔍 Debugging and Analysis
 
 ### Verbose Output
+
 ```bash
 # Maximum verbosity with timing
 pytest tests/ -v -s --durations=10
@@ -157,6 +167,7 @@ pytest tests/ -v --tb=long
 ```
 
 ### Coverage Analysis
+
 ```bash
 # Generate HTML coverage report
 pytest tests/ --cov=src --cov-report=html
@@ -170,6 +181,7 @@ pytest tests/ --cov=src --cov-branch --cov-report=html
 ```
 
 ### Performance Profiling
+
 ```bash
 # Test execution timing
 pytest tests/ --durations=0
@@ -184,12 +196,14 @@ pytest tests/system/test_performance.py::TestTrafficControlPerformance -v -s
 ## 🏗️ Development Workflow
 
 ### Pre-Commit Testing
+
 ```bash
 # Quick validation before commit
 pytest tests/ -m smoke --timeout=60 -v
 ```
 
 ### Feature Development
+
 ```bash
 # Test specific feature during development
 pytest tests/ -k "feature_name" -v -s
@@ -199,6 +213,7 @@ pytest tests/system/test_scenarios.py::TestSyntheticGridScenarios::test_minimal_
 ```
 
 ### Performance Regression Testing
+
 ```bash
 # Run baseline performance tests
 pytest tests/system/test_performance.py::TestPerformanceBaselines -v
@@ -210,18 +225,20 @@ pytest tests/system/test_performance.py::TestTrafficControlPerformance -v
 ## 📊 Continuous Integration
 
 ### GitHub Actions Workflow
+
 The project includes automated testing with three tiers:
 
 1. **Fast Tests** (2-3 minutes): Smoke tests + unit tests
-2. **Medium Tests** (10-15 minutes): Scenario tests  
+2. **Medium Tests** (10-15 minutes): Scenario tests
 3. **Performance Tests** (30+ minutes): Full benchmark subset
 
 ### Local CI Simulation
+
 ```bash
 # Simulate CI fast tier
 pytest tests/ -m "smoke or unit" --timeout=180 -v
 
-# Simulate CI medium tier  
+# Simulate CI medium tier
 pytest tests/ -m "scenario and not slow" --timeout=900 -v
 
 # Simulate CI performance tier
@@ -260,13 +277,12 @@ This test suite focuses on:
 ✅ **Configuration Validation**: Parameter parsing and validation
 ✅ **Reproducibility**: Fixed-seed consistency testing
 
-⚠️ **Not Currently Covered**: OSM import functionality (focused on synthetic scenarios)
-
 ## 🔧 Troubleshooting
 
 ### Common Issues
 
 **SUMO Not Found**:
+
 ```bash
 # Check SUMO installation
 which sumo
@@ -277,6 +293,7 @@ sudo apt-get install sumo sumo-tools sumo-doc
 ```
 
 **Import Errors**:
+
 ```bash
 # Ensure virtual environment is activated
 source .venv/bin/activate
@@ -286,6 +303,7 @@ pip install pytest pytest-cov pytest-timeout pytest-xdist
 ```
 
 **Timeout Issues**:
+
 ```bash
 # Increase timeout for slow tests
 pytest tests/ --timeout=1200 -v
@@ -295,6 +313,7 @@ pytest tests/ --timeout=0 -v
 ```
 
 **Tree Method Sample Missing**:
+
 ```bash
 # Ensure sample data exists
 ls evaluation/datasets/networks/
@@ -304,6 +323,7 @@ pytest tests/ -m "not tree_method_sample" -v
 ```
 
 ### Test Environment Validation
+
 ```bash
 # Validate test environment
 pytest tests/system/test_smoke.py::TestQuickValidation::test_cli_help -v
@@ -318,12 +338,14 @@ pytest tests/system/test_smoke.py::TestQuickValidation::test_minimal_synthetic_n
 ## 📈 Expected Results
 
 ### Performance Baselines
+
 - **3x3 Grid (50 vehicles, 60s)**: < 30 seconds execution
-- **5x5 Grid (200 vehicles, 300s)**: < 120 seconds execution  
+- **5x5 Grid (200 vehicles, 300s)**: < 120 seconds execution
 - **Tree Method vs Fixed**: 20-45% travel time improvement
 - **Tree Method vs Actuated**: 10-25% travel time improvement
 
 ### Success Metrics
+
 - **Smoke Tests**: 100% pass rate, < 60 seconds total
 - **Scenario Tests**: 100% pass rate, < 30 minutes total
 - **Integration Tests**: 100% pass rate, individual step validation
@@ -333,7 +355,7 @@ pytest tests/system/test_smoke.py::TestQuickValidation::test_minimal_synthetic_n
 
 1. ✅ **Environment Setup**: Virtual environment, SUMO, dependencies
 2. ✅ **Quick Validation**: `pytest tests/ -m smoke -v`
-3. ✅ **Scenario Testing**: `pytest tests/ -m scenario -v` 
+3. ✅ **Scenario Testing**: `pytest tests/ -m scenario -v`
 4. ✅ **Full Test Suite**: `pytest tests/ --cov=src -v`
 5. ✅ **Performance Check**: `pytest tests/system/test_performance.py -v`
 

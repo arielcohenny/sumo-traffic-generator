@@ -51,8 +51,6 @@ class ParameterWidgets:
 
         st.subheader("🏗️ Network Configuration")
 
-        # Remove OSM support - only synthetic grid
-        params["osm_file"] = None
 
         params["grid_dimension"] = st.number_input(
             "Grid Dimension",

@@ -13,7 +13,7 @@ import sys
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
-from src.config import CONFIG, OSMConfig, NetworkConfig
+from src.config import CONFIG, NetworkConfig
 
 
 class TestGlobalConfig:
@@ -56,40 +56,6 @@ class TestGlobalConfig:
         assert "zones.poly.xml" in str(CONFIG.zones_file)
 
 
-class TestOSMConfig:
-    """Test OSM configuration class."""
-    
-    @pytest.mark.unit
-    def test_osm_config_creation(self):
-        """Test creation of OSM configuration."""
-        osm_config = OSMConfig()
-        
-        assert osm_config.osm_file_path == ""
-        assert isinstance(osm_config.filter_highway_types, list)
-        assert osm_config.preserve_osm_lanes is True
-        assert osm_config.min_edge_length == 20.0
-
-    @pytest.mark.unit
-    def test_osm_config_with_values(self):
-        """Test OSM config with custom values."""
-        osm_config = OSMConfig(
-            osm_file_path="test.osm",
-            preserve_osm_lanes=False,
-            min_edge_length=30.0
-        )
-        
-        assert osm_config.osm_file_path == "test.osm"
-        assert osm_config.preserve_osm_lanes is False
-        assert osm_config.min_edge_length == 30.0
-
-    @pytest.mark.unit
-    def test_highway_types_filter(self):
-        """Test highway types filter configuration."""
-        osm_config = OSMConfig()
-        
-        expected_types = ["primary", "secondary", "tertiary", "residential", "unclassified"]
-        assert osm_config.filter_highway_types == expected_types
-
 
 class TestNetworkConfig:
     """Test NetworkConfig class."""
@@ -100,20 +66,6 @@ class TestNetworkConfig:
         net_config = NetworkConfig(source_type="grid")
         
         assert net_config.source_type == "grid"
-        assert net_config.osm_config is None
-
-    @pytest.mark.unit
-    def test_network_config_osm(self):
-        """Test network config for OSM networks."""
-        osm_config = OSMConfig(osm_file_path="test.osm")
-        net_config = NetworkConfig(
-            source_type="osm",
-            osm_config=osm_config
-        )
-        
-        assert net_config.source_type == "osm"
-        assert net_config.osm_config is not None
-        assert net_config.osm_config.osm_file_path == "test.osm"
 
 
 class TestConfigIntegration:
@@ -126,15 +78,7 @@ class TestConfigIntegration:
         grid_net_config = NetworkConfig(source_type="grid")
         assert grid_net_config.source_type == "grid"
         
-        # Test OSM network config
-        osm_config = OSMConfig(osm_file_path="sample.osm")
-        osm_net_config = NetworkConfig(
-            source_type="osm", 
-            osm_config=osm_config
-        )
-        assert osm_net_config.source_type == "osm"
-        
-        # Both should work with global CONFIG
+        # Should work with global CONFIG
         assert CONFIG.DEFAULT_NUM_VEHICLES == 300
         assert CONFIG.RNG_SEED == 42
 

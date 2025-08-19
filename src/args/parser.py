@@ -77,11 +77,6 @@ def _add_network_arguments(parser: argparse.ArgumentParser) -> None:
         help=f"Lane count algorithm: '{DEFAULT_LANE_COUNT}' (default, zone-based), 'random', or integer (fixed count for all edges)."
     )
     parser.add_argument(
-        "--osm_file",
-        type=str,
-        help="Path to OSM file to use instead of generating synthetic grid network"
-    )
-    parser.add_argument(
         "--custom_lanes",
         type=str,
         help="Custom lane definitions for specific edges (format: 'EdgeID=tail:N,head:ToEdge1:N,ToEdge2:N;EdgeID2=...')"

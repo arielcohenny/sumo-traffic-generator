@@ -751,7 +751,7 @@ pytest>=7.0.0        # Unit testing framework
 --block_size_m INT             # Block size in meters (default: 200m)
 --junctions_to_remove STR      # Junction removal: count or ID list (default: "0")
 --lane_count STR               # Lane algorithm: realistic/random/fixed (default: "realistic")
---osm_file STR                 # OSM file path for real networks
+--tree_method_sample STR       # Tree Method sample data path
 --custom_lanes STR             # Edge-specific lane definitions
 --custom_lanes_file STR        # File with custom lane configurations
 ```
