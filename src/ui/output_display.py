@@ -8,6 +8,7 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 import xml.etree.ElementTree as ET
+from src.utils.statistics import parse_sumo_statistics_file
 
 
 class OutputDisplay:
@@ -415,91 +416,55 @@ class OutputDisplay:
     def _show_results_summary(workspace_path: Path):
         """Display simulation results summary from SUMO statistics output."""
         with st.expander("📈 Results Summary", expanded=True):
-            # Parse SUMO statistics file
+            # Parse SUMO statistics file using shared parser
             statistics_file = workspace_path / "sumo_statistics.xml"
+            stats = parse_sumo_statistics_file(str(statistics_file))
             
-            if not statistics_file.exists():
-                st.warning("Statistics file not found. Run a simulation first.")
+            if not stats:
+                st.warning("Statistics file not found or could not be parsed. Run a simulation first.")
                 return
 
-            try:
-                tree = ET.parse(statistics_file)
-                root = tree.getroot()
+            # Display metrics in columns using parsed statistics
+            col1, col2, col3 = st.columns(3, gap="large")
 
-                # Extract vehicle counts
-                vehicles_elem = root.find('.//vehicles')
-                vehicle_stats = root.find('.//vehicleTripStatistics')
-                
-                if vehicles_elem is not None and vehicle_stats is not None:
-                    # Vehicle counts from <vehicles> element
-                    loaded = int(vehicles_elem.get('loaded', 0))
-                    inserted = int(vehicles_elem.get('inserted', 0))
-                    running = int(vehicles_elem.get('running', 0))
-                    waiting = int(vehicles_elem.get('waiting', 0))
-                    
-                    # Calculate arrived (completed trips)
-                    arrived = loaded - running - waiting
-                    
-                    # Calculate completion rate
-                    completion_rate = (arrived / loaded * 100) if loaded > 0 else 0
-                    
-                    # Extract performance metrics from <vehicleTripStatistics>
-                    trip_count = int(vehicle_stats.get('count', 0))
-                    avg_duration = float(vehicle_stats.get('duration', 0))
-                    avg_waiting_time = float(vehicle_stats.get('waitingTime', 0))
-                    avg_time_loss = float(vehicle_stats.get('timeLoss', 0))
-                    
-                    # Display metrics in columns
-                    col1, col2, col3 = st.columns(3, gap="large")
+            with col1:
+                st.metric("Vehicles Loaded", stats['loaded'])
+                st.metric("Vehicles Inserted", stats['inserted'])
 
-                    with col1:
-                        st.metric("Vehicles Loaded", loaded)
-                        st.metric("Vehicles Inserted", inserted)
+            with col2:
+                st.metric("Completion Rate", f"{stats['completion_rate']:.1f}%")
+                st.metric("Vehicles Arrived", stats['arrived'])
 
-                    with col2:
-                        st.metric("Completion Rate", f"{completion_rate:.1f}%")
-                        st.metric("Vehicles Arrived", arrived)
+            with col3:
+                st.metric("Vehicles Running", stats['running'])
+                st.metric("Vehicles Waiting", stats['waiting'])
 
-                    with col3:
-                        st.metric("Vehicles Running", running)
-                        st.metric("Vehicles Waiting", waiting)
+            # Additional performance metrics
+            st.subheader("Performance Metrics")
+            perf_col1, perf_col2, perf_col3 = st.columns(3, gap="large")
+            
+            with perf_col1:
+                st.metric("Average Duration", f"{stats['avg_duration']:.1f}s")
+            
+            with perf_col2:
+                st.metric("Average Waiting Time", f"{stats['avg_waiting_time']:.1f}s")
+            
+            with perf_col3:
+                st.metric("Time Loss", f"{stats['avg_time_loss']:.1f}s")
 
-                    # Additional performance metrics
-                    st.subheader("Performance Metrics")
-                    perf_col1, perf_col2, perf_col3 = st.columns(3, gap="large")
-                    
-                    with perf_col1:
-                        st.metric("Average Duration", f"{avg_duration:.1f}s")
-                    
-                    with perf_col2:
-                        st.metric("Average Waiting Time", f"{avg_waiting_time:.1f}s")
-                    
-                    with perf_col3:
-                        st.metric("Time Loss", f"{avg_time_loss:.1f}s")
+            # Efficiency metrics
+            efficiency_col1, efficiency_col2, efficiency_col3 = st.columns(3, gap="large")
+            
+            with efficiency_col1:
+                st.metric("Insertion Rate", f"{stats['insertion_rate']:.1f}%")
+            
+            with efficiency_col2:
+                st.metric("Throughput", f"{stats['throughput']:.0f} veh/h")
+            
+            with efficiency_col3:
+                st.metric("Trip Statistics Count", stats['trip_count'])
 
-                    # Efficiency metrics
-                    efficiency_col1, efficiency_col2, efficiency_col3 = st.columns(3, gap="large")
-                    
-                    with efficiency_col1:
-                        insertion_rate = (inserted / loaded * 100) if loaded > 0 else 0
-                        st.metric("Insertion Rate", f"{insertion_rate:.1f}%")
-                    
-                    with efficiency_col2:
-                        # Throughput: vehicles that completed per hour
-                        sim_hours = 1200 / 3600  # 1200 seconds = 0.33 hours
-                        throughput = arrived / sim_hours if sim_hours > 0 else 0
-                        st.metric("Throughput", f"{throughput:.0f} veh/h")
-                    
-                    with efficiency_col3:
-                        st.metric("Trip Statistics Count", trip_count)
-
-                    st.success("✅ Statistics loaded successfully!")
-                
-                else:
-                    st.error("No vehicle trip statistics found in statistics file.")
-
-            except Exception as e:
-                st.error(f"Error parsing statistics file: {e}")
+            st.success("✅ Statistics loaded successfully!")
 
             # Show error log if present and non-empty
             error_log_file = workspace_path / "sumo_errors.log"

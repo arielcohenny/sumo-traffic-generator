@@ -13,6 +13,7 @@ import sumolib
 
 from src.config import CONFIG
 from .traffic_controller import TrafficController
+from src.utils.statistics import parse_sumo_statistics_file, format_cli_statistics_output
 
 
 class TrafficSimulator:
@@ -46,10 +47,12 @@ class TrafficSimulator:
         """
         try:
             self._initialize_simulation()
-            metrics = self._run_simulation_loop()
-            return metrics
+            final_step = self._run_simulation_loop()
         finally:
             self._cleanup_simulation()
+        
+        # Calculate final metrics after cleanup (when statistics file is written)
+        return self._calculate_final_metrics(final_step)
 
     def _initialize_simulation(self) -> None:
         """Initialize simulation components."""
@@ -63,7 +66,7 @@ class TrafficSimulator:
 
         # Start TraCI FIRST
         self.logger.info("Starting SUMO simulation with TraCI...")
-        traci.start([sumo_binary, '-c', str(CONFIG.config_file), '--statistic-output', 'workspace/sumo_statistics.xml', '--tripinfo-output.write-unfinished', 'true', '--error-log', 'workspace/sumo_errors.log'])
+        traci.start([sumo_binary, '-c', str(CONFIG.config_file), '--statistic-output', 'workspace/sumo_statistics.xml', '--tripinfo-output.write-unfinished', 'true', '--error-log', 'workspace/sumo_errors.log', '--no-step-log'])
 
         # Initialize traffic controller AFTER TraCI is connected
         self.traffic_controller.initialize()
@@ -90,8 +93,8 @@ class TrafficSimulator:
 
             step += 1
 
-        # Calculate final metrics
-        return self._calculate_final_metrics(step)
+        # Return final step for metrics calculation after cleanup
+        return step
 
     def _handle_dynamic_rerouting(self, step: int) -> None:
         """Handle dynamic vehicle rerouting based on strategies."""
@@ -124,7 +127,7 @@ class TrafficSimulator:
                 continue
 
     def _calculate_final_metrics(self, final_step: int) -> Dict[str, Any]:
-        """Calculate basic simulation metrics.
+        """Calculate final simulation metrics using SUMO statistics file.
 
         Args:
             final_step: Final simulation step
@@ -132,21 +135,39 @@ class TrafficSimulator:
         Returns:
             Dict containing simulation metrics
         """
-        vehicles_running = len(traci.vehicle.getIDList())
+        # Parse SUMO statistics file for comprehensive metrics
+        stats = parse_sumo_statistics_file('workspace/sumo_statistics.xml')
+        
+        if stats:
+            # Use parsed statistics from SUMO
+            metrics = {
+                'total_simulation_steps': final_step,
+                'vehicles_loaded': stats['loaded'],
+                'vehicles_inserted': stats['inserted'],
+                'vehicles_still_running': stats['running'],
+                'vehicles_waiting': stats['waiting'],
+                'vehicles_arrived': stats['arrived'],
+                'completion_rate': stats['completion_rate'],
+                'traffic_control_method': self.args.traffic_control
+            }
+        else:
+            # Fallback to TraCI if statistics file is not available
+            vehicles_running = len(traci.vehicle.getIDList())
+            metrics = {
+                'total_simulation_steps': final_step,
+                'vehicles_still_running': vehicles_running,
+                'traffic_control_method': self.args.traffic_control
+            }
 
-        metrics = {
-            'total_simulation_steps': final_step,
-            'vehicles_still_running': vehicles_running,
-            'traffic_control_method': self.args.traffic_control
-        }
-
-        self.logger.info("=== SIMULATION COMPLETED ===")
-        self.logger.info(f"Total simulation steps: {final_step}")
-        self.logger.info(f"Vehicles still running: {vehicles_running}")
-        self.logger.info(
-            f"Traffic control method: {self.args.traffic_control}")
-        self.logger.info(
-            "Detailed statistics will be provided by SUMO output below:")
+        # Log formatted statistics using shared formatter
+        log_messages = format_cli_statistics_output(
+            stats, 
+            self.args.traffic_control, 
+            final_step
+        )
+        
+        for message in log_messages:
+            self.logger.info(message)
 
         return metrics
 
@@ -188,10 +209,7 @@ def execute_standard_simulation(args) -> None:
     simulator = TrafficSimulator(args, traffic_controller)
     metrics = simulator.run()
     
-    # Log final metrics
-    logger.info("=== SIMULATION COMPLETED ===")
-    for key, value in metrics.items():
-        logger.info(f"{key}: {value}")
+    # Final metrics are logged by the simulator's unified statistics system
 
 
 def execute_sample_simulation(args) -> None:

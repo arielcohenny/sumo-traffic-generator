@@ -457,16 +457,8 @@ class TreeMethodController(TrafficController):
         """Clean up Tree Method resources and report Tree Method statistics."""
         try:
             if hasattr(self, 'graph') and self.graph:
-                # Report Tree Method's own duration statistics
-                if hasattr(self.graph, 'ended_vehicles_count') and self.graph.ended_vehicles_count > 0:
-                    tree_avg_duration = self.graph.vehicle_total_time / self.graph.ended_vehicles_count
-                    self.logger.info("=== TREE METHOD STATISTICS ===")
-                    self.logger.info(
-                        f"Tree Method - Vehicles completed: {self.graph.ended_vehicles_count}")
-                    self.logger.info(
-                        f"Tree Method - Total driving time: {self.graph.vehicle_total_time}")
-                    self.logger.info(
-                        f"Tree Method - Average duration: {tree_avg_duration:.2f} steps")
+                # Tree Method statistics are now included in the unified statistics system
+                pass
 
         except Exception as e:
             self.logger.error(f"Error in Tree Method cleanup: {e}")
