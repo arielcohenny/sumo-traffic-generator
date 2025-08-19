@@ -16,7 +16,8 @@ from src.constants import (
     DEFAULT_PASSENGER_VEHICLE_PCT, DEFAULT_COMMERCIAL_VEHICLE_PCT, DEFAULT_PUBLIC_VEHICLE_PCT,
     DEFAULT_SEED, DEFAULT_STEP_LENGTH, DEFAULT_END_TIME, DEFAULT_LAND_USE_BLOCK_SIZE_M,
     DEFAULT_START_TIME_HOUR, DEFAULT_BOTTLENECK_DETECTION_INTERVAL, DEFAULT_ATLCS_INTERVAL,
-    DEFAULT_TREE_METHOD_INTERVAL,
+    DEFAULT_TREE_METHOD_INTERVAL, DEFAULT_ATTRACTIVENESS, DEFAULT_LANE_COUNT,
+    DEFAULT_DEPARTURE_PATTERN, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL,
     
     # Min/Max Values
     MIN_GRID_DIMENSION, MAX_GRID_DIMENSION, MIN_BLOCK_SIZE_M, MAX_BLOCK_SIZE_M,
@@ -75,9 +76,11 @@ class ParameterWidgets:
             params["grid_dimension"])
 
         # Lane configuration
+        lane_options = ["realistic", "random", "fixed"]
         lane_type = st.selectbox(
             "Lane Count Algorithm",
-            ["realistic", "random", "fixed"],
+            lane_options,
+            index=lane_options.index(DEFAULT_LANE_COUNT),
             help="How to assign lane counts to edges"
         )
 
@@ -190,9 +193,11 @@ class ParameterWidgets:
         params["vehicle_types"] = f"passenger {passenger_pct} commercial {commercial_pct} public {public_pct}"
 
         # Departure pattern
+        departure_options = ["six_periods", "uniform", "rush_hours", "hourly"]
         departure_pattern = st.selectbox(
             "Departure Pattern",
-            ["six_periods", "uniform", "rush_hours", "hourly"],
+            departure_options,
+            index=departure_options.index(DEFAULT_DEPARTURE_PATTERN),
             help="How vehicles are distributed over time"
         )
 
@@ -293,9 +298,11 @@ class ParameterWidgets:
             help="Resolution of zone generation grid"
         )
 
+        attractiveness_options = ["land_use", "poisson", "gravity", "iac", "hybrid"]
         params["attractiveness"] = st.selectbox(
             "Attractiveness Method",
-            ["poisson", "land_use", "gravity", "iac", "hybrid"],
+            attractiveness_options,
+            index=attractiveness_options.index(DEFAULT_ATTRACTIVENESS),
             help="Algorithm for calculating edge attractiveness"
         )
 
@@ -322,15 +329,19 @@ class ParameterWidgets:
 
         st.subheader("🚦 Traffic Control Configuration")
 
+        strategy_options = ["opposites", "incoming"]
         params["traffic_light_strategy"] = st.radio(
             "Traffic Light Strategy",
-            ["opposites", "incoming"],
+            strategy_options,
+            index=strategy_options.index(DEFAULT_TRAFFIC_LIGHT_STRATEGY),
             help="How traffic light phases are organized"
         )
 
+        control_options = ["tree_method", "atlcs", "actuated", "fixed"]
         params["traffic_control"] = st.selectbox(
             "Traffic Control Method",
-            ["tree_method", "atlcs", "actuated", "fixed"],
+            control_options,
+            index=control_options.index(DEFAULT_TRAFFIC_CONTROL),
             help="Algorithm for traffic light optimization"
         )
 

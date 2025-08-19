@@ -63,12 +63,12 @@ Simulation step length in seconds for TraCI control loop.
 
 Simulation duration in seconds.
 
-### `--attractiveness` (str, default: "poisson")
+### `--attractiveness` (str, default: "land_use")
 
 Sets the departure and arrival attractiveness of each edge. Five methods available:
 
+- `land_use`: Zone-based calculation (default)
 - `poisson`: Random distribution
-- `land_use`: Zone-based calculation
 - `gravity`: Distance-based model
 - `iac`: Intersection accessibility calculation
 - `hybrid`: Combined approach
@@ -81,7 +81,7 @@ Applies 4-phase variations to synthetic zone attractiveness.
 
 Real-world hour when simulation starts (0-24) for temporal attractiveness. Used with `--time_dependent` for phase calculation.
 
-### `--departure_pattern` (str, default: "six_periods")
+### `--departure_pattern` (str, default: "uniform")
 
 Vehicle departure timing. Four patterns available:
 

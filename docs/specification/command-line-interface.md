@@ -104,14 +104,14 @@ Vehicle type distribution with percentage assignment.
 - **Validation**: Percentages must sum to 100
 - **Example**: `"passenger 70 commercial 20 public 10"`
 
-#### `--departure_pattern` (str, default: "six_periods")
+#### `--departure_pattern` (str, default: "uniform")
 Vehicle departure timing pattern.
 - **Patterns**:
+  - `uniform`: Even distribution across simulation time (default)
   - `six_periods`: Research-based daily structure (Morning 20%, Morning Rush 30%, Noon 25%, Evening Rush 20%, Evening 4%, Night 1%)
-  - `uniform`: Even distribution across simulation time
   - `rush_hours:7-9:40,17-19:30,rest:10`: Custom rush hour definition
   - `hourly:7:25,8:35,rest:5`: Granular hourly control
-- **Example**: `--departure_pattern six_periods`
+- **Example**: `--departure_pattern uniform`
 
 ### Simulation Control Arguments
 
@@ -149,11 +149,11 @@ Zone cell size in meters for land use generation.
 - **Default**: 25.0m (research paper methodology)
 - **Example**: `--land_use_block_size_m 30.0`
 
-#### `--attractiveness` (str, default: "poisson")
+#### `--attractiveness` (str, default: "land_use")
 Departure and arrival attractiveness calculation method.
 - **Methods**:
+  - `land_use`: Zone-based land use attractiveness (default)
   - `poisson`: Random Poisson distribution
-  - `land_use`: Zone-based calculation
   - `gravity`: Distance-based gravity model
   - `iac`: Intersection accessibility calculation
   - `hybrid`: Combined approach

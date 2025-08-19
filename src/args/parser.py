@@ -117,7 +117,7 @@ def _add_traffic_arguments(parser: argparse.ArgumentParser) -> None:
         "--departure_pattern",
         type=str,
         default=DEFAULT_DEPARTURE_PATTERN,
-        help=f"Vehicle departure pattern: '{DEFAULT_DEPARTURE_PATTERN}' (default, research-based), 'uniform', 'rush_hours:7-9:40,17-19:30,rest:10', or 'hourly:7:25,8:35,rest:5'"
+        help=f"Vehicle departure pattern: '{DEFAULT_DEPARTURE_PATTERN}' (default, even distribution), 'six_periods' (research-based), 'rush_hours:7-9:40,17-19:30,rest:10', or 'hourly:7:25,8:35,rest:5'"
     )
 
 

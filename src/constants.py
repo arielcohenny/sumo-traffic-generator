@@ -61,7 +61,7 @@ MIN_PERCENTAGE = 0
 MAX_PERCENTAGE = 100
 
 # Departure Patterns
-DEFAULT_DEPARTURE_PATTERN = 'six_periods'
+DEFAULT_DEPARTURE_PATTERN = 'uniform'
 
 # =============================================================================
 # SIMULATION CONSTANTS
@@ -95,7 +95,7 @@ MAX_LAND_USE_BLOCK_SIZE_M = 100.0
 STEP_LAND_USE_BLOCK_SIZE_M = 5.0
 
 # Attractiveness
-DEFAULT_ATTRACTIVENESS = 'poisson'
+DEFAULT_ATTRACTIVENESS = 'land_use'
 
 # Time Dependency
 DEFAULT_START_TIME_HOUR = 0.0

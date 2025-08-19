@@ -1,10 +1,10 @@
 # SUMO Traffic Generator
 
-A comprehensive Python-based SUMO traffic simulation framework with intelligent signal control, supporting synthetic grids, real-world OpenStreetMap data, and Tree Method research datasets.
+A comprehensive Python-based SUMO traffic simulation framework with intelligent signal control, supporting synthetic grids and Tree Method research data sets.
 
 ## Key Features
 
-- **Triple Network Support**: Synthetic grids, real-world OSM data, and Tree Method research datasets
+- **Triple Network Support**: Synthetic grids and Tree Method research datasets
 - **Intelligent Traffic Control**: Tree Method decentralized algorithm for dynamic signal optimization
 - **Advanced Traffic Generation**: Multi-strategy routing, vehicle types, and temporal patterns
 - **Configurable Lane Assignment**: Flow-based lane allocation with realistic traffic demand
@@ -39,7 +39,7 @@ dbps
 
 # The GUI provides:
 # - Interactive parameter configuration
-# - Real-time simulation monitoring  
+# - Real-time simulation monitoring
 # - Automatic CLI command generation
 # - Integrated results visualization
 ```
@@ -60,16 +60,6 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --routing_strategy "shortest 70 realtime 30" \
   --gui
 ```
-
-<!-- ### Real-World OSM Network
-```bash
-# Manhattan street network with Tree Method optimization
-env PYTHONUNBUFFERED=1 python -m src.cli \
-  --osm_file evaluation/datasets/osm/manhattan_upper_west.osm \
-  --num_vehicles 500 \
-  --traffic_control tree_method \
-  --gui
-``` -->
 
 ### Tree Method Research Datasets
 
@@ -96,14 +86,16 @@ dbps
 ```
 
 **Features**:
+
 - **Visual Parameter Configuration**: Interactive widgets for all 20+ parameters
-- **Real-time Validation**: Parameter errors highlighted immediately  
+- **Real-time Validation**: Parameter errors highlighted immediately
 - **Command Generation**: Automatic CLI command generation for scripting
 - **Progress Monitoring**: Live simulation progress with step-by-step updates
 - **Results Visualization**: Integrated display of logs, statistics, and outputs
 - **Chrome App Mode**: Desktop-like application window experience
 
 **Interface Sections**:
+
 - **Network Generation**: Grid size, block dimensions, junction removal, lane configuration
 - **Traffic Parameters**: Vehicle count, routing strategies, vehicle types, departure patterns
 - **Simulation Control**: Duration, step length, random seed, GUI options
@@ -124,15 +116,17 @@ env PYTHONUNBUFFERED=1 python -m src.cli --num_vehicles 500 --gui
 ```
 
 **Features**:
+
 - **Real-time Traffic Visualization**: Live display of vehicles, traffic flow, and congestion
-- **Network Topology**: Visual representation of roads, intersections, and lane configurations  
+- **Network Topology**: Visual representation of roads, intersections, and lane configurations
 - **Signal State Monitoring**: Traffic light phases and timing with algorithm interventions
 - **Performance Analysis**: Visual identification of bottlenecks and traffic patterns
 - **Algorithm Visualization**: Tree Method and ATLCS decision displays
 
 **Use Cases**:
+
 - **Development**: Visual verification of algorithm behavior
-- **Research**: Traffic pattern analysis and performance validation  
+- **Research**: Traffic pattern analysis and performance validation
 - **Education**: Demonstration of traffic flow dynamics
 - **Debugging**: Visual identification of routing or network issues
 
@@ -151,6 +145,7 @@ dbps
 ```
 
 **Benefits of Dual GUI**:
+
 - **Easy Configuration**: Web GUI for intuitive parameter setup
 - **Rich Visualization**: SUMO GUI for detailed traffic analysis
 - **Progress Tracking**: Web GUI shows pipeline progress and logs
@@ -166,7 +161,7 @@ dbps
 │   └── sumo_integration/  # SUMO/TraCI interface layer
 ├── evaluation/            # Research validation framework
 │   ├── benchmarks/        # Performance comparison studies
-│   └── datasets/          # OSM files and research networks
+│   └── datasets/          # Research networks
 ├── tests/                 # Software testing framework
 ├── tools/                 # Development utilities
 └── workspace/             # Generated simulation files (temporary)

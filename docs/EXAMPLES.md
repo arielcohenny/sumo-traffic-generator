@@ -70,10 +70,10 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 200 -
 
 ### Multi-Modal Traffic
 
-Mixed vehicle types with Poisson attractiveness model.
+Mixed vehicle types with land use attractiveness model.
 
 ```bash
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 850 --vehicle_types 'passenger 50 commercial 40 public 10' --attractiveness poisson --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 850 --vehicle_types 'passenger 50 commercial 40 public 10' --attractiveness land_use --gui
 ```
 
 ### Advanced Routing
