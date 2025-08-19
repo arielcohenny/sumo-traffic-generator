@@ -189,7 +189,7 @@ class TestErrorHandling:
         ], workspace=temp_workspace)
         
         assert result.returncode != 0, "Should fail with missing sample directory"
-        assert "not found" in result.stderr.lower() or "no such file" in result.stderr.lower()
+        assert "not found" in result.stdout.lower() or "no such file" in result.stdout.lower()
 
     @pytest.mark.smoke
     def test_invalid_parameter_combinations(self, temp_workspace):
