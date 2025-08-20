@@ -140,16 +140,40 @@ class ParameterWidgets:
 
         with routing_col1:
             shortest_pct = st.number_input(
-                "Shortest %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_SHORTEST_ROUTING_PCT, key="shortest")
+                "Shortest %", 
+                min_value=MIN_PERCENTAGE, 
+                max_value=MAX_PERCENTAGE, 
+                value=DEFAULT_SHORTEST_ROUTING_PCT, 
+                key="shortest",
+                help="Static shortest path by distance using Dijkstra algorithm. Routes computed once, never change during simulation. Minimizes total distance traveled."
+            )
         with routing_col2:
             realtime_pct = st.number_input(
-                "Realtime %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_REALTIME_ROUTING_PCT, key="realtime")
+                "Realtime %", 
+                min_value=MIN_PERCENTAGE, 
+                max_value=MAX_PERCENTAGE, 
+                value=DEFAULT_REALTIME_ROUTING_PCT, 
+                key="realtime",
+                help="Dynamic routing that responds to current traffic conditions. 30-second rerouting intervals. Uses real-time traffic data to avoid congestion, like GPS apps that reroute around traffic jams. → 'What's fastest RIGHT NOW?' (reacts to live traffic)"
+            )
         with routing_col3:
             fastest_pct = st.number_input(
-                "Fastest %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_FASTEST_ROUTING_PCT, key="fastest")
+                "Fastest %", 
+                min_value=MIN_PERCENTAGE, 
+                max_value=MAX_PERCENTAGE, 
+                value=DEFAULT_FASTEST_ROUTING_PCT, 
+                key="fastest",
+                help="Dynamic routing optimized for minimum travel time. 45-second rerouting intervals. Focuses on speed/time rather than distance - may choose longer routes if they're faster. → 'What's typically the fastest route?' (optimizes for speed patterns)"
+            )
         with routing_col4:
             attractiveness_pct = st.number_input(
-                "Attractiveness %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_ATTRACTIVENESS_ROUTING_PCT, key="attractiveness")
+                "Attractiveness %", 
+                min_value=MIN_PERCENTAGE, 
+                max_value=MAX_PERCENTAGE, 
+                value=DEFAULT_ATTRACTIVENESS_ROUTING_PCT, 
+                key="attractiveness",
+                help="Multi-criteria routing combining efficiency + destination appeal. Balances shortest/fastest path with attractiveness of areas. Simulates drivers choosing scenic or interesting routes."
+            )
 
         total_routing = shortest_pct + realtime_pct + fastest_pct + attractiveness_pct
         if total_routing != MAX_PERCENTAGE:

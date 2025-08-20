@@ -129,7 +129,8 @@ class OutputDisplay:
                 traffic_lights = root.findall('.//tlLogic')
 
                 # Display metrics with wider columns to prevent truncation
-                col1, col2, col3, col4 = st.columns([1, 1, 1.2, 1.3], gap="large")
+                col1, col2, col3, col4 = st.columns(
+                    [1, 1, 1.2, 1.3], gap="large")
 
                 with col1:
                     st.metric("Edges", len(edges))
@@ -242,35 +243,36 @@ class OutputDisplay:
                     if type_counts:
                         type_df = pd.DataFrame(list(type_counts.items()), columns=[
                                                'Vehicle Type', 'Count'])
-                        
+
                         try:
                             # Try to use plotly for colored charts
                             import plotly.express as px
-                            
+
                             # Define colors for vehicle types
                             vehicle_colors = {
                                 'passenger': '#28a745',    # Green
-                                'commercial': '#fd7e14',   # Orange  
+                                'commercial': '#fd7e14',   # Orange
                                 'public': '#007bff'        # Blue
                             }
-                            
+
                             # Create plotly chart
-                            fig = px.bar(type_df, 
-                                       x='Vehicle Type', 
-                                       y='Count',
-                                       color='Vehicle Type',
-                                       color_discrete_map=vehicle_colors,
-                                       title="Vehicle Type Distribution")
-                            
+                            fig = px.bar(type_df,
+                                         x='Vehicle Type',
+                                         y='Count',
+                                         color='Vehicle Type',
+                                         color_discrete_map=vehicle_colors,
+                                         title="Vehicle Type Distribution")
+
                             fig.update_layout(showlegend=False, height=400)
                             st.plotly_chart(fig, use_container_width=True)
-                            
+
                         except ImportError:
                             # Fallback to basic Streamlit chart if plotly not available
                             st.bar_chart(type_df.set_index('Vehicle Type'))
                         except Exception:
                             # Fallback for any other chart rendering issues
-                            st.warning("Chart rendering temporarily unavailable, showing basic chart")
+                            st.warning(
+                                "Chart rendering temporarily unavailable, showing basic chart")
                             st.bar_chart(type_df.set_index('Vehicle Type'))
 
                     # Departure time distribution
@@ -333,7 +335,8 @@ class OutputDisplay:
                         total_zones = sum(zone_types.values())
                         zone_data = []
                         for zone_type, count in zone_types.items():
-                            percentage = (count / total_zones * 100) if total_zones > 0 else 0
+                            percentage = (count / total_zones *
+                                          100) if total_zones > 0 else 0
                             zone_data.append({
                                 'Zone Type': zone_type,
                                 'Count': count,
@@ -342,35 +345,40 @@ class OutputDisplay:
 
                         # Display clean table
                         zone_df = pd.DataFrame(zone_data)
-                        st.dataframe(zone_df, use_container_width=True, hide_index=True)
+                        st.dataframe(
+                            zone_df, use_container_width=True, hide_index=True)
 
                         # Show colored bar chart with graceful error handling
                         try:
                             # Try to use plotly for colored charts
                             import plotly.express as px
-                            
+
                             # Use zone colors for chart
                             zone_color_map = {}
                             for zone_type in zone_types.keys():
-                                zone_color_map[zone_type] = zone_colors.get(zone_type, '#808080')
-                            
-                            fig = px.bar(zone_df, 
-                                       x='Zone Type', 
-                                       y='Count',
-                                       color='Zone Type',
-                                       color_discrete_map=zone_color_map,
-                                       title="Zone Distribution")
-                            
+                                zone_color_map[zone_type] = zone_colors.get(
+                                    zone_type, '#808080')
+
+                            fig = px.bar(zone_df,
+                                         x='Zone Type',
+                                         y='Count',
+                                         color='Zone Type',
+                                         color_discrete_map=zone_color_map,
+                                         title="Zone Distribution")
+
                             fig.update_layout(showlegend=False, height=400)
                             st.plotly_chart(fig, use_container_width=True)
-                            
+
                         except ImportError:
                             # Fallback to basic Streamlit chart if plotly not available
-                            st.bar_chart(zone_df.set_index('Zone Type')['Count'])
+                            st.bar_chart(zone_df.set_index(
+                                'Zone Type')['Count'])
                         except Exception:
                             # Fallback for any other chart rendering issues
-                            st.warning("Chart rendering temporarily unavailable, showing basic chart")
-                            st.bar_chart(zone_df.set_index('Zone Type')['Count'])
+                            st.warning(
+                                "Chart rendering temporarily unavailable, showing basic chart")
+                            st.bar_chart(zone_df.set_index(
+                                'Zone Type')['Count'])
 
                 else:
                     st.info("No zones found in file.")
@@ -419,9 +427,10 @@ class OutputDisplay:
             # Parse SUMO statistics file using shared parser
             statistics_file = workspace_path / "sumo_statistics.xml"
             stats = parse_sumo_statistics_file(str(statistics_file))
-            
+
             if not stats:
-                st.warning("Statistics file not found or could not be parsed. Run a simulation first.")
+                st.warning(
+                    "Statistics file not found or could not be parsed. Run a simulation first.")
                 return
 
             # Display metrics in columns using parsed statistics
@@ -432,7 +441,8 @@ class OutputDisplay:
                 st.metric("Vehicles Inserted", stats['inserted'])
 
             with col2:
-                st.metric("Completion Rate", f"{stats['completion_rate']:.1f}%")
+                st.metric("Completion Rate",
+                          f"{stats['completion_rate']:.1f}%")
                 st.metric("Vehicles Arrived", stats['arrived'])
 
             with col3:
@@ -442,27 +452,33 @@ class OutputDisplay:
             # Additional performance metrics
             st.subheader("Performance Metrics")
             perf_col1, perf_col2, perf_col3 = st.columns(3, gap="large")
-            
+
             with perf_col1:
-                st.metric("Average Duration", f"{stats['avg_duration']:.1f}s")
-            
+                st.metric("Average Duration", f"{stats['avg_duration']:.1f}s",
+                          help="Average trip duration for completed vehicles only. Excludes vehicles still running or waiting.")
+
             with perf_col2:
-                st.metric("Average Waiting Time", f"{stats['avg_waiting_time']:.1f}s")
-            
+                st.metric("Average Waiting Time", f"{stats['avg_waiting_time']:.1f}s",
+                          help="Average time spent waiting (at traffic lights, in queues) for completed vehicles only.")
+
             with perf_col3:
-                st.metric("Time Loss", f"{stats['avg_time_loss']:.1f}s")
+                st.metric("Time Loss", f"{stats['avg_time_loss']:.1f}s",
+                          help="Average extra time compared to free-flow travel for completed vehicles. Shows traffic delay impact.")
 
             # Efficiency metrics
-            efficiency_col1, efficiency_col2, efficiency_col3 = st.columns(3, gap="large")
-            
+            efficiency_col1, efficiency_col2, efficiency_col3 = st.columns(
+                3, gap="large")
+
             with efficiency_col1:
                 st.metric("Insertion Rate", f"{stats['insertion_rate']:.1f}%")
-            
+
             with efficiency_col2:
-                st.metric("Throughput", f"{stats['throughput']:.0f} veh/h")
-            
+                st.metric("Throughput", f"{stats['throughput']:.0f} veh/h",
+                          help="Vehicles that completed their trips per hour.")
+
             with efficiency_col3:
-                st.metric("Trip Statistics Count", stats['trip_count'])
+                st.metric("Trip Statistics Count", stats['trip_count'],
+                          help="Number of completed trip records in SUMO statistics. Should match 'Vehicles Arrived' but comes from different XML element.")
 
             st.success("✅ Statistics loaded successfully!")
 
@@ -475,7 +491,8 @@ class OutputDisplay:
                             error_content = f.read()
                             # Truncate if too long
                             if len(error_content) > 2000:
-                                error_content = error_content[:2000] + "\n\n... (truncated)"
+                                error_content = error_content[:2000] + \
+                                    "\n\n... (truncated)"
                             st.code(error_content, language="text")
                     except Exception as e:
                         st.error(f"Could not read error log: {e}")
