@@ -102,8 +102,8 @@ Reward structure fundamentally determines what behaviors the agent learns and di
 
 **Spatial Scope: Global vs. Local Rewards**:
 
-- **Global rewards** (network-wide throughput, average delay) encourage system coordination and capture how individual junction decisions influence downstream traffic conditions. However, they suffer from high variance and attribution challenges—all decisions receive identical rewards regardless of individual contribution.
-- **Local rewards** (per-intersection queue length, waiting time) provide clearer attribution to specific junctions but create critical blind spots: they fail to capture how one junction's decisions influence other junctions or contribute to overall network performance. This can lead agents to optimize local metrics while harming system-wide coordination.
+- **Global rewards** Rewarding the entire network. Encourage system coordination and capture how individual junction decisions influence downstream traffic conditions. However, they suffer from high variance and attribution challenges—all decisions receive identical rewards regardless of individual contribution.
+- **Local rewards** Rewarding specific junctions. Provide clearer attribution to specific junctions but create critical blind spots: they fail to capture how one junction's decisions influence other junctions or contribute to overall network performance. This can lead agents to optimize local metrics while harming system-wide coordination.
 
 **Temporal Structure: Episode vs. Intermediate Rewards**:
 
@@ -113,7 +113,7 @@ Reward structure fundamentally determines what behaviors the agent learns and di
 **Measurement Approach: Cumulative vs. Delta Performance**:
 
 - **Cumulative measurement** tracks total performance from episode start, providing stable long-term signals but potentially double-counting improvements and obscuring recent decision impacts.
-- **Delta measurement** rewards performance changes since last measurement, offering immediate feedback on decision effectiveness but critically missing decisions that were taken before but have later influence—a major limitation in traffic control where signal decisions often have delayed effects spanning multiple signal cycles.
+- **Delta measurement** rewards performance changes from a chosen reference point (which could be last measurement, or a sliding time window, etc), offering targeted feedback on decision effectiveness but potentially missing decisions taken before the reference point that have later influence—a major limitation in traffic control where signal decisions often have delayed effects spanning multiple signal cycles.
 
 **Credit Distribution Strategy**:
 
@@ -199,11 +199,31 @@ This chapter translates the theoretical problem formulation into a concrete rein
 
 **Action space for dynamic phase control**: The centralized agent simultaneously controls all intersections, selecting discrete phase indices (0 to len(phases)-1) AND continuous duration values for each intersection within safety bounds [MIN_PHASE_TIME, MAX_PHASE_TIME]. Action dimensionality scales as num_intersections × (num_phases + 1) for phase selection plus duration control. This expands the solution space from Tree Method's fixed algorithmic durations to learned optimal timing patterns with direct coordination across the entire network. Implementation through define_tl_program(junction_id, phase_index, learned_duration) with duration clipping for constraint enforcement (node.py:12-14, config.py:2). Safety constraints enforce MIN_PHASE_TIME = 10 seconds minimum green (config.py:2) and maximum phase durations to prevent gridlock, with validation through existing JunctionNode constraint checking (node.py:104-115).
 
-**Reward function**: The reward function focuses exclusively on network-wide performance since traffic signal effects are spatially distributed across the entire network. The centralized agent directly optimizes global network objectives without the coordination challenges faced by distributed approaches.
+**Reward function**: The reward system implements the theoretical framework from Chapter 2: individual vehicle rewards with global spatial scope, intermediate timing, delta measurement, and time-windowed credit distribution. This translates into a two-component system that provides both dense intermediate learning signals and final episode performance evaluation.
 
-- **Network-Wide Throughput Reward**: Positive reward for vehicles successfully completing their trips across the entire network, tracked via Graph.ended_vehicles_count and Graph.close_prev_vehicle_step() (graph.py:25, 94-120). This directly optimizes our primary objective of maximizing system capacity and traffic flow.
+**Two-Component Reward Architecture**:
 
-- **Network-Wide Delay Penalty**: Negative penalty for cumulative waiting time across all vehicles in the network, calculated using Tree Method's time-loss computations from Link.calc_my_iteration_data() and aggregated in Graph.vehicle_total_time (link.py:100-105, graph.py:27, 109). This ensures efficient traffic flow without excessive queuing.
+The reward system combines frequent intermediate penalties based on individual vehicle performance with final episode throughput rewards. At regular measurement intervals (every N seconds), the system evaluates each vehicle's additional waiting time since the last measurement and applies penalties to all network decisions since that vehicle began its journey. At episode completion, the system provides network-wide throughput rewards for vehicles successfully completing their trips.
+
+**Individual Vehicle Tracking and Measurement**:
+
+Each vehicle's journey through the network is tracked from entry to completion, maintaining temporal records of waiting time accumulation. Vehicle tracking leverages SUMO's TraCI interface through traci.vehicle.getIDList() to enumerate active vehicles and traci.vehicle.getAccumulatedWaitingTime() to measure individual waiting times. Delta measurement computes the additional waiting time since the last measurement interval: Δwait_time = current_wait_time - previous_wait_time. This approach captures the immediate impact of recent signal decisions on individual vehicle performance while avoiding double-counting waiting time across measurement periods.
+
+**Intermediate Reward Computation**:
+
+At each measurement interval, the system iterates through all active vehicles, computes their waiting time deltas, and converts these into penalty signals. The reward formula is: penalty = -Δwait_time, where positive waiting time increases result in negative rewards. These penalties are applied to all network decisions made since each vehicle started its journey, implementing the time-windowed credit distribution strategy. Vehicles with longer journey times generate more penalty events, naturally weighting the learning signal toward vehicles most affected by network-wide coordination decisions.
+
+**Credit Distribution Implementation**:
+
+The credit distribution mechanism maintains timestamped records of all signal timing decisions made by the centralized agent. When a vehicle generates a penalty at time T, the system identifies all decisions made since that vehicle's journey start time and applies the penalty to those decisions. This implements global spatial scope (all network locations receive the penalty) with time-windowed temporal scope (only decisions since vehicle start receive credit). The implementation tracks decision_timestamps for each policy action and vehicle_start_times for journey tracking, enabling precise temporal attribution of penalty signals to relevant decision periods.
+
+**Integration with SUMO TraCI and Existing Infrastructure**:
+
+The reward system integrates with existing Tree Method infrastructure through Graph.add_vehicles_to_step() and Graph.close_prev_vehicle_step() methods (graph.py:94-120), extending vehicle tracking to include waiting time history. Vehicle journey completion detection uses Graph.ended_vehicles_count to trigger final throughput rewards. The system maintains compatibility with existing TraCI integration patterns while adding vehicle-specific reward computation capabilities. Decision timestamp tracking integrates with the centralized agent's action execution through define_tl_program() calls (node.py:12-14), creating an audit trail that enables precise credit assignment to specific signal timing decisions.
+
+**Final Episode Throughput Rewards**:
+
+At episode completion, the system provides positive rewards based on network-wide throughput performance: reward = α × completed_vehicles, where α is a scaling factor that balances intermediate penalties with final performance incentives. This component ensures that the agent optimizes for overall system performance rather than simply minimizing individual waiting times. The throughput reward uses existing Graph.ended_vehicles_count tracking to maintain consistency with Tree Method performance measurement approaches.
 
 ### Training Environment Implementation
 
@@ -249,35 +269,23 @@ Algorithm selection requires systematic evaluation against criteria that reflect
 
 ### Credit Assignment Methods
 
-Credit assignment addresses the fundamental problem of attributing network-wide performance improvements to specific signal timing decisions made at individual intersections and earlier time steps. In traffic control, this attribution challenge is particularly acute: a signal decision at one intersection affects traffic conditions several blocks away and many minutes later, while overall network performance depends on complex interactions between multiple simultaneous control decisions. The credit assignment method determines how these distributed, delayed effects are translated into learning signals for policy improvement.
+The car-based intermediate reward system from Chapter 3 requires specific algorithmic integration within PPO to ensure stable learning and efficient gradient computation. Unlike traditional RL applications with single reward signals per time step, our system generates multiple simultaneous vehicle penalties at each measurement interval, requiring careful handling of gradient computation and variance control.
 
-**Temporal Credit Assignment for Traffic Control**
+**Policy Gradient Integration with Vehicle Penalties**:
 
-The centralized agent's global reward structure creates specific demands for temporal credit assignment. Since the agent receives a single network-wide reward signal after each action, the credit assignment challenge focuses on connecting current control decisions to future performance improvements across multiple time horizons. Traffic control exhibits delayed effects: signal changes at time t may improve network throughput only after several signal cycles, requiring credit assignment methods that effectively handle temporal delays.
+PPO's policy gradient computation must accommodate multiple reward signals per time step as different vehicles trigger penalties simultaneously. At each measurement interval, the system collects all vehicle waiting time penalties: R_t = Σ(-Δwait_time_i) for all vehicles i generating penalties at time t. These aggregated penalties integrate into PPO's advantage calculation alongside the final episode throughput reward, creating a two-component gradient signal that balances immediate vehicle performance feedback with long-term network optimization objectives.
 
-**Monte Carlo Returns**
+**Timestamped Decision Attribution**:
 
-Monte Carlo methods assign credit by evaluating complete episode trajectories, calculating returns from episode termination back to each decision point. For traffic control, this approach captures the full long-term consequences of signal timing decisions, including delayed effects that manifest over multiple signal cycles. A signal decision that initially increases local congestion but later improves network-wide flow patterns receives appropriate credit through complete trajectory evaluation.
+The time-windowed credit distribution strategy requires algorithmic mapping between vehicle penalties and the specific decisions that influenced those vehicles. PPO maintains a decision history buffer storing (timestamp, action, intersection_id) tuples for all signal timing decisions. When a vehicle generates a penalty at time t, the system identifies all decisions made since that vehicle's journey start time and applies the penalty to those specific policy gradient computations. This creates a sparse gradient update pattern where recent decisions receive penalties from multiple vehicles while older decisions receive fewer penalty signals as their affected vehicles complete journeys.
 
-However, Monte Carlo returns present significant limitations for traffic control applications. Episode termination requires arbitrary cutoff points in continuous traffic processes, potentially truncating important delayed effects. The approach also exhibits high variance in return estimates, as identical signal decisions may lead to different outcomes due to stochastic vehicle arrivals and route choices. This variance problem is particularly acute in traffic control where environmental stochasticity significantly affects episode outcomes independently of agent actions.
+**Variance Reduction for Dense Reward Signals**:
 
-**N-Step Returns**
+The frequent intermediate penalties can introduce higher gradient variance compared to sparse episode-based rewards. PPO's advantage estimation provides natural variance reduction through the critic network, which learns to predict expected performance from current traffic states. The critic evaluation V(s_t) serves as a baseline for both vehicle penalties and episode rewards: Advantage = R_t - V(s_t), where R_t includes both immediate vehicle penalties and future episode rewards. This baseline subtraction reduces variance from environmental stochasticity while preserving the learning signal from actual policy improvements.
 
-N-step returns provide a middle ground between immediate rewards and complete episode evaluation, using finite-horizon lookahead to balance bias and variance in credit assignment. The method calculates returns using rewards accumulated over n future time steps plus a value function estimate for states beyond the n-step horizon. For traffic control, this approach captures medium-term consequences of signal decisions without requiring complete episode evaluation.
+**Training Stability and Reward Balance**:
 
-The choice of n becomes critical in traffic applications. Short horizons (n = 1-3 signal cycles) capture immediate traffic responses but may miss important delayed effects, such as network-wide congestion propagation. Longer horizons (n = 10-20 cycles) better capture delayed effects but introduce higher variance and computational overhead. The optimal n value likely depends on network topology: dense urban grids with short block distances may benefit from shorter horizons, while suburban networks with longer signal spacing may require extended lookahead periods.
-
-**Eligibility Traces (TD-Lambda)**
-
-Eligibility traces provide an elegant solution to the temporal credit assignment problem by maintaining exponentially decaying memory of past state-action pairs. When a reward is received, credit is assigned not only to the immediately preceding action but to all recent actions in proportion to their eligibility values. The λ parameter controls the decay rate: λ = 0 provides pure one-step credit assignment, while λ = 1 approaches Monte Carlo returns.
-
-For traffic control, eligibility traces naturally capture the multi-temporal nature of signal control effects. A signal decision continues to influence traffic flow for several cycles, and traces ensure that these decisions receive appropriate credit as delayed effects manifest. The exponential decay structure also aligns with traffic control intuition: more recent decisions typically have stronger influence on current network states, but earlier decisions retain diminished credit as their effects propagate through the network.
-
-**Implementation Considerations**
-
-The centralized architecture influences credit assignment implementation in several important ways. Since all signal decisions originate from a single agent, the credit assignment problem simplifies to temporal attribution rather than spatial attribution across multiple agents. This simplification suggests that eligibility traces may be particularly effective, as they provide sophisticated temporal credit assignment without the complexity of multi-agent coordination.
-
-Computational efficiency becomes crucial for large networks with hundreds of signalized intersections. N-step returns require storing n time steps of experience for each intersection, while eligibility traces maintain eligibility values for all state-action pairs. The trade-off between credit assignment sophistication and computational feasibility may favor shorter n-step returns or carefully tuned eligibility trace parameters in large-scale applications.
+The two-component reward system requires careful balance between frequent intermediate penalties (typically small, frequent signals) and episode throughput rewards (larger, sparse signals). PPO's clipped objective provides stability against large policy updates from occasional high-magnitude penalty accumulations when multiple vehicles simultaneously experience significant waiting time increases. The reward scaling parameter α for throughput rewards allows empirical tuning to balance immediate vehicle feedback against long-term network performance optimization, ensuring the agent learns both responsive local control and strategic network coordination.
 
 ## 5. Training Implementation
 
