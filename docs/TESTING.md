@@ -50,7 +50,7 @@ pytest tests/ -m slow -v
 ### Current Test Coverage
 
 #### ✅ What's Currently Tested:
-- **Configuration System**: Unit tests for CONFIG, OSMConfig, NetworkConfig classes
+- **Configuration System**: Unit tests for CONFIG, NetworkConfig classes
 - **Basic Pipeline Execution**: Smoke tests for 3x3 grids with minimal parameters
 - **Network Generation**: Synthetic grid creation (netgenerate integration)
 - **Edge Splitting with Lanes**: Integrated lane assignment validation
@@ -60,7 +60,6 @@ pytest tests/ -m slow -v
 - **CLI Argument Parsing**: Parameter validation and error handling
 
 #### ⚠️ What's Missing or Incomplete:
-- **OSM Import Functionality**: No tests for real-world street network import
 - **Full Long-Running Scenarios**: Most tests use shortened 30-60 second simulations
 - **Comprehensive Performance Baselines**: Performance tests exist but baselines may be outdated
 - **Complete Pipeline Sequence**: Integration tests cover individual steps but not full pipeline
@@ -131,14 +130,14 @@ pytest tests/ -v -s --capture=no --tb=long
   - `test_default_values()`: Checks default constants (MIN_LANES=1, MAX_LANES=3, HEAD_DISTANCE=50)
   - `test_file_paths()`: Validates configured file paths (workspace/, grid.net.xml, etc.)
 
-- **TestOSMConfig** (3 methods):
-  - `test_osm_config_creation()`: Tests OSMConfig class instantiation with defaults
-  - `test_osm_config_with_values()`: Tests custom OSM configuration values
+- **Testsample dataConfig** (3 methods):
+  - `test_sample_config_creation()`: Tests sample dataConfig class instantiation with defaults
+  - `test_sample_config_with_values()`: Tests custom sample data configuration values
   - `test_highway_types_filter()`: Validates highway type filtering (primary, secondary, residential)
 
 - **TestNetworkConfig** (2 methods):
   - `test_network_config_grid()`: Tests NetworkConfig for synthetic grid networks
-  - `test_network_config_osm()`: Tests NetworkConfig for OSM-based networks
+  - `test_network_config_sample()`: Tests NetworkConfig for sample data-based networks
 
 - **TestConfigIntegration** (3 methods):
   - `test_global_config_with_network_config()`: Tests CONFIG integration with different network types
@@ -276,7 +275,7 @@ Based on your feedback about "not knowing what's going on":
 ### 2. Test Coverage Gaps
 
 #### Missing Core Functionality:
-- **OSM Import Pipeline**: Real-world street network testing
+- **sample data Import Pipeline**: Real-world street network testing
 - **Full Scenario Validation**: Most CLAUDE.md scenarios not fully tested
 - **Tree Method Algorithm**: Limited validation of actual algorithm behavior
 - **Performance Regression**: Baselines may be stale or missing
@@ -317,10 +316,10 @@ Based on your feedback about "not knowing what's going on":
 ### Phase 2: Coverage Expansion (Week 2-3)
 **Goal**: Fill critical testing gaps
 
-1. **OSM Import Testing**
-   - Create OSM test data files
-   - Add OSM import pipeline tests
-   - Validate OSM-specific functionality
+1. **sample data Import Testing**
+   - Create sample data test data files
+   - Add sample data import pipeline tests
+   - Validate sample data-specific functionality
 
 2. **Full Scenario Testing**
    - Implement all 14 verified scenarios from CLAUDE.md
@@ -402,7 +401,7 @@ pytest tests/ -v -s --durations=10 --tb=long
 - [ ] Pre-commit hooks prevent broken commits
 
 ### Medium Term (3-4 weeks):
-- [ ] OSM import functionality fully tested
+- [ ] sample data import functionality fully tested
 - [ ] All CLAUDE.md scenarios have corresponding tests
 - [ ] Performance baselines established and monitored
 - [ ] 80%+ code coverage with meaningful tests

@@ -40,7 +40,7 @@
 
 **Key Integration Tests:**
 
-- **Network Generation**: Grid creation and OSM import validation
+- **Network Generation**: Grid creation and sample import validation
 - **Lane Assignment**: Edge splitting and lane configuration testing
 - **Traffic Generation**: Route and vehicle file creation
 - **Pipeline Steps**: Each of the 9 pipeline steps tested individually
@@ -57,7 +57,7 @@
 
 - **Basic Scenarios**: Grid dimensions 3x3, 5x5, 7x7 with various vehicle counts
 - **Traffic Control Comparisons**: Tree Method vs Actuated vs Fixed timing
-- **OSM Network Testing**: Real-world street network validation
+- **Sample Network Testing**: Research dataset validation
 - **Tree Method Samples**: Research benchmark validation
 - **Performance Testing**: Travel time and completion rate analysis
 
@@ -167,13 +167,13 @@ pytest tests/system/test_scenarios.py::test_basic_3x3_grid -v
 - **SUMO Actuated**: Gap-based signal control
 - **Fixed Timing**: Static signal phases
 
-### OSM Network Scenarios
+### Sample Network Scenarios
 
-**Real-World Testing:**
+**Research Dataset Testing:**
 
-- **Manhattan East Village**: 500 vehicles on real street network
-- **Complex Intersections**: Dead-end streets and irregular topology
-- **Signal Preservation**: Maintains original OSM traffic light timing
+- **Tree Method Samples**: Pre-built research networks with established benchmarks
+- **Complex Topologies**: Varied network structures for comprehensive validation
+- **Performance Benchmarks**: Established metrics for comparison validation
 
 ### Tree Method Sample Validation
 

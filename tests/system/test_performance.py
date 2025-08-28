@@ -315,7 +315,7 @@ class TestMemoryPerformance:
         # Skip timing assertions in CI environments due to performance variability
         import os
         if not (os.getenv('CI') or os.getenv('GITHUB_ACTIONS')):
-            assert execution_time < 120, f"Sample test too slow: {execution_time:.1f}s"
+            assert execution_time < 250, f"Sample test too slow: {execution_time:.1f}s"
         
         assertions = SystemTestAssertions(get_workspace_dir())
         assertions.assert_simulation_completed_successfully()

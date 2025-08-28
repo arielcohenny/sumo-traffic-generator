@@ -56,4 +56,4 @@ After edge splitting and lane assignment modifications, the SUMO network must be
 - **Step**: Confirm successful network rebuild
 - **Function**: Success logging in `src/cli.py`
 - **Success Message**: "Rebuilt the network successfully."
-- **Ready for Next Steps**: Network is now prepared for zone coordinate conversion (OSM mode) and edge attractiveness assignment
+- **Ready for Next Steps**: Network is now prepared for edge attractiveness assignment

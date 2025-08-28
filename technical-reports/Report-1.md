@@ -91,11 +91,6 @@ class RoutingStrategy(ABC):
     @abstractmethod
     def compute_route(self, start_edge: str, end_edge: str) -> List[str]:
         pass
-
-    @property
-    @abstractmethod
-    def supports_dynamic_rerouting(self) -> bool:
-        pass
 ```
 
 **Shortest Path Strategy** provides static route computation using SUMO's Dijkstra algorithm, optimizing for distance minimization. **Realtime Routing Strategy** mimics GPS navigation applications with dynamic rerouting at 30-second intervals. **Fastest Routing Strategy** optimizes for travel time rather than distance, with 45-second rerouting intervals. **Attractiveness Routing Strategy** implements multi-criteria optimization balancing path efficiency with destination attractiveness.
@@ -234,7 +229,7 @@ The T5 implementation establishes the network analysis foundation essential for 
 
 The network analysis implements a comprehensive 4-phase temporal system with configurable bimodal traffic patterns featuring morning and evening peaks. The system uses pre-calculated attractiveness profiles for efficient simulation with real-time phase switching during simulation based on start time.
 
-The temporal system supports both full-day (24h) and rush hour analysis with 1:1 time mapping (1 sim second = 1 real second). Five attractiveness methods (poisson, land_use, gravity, iac, hybrid) integrate with the 4-phase system for realistic traffic generation.
+The temporal system supports both full-day (24h) and rush hour analysis with 1:1 time mapping (1 sim second = 1 real second). Five attractiveness methods (land_use, poisson, gravity, iac, hybrid) integrate with the 4-phase system for realistic traffic generation.
 
 Key parameters include `--time_dependent` flag to apply 4-phase time-of-day variations, `--start_time_hour` (0-24 hours) to set real-world simulation start time, and `--attractiveness` parameter to select from the five available methods.
 
@@ -579,11 +574,6 @@ class RoutingStrategy(ABC):
     @abstractmethod
     def compute_route(self, start_edge: str, end_edge: str) -> List[str]:
         pass
-
-    @property
-    @abstractmethod
-    def supports_dynamic_rerouting(self) -> bool:
-        pass
 ```
 
 Four concrete strategies implement different navigation behaviors: shortest path (static), realtime (30s rerouting), fastest (45s rerouting), and attractiveness-based routing.
@@ -761,7 +751,7 @@ pytest>=7.0.0        # Unit testing framework
 --block_size_m INT             # Block size in meters (default: 200m)
 --junctions_to_remove STR      # Junction removal: count or ID list (default: "0")
 --lane_count STR               # Lane algorithm: realistic/random/fixed (default: "realistic")
---osm_file STR                 # OSM file path for real networks
+--tree_method_sample STR       # Tree Method sample data path
 --custom_lanes STR             # Edge-specific lane definitions
 --custom_lanes_file STR        # File with custom lane configurations
 ```
@@ -773,14 +763,14 @@ pytest>=7.0.0        # Unit testing framework
 --routing_strategy STR         # Routing mix (default: "shortest 100")
 --vehicle_types STR            # Vehicle distribution (default: "passenger 60 commercial 30 public 10")
 --departure_pattern STR        # Temporal distribution (default: "six_periods")
---end_time INT                 # Simulation duration in seconds (default: 86400)
+--end_time INT                 # Simulation duration in seconds (default: 7200)
 --step_length FLOAT            # Time step size (default: 1.0s)
 ```
 
 **Zone and Attractiveness Parameters**:
 
 ```bash
---attractiveness STR           # Attractiveness method: poisson/land_use/gravity/iac/hybrid (default: "poisson")
+--attractiveness STR           # Attractiveness method: land_use/poisson/gravity/iac/hybrid (default: "land_use")
 --time_dependent BOOL          # Enable 4-phase temporal variation
 --start_time_hour FLOAT        # Real-world start time 0-24h (default: 7.0)
 --land_use_block_size_m FLOAT  # Zone resolution in meters (default: 25.0)

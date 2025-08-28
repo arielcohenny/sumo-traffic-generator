@@ -9,7 +9,7 @@
 - **Spatial Traffic Modeling**: Accounts for land use patterns, accessibility, and network topology in traffic generation
 - **Temporal Traffic Variation**: Enables time-of-day traffic patterns (rush hours, off-peak periods)
 
-**Universal Application**: Works for both OSM and non-OSM networks after proper zone coordinate alignment
+**Universal Application**: Works for synthetic networks
 
 ## Edge Attractiveness Assignment Process
 

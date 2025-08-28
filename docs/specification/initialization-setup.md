@@ -29,16 +29,13 @@
 
 ### `--grid_dimension` (float, default: 5)
 
-Defines the grid's number of rows and columns for synthetic network generation. Not applicable when `--osm_file` is provided.
-
+Defines the grid's number of rows and columns for synthetic network generation. 
 ### `--block_size_m` (int, default: 200)
 
-Sets block size in meters for grid network generation. Not applicable when `--osm_file` is provided.
-
+Sets block size in meters for grid network generation. 
 ### `--junctions_to_remove` (str, default: "0")
 
-Number of junctions to remove or comma-separated list of specific junction IDs (e.g., "5" or "A0,B1,C2"). Not applicable when `--osm_file` is provided.
-
+Number of junctions to remove or comma-separated list of specific junction IDs (e.g., "5" or "A0,B1,C2"). 
 ### `--lane_count` (str, default: "realistic")
 
 Sets the lane count. 3 algorithms are available:
@@ -59,16 +56,16 @@ Controls randomization. If not provided, random seed is generated.
 
 Simulation step length in seconds for TraCI control loop.
 
-### `--end-time` (int, default: 86400)
+### `--end-time` (int, default: 7200)
 
 Simulation duration in seconds.
 
-### `--attractiveness` (str, default: "poisson")
+### `--attractiveness` (str, default: "land_use")
 
 Sets the departure and arrival attractiveness of each edge. Five methods available:
 
+- `land_use`: Zone-based calculation (default)
 - `poisson`: Random distribution
-- `land_use`: Zone-based calculation
 - `gravity`: Distance-based model
 - `iac`: Intersection accessibility calculation
 - `hybrid`: Combined approach
@@ -81,7 +78,7 @@ Applies 4-phase variations to synthetic zone attractiveness.
 
 Real-world hour when simulation starts (0-24) for temporal attractiveness. Used with `--time_dependent` for phase calculation.
 
-### `--departure_pattern` (str, default: "six_periods")
+### `--departure_pattern` (str, default: "uniform")
 
 Vehicle departure timing. Four patterns available:
 
@@ -109,16 +106,16 @@ Vehicle type distribution. Three types with percentage assignment:
 
 ### `--traffic_light_strategy` (str, default: "opposites")
 
-Applied strategies for traffic lights. Two strategies available. Not applicable when `--osm_file` is provided.
-
+Applied strategies for traffic lights. Two strategies available. 
 - `opposites`: Opposing directions signal together
 - `incoming`: Each edge gets separate phase
 
 ### `--traffic_control` (str, default: "tree_method")
 
-Dynamic signal control. Three methods available:
+Dynamic signal control. Four methods available:
 
 - `tree_method`: Tree Method (Decentralized Bottleneck Prioritization Algorithm)
+- `atlcs`: ATLCS (Adaptive Traffic Light Control System with Tree Method coordination)
 - `actuated`: SUMO gap-based control
 - `fixed`: Static timing from configuration
 
@@ -127,6 +124,7 @@ Dynamic signal control. Three methods available:
 Tree Method calculation interval in seconds. Controls how often the Tree Method algorithm runs its optimization calculations.
 
 **Performance Configuration:**
+
 - **Lower values (30-60s)**: More responsive traffic control, higher CPU usage
 - **Higher values (120-300s)**: More efficient computation, less responsive control
 - **Default (90s)**: Balanced efficiency and responsiveness
@@ -138,28 +136,81 @@ Tree Method calculation interval in seconds. Controls how often the Tree Method 
 **Technical Implementation:** Overrides `TREE_METHOD_ITERATION_INTERVAL_SEC` constant in `src/config.py`.
 
 **Examples:**
+
 ```bash
 # Responsive control (every 60 seconds)
 python -m src.cli --traffic_control tree_method --tree-method-interval 60
 
-# Efficient control (every 2 minutes)  
+# Efficient control (every 2 minutes)
 python -m src.cli --traffic_control tree_method --tree-method-interval 120
 
 # High-performance scenarios (every 3 minutes)
 python -m src.cli --traffic_control tree_method --tree-method-interval 180
 ```
 
+### `--bottleneck-detection-interval` (int, default: 60)
+
+Enhanced bottleneck detection interval in seconds for ATLCS. Controls how often the ATLCS enhanced bottleneck detector runs its analysis.
+
+**Enhanced Bottleneck Detection Features:**
+
+- **Advanced Metrics**: Uses density, speed, queue length, and waiting time (vs Tree Method's speed-only)
+- **Predictive Analysis**: Identifies bottlenecks before they fully form
+- **Multi-Criteria Assessment**: Combines multiple traffic indicators for robust detection
+- **Real-Time Responsiveness**: More frequent updates than Tree Method's strategic intervals
+
+**Performance Configuration:**
+
+- **Lower values (30-45s)**: More responsive bottleneck detection, higher CPU usage
+- **Higher values (90-120s)**: More efficient computation, less responsive detection
+- **Default (60s)**: Balanced detection frequency and computational efficiency
+
+**Valid Range:** 30-120 seconds
+
+**Integration:** Works alongside Tree Method's 90-second strategic calculations to provide tactical bottleneck prevention.
+
+### `--atlcs-interval` (int, default: 5)
+
+ATLCS dynamic pricing update interval in seconds for ATLCS. Controls how often the ATLCS pricing engine calculates congestion-based pricing updates.
+
+**ATLCS Dynamic Pricing Features:**
+
+- **Congestion-Based Pricing**: Higher congestion severity receives higher priority scores
+- **Signal Priority Calculation**: Converts pricing data to traffic light extension recommendations
+- **Real-Time Adaptation**: Rapid response to changing traffic conditions
+- **Bottleneck Prevention**: Extends green phases dynamically to prevent jam formation
+
+**Performance Configuration:**
+
+- **Lower values (1-3s)**: Maximum responsiveness, highest CPU usage
+- **Higher values (10-15s)**: More efficient computation, reduced responsiveness
+- **Default (5s)**: Optimal balance for real-time traffic light control
+
+**Valid Range:** 1-15 seconds
+
+**Technical Implementation:** Updates shared phase durations that Tree Method can access, enabling coordinated traffic control.
+
+**Examples:**
+
+```bash
+# Responsive ATLCS configuration
+python -m src.cli --traffic_control atlcs --bottleneck-detection-interval 45 --atlcs-interval 3
+
+# Efficient ATLCS configuration
+python -m src.cli --traffic_control atlcs --bottleneck-detection-interval 90 --atlcs-interval 10
+
+# Balanced ATLCS with Tree Method coordination
+python -m src.cli --traffic_control atlcs --tree-method-interval 90 --bottleneck-detection-interval 60 --atlcs-interval 5
+```
+
 ### `--gui` (flag)
 
 Launch SUMO GUI.
 
-### `--osm_file` (str, optional)
-
-Path to OSM file that replaces synthetic grid generation.
 
 ### `--land_use_block_size_m` (float, default: 25.0)
 
-Zone cell size in meters for both OSM (intelligent zones) and non-OSM (traditional zones) mode.
+Zone cell size in meters for land use zone generation.
 
 **Default**: 25.0m for both network types (following research paper methodology from "A Simulation Model for Intra-Urban Movements")
 
@@ -171,15 +222,17 @@ Path to folder containing pre-built Tree Method sample files for bypass mode.
 
 **Purpose**: Enables testing and validation using original research networks without generating new networks.
 
-**Behavior**: 
+**Behavior**:
+
 - **Bypass Mode**: Skips Steps 1-8 entirely, goes directly to Step 9 (Dynamic Simulation)
 - **File Requirements**: Folder must contain `network.net.xml`, `vehicles.trips.xml`, and `simulation.sumocfg.xml`
 - **File Management**: Automatically copies and adapts sample files to our pipeline naming convention
 - **Validation**: Tests our Tree Method implementation against established research benchmarks
 
-**Incompatible Arguments**: Cannot be used with network generation arguments (`--osm_file`, `--grid_dimension`, `--block_size_m`, `--junctions_to_remove`, `--lane_count`)
+**Incompatible Arguments**: Cannot be used with network generation arguments (`--grid_dimension`, `--block_size_m`, `--junctions_to_remove`, `--lane_count`)
 
 **Usage Examples**:
+
 ```bash
 # Basic Tree Method validation
 env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control tree_method --gui
@@ -195,6 +248,7 @@ Custom lane definitions for specific edges in synthetic grid networks.
 **Format**: `"EdgeID=tail:N,head:ToEdge1:N,ToEdge2:N;EdgeID2=..."`
 
 **Supported Syntax**:
+
 - **Full Specification**: `A1B1=tail:2,head:B1B0:1,B1C1:2` (custom tail + explicit head movements)
 - **Tail-Only**: `A1B1=tail:2` (custom tail lanes, preserve existing movements)
 - **Head-Only**: `A1B1=head:B1B0:1,B1C1:2` (automatic tail, custom movements)
@@ -202,8 +256,9 @@ Custom lane definitions for specific edges in synthetic grid networks.
 
 **Multiple Edges**: Separate configurations with semicolons
 
-**Constraints**: 
-- Synthetic networks only (not compatible with `--osm_file`)
+**Constraints**:
+
+- Synthetic networks only
 - Edge IDs must match grid pattern (A1B1, B2C2, etc.)
 - Lane counts must be 1-3
 - Mutually exclusive with `--custom_lanes_file`
@@ -213,13 +268,15 @@ Custom lane definitions for specific edges in synthetic grid networks.
 File containing custom lane definitions for complex scenarios.
 
 **Format**: Same syntax as `--custom_lanes`, one configuration per line
-**Features**: 
+**Features**:
+
 - Supports comments (lines starting with #)
 - UTF-8 encoding required
 - Line-specific error reporting
 - Mutually exclusive with `--custom_lanes`
 
 **Example File Content**:
+
 ```
 # Custom lane configuration file
 A1B1=tail:2,head:B1B0:1,B1C1:2
@@ -266,14 +323,6 @@ D1E1=tail:2,head:
   - Percentage validation for custom patterns
   - Time range validation (start < end hours)
 
-### OSM File Validation
-
-- **Current**: Not implemented
-- **Needed Checks**:
-  - File existence verification
-  - File format validation (XML structure)
-  - OSM-specific validation (nodes, ways, bounds elements present)
-  - File readability and permissions
 
 ### Numeric Range Validations
 
@@ -308,7 +357,7 @@ D1E1=tail:2,head:
 
 - **Current**: Not implemented
 - **Needed Checks**:
-  - OSM file vs grid parameters (mutually exclusive usage)
+  - Tree Method sample vs grid parameters (mutually exclusive usage)
   - Time-dependent features requiring appropriate end-time duration
   - Grid dimension vs junctions to remove capacity limits
   - Traffic light strategy compatibility with network type

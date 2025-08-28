@@ -69,6 +69,9 @@ class SumoController:
             binary,
             "-c", self.sumo_cfg,
             "--step-length", str(self.step_length),
+            "--statistic-output", "workspace/sumo_statistics.xml",
+            "--tripinfo-output.write-unfinished", "true",
+            "--error-log", "workspace/sumo_errors.log",
         ]
         traci.start(sumo_cmd)
         print("SUMO TraCI started")

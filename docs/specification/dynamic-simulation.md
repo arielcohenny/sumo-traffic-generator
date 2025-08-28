@@ -145,6 +145,109 @@
 - **Objects**: `Network`, `Graph`, cycle time calculation
 - **Validation**: Runtime verification of algorithm behavior at configured frequency
 
+### ATLCS (Adaptive Traffic Light Control System)
+
+**Algorithm Overview:**
+
+- **Research Foundation**: Adaptive Traffic Light Control System implementing enhanced bottleneck detection and ATLCS through tactical bottleneck prevention
+- **Core Principle**: Extends Tree Method's strategic network optimization with real-time responsive traffic light control
+- **Coordination Architecture**: Junction-level handoff mechanism based on Tree Method's multi-edge tree detection for conflict-free operation
+- **Tactical Focus**: Dynamic pricing theory applied to traffic control - higher congestion severity receives priority treatment
+- **Real-Time Intervention**: Rapid response system preventing bottleneck formation through intelligent green phase extensions
+
+**Theoretical Foundation:**
+
+**ATLCS-Tree Method Coordination:**
+
+- **Tree Method Role**: Strategic network optimization with 90-second calculation intervals for network-wide phase duration optimization
+- **ATLCS Role**: Tactical bottleneck prevention with 5-60 second intervals for real-time green phase extensions
+- **Coordination Logic**: Junction-level handoff based on multi-edge tree detection prevents method conflicts
+- **Control Handoff**: Tree Method claims exclusive control when detecting multi-edge trees (complex bottlenecks), releases control when only single-edge trees remain
+- **Complementary Operation**: Methods work as collaborative specialists rather than competing systems
+
+**Enhanced Bottleneck Detection:**
+
+- **Multi-Criteria Analysis**: Combines density, speed, queue length, and waiting time for robust bottleneck identification
+- **Predictive Capability**: Identifies potential bottlenecks before they fully form using advanced traffic indicators
+- **Update Frequency**: Configurable detection intervals (default: 60 seconds) independent of Tree Method timing
+- **Enhanced Sensitivity**: More granular detection compared to Tree Method's speed-only analysis
+
+**ATLCS Dynamic Pricing Engine:**
+
+- **Congestion-Based Pricing**: Calculates priority scores based on traffic congestion severity using economic pricing theory
+- **Signal Priority Translation**: Converts pricing data into traffic light extension recommendations
+- **Real-Time Updates**: Rapid pricing recalculation (default: 5 seconds) for immediate traffic response
+- **Priority Thresholds**: Three-tier priority system (high/medium/low) with corresponding extension durations
+
+**Implementation Process:**
+
+**Initialization Phase:**
+- **Tree Method Foundation**: Inherits complete Tree Method infrastructure (Network, Graph, algorithm objects)
+- **ATLCS Components**: Adds enhanced bottleneck detector, pricing engine, and demand-supply coordinator
+- **Coordination Setup**: Initializes junction control state tracking for handoff management
+- **Configuration Loading**: Applies bottleneck detection and ATLCS timing intervals from CLI arguments
+
+**Runtime Behavior:**
+
+**Coordinated Operation Cycle:**
+
+1. **Tree Method Strategic Phase** (every 90 seconds):
+   - Performs network-wide optimization calculations
+   - Detects multi-edge trees indicating complex bottlenecks
+   - Claims exclusive control of junctions with complex trees
+   - Populates baseline phase durations in shared variables
+
+2. **ATLCS Tactical Phase** (every 5-60 seconds):
+   - Enhanced Bottleneck Detection: Identifies bottlenecks using multi-criteria analysis
+   - ATLCS Pricing Calculation: Computes congestion-based priority scores
+   - Junction Control Check: Verifies control permissions before modifications
+   - Signal Extensions: Applies green phase extensions only to available junctions
+
+3. **Per-Step Coordination**:
+   - Tree Method updates traffic lights using shared durations (potentially modified by ATLCS)
+   - ATLCS coordination prevents conflicts through jurisdiction boundaries
+   - Control handoffs occur based on traffic conditions, not arbitrary timing
+
+**Dynamic Pricing Implementation:**
+
+- **Congestion Assessment**: Analyzes traffic indicators to calculate edge-specific pricing
+- **Priority Classification**: 
+  - High Priority (price > high threshold): Significant green time extension (8-12 seconds)
+  - Medium Priority (price > medium threshold): Moderate extension (4-6 seconds)
+  - Low Priority: No intervention, baseline Tree Method control maintained
+- **Extension Logic**: Extends current green phases dynamically rather than recalculating entire cycle
+- **Conflict Prevention**: Only modifies junctions not under Tree Method exclusive control
+
+**Junction-Level Handoff Mechanism:**
+
+- **Control States**: Each junction tracked as "tree_method", "atlcs", or "available"
+- **Claim Logic**: Tree Method claims control when detecting multi-edge trees (complex bottlenecks requiring strategic optimization)
+- **Release Logic**: Tree Method releases control when only single-edge trees remain (ATLCS can handle tactically)
+- **ATLCS Compliance**: ATLCS respects Tree Method control ownership, skips modifications to claimed junctions
+
+**Key Advantages:**
+
+- **Conflict-Free Coordination**: Junction-level handoff eliminates method contradictions and computational waste
+- **Complementary Specialization**: Strategic optimization (Tree Method) combined with tactical responsiveness (ATLCS)
+- **Real-Time Adaptability**: Sub-10-second response times for bottleneck prevention while maintaining network optimization
+- **Enhanced Detection**: Multi-criteria bottleneck identification superior to single-metric approaches
+- **Economic Foundation**: Dynamic pricing theory provides robust priority calculation framework
+- **Scalable Architecture**: Clear separation of concerns enables future enhancements and additional coordination methods
+
+**Configuration Integration:**
+
+- **Enhanced Bottleneck Detection Timing**: `--bottleneck-detection-interval` controls enhanced bottleneck detection frequency (default: 60 seconds)
+- **ATLCS Timing**: `--atlcs-interval` controls dynamic pricing update frequency (default: 5 seconds)
+- **Tree Method Integration**: Inherits `--tree-method-interval` for strategic calculation timing (default: 90 seconds)
+- **Independent Operation**: All three timing systems operate independently for optimal performance balance
+
+**Setup Requirements:**
+
+- **Tree Method Foundation**: Complete Tree Method infrastructure including Network JSON, Graph objects, and cycle calculations
+- **ATLCS Extensions**: Enhanced detector, pricing engine, and coordination components
+- **Shared Variables**: Current phase durations dictionary for Tree Method-ATLCS communication
+- **Control State Tracking**: Junction ownership management for handoff coordination
+
 ### Actuated Control (SUMO Built-in)
 
 **Algorithm Overview:**

@@ -6,153 +6,35 @@
 - **Function**: Pipeline factory pattern (`src/pipeline/pipeline_factory.py`)
 - **Process**:
   - Check if `--tree_method_sample` argument is provided
-  - If Tree Method sample provided: Execute research dataset workflow (Section 1.4)
-  - Check if `--osm_file` argument is provided
-  - If OSM file provided: Execute OSM import workflow (Section 1.2)
-  - If no OSM file: Execute synthetic grid generation workflow (Section 1.3)
-- **Arguments Used**: `--tree_method_sample`, `--osm_file`
+  - If Tree Method sample provided: Execute research dataset workflow (Section 1.2)
+  - Otherwise: Execute synthetic grid generation workflow (Section 1.3)
+- **Arguments Used**: `--tree_method_sample`
 
-## OSM Mode (`--osm_file` provided)
 
-### OSM Network Import
+## Tree Method Sample Mode (`--tree_method_sample` provided)
 
-- **Step**: Import real-world street network from OSM data
-- **Function**: `import_osm_network()` in `src/network/import_osm.py`
-- **Arguments Used**: `--osm_file`
+### Research Dataset Import
 
-#### OSM File Requirements:
+- **Step**: Import pre-built research network from Tree Method dataset
+- **Function**: Sample import workflow in pipeline factory
+- **Purpose**: Validate our Tree Method implementation against established research benchmarks
+- **Arguments Used**: `--tree_method_sample`
 
-- **Required Elements**: Nodes, ways with highway tags, bounding box
-- **Highway Types**: Primary, secondary, tertiary, residential, unclassified streets
-- **Lane Information**: Number of lanes per edge (preserved from OSM data)
-- **Traffic Signals**: Original OSM traffic light locations (auto-generated if missing)
-- **Minimum Content**: At least 10 highway ways for viable network
-- **Area Limits**: Warning issued for areas > 5 km² (performance impact)
+#### File Requirements:
 
-#### 12 Specialized netconvert Parameters:
+- **Directory Structure**: Folder containing three required files
+- **Required Files**: `network.net.xml`, `vehicles.trips.xml`, `simulation.sumocfg.xml`
+- **File Management**: Automatically copies and adapts sample files to our pipeline naming convention
+- **Validation**: Tests our Tree Method implementation against established research data
 
-- **Process**:
-  - `--geometry.remove`: Remove unnecessary geometry points for cleaner network
-  - `--roundabouts.guess`: Automatically detect roundabout structures
-  - `--junctions.join`: Join nearby junctions to reduce complexity
-  - `--tls.guess-signals`: Guess traffic signal locations from OSM data
-  - `--tls.discard-simple`: Remove simple traffic lights that don't need control
-  - `--ramps.guess`: Detect highway ramps and on/off connections
-  - `--junctions.corner-detail 5`: Set junction corner detail level to 5 meters
-  - `--output.street-names`: Preserve original street names from OSM
-  - `--output.original-names`: Keep original OSM element names
-  - `--keep-edges.by-vclass passenger`: Filter to keep only passenger vehicle infrastructure
-  - `--remove-edges.by-vclass pedestrian`: Remove pedestrian-only paths
-  - Command: `netconvert --osm-files {osm_file} --output-prefix workspace/grid/osm_network`
-- **Failure**: System fails with error if OSM file lacks sufficient data for network generation
-- **Output**: Intermediate files in `workspace/grid/` directory
+#### Process:
 
-### OSM File Organization
+- **Bypass Mode**: Skips Steps 1-8, goes directly to Step 9 (Dynamic Simulation)
+- **Network Copy**: Copies sample network files to workspace directory
+- **File Adaptation**: Renames files to match our pipeline conventions
+- **Configuration Update**: Updates SUMO configuration for our simulation parameters
 
-- **Step**: Move OSM-generated files to expected pipeline locations
-- **Function**: File movement logic in `src/cli.py`
-- **Process**:
-  - Move files from `workspace/grid/osm_network.*` to `workspace/grid.*`
-  - Handle file patterns: `*.nod.xml`, `*.edg.xml`, `*.con.xml`, `*.tll.xml`
-  - Extract file extensions and rename to standard format
-  - Clean up temporary `workspace/grid/` directory
-  - Print movement confirmation for each file
-- **Output**: `workspace/grid.nod.xml`, `workspace/grid.edg.xml`, `workspace/grid.con.xml`, `workspace/grid.tll.xml`
-
-### Dead-End Street Handling (OSM-Specific)
-
-- **Step**: Handle real-world street topology irregularities in OSM networks
-- **Function**: Defensive programming in `src/traffic_control/decentralized_traffic_bottlenecks/classes/net_data_builder.py`
-- **Scope**: Applied only to OSM networks - synthetic grids have no dead-ends since isolated junctions are completely removed
-
-#### Dead-End Detection:
-
-- **OSM Networks**: Contains natural dead-ends (cul-de-sacs, private roads, incomplete boundaries)
-- **Synthetic Grids**: No dead-ends exist - junction removal process completely deletes isolated junctions and all connected edges
-- **Algorithm Protection**: Uses `.get()` method instead of direct dictionary access to prevent crashes when edges have no outgoing connections
-
-#### Handling Process:
-
-- **Connection Building**: Build dictionary of edge-to-edge connections during network parsing
-- **Missing Connections**: Dead-end streets have no entries in connections dictionary
-- **Fallback Mechanism**: Return empty connection list for dead-end streets instead of crashing
-- **Graph Integration**: Dead-end streets become terminal nodes in traffic control graph with no outgoing links
-
-#### Network Topology Impact:
-
-- **OSM Networks**: Dead-end streets preserved and handled gracefully by traffic control algorithm
-- **Synthetic Grids**: Perfect topology with no special handling needed
-- **Traffic Simulation**: Vehicles can enter dead-ends but must stop/turn around (handled by SUMO physics)
-- **Signal Control**: Dead-end intersections receive traffic light control if signalized
-
-### OSM Mode Validation
-
-- **Step**: Verify OSM network import success
-- **Function**: OSM validation in `src/network/import_osm.py`
-- **Process**: Validate the following aspects, if any fails print a relevant message and exit.
-
-#### Required Output Files:
-
-- `workspace/grid.nod.xml`: Network nodes (junctions)
-- `workspace/grid.edg.xml`: Network edges (streets)
-- `workspace/grid.con.xml`: Connection definitions
-- `workspace/grid.tll.xml`: Traffic light definitions
-
-#### XML Structure Validation:
-
-- **Parse XML Files**: Ensure valid XML structure and syntax
-- **Element Validation**: Verify required elements (nodes, edges, connections, traffic lights)
-- **Attribute Validation**: Check required attributes exist (id, coordinates, lane counts)
-- **Reference Validation**: Ensure edge references valid nodes, connections reference valid edges
-
-#### Network Connectivity and Integrity:
-
-- **Node Coverage**: Verify all junctions are properly defined
-- **Edge Coverage**: Count and validate highway ways (minimum 10 required)
-- **Connection Coverage**: Ensure proper edge-to-edge connections
-- **Traffic Light Coverage**: Validate signal placement and timing
-- **Bounding Box**: Verify network area calculation and limits (warn if > 5 km²)
-- **Highway Type Analysis**: Count primary, secondary, tertiary, residential, unclassified streets
-- **Network Statistics**: Extract node count, edge count, connection count, traffic light count
-- **Edge Length Statistics**: Calculate minimum, maximum, and average edge lengths
-
-- **Success Message**: "Successfully imported OSM network."
-
-### OSM Samples
-
-- **Directory**: `osm_samples/` (relocated from `src/osm/`)
-- **Purpose**: Verified working OSM areas for testing and development
-- **Quality**: All samples tested with ≥294/300 vehicle route generation success rate
-
-#### Available Samples:
-
-- **Manhattan Upper West Side** (`manhattan_upper_west.osm`):
-
-  - **Location**: New York City (40.7800, -73.9850, 40.7900, -73.9750)
-  - **Type**: Classic Manhattan grid pattern
-  - **Size**: 3,511 lines
-  - **Performance**: 300/300 vehicles (100% success rate)
-
-- **San Francisco Downtown** (`sf_downtown.osm`):
-
-  - **Location**: San Francisco (37.7850, -122.4100, 37.7950, -122.4000)
-  - **Type**: Downtown grid layout
-  - **Size**: 6,541 lines
-  - **Performance**: 298/300 vehicles (99.3% success rate)
-
-- **Washington DC Downtown** (`dc_downtown.osm`):
-  - **Location**: Washington DC (38.8950, -77.0350, 38.9050, -77.0250)
-  - **Type**: Planned grid system
-  - **Size**: 6,660 lines
-  - **Performance**: 300/300 vehicles (100% success rate)
-
-#### Sample Management:
-
-- **Download Script**: `tools/scripts/download_osm_samples.py` using Overpass API
-- **Query Filter**: Highway types (motorway, trunk, primary, secondary, tertiary, unclassified, residential) and traffic signals
-- **Testing Verified**: Each sample validated for reliable traffic simulation with high vehicle route generation success rates
-
-## Non-OSM Mode (synthetic grid)
+## Synthetic Grid Mode (default)
 
 ### Grid Network Generation
 
@@ -259,7 +141,7 @@
 
 - **Step**: Confirm successful grid generation
 - **Function**: Success logging in `src/cli.py`
-- **Output**: Same file structure as OSM mode: `workspace/grid.nod.xml`, `workspace/grid.edg.xml`, `workspace/grid.con.xml`, `workspace/grid.tll.xml`
+- **Output**: Standard SUMO network files: `workspace/grid.nod.xml`, `workspace/grid.edg.xml`, `workspace/grid.con.xml`, `workspace/grid.tll.xml`
 - **Success Message**: "Generated grid successfully."
 
 ## Tree Method Research Dataset Mode (`--tree_method_sample` provided)
@@ -301,7 +183,7 @@
 - **Bypass Mode**: Skips Steps 1-8 entirely, proceeds directly to Step 9 (Dynamic Simulation)
 - **Steps Skipped**: Network generation, zone extraction, edge splitting, attractiveness assignment, route generation
 - **Benefits**: Immediate simulation execution, research validation, method comparison
-- **Incompatible Arguments**: Cannot be used with network generation parameters (`--osm_file`, `--grid_dimension`, `--block_size_m`, `--junctions_to_remove`, `--lane_count`)
+- **Incompatible Arguments**: Cannot be used with network generation parameters (`--grid_dimension`, `--block_size_m`, `--junctions_to_remove`, `--lane_count`)
 
 ### Tree Method Research Dataset Completion
 
@@ -313,7 +195,7 @@
 
 ## Common Network Generation Outputs
 
-- **Files Generated** (OSM and synthetic modes):
+- **Files Generated** (synthetic and sample modes):
   - `workspace/grid.nod.xml`: Network nodes (junctions)
   - `workspace/grid.edg.xml`: Network edges (streets)
   - `workspace/grid.con.xml`: Connection definitions

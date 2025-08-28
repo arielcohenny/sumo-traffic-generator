@@ -1,6 +1,6 @@
 # Integrated Edge Splitting with Lane Assignment
 
-### 3.1 Unified Edge Splitting Process (Both OSM and Non-OSM)
+### 3.1 Unified Edge Splitting Process
 
 #### 3.1.1 Network File Parsing
 
@@ -53,14 +53,14 @@
 - **Step**: Determine lane count for each edge based on network type
 - **Function**: Mode-specific lane count determination
 
-##### OSM Mode:
+##### sample Mode:
 
-- **Lane Count Source**: Extracted from OSM data during network import
-- **OSM Lane Information**: Total number of lanes per edge preserved from original OSM data
-- **Example**: If OSM data specifies edge has 2 lanes, `lane_count = 2`
+- **Lane Count Source**: Extracted from sample data during network import
+- **sample Lane Information**: Total number of lanes per edge preserved from original sample data
+- **Example**: If sample data specifies edge has 2 lanes, `lane_count = 2`
 - **No Algorithm**: Lane count is not calculated, only read from imported network
 
-##### Non-OSM Mode (Three Lane Assignment Algorithms):
+##### Non-sample Mode (Three Lane Assignment Algorithms):
 
 **1. Realistic Algorithm (`--lane_count realistic`):**
 
@@ -96,7 +96,7 @@
 
 ##### Dynamic Head Distance Calculation:
 
-- **OSM and Non-OSM Compatible**: `actual_head_distance = min(HEAD_DISTANCE, edge_length/3)`
+- **sample and Non-sample Compatible**: `actual_head_distance = min(HEAD_DISTANCE, edge_length/3)`
 - **HEAD_DISTANCE Constant**: 50 meters (CONFIG.HEAD_DISTANCE)
 - **Short Street Protection**: Prevents geometric issues with short urban streets
 - **All Edges Split**: Every edge is always split regardless of length
@@ -111,9 +111,9 @@
   - **Tail Segment**: From original start to split point (uses `tail_lanes`)
   - **Head Segment**: From split point to original end (uses `head_lanes`)
 
-##### Unified Lane Assignment Formula (Both OSM and Non-OSM):
+##### Unified Lane Assignment Formula (Both sample and Non-sample):
 
-- **Tail Lanes**: `lane_count` (from OSM data or calculated algorithm)
+- **Tail Lanes**: `lane_count` (from sample data or calculated algorithm)
 - **Head Lanes**: `max(lane_count, total_movement_lanes)`
 - **Purpose**: Tail segment uses original lane count, head segment provides adequate capacity for all movements
 
@@ -306,7 +306,7 @@
 
 1. **Tail Lane Consistency**: Verify tail segments have same lane count as original edges
 2. **Head Lane Accuracy**: Confirm head segments have correct total movement lanes
-3. **Movement Integrity**: Ensure all head lanes have exactly one outgoing direction  
+3. **Movement Integrity**: Ensure all head lanes have exactly one outgoing direction
 4. **Connectivity Validation**: Check all head lanes have incoming connections from tail lanes
 5. **Complete Flow**: Verify all tail lanes lead to head lanes
 
@@ -320,7 +320,7 @@
 ##### Validation Process:
 
 - **Network Parsing**: Extract lane information from rebuilt `.net.xml` file
-- **Connection Analysis**: Parse movement data from `.con.xml` file  
+- **Connection Analysis**: Parse movement data from `.con.xml` file
 - **Cross-Validation**: Compare network structure against connection requirements
 - **Error Reporting**: Detailed error messages for any validation failures
 - **Success Confirmation**: "✅ VALIDATION PASSED: X edges validated successfully"
@@ -345,7 +345,7 @@
   - `workspace/grid.con.xml`: Connections updated with internal connections and lane distribution
   - `workspace/grid.tll.xml`: Traffic lights updated to reference head segments
 - **Purpose**: Create optimized network structure with appropriate lane capacity for traffic movements
-- **Integration**: Unified algorithm works seamlessly with both OSM and synthetic grid networks
+- **Integration**: Unified algorithm works seamlessly with both sample and synthetic grid networks
 - **Configuration Constants**:
   - HEAD_DISTANCE: 50 meters
   - MIN_LANES: 1

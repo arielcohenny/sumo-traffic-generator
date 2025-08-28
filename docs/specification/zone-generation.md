@@ -1,95 +1,87 @@
 # Zone Generation
 
-## Universal Land Use Zone Types (Both OSM and Non-OSM)
+## Universal Land Use Zone Types
 
-Based on "A Simulation Model for Intra-Urban Movements" research methodology, the system uses exactly **six research-based land use types** that apply to both OSM and synthetic networks:
+Based on "A Simulation Model for Intra-Urban Movements" research methodology, the system uses exactly **six research-based land use types** for synthetic networks:
 
 ### Zone Type Definitions:
 
 - **Residential**: 34% distribution, max 1000 cells, orange color (#FFA500)
   - Multiplier: 1.0, departure_weight: 1.5, arrival_weight: 0.8
-  
 - **Employment**: 10% distribution, max 500 cells, dark red color (#8B0000)
   - Multiplier: 1.8, departure_weight: 0.9, arrival_weight: 1.8
-  
 - **Public Buildings**: 12% distribution, max 200 cells, dark blue color (#000080)
   - Multiplier: 3.0, departure_weight: 0.5, arrival_weight: 3.5
-  
 - **Mixed** (Residential + Employment + Retail): 24% distribution, max 300 cells, yellow color (#FFFF00)
   - Multiplier: 2.0, departure_weight: 1.2, arrival_weight: 1.8
-  
 - **Entertainment/Retail**: 8% distribution, max 40 cells, dark green color (#006400)
   - Multiplier: 2.5, departure_weight: 0.8, arrival_weight: 2.0
-  
 - **Public Open Space**: 12% distribution, max 100 cells, light green color (#90EE90)
   - Multiplier: 1.0, departure_weight: 1.5, arrival_weight: 0.8
 
-### Universal Application:
-- **Non-OSM Mode**: Uses clustering algorithm to assign these types to synthetic grid cells
-- **OSM Mode**: Maps OSM land use tags to these standard types, falls back to intelligent inference when data insufficient
+### Application:
 
-## Mode Selection Based on Arguments
+- Uses clustering algorithm to assign these types to synthetic grid cells
 
-- **Step**: Determine zone generation approach based on network type
-- **Function**: Pipeline step coordination (`src/pipeline/standard_pipeline.py`)
-- **Process**:
-  - Check if `--osm_file` argument was provided in Step 1
-  - If OSM network: Execute intelligent zone generation workflow (Section 2.3)
-  - If synthetic grid: Execute traditional zone extraction workflow (Section 2.4)
+## Zone Generation Process
+
+- **Step**: Generate land use zones for synthetic grid networks
+- **Function**: Traditional zone extraction (`src/network/zones.py`)
+- **Process**: Execute zone extraction workflow for synthetic grids
 - **Arguments Used**: `--land_use_block_size_m` (affects both modes)
 
-## OSM Mode (intelligent zones)
+## Synthetic Grid Zone Generation
 
 ### Geographic Bounds Extraction
 
-- **Step**: Extract geographic boundaries from OSM file for zone generation
+- **Step**: Extract geographic boundaries from synthetic file for zone generation
 - **Function**: Bounds extraction in `src/cli.py`
-- **Arguments Used**: `--osm_file`
+- **Arguments Used**: `--land_use_block_size_m`
 - **Purpose**: Define geographic area for intelligent zone grid overlay
 - **Process**:
-  - Parse OSM XML file using ElementTree
+  - Parse synthetic XML file using ElementTree
   - Extract bounds from `<bounds>` element if present
   - If no bounds element, calculate from all node coordinates:
-    - Iterate through all `<node>` elements in OSM file
+    - Iterate through all `<node>` elements in synthetic file
     - Collect `lat` and `lon` attributes from each node
     - Calculate `min_lat = min(lats)`, `max_lat = max(lats)`, `min_lon = min(lons)`, `max_lon = max(lons)`
   - Create geographic bounds tuple: `(min_lon, min_lat, max_lon, max_lat)`
-  - Print bounds for verification: `f"Using geographic bounds from OSM: {geographic_bounds}"`
+  - Print bounds for verification: `f"Using geographic bounds from synthetic: {geographic_bounds}"`
 
 ### Intelligent Zone Generation
 
-- **Step**: Generate intelligent land use zones using real OSM data and inference
-- **Function**: `IntelligentZoneGenerator.generate_intelligent_zones_from_osm()` in `src/network/intelligent_zones.py`
+- **Step**: Generate intelligent land use zones using real synthetic data and inference
+- **Function**: `IntelligentZoneGenerator.generate_intelligent_zones_from_grid()` in `src/network/intelligent_zones.py`
 - **Arguments Used**: `--land_use_block_size_m`
-- **Process**: Uses sophisticated multi-layer analysis combining real OSM data with intelligent inference algorithms
+- **Process**: Uses sophisticated multi-layer analysis combining real synthetic data with intelligent inference algorithms
 
 #### Zone Configuration System:
 
 - **Zone Types**: Uses the six research-based land use types defined in Section 2.1
-- **OSM Mapping**: Maps OSM land use tags to standard zone types
-- **Intelligent Inference**: When OSM data insufficient, infers zone types using network topology + accessibility + infrastructure analysis
+- **synthetic Mapping**: Maps synthetic land use tags to standard zone types
+- **Intelligent Inference**: When synthetic data insufficient, infers zone types using network topology + accessibility + infrastructure analysis
 
-#### OSM Data Loading and Parsing:
+#### synthetic Data Loading and Parsing:
 
-**1. OSM XML Processing** (`load_osm_data()`):
+**1. synthetic XML Processing** (`load_grid_data()`):
 
-- **XML Parsing**: Uses ElementTree to parse OSM file structure
+- **XML Parsing**: Uses ElementTree to parse synthetic file structure
 - **Node Extraction**: Stores all nodes with lat/lon coordinates and tag attributes
 - **Way Processing**: Extracts ways with node references and tag collections
-- **Relation Support**: Processes OSM relations with member structures
-- **Tag Normalization**: Converts OSM tags to standardized key-value pairs
-- **Error Handling**: Graceful fallback when OSM file is missing or corrupted
+- **Relation Support**: Processes synthetic relations with member structures
+- **Tag Normalization**: Converts synthetic tags to standardized key-value pairs
+- **Error Handling**: Graceful fallback when synthetic file is missing or corrupted
 
-**2. Real Land Use Zone Extraction** (`extract_osm_zones_and_pois()`):
+**2. Real Land Use Zone Extraction** (`extract_grid_zones_and_pois()`):
 
-- **OSM Tag Mapping**: Maps OSM landuse/amenity/building tags to zone types:
+- **synthetic Tag Mapping**: Maps synthetic landuse/amenity/building tags to zone types:
   - `residential/apartments/housing` → residential
   - `commercial/retail/shop/office` → commercial
   - `industrial` → industrial
   - `school/university/college/education` → education
   - `hospital/clinic/healthcare` → healthcare
   - `mixed` → mixed
-- **Polygon Generation**: Creates valid Shapely polygons from OSM way node sequences
+- **Polygon Generation**: Creates valid Shapely polygons from synthetic way node sequences
 - **Area Calculation**: Estimates zone area using rough geographic-to-metric conversion
 - **Polygon Validation**: Ensures polygons are valid and have positive area
 
@@ -120,7 +112,7 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 - **Maximum Connectivity Normalization**: Scales scores relative to most-connected junction
 - **Simplified Connectivity**: Fallback algorithm when NetworkX unavailable
 
-**Layer 3: OSM Infrastructure Analysis** (`analyze_osm_infrastructure()`):
+**Layer 3: synthetic Infrastructure Analysis** (`analyze_grid_infrastructure()`):
 
 - **Grid Cell Analysis**: Processes each grid cell individually with configurable search radius
 - **POI Proximity Analysis**: Distance-weighted influence within 1.5x grid cell radius
@@ -130,7 +122,7 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
   - `hospital/clinic/pharmacy` → healthcare (0.6 influence)
   - `bus_station/subway_station` → mixed (0.4) + commercial (0.3)
   - `parking` → commercial (0.2 influence)
-- **OSM Zone Integration**: Direct zone type scoring with 0.8 influence weight
+- **synthetic Zone Integration**: Direct zone type scoring with 0.8 influence weight
 - **Distance Decay**: `influence = max(0, 1.0 - (distance / search_radius))`
 
 #### Grid System and Coordinate Handling:
@@ -164,7 +156,7 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 **Infrastructure Score Integration**:
 
 - **Weighted Addition**: Infrastructure scores added with 0.7 weight to final scores
-- **Zone Type Preservation**: Direct zone type mapping maintains OSM land use where available
+- **Zone Type Preservation**: Direct zone type mapping maintains synthetic land use where available
 - **Score Aggregation**: All factors combined before final classification
 
 **Final Classification**:
@@ -178,13 +170,13 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 
 **Data Availability Checks**:
 
-- **OSM Data Validation**: Graceful handling of missing or corrupted OSM files
+- **synthetic Data Validation**: Graceful handling of missing or corrupted synthetic files
 - **Network Data Requirements**: Fallback algorithms when network analysis unavailable
 - **Library Dependencies**: Optional NetworkX, GeoPandas, Pandas with simplified alternatives
 
 **Default Assumptions**:
 
-- **No OSM Data**: Falls back to residential (0.5 score) when no OSM zones/POIs found
+- **No synthetic Data**: Falls back to residential (0.5 score) when no synthetic zones/POIs found
 - **Missing Network**: Uses simplified topology analysis without graph algorithms
 - **Coordinate Transformation**: Maintains geographic coordinates when projection unavailable
 
@@ -200,10 +192,10 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 **Performance Characteristics**:
 
 - **Computational Complexity**: O(n×m×p) where n=grid_cols, m=grid_rows, p=POI_count
-- **Memory Usage**: Stores full OSM data in memory for spatial analysis
-- **Processing Time**: Varies with OSM file size and grid resolution
+- **Memory Usage**: Stores full synthetic data in memory for spatial analysis
+- **Processing Time**: Varies with synthetic file size and grid resolution
 
-### OSM Zone File Creation
+### synthetic Zone File Creation
 
 - **Step**: Save intelligent zones to polygon file in geographic coordinates
 - **Function**: `save_intelligent_zones_to_poly_file()` in `src/network/intelligent_zones.py`
@@ -216,7 +208,7 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 - **Coordinates**: Geographic (lat/lon) format, converted to projected later in Step 5
 - **Success Message**: `f"Generated and saved {len(intelligent_zones)} intelligent zones to {CONFIG.zones_file}"`
 
-### OSM Mode Validation
+### synthetic Mode Validation
 
 - **Step**: Verify intelligent zone generation success
 - **Function**: Exception handling in `src/cli.py`
@@ -226,9 +218,9 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
   - Verify zone type distribution is realistic
   - Confirm geographic coordinate format is valid
 - **Error Handling**: Print failure message and exit with code 1 on validation failure
-- **Failure Message**: `f"Failed to generate OSM zones: {e}"`
+- **Failure Message**: `f"Failed to generate synthetic zones: {e}"`
 
-## Non-OSM Mode (traditional zones)
+## Traditional Zone Extraction (Synthetic Grids)
 
 ### Traditional Zone Extraction
 
@@ -295,7 +287,7 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 - **Step**: Confirm successful traditional zone generation
 - **Function**: Success logging in `src/cli.py`
 - **Output**: `workspace/zones.poly.xml` with traditional zone extraction
-- **Success Message**: `f"Extracted land use zones successfully using traditional method with {args.land_use_block_size_m}m blocks."`
+- **Success Message**: `f"Extracted land use zones successfully with {args.land_use_block_size_m}m blocks."`
 - **Zone Information**: Log zone count, land use distribution, and file size
 
 ## Common Zone Generation Outputs

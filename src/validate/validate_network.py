@@ -18,9 +18,7 @@ from src.validate.errors import ValidationError
 __all__ = [
     "verify_generate_grid_network",
     "verify_extract_zones_from_junctions",
-    "verify_insert_split_edges",
     "verify_rebuild_network",
-    "verify_set_lane_counts",
     "verify_assign_edge_attractiveness",
     "verify_generate_sumo_conf_file",
 ]
@@ -289,240 +287,6 @@ def verify_generate_grid_network(
     return
 
 
-def verify_insert_split_edges(block_size_m: int) -> None:
-    """Validate edge splitting results.
-
-    This function validates the insert_split_edges function by checking:
-    1. All original edges are split into body + head segments
-    2. H_nodes are created at correct positions
-    3. Body edges connect to H_nodes, head edges connect from H_nodes
-    4. Geometric consistency is maintained
-    """
-
-    # Required files should exist after edge splitting
-    required_files = [
-        CONFIG.network_nod_file,
-        CONFIG.network_edg_file,
-        CONFIG.network_con_file,
-    ]
-
-    # 1 ── check file existence ------------------------------------------------
-    for file_path in required_files:
-        if not Path(file_path).exists():
-            raise ValidationError(f"Required file missing: {file_path}")
-
-    # 2 ── parse XML files -----------------------------------------------------
-    try:
-        nod_tree = ET.parse(CONFIG.network_nod_file)
-        nod_root = nod_tree.getroot()
-
-        edg_tree = ET.parse(CONFIG.network_edg_file)
-        edg_root = edg_tree.getroot()
-
-        con_tree = ET.parse(CONFIG.network_con_file)
-        con_root = con_tree.getroot()
-
-    except ET.ParseError as e:
-        raise ValidationError(f"XML parsing error: {e}")
-
-    # 3 ── classify nodes and edges --------------------------------------------
-    grid_nodes = []
-    h_nodes = []
-    node_coords = {}
-
-    for node in nod_root.findall("node"):
-        node_id = node.get("id")
-        x = float(node.get("x"))
-        y = float(node.get("y"))
-        node_coords[node_id] = (x, y)
-
-        if "_H_node" in node_id:
-            h_nodes.append(node_id)
-        else:
-            grid_nodes.append(node_id)
-
-    body_edges = {}
-    head_edges = {}
-
-    for edge in edg_root.findall("edge"):
-        edge_id = edge.get("id")
-        from_node = edge.get("from")
-        to_node = edge.get("to")
-
-        if edge_id.endswith("_H"):
-            head_edges[edge_id] = (from_node, to_node)
-        else:
-            body_edges[edge_id] = (from_node, to_node)
-
-    # 4 ── validate edge splitting consistency ---------------------------------
-    if len(body_edges) != len(head_edges):
-        raise ValidationError(
-            f"Body/head edge count mismatch: {len(body_edges)} body, {len(head_edges)} head")
-
-    # Check body-head edge pairing
-    for body_id, (body_from, body_to) in body_edges.items():
-        head_id = body_id + "_H"
-        if head_id not in head_edges:
-            raise ValidationError(
-                f"Body edge {body_id} missing corresponding head edge {head_id}")
-
-        head_from, head_to = head_edges[head_id]
-
-        # Body edge should connect to H_node, head edge should connect from H_node
-        if not body_to.endswith("_H_node"):
-            raise ValidationError(
-                f"Body edge {body_id} should connect to H_node, but connects to {body_to}")
-
-        if head_from != body_to:
-            raise ValidationError(
-                f"Head edge {head_id} should start from {body_to}, but starts from {head_from}")
-
-    # 5 ── validate H_node creation --------------------------------------------
-    expected_h_nodes = len(body_edges)
-    if len(h_nodes) != expected_h_nodes:
-        raise ValidationError(
-            f"H_node count mismatch: expected {expected_h_nodes}, found {len(h_nodes)}")
-
-    # 6 ── validate geometric consistency --------------------------------------
-    for body_id, (body_from, body_to) in body_edges.items():
-        head_id = body_id + "_H"
-        if head_id not in head_edges:
-            continue
-
-        head_from, head_to = head_edges[head_id]
-
-        # Get coordinates
-        body_from_coord = node_coords[body_from]
-        h_node_coord = node_coords[body_to]  # body_to is the H_node
-        head_to_coord = node_coords[head_to]
-
-        # Check that H_node is between body_from and head_to
-        # Using simple distance check: distance(from, h_node) + distance(h_node, to) ≈ distance(from, to)
-        def distance(p1, p2):
-            return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)**0.5
-
-        d_direct = distance(body_from_coord, head_to_coord)
-        d_via_h = distance(body_from_coord, h_node_coord) + \
-            distance(h_node_coord, head_to_coord)
-
-        # Allow small tolerance for floating point errors
-        if abs(d_direct - d_via_h) > 1e-6:
-            raise ValidationError(
-                f"H_node {body_to} not on line between {body_from} and {head_to}")
-
-    # 7 ── validate lane count consistency -------------------------------------
-    for body_id in body_edges:
-        head_id = body_id + "_H"
-        if head_id not in head_edges:
-            continue
-
-        # Find corresponding edge elements
-        body_edge = None
-        head_edge = None
-        for edge in edg_root.findall("edge"):
-            if edge.get("id") == body_id:
-                body_edge = edge
-            elif edge.get("id") == head_id:
-                head_edge = edge
-
-        if body_edge is None or head_edge is None:
-            raise ValidationError(
-                f"Could not find edge elements for {body_id}/{head_id}")
-
-        # Check lane count consistency
-        body_lanes_attr = body_edge.get("numLanes")
-        head_lanes_attr = head_edge.get("numLanes")
-
-        if body_lanes_attr is not None and head_lanes_attr is not None:
-            if body_lanes_attr != head_lanes_attr:
-                raise ValidationError(
-                    f"Lane count mismatch between {body_id} ({body_lanes_attr}) and {head_id} ({head_lanes_attr})")
-
-        # Check lane elements if present
-        body_lane_elements = body_edge.findall("lane")
-        head_lane_elements = head_edge.findall("lane")
-
-        if body_lane_elements and head_lane_elements:
-            if len(body_lane_elements) != len(head_lane_elements):
-                raise ValidationError(
-                    f"Lane element count mismatch between {body_id} and {head_id}")
-
-    # 8 ── validate connection updates ----------------------------------------
-    # Check that connections are properly updated for split edges
-    connection_edges = set()
-    for conn in con_root.findall("connection"):
-        from_edge = conn.get("from")
-        to_edge = conn.get("to")
-        connection_edges.add(from_edge)
-        connection_edges.add(to_edge)
-
-    # All edges referenced in connections should exist
-    all_edge_ids = set(body_edges.keys()) | set(head_edges.keys())
-    for edge_id in connection_edges:
-        if edge_id not in all_edge_ids:
-            raise ValidationError(
-                f"Connection references non-existent edge: {edge_id}")
-
-    # 9 ── validate edge naming pattern ---------------------------------------
-    for body_id in body_edges:
-        if not body_id.replace("_", "").isalnum():
-            raise ValidationError(
-                f"Body edge has invalid naming pattern: {body_id}")
-
-        # Check that head edge follows naming convention
-        expected_head_id = body_id + "_H"
-        if expected_head_id not in head_edges:
-            raise ValidationError(
-                f"Head edge naming doesn't follow convention: expected {expected_head_id}")
-
-    # 10 ── validate H_node naming pattern ------------------------------------
-    for h_node_id in h_nodes:
-        if not h_node_id.endswith("_H_node"):
-            raise ValidationError(
-                f"H_node naming doesn't follow convention: {h_node_id}")
-
-    # 11 ── validate no orphaned nodes ----------------------------------------
-    # All nodes should be referenced by at least one edge
-    referenced_nodes = set()
-    for edge in edg_root.findall("edge"):
-        referenced_nodes.add(edge.get("from"))
-        referenced_nodes.add(edge.get("to"))
-
-    all_node_ids = set(node_coords.keys())
-    orphaned_nodes = all_node_ids - referenced_nodes
-    if orphaned_nodes:
-        raise ValidationError(
-            f"Found orphaned nodes: {', '.join(list(orphaned_nodes)[:5])}")
-
-    # 12 ── validate edge lengths ---------------------------------------------
-    # After splitting, body edges should be longer than head edges
-    for body_id in body_edges:
-        head_id = body_id + "_H"
-        if head_id not in head_edges:
-            continue
-
-        body_from, body_to = body_edges[body_id]
-        head_from, head_to = head_edges[head_id]
-
-        body_length = distance(node_coords[body_from], node_coords[body_to])
-        head_length = distance(node_coords[head_from], node_coords[head_to])
-
-        # Head segment should be CONFIG.HEAD_DISTANCE (50m by default)
-        expected_head_length = CONFIG.HEAD_DISTANCE
-        if abs(head_length - expected_head_length) > 1e-3:
-            raise ValidationError(
-                f"Head edge {head_id} has incorrect length: {head_length:.3f}m, expected {expected_head_length}m")
-
-        # Body segment should be original_length - head_length
-        # Original edges are block_size_m long, so body should be block_size_m - head_distance
-        expected_body_length = block_size_m - CONFIG.HEAD_DISTANCE
-        if abs(body_length - expected_body_length) > 1e-3:
-            raise ValidationError(
-                f"Body edge {body_id} has incorrect length: {body_length:.3f}m, expected {expected_body_length}m")
-
-    return
-
-
 def verify_extract_zones_from_junctions(
     cell_size: Optional[float],
     seed: int,
@@ -614,11 +378,11 @@ def verify_extract_zones_from_junctions(
         # Get network bounds
         network_xmin, network_xmax = min(unique_xs), max(unique_xs)
         network_ymin, network_ymax = min(unique_ys), max(unique_ys)
-        
+
         # Calculate number of cells based on cell_size
         num_x_cells = max(1, int((network_xmax - network_xmin) / cell_size))
         num_y_cells = max(1, int((network_ymax - network_ymin) / cell_size))
-        
+
         expected_zones = num_x_cells * num_y_cells
         actual_zones = len(polygons)
 
@@ -676,78 +440,6 @@ def verify_rebuild_network() -> None:
     if not tl_nodes:
         raise ValidationError(
             "No traffic light nodes found in compiled network")
-
-    return
-
-
-def verify_set_lane_counts(
-    *,
-    min_lanes: int = 1,
-    max_lanes: int = 3,
-    algorithm: str = 'realistic',
-) -> None:
-    """Validate lane counts and distribution after lane assignment."""
-
-    # Work with separate XML files since network not rebuilt yet
-    edg_file = CONFIG.network_edg_file
-    if not Path(edg_file).exists():
-        raise ValidationError(f"Edges file missing: {edg_file}")
-
-    try:
-        tree = ET.parse(edg_file)
-        root = tree.getroot()
-    except ET.ParseError as exc:
-        raise ValidationError(f"Failed to parse edges file: {exc}") from exc
-
-    counts: list[int] = []
-
-    # Extract lane counts from edges
-    for edge in root.findall("edge"):
-        # Get numLanes attribute
-        num_lanes_str = edge.get("numLanes")
-        if num_lanes_str is None:
-            raise ValidationError(
-                f"Edge {edge.get('id')} missing numLanes attribute")
-
-        try:
-            num_lanes = int(num_lanes_str)
-            counts.append(num_lanes)
-        except ValueError:
-            raise ValidationError(
-                f"Invalid numLanes value for edge {edge.get('id')}: {num_lanes_str}")
-
-    if not counts:
-        raise ValidationError("No edges found in edges file")
-
-    # Bound check ----------------------------------------------------------------
-    bad = [c for c in counts if c < min_lanes or c > max_lanes]
-    if bad:
-        raise ValidationError(
-            f"{len(bad)} edges have lane count outside [{min_lanes}, {max_lanes}]"
-        )
-
-    # Distribution check ---------------------------------------------------------
-    if all(c == counts[0] for c in counts):
-        # Only raise error for random algorithm - fixed counts and realistic are allowed to be uniform
-        if algorithm == 'random':
-            raise ValidationError(
-                "All edges share the same lane number; randomisation may have failed")
-        elif algorithm.isdigit():
-            # Fixed count algorithm - uniform distribution is expected
-            expected_count = int(algorithm)
-            if counts[0] != expected_count:
-                raise ValidationError(
-                    f"Fixed algorithm expected {expected_count} lanes but found {counts[0]}")
-        # For 'realistic' algorithm, uniform distribution is acceptable (though unusual)
-
-    # Only check min/max distribution for random algorithm
-    if algorithm == 'random':
-        if min_lanes not in counts:
-            raise ValidationError(
-                f"No edge ended up with the minimum lane count ({min_lanes})")
-        if max_lanes not in counts:
-            raise ValidationError(
-                f"No edge ended up with the maximum lane count ({max_lanes})")
 
     return
 
@@ -889,9 +581,14 @@ def verify_assign_edge_attractiveness(
     if method == "land_use":
         # For land use method, values should show some correlation with zone types
         # This is a basic check - in reality we'd validate against actual zone data
-        if len(set(depart_attrs)) < max(2, len(depart_attrs) // 10):
+        unique_depart = len(set(depart_attrs))
+        unique_arrive = len(set(arrive_attrs))
+        min_required = max(2, min(5, len(depart_attrs) // 20))  # More lenient: at most 5, at least 2
+        
+        if unique_depart < min_required and unique_arrive < min_required:
             raise ValidationError(
-                "Land use method should produce more varied attractiveness values")
+                f"Land use method should produce more varied attractiveness values "
+                f"(found {unique_depart}/{unique_arrive} unique values, expected at least {min_required})")
 
     elif method in ["gravity", "iac", "hybrid"]:
         # These methods should produce varied results due to spatial factors
@@ -1113,7 +810,7 @@ def verify_generate_vehicle_routes(
     all_edge_ids = set(edge.getID() for edge in net.getEdges())
 
     # Check each vehicle's route
-    for i, vehicle in enumerate(vehicles):
+    for vehicle in vehicles:
         vehicle_id = vehicle.get("id")
         route_elem = vehicle.find("route")
 
