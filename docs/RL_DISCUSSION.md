@@ -287,12 +287,108 @@ The frequent intermediate penalties can introduce higher gradient variance compa
 
 The two-component reward system requires careful balance between frequent intermediate penalties (typically small, frequent signals) and episode throughput rewards (larger, sparse signals). PPO's clipped objective provides stability against large policy updates from occasional high-magnitude penalty accumulations when multiple vehicles simultaneously experience significant waiting time increases. The reward scaling parameter α for throughput rewards allows empirical tuning to balance immediate vehicle feedback against long-term network performance optimization, ensuring the agent learns both responsive local control and strategic network coordination.
 
-## 5. Training Implementation
+## 5. Implementation Guide
 
-- Large action space exploration strategies
-- Computational requirements for centralized control
-- Hyperparameters and curriculum learning
+This chapter provides step-by-step implementation instructions for building the RL traffic control system. The implementation extends the existing SUMO/Tree Method infrastructure with a custom OpenAI Gym environment and Stable-Baselines3 PPO training.
 
-## 5. Evaluation
+### Implementation Overview and File Structure
 
-Evaluation should be to the tree method
+**Core Implementation Components**:
+
+- `src/rl/traffic_env.py`: Custom Gym environment wrapping SUMO simulation
+- `src/rl/vehicle_tracker.py`: Individual vehicle tracking and reward computation
+- `src/rl/train.py`: PPO training script using Stable-Baselines3
+- `src/rl/evaluate.py`: RL vs Tree Method comparison evaluation
+
+**Integration Points with Existing System**:
+
+- Extends existing `Graph`, `Link`, and `JunctionNode` classes for RL state collection
+- Uses existing `define_tl_program()` function for RL action execution
+- Leverages existing TraCI integration and SUMO configuration generation
+
+**Required Library Dependencies**:
+Install Stable-Baselines3, OpenAI Gym, NumPy, and ensure existing SUMO/TraCI dependencies are available. The implementation builds on the existing infrastructure rather than replacing it.
+
+### Step 1: Custom Gym Environment Implementation
+
+**TrafficControlEnv Class Structure**:
+Create a new class inheriting from gym.Env that wraps the existing SUMO simulation. The class requires initialization with the existing configuration system, loading the same Graph and JunctionNode objects used by Tree Method. The environment manages the complete simulation lifecycle including reset, step execution, and termination detection.
+
+**Observation Space Design**:
+Define a continuous observation space using gym.spaces.Box with normalized values between 0.0 and 1.0. The observation space dimensions should equal the total state vector size calculated from the number of edges and intersections in the network. Each edge contributes multiple features (speed, density, flow, congestion status) and each intersection contributes phase and timing information.
+
+**Action Space Configuration**:
+Implement a continuous action space where each intersection requires two values: phase probability distribution (processed through softmax) and normalized duration value. The total action space dimension equals 2 × number_of_intersections. Actions are processed to select discrete phases and convert normalized durations to actual timing values within safety constraints.
+
+**Core Environment Methods**:
+The step() method must execute five sequential operations: process RL actions through TraCI calls, advance the SUMO simulation by one time step, collect new state observations using existing Tree Method calculations, compute rewards through the vehicle tracking system, and determine episode termination based on simulation completion or time limits. The reset() method restarts the SUMO simulation and returns the initial state observation.
+
+### Step 2: Vehicle Tracking and Reward System
+
+**Graph Class Extensions for RL**:
+Extend the existing Graph class with RL-specific vehicle tracking capabilities. Add data structures to maintain vehicle journey histories, decision timestamps for credit assignment, and measurement interval tracking. The extensions should integrate seamlessly with existing Graph functionality without disrupting Tree Method operations.
+
+**Vehicle Journey Tracking**:
+Implement individual vehicle monitoring that captures vehicle start times, route information, and accumulated waiting times. Each vehicle requires tracking from network entry to completion or episode termination. The tracking system must handle dynamic vehicle populations as vehicles enter and leave the simulation.
+
+**Reward Computation Mechanics**:
+Develop the two-component reward system with intermediate vehicle penalties and final episode throughput rewards. Vehicle penalties are computed at regular measurement intervals by calculating waiting time deltas for all active vehicles. The penalty system applies negative rewards proportional to additional waiting time accumulated since the last measurement. Episode rewards provide positive signals based on total vehicle completions.
+
+**Credit Assignment Implementation**:
+Build the time-windowed credit distribution system that maps vehicle penalties to relevant signal timing decisions. Maintain timestamp records for all signal control actions and apply penalties to decisions made since each vehicle's journey began. The system ensures that early coordination decisions receive appropriate credit for their long-term effects on vehicle performance.
+
+### Step 3: State Space Implementation
+
+**Integration with Tree Method State Collection**:
+Leverage existing Tree Method calculations for traffic state representation. Use the existing Link.calc_my_iteration_data() method that computes speed, density, flow rates, and congestion status. Build the state vector by iterating through all network edges and extracting the computed traffic metrics, ensuring consistency with Tree Method's traffic analysis.
+
+**State Vector Construction**:
+Construct the observation vector by concatenating normalized traffic metrics from all edges followed by signal timing information from all intersections. Edge features include normalized speed (current_speed/free_flow_speed), normalized density (density/MAX_DENSITY), normalized flow (flow/capacity), and binary congestion flags. Junction features include normalized current phase and normalized remaining duration.
+
+**Normalization Strategy**:
+Implement consistent normalization across all state components to maintain values within the 0.0-1.0 range expected by the observation space. Use network-specific parameters like speed limits, capacity constraints, and timing bounds for normalization. Ensure normalization parameters remain constant across training episodes to maintain learning consistency.
+
+### Step 4: Training Script Setup
+
+**Stable-Baselines3 Integration**:
+Create the training script using Stable-Baselines3's PPO implementation with traffic-specific parameter configuration. Initialize the environment using the existing configuration system and validate the implementation using Stable-Baselines3's environment checking utilities before training begins.
+
+**PPO Configuration for Traffic Control**:
+Configure PPO with conservative learning parameters appropriate for expensive simulation environments. Use lower learning rates (2e-4) to ensure stable learning with costly episodes. Apply tighter clip ranges (0.1) to prevent large policy updates that could destabilize learned coordination patterns. Set appropriate batch sizes (1024) considering memory constraints from large state vectors.
+
+**Training Pipeline Setup**:
+Implement the complete training workflow including environment initialization, model configuration, training execution, and model persistence. Include logging and monitoring capabilities to track training progress, episode rewards, and convergence metrics. Design the pipeline to support training interruption and resumption for long training runs.
+
+### Step 5: Integration Testing and Next Steps
+
+**Incremental Implementation Strategy**:
+Follow a systematic approach starting with environment skeleton implementation using dummy rewards to verify basic Gym interface functionality. Progressively add state collection integration, action execution connectivity, vehicle tracking capabilities, reward computation validation, and finally complete PPO training integration.
+
+**Component Testing Approach**:
+Develop unit tests for individual components including state collection accuracy, action execution correctness, and reward computation verification. Create integration tests using simple 3×3 grid networks to validate end-to-end functionality before scaling to larger networks. Compare RL environment state collection outputs with Tree Method outputs to ensure consistency.
+
+**Validation and Debugging**:
+Implement comprehensive validation checks at each integration step. Verify that state vectors maintain expected dimensionality and normalization ranges. Confirm that action execution produces valid signal timing sequences. Validate that vehicle tracking accurately captures journey information and waiting time calculations. Test reward computation across different traffic scenarios to ensure proper penalty and credit assignment.
+
+## 6. Evaluation
+
+### Evaluation Setup
+
+Compare RL agent vs Tree Method on identical networks and traffic scenarios.
+
+### Metrics
+
+- **Throughput**: Total completed vehicles
+- **Waiting time**: Average per vehicle
+
+### Success Criteria
+
+- **Throughput-based**:
+
+- RL achieves >10% improvement in total completed vehicles vs Tree Method
+- RL completes >95% of spawned vehicles (high completion rate threshold)
+
+- **Waiting time-based**:
+
+- RL reduces average waiting time by >15% compared to Tree Method
+- RL reduces maximum individual vehicle waiting time by >20%
