@@ -9,6 +9,7 @@ import pandas as pd
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from src.utils.statistics import parse_sumo_statistics_file
+from src.config import CONFIG
 
 
 class OutputDisplay:
@@ -17,12 +18,11 @@ class OutputDisplay:
     @staticmethod
     def show_results():
         """Display simulation results and generated files."""
-        # Calculate absolute path to workspace directory
-        project_root = Path(__file__).parent.parent.parent
-        workspace_path = project_root / "workspace"
+        # Use dynamic workspace directory from configuration
+        workspace_path = CONFIG.output_dir
 
         if not workspace_path.exists():
-            st.warning("No workspace directory found. Run a simulation first.")
+            st.warning(f"No workspace directory found at '{workspace_path}'. Run a simulation first.")
             return
 
         st.header("📊 Simulation Results")

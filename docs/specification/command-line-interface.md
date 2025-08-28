@@ -130,6 +130,17 @@ Launch SUMO's built-in GUI for traffic visualization.
 - **No value required**: Presence of flag enables GUI
 - **Example**: `--gui`
 
+#### `--workspace` (str, default: ".")
+Parent directory where 'workspace' folder will be created for simulation output files.
+- **Default**: "." (creates './workspace/' in current directory)
+- **Behavior**: Always creates a 'workspace/' subdirectory in the specified parent directory
+- **Safety**: Only the 'workspace/' folder contents are cleaned, never the parent directory
+- **Examples**:
+  - `--workspace .` creates './workspace/' (same as default)
+  - `--workspace /home/user/experiments` creates '/home/user/experiments/workspace/'
+  - `--workspace results` creates 'results/workspace/'
+- **Generated Files**: All SUMO files (network, routes, config, statistics) are placed in the workspace folder
+
 ### Zone & Attractiveness Arguments
 
 #### `--land_use_block_size_m` (float, default: 25.0)

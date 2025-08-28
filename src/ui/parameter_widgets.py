@@ -37,7 +37,7 @@ from src.constants import (
     DEFAULT_EVENING_START, DEFAULT_EVENING_END, DEFAULT_EVENING_PCT, DEFAULT_REST_PCT,
     
     # Other Constants
-    TEMP_FILE_PREFIX
+    TEMP_FILE_PREFIX, DEFAULT_WORKSPACE_DIR
 )
 
 
@@ -300,6 +300,12 @@ class ParameterWidgets:
             "Launch SUMO GUI",
             value=False,
             help="Open visual simulation interface (slower but interactive)"
+        )
+        
+        params["workspace"] = st.text_input(
+            "Workspace Directory",
+            value=DEFAULT_WORKSPACE_DIR,
+            help="Parent directory where 'workspace' folder will be created for simulation output files"
         )
 
         return params

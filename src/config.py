@@ -4,83 +4,86 @@ from pathlib import Path
 from typing import List, Optional, Dict
 from src.constants import (
     DEFAULT_NUM_VEHICLES, DEFAULT_VEHICLE_TYPES, MIN_LANE_COUNT, MAX_LANE_COUNT,
-    MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL
+    MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL, DEFAULT_WORKSPACE_DIR
 )
 
 
-@dataclass(frozen=True)
 class _Config:
-    # ---------- paths ----------
-    output_dir: Path = Path("workspace")
-    network_prefix = output_dir / "grid"
-    network_file: Path = f"{network_prefix}.net.xml"
-    network_nod_file: Path = f"{network_prefix}.nod.xml"
-    network_edg_file: Path = f"{network_prefix}.edg.xml"
-    network_con_file: Path = f"{network_prefix}.con.xml"
-    network_tll_file: Path = f"{network_prefix}.tll.xml"
-    config_file: Path = output_dir / "grid.sumocfg"
-    zones_file: Path = output_dir / "zones.poly.xml"
-    routes_file: Path = output_dir / "vehicles.rou.xml"
+    """Dynamic configuration class that allows workspace updates."""
+    
+    def __init__(self):
+        # Initialize with default workspace
+        self._output_dir = Path(DEFAULT_WORKSPACE_DIR)
+        self._update_paths()
+        
+        # Initialize non-path attributes
+        self._init_attributes()
+    
+    def _update_paths(self):
+        """Update all dependent paths when workspace changes."""
+        self.network_prefix = self._output_dir / "grid"
+        self.network_file = Path(f"{self.network_prefix}.net.xml")
+        self.network_nod_file = Path(f"{self.network_prefix}.nod.xml")
+        self.network_edg_file = Path(f"{self.network_prefix}.edg.xml")
+        self.network_con_file = Path(f"{self.network_prefix}.con.xml")
+        self.network_tll_file = Path(f"{self.network_prefix}.tll.xml")
+        self.config_file = self._output_dir / "grid.sumocfg"
+        self.zones_file = self._output_dir / "zones.poly.xml"
+        self.routes_file = self._output_dir / "vehicles.rou.xml"
+    
+    @property
+    def output_dir(self) -> Path:
+        """Get the current output directory."""
+        return self._output_dir
+    
+    def update_workspace(self, workspace_path: str) -> None:
+        """Update the workspace directory and regenerate all paths.
+        
+        The workspace_path specifies the parent directory where a 'workspace' 
+        subdirectory will be created for simulation output files.
+        """
+        parent_dir = Path(workspace_path)
+        self._output_dir = parent_dir / "workspace"
+        self._update_paths()
+    
+    def _init_attributes(self) -> None:
+        """Initialize non-path configuration attributes."""
+        # ---------- land-use palette ----------
+        self.land_uses = [
+            {"name": "Residential", "percentage": 34, "max_size": 1000, "color": "#FFA500"},
+            {"name": "Employment", "percentage": 10, "max_size": 500, "color": "#8B0000"},
+            {"name": "Public Buildings", "percentage": 12, "max_size": 200, "color": "#000080"},
+            {"name": "Mixed", "percentage": 24, "max_size": 300, "color": "#FFFF00"},
+            {"name": "Entertainment/Retail", "percentage": 8, "max_size": 40, "color": "#006400"},
+            {"name": "Public Open Space", "percentage": 12, "max_size": 100, "color": "#90EE90"},
+        ]
 
-    # ---------- land-use palette ----------
-    land_uses: list[dict] = field(default_factory=lambda: [
-        {"name": "Residential",           "percentage": 34,
-            "max_size": 1000, "color": "#FFA500"},
-        {"name": "Employment",            "percentage": 10,
-            "max_size":  500, "color": "#8B0000"},
-        {"name": "Public Buildings",      "percentage": 12,
-            "max_size":  200, "color": "#000080"},
-        {"name": "Mixed",                 "percentage": 24,
-            "max_size":  300, "color": "#FFFF00"},
-        {"name": "Entertainment/Retail",  "percentage":  8,
-            "max_size":   40, "color": "#006400"},
-        {"name": "Public Open Space",     "percentage": 12,
-            "max_size":  100, "color": "#90EE90"},
-    ])
+        # ---------- vehicle generation ----------
+        self.vehicle_types = {
+            "passenger": {"length": 5.0, "maxSpeed": 13.9, "accel": 2.6, "decel": 4.5, "sigma": 0.5},
+            "commercial": {"length": 12.0, "maxSpeed": 10.0, "accel": 1.3, "decel": 3.5, "sigma": 0.5},
+            "public": {"length": 10.0, "maxSpeed": 11.1, "accel": 1.8, "decel": 4.0, "sigma": 0.5},
+        }
 
-    # ---------- vehicle generation ----------
-    vehicle_types: dict = field(default_factory=lambda: {
-        "passenger":   {"length": 5.0,  "maxSpeed": 13.9, "accel": 2.6, "decel": 4.5, "sigma": 0.5},
-        "commercial": {"length": 12.0, "maxSpeed": 10.0, "accel": 1.3, "decel": 3.5, "sigma": 0.5},
-        "public":     {"length": 10.0, "maxSpeed": 11.1, "accel": 1.8, "decel": 4.0, "sigma": 0.5},
-    })
+        # Default vehicle type distribution (must sum to 100)
+        self.default_vehicle_distribution = {"passenger": 60.0, "commercial": 30.0, "public": 10.0}
 
-    # Default vehicle type distribution (must sum to 100)
-    default_vehicle_distribution: dict = field(
-        default_factory=lambda: {"passenger": 60.0, "commercial": 30.0, "public": 10.0})
+        # ---------- simulation parameters ----------
+        self.RNG_SEED = 42
+        self.DEFAULT_JUNCTION_RADIUS = 10.0  # meters
+        self.HEAD_DISTANCE = 50  # head distance from the downstream end when splitting edges
+        self.MIN_LANES = MIN_LANE_COUNT  # Backward compatibility alias
+        self.MAX_LANES = MAX_LANE_COUNT  # Backward compatibility alias
+        self.LAMBDA_DEPART = 3.5  # edge attractiveness
+        self.LAMBDA_ARRIVE = 2.0
 
-    # Use centralized constant
-    # DEFAULT_NUM_VEHICLES defined in src.constants
-    RNG_SEED: int = 42
+        # ---------- simulation verification ----------
+        self.SIMULATION_VERIFICATION_FREQUENCY = 30  # Verify algorithm every N simulation steps
 
-    # Use centralized constant
-    # DEFAULT_VEHICLE_TYPES defined in src.constants
-
-    # ---------- simulation parameters ----------
-    DEFAULT_JUNCTION_RADIUS: float = 10.0  # meters
-    # ---------- head distance from the downstream end when splitting edges ----------
-    HEAD_DISTANCE = 50
-    # Use centralized constants
-    # MIN_LANE_COUNT and MAX_LANE_COUNT defined in src.constants
-    MIN_LANES: int = MIN_LANE_COUNT  # Backward compatibility alias
-    MAX_LANES: int = MAX_LANE_COUNT  # Backward compatibility alias
-    # ---------- edge attractiveness ----------
-    LAMBDA_DEPART = 3.5
-    LAMBDA_ARRIVE = 2.0
-
-    # ---------- simulation verification ----------
-    # Verify algorithm every N simulation steps
-    SIMULATION_VERIFICATION_FREQUENCY: int = 30
-
-    # ---------- Tree Method algorithm timing ----------
-    # Tree Method calculations occur every N seconds to balance efficiency with responsiveness
-    # This is independent of traffic light cycle timing
-    TREE_METHOD_ITERATION_INTERVAL_SEC: int = 90
-
-    # Use centralized constants
-    # MIN_TREE_METHOD_INTERVAL and MAX_TREE_METHOD_INTERVAL defined in src.constants
-    TREE_METHOD_MIN_INTERVAL_SEC: int = MIN_TREE_METHOD_INTERVAL  # Backward compatibility alias
-    TREE_METHOD_MAX_INTERVAL_SEC: int = MAX_TREE_METHOD_INTERVAL  # Backward compatibility alias
+        # ---------- Tree Method algorithm timing ----------
+        self.TREE_METHOD_ITERATION_INTERVAL_SEC = 90
+        self.TREE_METHOD_MIN_INTERVAL_SEC = MIN_TREE_METHOD_INTERVAL  # Backward compatibility alias
+        self.TREE_METHOD_MAX_INTERVAL_SEC = MAX_TREE_METHOD_INTERVAL  # Backward compatibility alias
 
 
 @dataclass

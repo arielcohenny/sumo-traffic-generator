@@ -15,7 +15,7 @@ from src.constants import (
     DEFAULT_START_TIME_HOUR, DEFAULT_TRAFFIC_LIGHT_STRATEGY, 
     DEFAULT_TRAFFIC_CONTROL, DEFAULT_BOTTLENECK_DETECTION_INTERVAL,
     DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL,
-    MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL
+    MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL, DEFAULT_WORKSPACE_DIR
 )
 
 
@@ -139,6 +139,12 @@ def _add_simulation_arguments(parser: argparse.ArgumentParser) -> None:
         "--gui",
         action="store_true",
         help="Launch SUMO in GUI mode (sumo-gui) instead of headless sumo"
+    )
+    parser.add_argument(
+        "--workspace",
+        type=str,
+        default=DEFAULT_WORKSPACE_DIR,
+        help=f"Parent directory where 'workspace' folder will be created for simulation output files. Default is '{DEFAULT_WORKSPACE_DIR}' (creates './workspace/')."
     )
 
 

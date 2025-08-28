@@ -164,7 +164,7 @@ dbps
 │   └── datasets/          # Research networks
 ├── tests/                 # Software testing framework
 ├── tools/                 # Development utilities
-└── workspace/             # Generated simulation files (temporary)
+└── workspace/             # Default simulation output directory (configurable)
 ```
 
 ## Documentation

@@ -156,6 +156,9 @@ TEMP_FILE_PREFIX = "/tmp/custom_lanes_"
 # SUMO INTEGRATION CONSTANTS
 # =============================================================================
 
+# Output Directory (parent directory where 'workspace' folder will be created)
+DEFAULT_WORKSPACE_DIR = "."
+
 # File Names
 STATISTICS_FILE = "sumo_statistics.xml"
 ERROR_LOG_FILE = "sumo_errors.log"

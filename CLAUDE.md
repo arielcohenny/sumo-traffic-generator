@@ -89,6 +89,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --seed 42 \
   --step-length 1.0 \
   --end-time 7200 \
+  --workspace custom_output \
   --attractiveness land_use \
   --time_dependent \
   --start_time_hour 7.0 \
@@ -99,6 +100,49 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --gui
 ```
 
+### Workspace Configuration
+
+The `--workspace` parameter specifies the **parent directory** where a `workspace/` folder will be created for simulation output files:
+
+```bash
+# Default behavior (creates './workspace/' in current directory)
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100
+
+# Custom parent directory (creates 'my_simulation/workspace/')
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100 --workspace my_simulation
+
+# Absolute path (creates '/home/user/simulations/test1/workspace/')
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100 --workspace "/home/user/simulations/test1"
+
+# Relative path from current directory (creates 'results/experiment_01/workspace/')
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100 --workspace "results/experiment_01"
+
+# Safe to use current directory (creates './workspace/', same as default)
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100 --workspace "./"
+```
+
+**Generated Files Structure:**
+```
+[workspace_directory]/
+├── grid.net.xml          # SUMO network file
+├── grid.nod.xml          # Network nodes
+├── grid.edg.xml          # Network edges  
+├── grid.con.xml          # Network connections
+├── grid.tll.xml          # Traffic light definitions
+├── vehicles.rou.xml      # Vehicle routes and types
+├── zones.poly.xml        # Land use zones
+├── grid.sumocfg          # SUMO configuration
+├── sumo_statistics.xml   # Simulation results
+└── sumo_errors.log       # Error logs (if any)
+```
+
+**Notes:**
+- Default creates `"./workspace/"` in current working directory  
+- A `workspace/` subdirectory is always created in the specified parent directory
+- Only the `workspace/` folder contents are cleaned, never the parent directory
+- **Safe**: You can use `--workspace ./` or any directory without risk of data loss
+- Parent directory is automatically created if it doesn't exist
+- GUI automatically uses the configured workspace for file display
 
 ### Tested Scenarios (5x5 Grid, 150m Blocks)
 
@@ -112,7 +156,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 -
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 0 --num_vehicles 500 --step-length 1.0 --end-time 5400 --departure_pattern uniform --start_time_hour 20.0 --gui
 
 # Scenario 3: All-Day Urban Simulation
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1200 --step-length 1.0 --end-time 28800 --departure_pattern six_periods --attractiveness land_use --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1200 --step-length 1.0 --end-time 28800 --departure_pattern six_periods --attractiveness land_use --workspace "all_day_simulation" --gui
 
 # Scenario 4: Custom Rush Hour Pattern
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 750 --step-length 1.0 --end-time 10800 --departure_pattern 'rush_hours:7-9:50,17-19:40,rest:10' --routing_strategy 'shortest 70 realtime 30' --gui
@@ -121,7 +165,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 -
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 0 --num_vehicles 600 --step-length 1.0 --end-time 21600 --departure_pattern six_periods --start_time_hour 0.0 --time_dependent --gui
 
 # Scenario 6: High-Density Stress Test
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1500 --step-length 1.0 --end-time 14400 --departure_pattern uniform --routing_strategy 'shortest 50 realtime 30 fastest 20' --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1500 --step-length 1.0 --end-time 14400 --departure_pattern uniform --routing_strategy 'shortest 50 realtime 30 fastest 20' --workspace "stress_test_results" --gui
 
 # Scenario 7: Time-Dependent Attractiveness Test
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 900 --step-length 1.0 --end-time 12600 --departure_pattern six_periods --time_dependent --start_time_hour 8.0 --gui

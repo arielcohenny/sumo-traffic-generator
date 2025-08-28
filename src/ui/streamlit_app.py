@@ -12,6 +12,7 @@ from src.constants import (
     DEFAULT_END_TIME, DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_ATTRACTIVENESS,
     DEFAULT_START_TIME_HOUR, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL,
     DEFAULT_BOTTLENECK_DETECTION_INTERVAL, DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL,
+    DEFAULT_WORKSPACE_DIR,
 
     # Progress Bar Values
     PROGRESS_START, PROGRESS_PIPELINE_CREATED, PROGRESS_EXECUTION_STARTED,
@@ -83,6 +84,11 @@ def generate_command_line(params: Dict[str, Any]) -> str:
 
     if params.get('gui', False):
         cmd_parts.append("--gui")
+    
+    # Add workspace if different from default
+    workspace = params.get('workspace', DEFAULT_WORKSPACE_DIR)
+    if workspace != DEFAULT_WORKSPACE_DIR:
+        cmd_parts.append(f"--workspace \"{workspace}\"")
 
     # Zone & attractiveness parameters
     cmd_parts.append(
@@ -160,6 +166,11 @@ def convert_params_to_args(params: Dict[str, Any]) -> argparse.Namespace:
 
     if params.get("gui", False):
         args_list.append("--gui")
+
+    # Add workspace if different from default
+    workspace = params.get('workspace', DEFAULT_WORKSPACE_DIR)
+    if workspace != DEFAULT_WORKSPACE_DIR:
+        args_list.extend(["--workspace", workspace])
 
     # Advanced parameters
     args_list.extend(["--land_use_block_size_m",
