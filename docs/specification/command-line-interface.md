@@ -107,10 +107,29 @@ Vehicle departure timing pattern.
 ### Simulation Control Arguments
 
 #### `--seed` (int, optional)
-Random seed for reproducible simulations.
+**Single seed mode (backward compatible)**: Sets all seeds (network, private-traffic, public-traffic) to the same value.
 - **Range**: 1-999,999
 - **Default**: Random seed generated if not provided
 - **Example**: `--seed 42`
+- **Note**: Cannot be used with individual seed parameters
+
+#### `--network-seed` (int, optional)
+**Network structure seed**: Controls network generation aspects (junction removal, lane assignment, land use, edge attractiveness).
+- **Range**: 1-999,999
+- **Default**: Uses `--seed` value or random seed if not provided
+- **Example**: `--network-seed 42`
+
+#### `--private-traffic-seed` (int, optional)
+**Private traffic seed**: Controls passenger and commercial vehicle generation (routes, departure times, vehicle type assignment).
+- **Range**: 1-999,999
+- **Default**: Uses `--seed` value or random seed if not provided
+- **Example**: `--private-traffic-seed 123`
+
+#### `--public-traffic-seed` (int, optional)
+**Public traffic seed**: Controls public transportation vehicle generation (routes, departure times, vehicle type assignment).
+- **Range**: 1-999,999
+- **Default**: Uses `--seed` value or random seed if not provided
+- **Example**: `--public-traffic-seed 456`
 
 #### `--step-length` (float, default: 1.0)
 Simulation step length in seconds for TraCI control loop.
@@ -276,6 +295,45 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --start_time_hour 7.0 \
   --time_dependent \
   --num_vehicles 1500
+```
+
+### Multiple Seed Examples (Advanced Control)
+
+#### Network Sensitivity Analysis
+```bash
+# Test different network topologies with identical traffic
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 100 --private-traffic-seed 42 --public-traffic-seed 42 --num_vehicles 500
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 101 --private-traffic-seed 42 --public-traffic-seed 42 --num_vehicles 500
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 102 --private-traffic-seed 42 --public-traffic-seed 42 --num_vehicles 500
+```
+
+#### Private Traffic Pattern Studies  
+```bash
+# Same network and public transport, different private traffic patterns
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 100 --public-traffic-seed 200 --num_vehicles 800
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 101 --public-traffic-seed 200 --num_vehicles 800
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 102 --public-traffic-seed 200 --num_vehicles 800
+```
+
+#### Public Transport Planning
+```bash
+# Same network and private traffic, different public transport scenarios
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 100 --public-traffic-seed 300 --num_vehicles 600
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 100 --public-traffic-seed 301 --num_vehicles 600
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 100 --public-traffic-seed 302 --num_vehicles 600
+```
+
+#### Experimental Research Setup
+```bash
+# Controlled experiment with all aspects independent
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --network-seed 1001 \
+  --private-traffic-seed 2001 \
+  --public-traffic-seed 3001 \
+  --grid_dimension 5 \
+  --num_vehicles 1000 \
+  --traffic_control tree_method \
+  --end-time 7200
 ```
 
 ## Integration with GUI

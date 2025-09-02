@@ -587,7 +587,7 @@ def write_xml_files(nod_tree, edg_tree, con_tree, tll_tree):
 def execute_edge_splitting(args) -> None:
     """Execute edge splitting with lane assignment."""
     import logging
-    from src.utils.seed_utils import get_cached_seed
+    from src.utils.multi_seed_utils import get_network_seed
     from src.validate.validate_split_edges_with_lanes import verify_split_edges_with_flow_based_lanes
     from src.validate.errors import ValidationError
 
@@ -595,7 +595,7 @@ def execute_edge_splitting(args) -> None:
 
     if args.lane_count != "0" and not (args.lane_count.isdigit() and args.lane_count == "0"):
         split_edges_with_flow_based_lanes(
-            seed=get_cached_seed(args),
+            seed=get_network_seed(args),
             min_lanes=MIN_LANE_COUNT,
             max_lanes=MAX_LANE_COUNT,
             algorithm=args.lane_count,

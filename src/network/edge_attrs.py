@@ -550,21 +550,21 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
 def execute_attractiveness_assignment(args) -> None:
     """Execute edge attractiveness assignment."""
     import logging
-    from src.utils.seed_utils import get_cached_seed
+    from src.utils.multi_seed_utils import get_network_seed
     from src.validate.validate_network import verify_assign_edge_attractiveness
     from src.validate.errors import ValidationError
 
     logger = logging.getLogger(__name__)
 
     assign_edge_attractiveness(
-        get_cached_seed(args),
+        get_network_seed(args),
         args.attractiveness,
         args.time_dependent,
         args.start_time_hour
     )
     try:
         verify_assign_edge_attractiveness(
-            get_cached_seed(args),
+            get_network_seed(args),
             args.attractiveness,
             args.time_dependent
         )

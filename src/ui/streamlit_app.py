@@ -74,9 +74,17 @@ def generate_command_line(params: Dict[str, Any]) -> str:
     cmd_parts.append(
         f"--departure_pattern {params.get('departure_pattern', DEFAULT_DEPARTURE_PATTERN)}")
 
-    # Simulation parameters
+    # Simulation parameters - handle multiple seed types
     if params.get('seed'):
         cmd_parts.append(f"--seed {params['seed']}")
+    else:
+        # Add individual seeds if specified
+        if params.get('network-seed'):
+            cmd_parts.append(f"--network-seed {params['network-seed']}")
+        if params.get('private-traffic-seed'):
+            cmd_parts.append(f"--private-traffic-seed {params['private-traffic-seed']}")
+        if params.get('public-traffic-seed'):
+            cmd_parts.append(f"--public-traffic-seed {params['public-traffic-seed']}")
 
     cmd_parts.append(
         f"--step-length {params.get('step_length', DEFAULT_STEP_LENGTH)}")
@@ -155,9 +163,17 @@ def convert_params_to_args(params: Dict[str, Any]) -> argparse.Namespace:
     args_list.extend(
         ["--departure_pattern", params.get("departure_pattern", DEFAULT_DEPARTURE_PATTERN)])
 
-    # Simulation parameters
+    # Simulation parameters - handle multiple seed types
     if params.get("seed"):
         args_list.extend(["--seed", str(params["seed"])])
+    else:
+        # Add individual seeds if specified
+        if params.get("network-seed"):
+            args_list.extend(["--network-seed", str(params["network-seed"])])
+        if params.get("private-traffic-seed"):
+            args_list.extend(["--private-traffic-seed", str(params["private-traffic-seed"])])
+        if params.get("public-traffic-seed"):
+            args_list.extend(["--public-traffic-seed", str(params["public-traffic-seed"])])
 
     args_list.extend(
         ["--step-length", str(params.get("step_length", DEFAULT_STEP_LENGTH))])

@@ -121,7 +121,26 @@ def _add_simulation_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--seed",
         type=int,
-        help="Seed for generating randomness. If not provided, a random seed will be used."
+        help="Seed for generating randomness. If not provided, a random seed will be used. "
+             "Sets all seeds (network, private-traffic, public-traffic) to the same value."
+    )
+    parser.add_argument(
+        "--network-seed",
+        type=int,
+        help="Seed for network structure generation (junction removal, lane assignment, "
+             "land use, edge attractiveness). If not provided, uses --seed or random seed."
+    )
+    parser.add_argument(
+        "--private-traffic-seed",
+        type=int,
+        help="Seed for private traffic generation (passenger and commercial vehicles). "
+             "If not provided, uses --seed or random seed."
+    )
+    parser.add_argument(
+        "--public-traffic-seed",
+        type=int,
+        help="Seed for public traffic generation (public vehicles). "
+             "If not provided, uses --seed or random seed."
     )
     parser.add_argument(
         "--step-length",

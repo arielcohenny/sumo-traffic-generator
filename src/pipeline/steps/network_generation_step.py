@@ -21,7 +21,7 @@ class NetworkGenerationStep(BaseStep):
     def validate(self) -> None:
         """Validate network generation results."""
         verify_generate_grid_network(
-            self._get_seed(),
+            self._get_network_seed(),
             int(self.args.grid_dimension),
             int(self.args.block_size_m),
             self.args.junctions_to_remove,
@@ -33,7 +33,7 @@ class NetworkGenerationStep(BaseStep):
         """Generate synthetic grid network."""
         self.logger.info("Generating SUMO orthogonal grid network...")
         generate_grid_network(
-            self._get_seed(),
+            self._get_network_seed(),
             int(self.args.grid_dimension),
             int(self.args.block_size_m),
             self.args.junctions_to_remove,
@@ -42,13 +42,13 @@ class NetworkGenerationStep(BaseStep):
         )
         self.logger.info("Generated grid successfully")
     
-    def _get_seed(self) -> int:
-        """Get the random seed, generating one if not provided."""
-        if hasattr(self.args, '_seed'):
-            return self.args._seed
-        
-        import random
-        seed = self.args.seed if self.args.seed is not None else random.randint(0, 2**32 - 1)
-        self.args._seed = seed  # Cache for other steps
-        self.logger.info(f"Using seed: {seed}")
+    def _get_network_seed(self) -> int:
+        """Get the network seed for network generation."""
+        from src.utils.multi_seed_utils import get_network_seed
+        seed = get_network_seed(self.args)
+        self.logger.info(f"Using network seed: {seed}")
         return seed
+    
+    def _get_seed(self) -> int:
+        """Get the random seed, generating one if not provided. (Backward compatibility)"""
+        return self._get_network_seed()

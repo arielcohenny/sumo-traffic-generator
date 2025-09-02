@@ -45,7 +45,8 @@ NIGHT_WEIGHT = 1
 def generate_vehicle_routes(net_file: str | Path,
                             output_file: str | Path,
                             num_vehicles: int,
-                            seed: int = CONFIG.RNG_SEED,
+                            private_traffic_seed: int = CONFIG.RNG_SEED,
+                            public_traffic_seed: int = CONFIG.RNG_SEED,
                             routing_strategy: str = "shortest 100",
                             vehicle_types: str = DEFAULT_VEHICLE_TYPES,
                             end_time: int = 7200,
@@ -57,22 +58,28 @@ def generate_vehicle_routes(net_file: str | Path,
         net_file: Path to SUMO network file
         output_file: Output route file path
         num_vehicles: Number of vehicles to generate
-        seed: Random seed for reproducibility
+        private_traffic_seed: Random seed for private traffic (passenger, commercial)
+        public_traffic_seed: Random seed for public traffic
         routing_strategy: Routing strategy specification (e.g., "shortest 70 realtime 30")
         vehicle_types: Vehicle types specification (e.g., "passenger 70 commercial 20 public 10")
         end_time: Total simulation duration in seconds for temporal distribution
         departure_pattern: Departure pattern ("six_periods", "uniform", "rush_hours:7-9:40,17-19:30", "hourly:...")
     """
-    rng = random.Random(seed)
+    # Create separate RNGs for private and public traffic
+    private_rng = random.Random(private_traffic_seed)
+    public_rng = random.Random(public_traffic_seed)
+    
     net = readNet(str(net_file))
-
     edges = [e for e in net.getEdges() if e.getFunction() != "internal"]
 
-    sampler = AttractivenessBasedEdgeSampler(rng)
+    # Create samplers for both traffic types  
+    private_sampler = AttractivenessBasedEdgeSampler(private_rng)
+    public_sampler = AttractivenessBasedEdgeSampler(public_rng)
 
     # Parse and initialize routing strategies
     strategy_percentages = parse_routing_strategy(routing_strategy)
-    routing_mix = RoutingMixStrategy(net, strategy_percentages)
+    private_routing_mix = RoutingMixStrategy(net, strategy_percentages)
+    public_routing_mix = RoutingMixStrategy(net, strategy_percentages)
 
     # Parse and initialize vehicle types
     vehicle_distribution = parse_vehicle_types(vehicle_types)
@@ -80,26 +87,45 @@ def generate_vehicle_routes(net_file: str | Path,
 
     print(f"Using routing strategies: {strategy_percentages}")
     print(f"Using vehicle types: {vehicle_distribution}")
+    print(f"Using private traffic seed: {private_traffic_seed}")
+    print(f"Using public traffic seed: {public_traffic_seed}")
 
+    # Create a master RNG for vehicle type assignment to maintain distribution
+    # This ensures the vehicle type percentages are respected across the fleet
+    master_rng = random.Random(private_traffic_seed + public_traffic_seed)
+    
     vehicles = []
     for vid in range(num_vehicles):
-        vtype = rng.choices(
+        # Choose vehicle type using master RNG to maintain distribution
+        vtype = master_rng.choices(
             population=vehicle_names,
             weights=vehicle_weights,
             k=1
         )[0]
 
-        # Assign routing strategy to this vehicle
-        assigned_strategy = routing_mix.assign_strategy_to_vehicle(
-            f"veh{vid}", rng)
+        # Select appropriate RNG, sampler, and routing mix based on vehicle type
+        if vtype in ['passenger', 'commercial']:
+            # Private traffic
+            current_rng = private_rng
+            current_sampler = private_sampler
+            current_routing_mix = private_routing_mix
+        else:  # vtype == 'public'
+            # Public traffic
+            current_rng = public_rng
+            current_sampler = public_sampler
+            current_routing_mix = public_routing_mix
+
+        # Assign routing strategy using appropriate RNG
+        assigned_strategy = current_routing_mix.assign_strategy_to_vehicle(
+            f"veh{vid}", current_rng)
 
         route_edges = []
         for _ in range(MAX_ROUTE_RETRIES):                       # retry up to 20 times
-            start_edge = sampler.sample_start_edges(edges, 1)[0]
-            end_edge = sampler.sample_end_edges(edges, 1)[0]
+            start_edge = current_sampler.sample_start_edges(edges, 1)[0]
+            end_edge = current_sampler.sample_end_edges(edges, 1)[0]
             if end_edge == start_edge:
                 continue
-            route_edges = routing_mix.compute_route(
+            route_edges = current_routing_mix.compute_route(
                 assigned_strategy, start_edge, end_edge)
             if route_edges:
                 break
@@ -112,9 +138,10 @@ def generate_vehicle_routes(net_file: str | Path,
         if not route_edges:
             print(f"⚠️  Empty route for vehicle {vid}; skipping.")
             continue
-        # Generate departure time based on specified pattern
+            
+        # Generate departure time using appropriate RNG
         departure_time = _generate_departure_time(
-            rng, departure_pattern, end_time)
+            current_rng, departure_pattern, end_time)
 
         vehicles.append({
             "id":              f"veh{vid}",
@@ -295,7 +322,7 @@ def _generate_hourly_departure(rng, pattern: str, end_time: int) -> int:
 def execute_route_generation(args) -> None:
     """Execute vehicle route generation."""
     import logging
-    from src.utils.seed_utils import get_cached_seed
+    from src.utils.multi_seed_utils import get_private_traffic_seed, get_public_traffic_seed
     from src.config import CONFIG
     from src.validate.validate_traffic import verify_generate_vehicle_routes
     from src.validate.errors import ValidationError
@@ -306,7 +333,8 @@ def execute_route_generation(args) -> None:
         net_file=CONFIG.network_file,
         output_file=CONFIG.routes_file,
         num_vehicles=args.num_vehicles,
-        seed=get_cached_seed(args),
+        private_traffic_seed=get_private_traffic_seed(args),
+        public_traffic_seed=get_public_traffic_seed(args),
         routing_strategy=args.routing_strategy,
         vehicle_types=args.vehicle_types,
         end_time=args.end_time,
@@ -317,7 +345,7 @@ def execute_route_generation(args) -> None:
             net_file=CONFIG.network_file,
             output_file=CONFIG.routes_file,
             num_vehicles=args.num_vehicles,
-            seed=get_cached_seed(args),
+            seed=get_private_traffic_seed(args),  # Keep validation using private seed for backward compatibility
         )
     except ValidationError as ve:
         logger.error(f"Failed to generate vehicle routes: {ve}")

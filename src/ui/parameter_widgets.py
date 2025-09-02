@@ -255,27 +255,96 @@ class ParameterWidgets:
 
         st.subheader("⚙️ Simulation Control")
 
-        # Seed configuration
-        use_random_seed = st.checkbox("Use Random Seed", value=True)
-        if use_random_seed:
-            if st.button("Generate New Seed"):
-                import random
-                st.session_state.generated_seed = random.randint(
-                    MIN_SEED, MAX_SEED)
+        # Seed configuration with multiple seed support
+        seed_mode = st.radio(
+            "Seed Configuration",
+            options=["Single Seed (Simple)", "Multiple Seeds (Advanced)"],
+            help="Single seed sets all seeds to the same value (backward compatible). "
+                 "Multiple seeds allow fine-grained control over network vs traffic generation."
+        )
+        
+        if seed_mode == "Single Seed (Simple)":
+            # Original single seed behavior for backward compatibility
+            use_random_seed = st.checkbox("Use Random Seed", value=True)
+            if use_random_seed:
+                if st.button("Generate New Seed"):
+                    import random
+                    st.session_state.generated_seed = random.randint(
+                        MIN_SEED, MAX_SEED)
 
-            if 'generated_seed' not in st.session_state:
-                st.session_state.generated_seed = DEFAULT_SEED
+                if 'generated_seed' not in st.session_state:
+                    st.session_state.generated_seed = DEFAULT_SEED
 
-            params["seed"] = st.session_state.generated_seed
-            st.info(f"Using seed: {params['seed']}")
+                params["seed"] = st.session_state.generated_seed
+                st.info(f"Using seed: {params['seed']}")
+            else:
+                params["seed"] = st.number_input(
+                    "Custom Seed",
+                    min_value=MIN_SEED,
+                    max_value=MAX_SEED,
+                    value=DEFAULT_SEED,
+                    help="Reproducible random seed (sets all seeds to same value)"
+                )
         else:
-            params["seed"] = st.number_input(
-                "Custom Seed",
-                min_value=MIN_SEED,
-                max_value=MAX_SEED,
-                value=DEFAULT_SEED,
-                help="Reproducible random seed"
-            )
+            # Multiple seeds mode for advanced control
+            st.markdown("**Configure seeds for different simulation aspects:**")
+            
+            # Initialize session state for seeds with independent random values
+            import random
+            if 'multi_network_seed' not in st.session_state:
+                st.session_state.multi_network_seed = random.randint(MIN_SEED, MAX_SEED)
+            if 'multi_private_seed' not in st.session_state:
+                st.session_state.multi_private_seed = random.randint(MIN_SEED, MAX_SEED)
+            if 'multi_public_seed' not in st.session_state:
+                st.session_state.multi_public_seed = random.randint(MIN_SEED, MAX_SEED)
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.markdown("**Network Structure**")
+                st.caption("Junction removal, lanes, land use, edge attractiveness")
+                params["network-seed"] = st.number_input(
+                    "Network Seed",
+                    min_value=MIN_SEED,
+                    max_value=MAX_SEED,
+                    value=st.session_state.multi_network_seed,
+                    help="Seed for network structure generation"
+                )
+                # Update session state when user changes value manually
+                st.session_state.multi_network_seed = params["network-seed"]
+            
+            with col2:
+                st.markdown("**Private Traffic**")
+                st.caption("Passenger & commercial vehicles")
+                params["private-traffic-seed"] = st.number_input(
+                    "Private Traffic Seed",
+                    min_value=MIN_SEED,
+                    max_value=MAX_SEED,
+                    value=st.session_state.multi_private_seed,
+                    help="Seed for private vehicle generation"
+                )
+                # Update session state when user changes value manually
+                st.session_state.multi_private_seed = params["private-traffic-seed"]
+            
+            with col3:
+                st.markdown("**Public Traffic**")
+                st.caption("Public transportation vehicles")
+                params["public-traffic-seed"] = st.number_input(
+                    "Public Traffic Seed",
+                    min_value=MIN_SEED,
+                    max_value=MAX_SEED,
+                    value=st.session_state.multi_public_seed,
+                    help="Seed for public vehicle generation"
+                )
+                # Update session state when user changes value manually
+                st.session_state.multi_public_seed = params["public-traffic-seed"]
+            
+            # Generate completely independent seeds
+            if st.button("Generate New Seeds"):
+                st.session_state.multi_network_seed = random.randint(MIN_SEED, MAX_SEED)
+                st.session_state.multi_private_seed = random.randint(MIN_SEED, MAX_SEED)
+                st.session_state.multi_public_seed = random.randint(MIN_SEED, MAX_SEED)
+                st.rerun()
 
         params["step_length"] = st.number_input(
             "Step Length (seconds)",

@@ -294,6 +294,63 @@ cd evaluation/benchmarks/experiment-01-moderate-traffic && ./run_experiment.sh
 # Recommended: black, flake8/ruff, mypy
 ```
 
+## Seed System (Multiple Seeds Support)
+
+The system supports both single and multiple seed configurations for fine-grained experimental control:
+
+### Single Seed (Backward Compatible)
+
+```bash
+# Traditional approach - sets all seeds to the same value
+env PYTHONUNBUFFERED=1 python -m src.cli --seed 42 --num_vehicles 100 --gui
+```
+
+### Multiple Seeds (Advanced Control)
+
+For research and experimentation, you can control different aspects independently:
+
+```bash
+# Network structure vs traffic separation
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --network-seed 42 \
+  --private-traffic-seed 123 \
+  --public-traffic-seed 456 \
+  --num_vehicles 100 --gui
+
+# Example: Same network, different private traffic patterns
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 100 --public-traffic-seed 200 --num_vehicles 100
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 101 --public-traffic-seed 200 --num_vehicles 100  # Different private traffic, same public
+
+# Example: Same private traffic, different public transportation
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 100 --public-traffic-seed 200 --num_vehicles 100
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 100 --public-traffic-seed 201 --num_vehicles 100  # Same private traffic, different public
+```
+
+### Seed Types
+
+- **`--network-seed`**: Controls network structure generation
+  - Junction removal selection
+  - Lane count assignment (when using "random" algorithm)  
+  - Land use zone clustering and type assignment
+  - Edge attractiveness value generation
+  
+- **`--private-traffic-seed`**: Controls passenger and commercial vehicle generation
+  - Vehicle type assignment for private vehicles
+  - Route generation (start/end edges, path computation)
+  - Departure time generation for private vehicles
+  
+- **`--public-traffic-seed`**: Controls public transportation vehicle generation
+  - Vehicle type assignment for public vehicles
+  - Route generation for public vehicles
+  - Departure time generation for public vehicles
+
+### Use Cases
+
+1. **Network Sensitivity Analysis**: Keep traffic patterns constant while testing different network topologies
+2. **Traffic Pattern Studies**: Keep network constant while varying private vs public traffic scenarios
+3. **Public Transport Planning**: Test different public transport schedules against consistent private traffic
+4. **Reproducible Research**: Enable precise control over experimental variables for scientific studies
+
 ## Architecture Overview
 
 ### Pipeline Architecture

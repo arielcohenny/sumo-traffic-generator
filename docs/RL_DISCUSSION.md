@@ -24,148 +24,162 @@ Designing an RL-based traffic signal controller requires a set of fundamental fo
 
 Each axis introduces trade-offs in complexity, scalability, realism, and performance.
 
-### Network-Specific vs. Network-Agnostic Training
+### Training Scope
 
-**Key Challenge**: Traffic-signal controllers must operate on diverse road networks — from small grids to large irregular topologies. A central question is whether to train models tailored to a specific network or to design a general controller that can be applied across networks. The trade-off is between specialization and performance on one hand, and scalability and transferability on the other.
+Traffic signal controllers must operate on diverse road networks, from small grid layouts to large irregular urban topologies. A fundamental choice is whether to train a model tailored to one specific network or to design a general controller that can transfer across different network configurations.
 
-**Implementation Complexity**:
+**Network-Specific Training**: The model is trained exclusively on a single, fixed network topology with customized state representations and architectures optimized for that specific configuration.
 
-- Network-specific training is relatively straightforward because the topology is fixed. The state representation and architecture can be customized to that network, which simplifies model design and training. The drawback is zero portability: the trained model works only for that network, and even minor structural changes require retraining.
-- Network-agnostic training is more demanding. The model must handle variable-sized inputs and irregular connectivity patterns, often via graph-based or attention-based architectures. This flexibility increases engineering and computational complexity, but it enables a single controller to be applied across many networks.
+- Pros: Straightforward implementation due to fixed topology; can exploit known geometry and capacity constraints; often achieves higher performance on the target network; simplified model design and training process.
+- Cons: Zero portability to other networks; requires complete retraining for even minor structural changes; limited research generalizability; cannot leverage learning from diverse network configurations.
 
-**Performance Trade-offs**:
+**Network-Agnostic Training**: The model is designed to handle variable network sizes and connectivity patterns, typically using graph-based or attention-based architectures that can adapt to different topologies.
 
-- Network-specific models can exploit known geometry and capacity constraints, often achieving higher performance in the target network. They are well-suited for deployment in a fixed, real-world network where generalization is not required.
-- Network-agnostic models prioritize portability: the same policy can be applied (or fine-tuned) across different cities or topologies. However, this generalization comes at a cost — they may underperform compared to specialized models, since some capacity to exploit network-specific structure is sacrificed for flexibility.
+- Pros: Single controller works across multiple networks; enables transfer learning and fine-tuning; higher research impact through generalizability; can leverage diverse training scenarios to improve robustness.
+- Cons: Increased engineering and computational complexity; may underperform compared to specialized models; requires sophisticated architectures to handle variable inputs; sacrifices some network-specific optimization capacity.
 
-### Centralized vs. Distributed Agent Architecture
+Network-specific training offers the fastest path to demonstrating effectiveness on a target network, making it ideal for proof-of-concept research or deployment in fixed infrastructure. Network-agnostic approaches require significantly more development effort but provide broader applicability. A practical compromise is to begin with network-specific training to validate core concepts, then extend to network-agnostic formulations once the approach proves viable.
 
-**Coordination vs. Scalability**:
+### Agent Architecture
 
-- Centralized agents observe the entire network and can directly optimize coordination across all junctions. However, the state-action space grows exponentially with network size, making training and inference computationally prohibitive for large networks.
-- Distributed agents (one per junction, typically with parameter sharing) scale naturally since each agent only sees local state. Coordination must then emerge indirectly, which may be less efficient but keeps computation tractable.
+The control architecture determines how decision-making is organized across the network's intersections. This choice fundamentally affects scalability, coordination capability, and computational requirements.
 
-**Credit Assignment**:
+**Centralized Architecture**: A single agent observes the entire network state and makes coordinated decisions for all intersections simultaneously.
 
-- In distributed setups, it is difficult to assign credit when improvements depend on multi-junction cooperation (e.g., a green wave reducing travel times across an arterial). Each local agent receives only partial feedback, which can slow learning.
-- Centralized agents sidestep this issue by optimizing a global reward, but must manage delayed and diffuse rewards spread across a vast action space.
+- Pros: Direct optimization of network-wide coordination; can implement complex multi-intersection strategies like green waves; unified global reward optimization; no credit assignment problems across agents.
+- Cons: State-action space grows exponentially with network size; computationally prohibitive for large networks; requires significant memory and processing power; single point of failure.
 
-**Training Stability**:
+**Distributed Architecture**: Multiple agents operate independently, typically one per intersection, usually with shared parameters to enable learning transfer across similar junction configurations.
 
-- Distributed systems with parameter sharing can suffer instability, as agents update shared weights from diverse local experiences.
-- Centralized training avoids this weight conflict, but requires significant compute and careful exploration strategies to prevent the policy from collapsing into local optima.
+- Pros: Linear scaling with network size; tractable computation for large networks; natural parallelization; robust to individual junction failures; aligns with real-world distributed control systems.
+- Cons: Coordination must emerge indirectly through learning; difficult credit assignment for multi-junction improvements; potential training instability from parameter sharing; may miss optimal network-wide strategies.
 
-**Practical Trade-off**:
+Centralized control is optimal for small research networks where full coordination is critical and computational constraints are manageable. Distributed control becomes necessary for larger, real-world networks due to scalability requirements. A hybrid approach uses centralized training with distributed execution, allowing coordination learning while maintaining deployment scalability.
 
-- Centralized control is feasible for small toy networks or research settings where full coordination is more important than scalability. Exponential scaling with network size.
-- Distributed control with parameter sharing is the dominant approach for real-world scenarios, offering scalability with reasonable performance, especially when combined with mechanisms for limited inter-agent communication or graph-based coordination. Linear scaling with network size
+### Input Model
 
-### Model Input
+The input representation defines how traffic conditions are observed and encoded for the RL agent. This choice determines the level of detail available for decision-making, computational requirements, and the agent's ability to generalize across different traffic patterns.
 
-The input representation defines how traffic state is observed and determines whether the model learns location-specific behaviors or generalizable coordination patterns. Four common approaches are:
+**Microscopic Representation**: Individual vehicle states including positions, speeds, lane assignments, and trajectories for every vehicle in the network.
 
-**Microscopic (per-vehicle states)**:
+- Pros: Complete system detail enabling precise trajectory prediction; captures fine-grained vehicle interactions; allows modeling of individual driver behaviors; maximum information availability.
+- Cons: Enormous state space scaling poorly with traffic volume; location-specific features hindering transferability; slow training due to high dimensionality; requires specialized hardware for real-time inference.
 
-Represents the traffic system at the individual vehicle level, including positions, speeds, and lane assignments for every car in the network.
+**Macroscopic Representation**: Aggregate statistics per road segment such as queue lengths, average speeds, traffic densities, and flow rates without tracking individual vehicles.
 
-- Pros: full system detail, precise trajectory prediction.
-- Cons: enormous state space, location-specific features, slow training, poor transferability. Real-time inference may require specialized hardware.
+- Pros: Compact and stable representation; matches traffic control granularity; efficient for training and real-time deployment; highlights network-level patterns; enables standard hardware deployment.
+- Cons: Loses individual vehicle dynamics; misses fine-grained intersection behaviors; may obscure important microscopic effects; reduced precision for complex maneuvers.
 
-**Macroscopic (aggregate edge-level features)**:
+**Multi-Scale Hybrid**: Dynamic combination of microscopic detail at critical locations (bottlenecks, complex intersections) with macroscopic representation elsewhere based on current traffic conditions.
 
-Summarizes traffic conditions using aggregate statistics per edge (e.g., queue lengths, mean speeds, densities, flows). This captures the overall state of each road segment without tracking individual vehicles.
+- Pros: Adaptive detail allocation optimizing information-efficiency trade-off; balances computational cost with necessary precision; can focus resources on problem areas.
+- Cons: Complex architecture requiring dynamic switching logic; potential instability when transitioning between representations; difficult to implement and debug; inconsistent state space.
 
-- Pros: compact, stable, matches control granularity, highlights network-level patterns, efficient for training and real-time use. Enables real-time control on standard hardware.
-- Cons: loses per-vehicle detail and fine-grained intersection dynamics.
+**Graph-Based Representation**: Network topology encoded explicitly as a graph with junction nodes (signal states, flow features) and road edges (density, congestion, capacity), typically processed using Graph Neural Networks.
 
-**Multi-Scale Hybrid**:
+- Pros: Direct topology encoding enabling parameter sharing; natural handling of irregular networks; supports transfer to new configurations; captures local and global propagation through message passing.
+- Cons: Requires careful feature engineering; computationally heavier than simpler approaches; limited maturity of GNN architectures for sequential decision-making; complex debugging due to message passing dynamics.
 
-Combines microscopic and macroscopic representations: detailed vehicle-level input is used at critical bottlenecks, while aggregate data represents less congested areas. The model dynamically balances detail and efficiency.
-
-- Pros: adapts representation (microscopic for bottlenecks, macroscopic elsewhere), balances detail and scalability.
-- Cons: complex architecture, instability from switching representations.
-
-**Graph-Based Representation**:
-Encodes the road network explicitly as a graph, where nodes represent junctions (with signal and flow features) and edges represent roads (with density, flow, and congestion features). This approach typically employs Graph Neural Networks to process the network structure and propagate information between connected intersections. Moderate to high computational requirements.
-
-- Pros: encodes topology directly, enables parameter sharing across junctions, supports transfer to new networks, captures both local and global propagation effects through message passing, and naturally handles irregular network topologies.
-- Cons: requires careful feature design, computationally heavier than simpler representations, harder to handle dynamic topology changes, limited by the current maturity of GNN architectures for sequential decision-making, and challenges due to complex message passing dynamics.
+Macroscopic representation provides the best balance of information content and computational efficiency for most traffic control applications. Microscopic detail is rarely necessary since traffic signals operate at aggregate flow levels, while graph-based approaches add complexity that may not justify performance gains for network-specific applications. Multi-scale hybrid approaches should be reserved for scenarios where computational resources are abundant and bottleneck locations are well-identified.
 
 ### Reward Design
 
-Reward structure fundamentally determines what behaviors the agent learns and directly impacts training efficiency, credit attribution, and performance outcomes. Traffic control presents unique challenges: individual signal decisions have delayed effects, vehicle journeys span multiple intersections, and network performance depends on complex coordination patterns.
+The reward structure fundamentally determines what behaviors the agent learns and directly impacts training efficiency, credit attribution, and performance outcomes. Traffic control presents unique challenges where individual signal decisions have delayed effects, vehicle journeys span multiple intersections, and network performance depends on complex coordination patterns.
 
-**Reward Aggregation: Individual Vehicle vs. Statistical Vehicle Rewards**:
+**Individual Vehicle Rewards**: Track each vehicle's journey through the network, providing completion bonuses and journey-specific waiting time penalties based on individual travel experiences.
 
-- **Individual vehicle rewards** track each vehicle's journey through the network, providing completion bonuses and journey-specific waiting time penalties. This approach enables natural load balancing across different routes and traffic patterns while providing precise temporal attribution of when performance improvements occur.
-- **Statistical vehicle rewards** aggregate performance across all vehicles into network-wide metrics like total throughput, average waiting time, or completion rates. This simplifies implementation but obscures which specific decisions contributed to performance improvements.
+- Pros: Natural load balancing across routes and traffic patterns; precise temporal attribution of performance improvements; encourages fair treatment of all vehicles; clear causality between decisions and outcomes.
+- Cons: High computational overhead tracking individual vehicles; complex implementation requiring vehicle journey management; potential reward sparsity for long journeys; memory intensive for large traffic volumes.
 
-**Spatial Scope: Global vs. Local Rewards**:
+**Statistical Vehicle Rewards**: Aggregate performance across all vehicles into network-wide metrics such as total throughput, average waiting time, queue lengths, or completion rates.
 
-- **Global rewards** Rewarding the entire network. Encourage system coordination and capture how individual junction decisions influence downstream traffic conditions. However, they suffer from high variance and attribution challenges—all decisions receive identical rewards regardless of individual contribution.
-- **Local rewards** Rewarding specific junctions. Provide clearer attribution to specific junctions but create critical blind spots: they fail to capture how one junction's decisions influence other junctions or contribute to overall network performance. This can lead agents to optimize local metrics while harming system-wide coordination.
+- Pros: Simple implementation using readily available traffic statistics; lower computational requirements; stable signals less affected by individual vehicle variance; aligns with traditional traffic engineering metrics.
+- Cons: Obscures which specific decisions contributed to improvements; high variance and attribution challenges; may miss important distributional effects; delayed feedback reducing learning efficiency.
 
-**Temporal Structure: Episode vs. Intermediate Rewards**:
+**Global Spatial Scope**: Rewards computed across the entire network, encouraging system-wide optimization and coordination between all intersections.
 
-- **Episode-based rewards** provide final performance evaluation but create sparse learning signals and high gradient variance from delayed feedback.
-- **Intermediate rewards** (periodic network measurements during episodes) reduce variance through more frequent feedback but require careful frequency tuning and may encourage short-term optimization.
+- Pros: Captures network-wide coordination effects; encourages green wave progression and bottleneck relief; aligns with true optimization objectives; prevents local optimization at system expense.
+- Cons: High reward variance making learning unstable; difficult credit assignment to individual decisions; all agents receive identical rewards regardless of contribution; may mask important local inefficiencies.
 
-**Measurement Approach: Cumulative vs. Delta Performance**:
+**Local Spatial Scope**: Rewards computed separately for each intersection or local region, focusing on junction-specific performance metrics.
 
-- **Cumulative measurement** tracks total performance from episode start, providing stable long-term signals but potentially double-counting improvements and obscuring recent decision impacts.
-- **Delta measurement** rewards performance changes from a chosen reference point (which could be last measurement, or a sliding time window, etc), offering targeted feedback on decision effectiveness but potentially missing decisions taken before the reference point that have later influence—a major limitation in traffic control where signal decisions often have delayed effects spanning multiple signal cycles.
+- Pros: Clear attribution to specific junction decisions; lower variance enabling stable learning; easier debugging and interpretation; natural for distributed agent architectures.
+- Cons: Fails to capture inter-junction coordination; may encourage selfish behavior harming network performance; misses downstream effects of local decisions; ignores global optimization objectives.
 
-**Credit Distribution Strategy**:
+**Episode-Based Rewards**: Final performance evaluation provided only at episode completion, typically measuring total travel time or throughput over the entire simulation period.
 
-The fundamental challenge is determining which decisions deserve credit when performance improvements occur. Traffic effects are inherently delayed—a signal decision impacts traffic conditions several minutes later—requiring sophisticated temporal credit assignment.
+- Pros: Captures long-term performance effects; aligns with ultimate optimization objectives; simple implementation; reduces computational overhead during training.
+- Cons: Sparse learning signals leading to slow convergence; high gradient variance from delayed feedback; difficulty identifying which decisions contributed to outcomes; poor sample efficiency.
 
-- **All previous decisions**: When rewards are computed, credit goes to all decisions since episode/measurement start, ensuring early coordination decisions receive appropriate recognition.
-- **Time-windowed credit**: Limit credit to recent decisions within a fixed time window, balancing recency bias with computational efficiency.
+**Intermediate Rewards**: Periodic network performance measurements provided during episodes at regular intervals or triggered by specific events.
 
-**Research Precedents**: Computer network congestion control uses similar reward structures—TCP algorithms reward window adjustments based on individual connection performance rather than global network metrics. Chess AI (AlphaZero) demonstrates that sparse episode rewards can work with sufficient value function prediction, suggesting hybrid approaches for traffic control.
+- Pros: More frequent feedback reducing learning variance; enables identification of effective decision sequences; better sample efficiency; allows correction of poor strategies mid-episode.
+- Cons: Requires careful frequency tuning to avoid noise; may encourage short-term optimization; computational overhead from frequent measurements; potential interference with long-term learning.
+
+A hybrid approach combining individual vehicle tracking with intermediate global rewards often provides the best balance. Individual vehicle rewards enable precise credit assignment while intermediate global measurements capture coordination effects. The reward frequency should match the time scale of traffic signal effects to balance learning efficiency with computational practicality. Local rewards should be avoided unless computational constraints require distributed learning with minimal communication.
 
 ### Action Representation
 
-**Choice of Action Space**:
+The action space defines how the RL agent controls traffic signal operations. This choice determines the granularity of control, learning complexity, and alignment with real-world signal systems.
 
-- Phase selection: pick which signal phase is active, with fixed durations.
-- Phase + duration: select both the active phase and its green time.
-- Incremental control: extend or terminate the current phase.
+**Phase Selection**: The agent selects which traffic signal phase (predefined movement pattern) should be active, with phase durations determined by fixed timing plans or separate mechanisms.
 
-**Trade-off**:
+- Pros: Simple discrete action space enabling stable learning; aligns with standard traffic engineering practice; reduces action space dimensionality; prevents invalid signal combinations; easy integration with existing signal infrastructure.
+- Cons: Limited flexibility in timing optimization; cannot adapt phase durations to traffic conditions; may miss optimal timing strategies; requires separate mechanism for duration control.
 
-- Richer action spaces offer more flexibility but increase learning difficulty and instability.
-- Incremental control tends to be more stable and realistic, since real-world controllers extend or switch rather than reset full cycles.
+**Phase + Duration**: The agent simultaneously selects both the active phase and its green time duration, providing complete control over signal timing.
 
-### Time Resolution / Decision Frequency
+- Pros: Maximum flexibility enabling optimal timing adaptation; single decision captures complete signal strategy; can learn complex timing patterns; direct optimization of phase durations.
+- Cons: Larger action space complicating learning; potential for unsafe or unrealistic timing choices; increased training instability; requires careful constraint enforcement.
 
-**When to Act**:
+**Incremental Control**: The agent makes binary decisions to extend the current phase or terminate it and advance to the next phase in the sequence.
 
-- Every simulation tick (e.g., 1s) offers maximum control granularity but produces noisy, unstable policies.
-- Fixed intervals (e.g., every 5–10s) smooth decisions and align better with signal operations.
-- Event-driven (e.g., after minimum green expires) provides adaptive control with fewer unnecessary decisions.
+- Pros: Most realistic reflecting actual signal controller operations; stable learning due to constrained action space; natural enforcement of minimum/maximum timing constraints; enables adaptive timing without complex duration prediction.
+- Cons: Limited ability to skip phases or implement non-sequential strategies; may require multiple decisions to achieve desired timing; less direct control over final phase durations.
 
-**Trade-off**:
+Phase selection with fixed durations provides the most stable learning environment and fastest convergence, making it ideal for proof-of-concept research and initial validation. Incremental control offers the best balance of realism and learnability for practical deployment, as it mirrors how actual traffic controllers operate. Phase + duration control should be reserved for scenarios where timing flexibility is critical and sufficient training time is available to handle the increased complexity.
 
-- Higher frequency increases sample complexity and instability.
-- Lower frequency improves realism and stability but reduces responsiveness.
-- Event-driven: Most efficient, as decisions are made only when necessary, but requires more complex state management.
+### Time Resolution
 
-### Exploration Strategy & Constraints
+The decision frequency determines how often the RL agent makes control decisions. This choice affects policy stability, computational load, responsiveness to traffic changes, and alignment with real-world signal operations.
 
-**Safety Constraints**:
+**High Frequency (Every Simulation Tick)**: The agent makes decisions at every simulation time step, typically every 1-2 seconds, providing maximum temporal granularity.
 
-- Traffic signals must obey minimum green times, yellow/all-red clearance, and maximum green durations.
-- Policies trained without such constraints risk unsafe or unrealistic behaviors.
+- Pros: Maximum responsiveness to traffic changes; finest control granularity; can react immediately to emerging conditions; captures all temporal dynamics.
+- Cons: Produces noisy and unstable policies; high computational overhead; unrealistic for real-world deployment; increases sample complexity; may lead to erratic signal behavior.
 
-**Exploration Choices**:
+**Fixed Intervals**: The agent makes decisions at regular time intervals, typically every 5-10 seconds, independent of current signal state or traffic conditions.
 
-- Constrained exploration: restricts actions to feasible signal sequences, simplifying training but limiting policy discovery.
-- Unconstrained exploration: maximizes flexibility but may waste samples on unsafe or infeasible actions.
+- Pros: Smooth and stable decision-making; computationally efficient; aligns well with traffic signal operations; reduces policy noise; predictable computational load.
+- Cons: May miss critical timing opportunities; less responsive to rapid traffic changes; arbitrary timing intervals may not match traffic dynamics; potential inefficiency during low-traffic periods.
 
-**Trade-off**:
+**Event-Driven**: The agent makes decisions triggered by specific events such as minimum green time expiration, maximum green time approach, or significant traffic condition changes.
 
-- Incorporating constraints during training ensures safety and realism, but care must be taken not to overconstrain and block useful strategies.
+- Pros: Most efficient use of decisions; adaptive timing matching traffic needs; natural alignment with signal constraints; reduces unnecessary decisions during stable periods; realistic operational model.
+- Cons: Variable computational load; requires complex state management; may miss gradual traffic changes; implementation complexity; unpredictable decision timing.
+
+Fixed interval decision-making at 5-10 second intervals provides the optimal balance for most applications, offering stable learning while maintaining reasonable responsiveness. Event-driven approaches are most realistic and efficient but require sophisticated implementation. High-frequency decisions should be avoided except in research scenarios specifically studying fine-grained temporal control, as they introduce instability without corresponding performance benefits in traffic control applications.
+
+### Exploration & Constraints
+
+The exploration strategy determines how the RL agent discovers effective policies while respecting safety and operational constraints. This choice affects training safety, sample efficiency, and the realism of learned behaviors.
+
+**Constrained Exploration**: The agent's action selection is restricted to feasible signal sequences that respect minimum green times, yellow clearance intervals, maximum green durations, and phase ordering constraints.
+
+- Pros: Ensures all explored policies are safe and realistic; prevents wasted samples on infeasible actions; simplifies training by eliminating invalid states; aligns with real-world operational requirements; reduces need for post-hoc constraint enforcement.
+- Cons: May limit discovery of novel strategies; restricts exploration space potentially missing optimal solutions; requires careful constraint implementation; may overconstrain and block useful timing strategies.
+
+**Unconstrained Exploration**: The agent can select any action without operational restrictions, maximizing exploration flexibility and policy discovery potential.
+
+- Pros: Maximum flexibility for discovering innovative strategies; no artificial limitations on policy search; simpler implementation without constraint logic; may find unexpected optimal solutions; enables learning of constraint importance through experience.
+- Cons: Risk of unsafe or unrealistic signal behaviors during training; wasted samples on infeasible actions; potential for learning policies that cannot be deployed; may require extensive post-training validation; possible safety violations in simulation.
+
+**Penalty-Based Constraints**: The agent can select any action but receives negative rewards for violating operational constraints, learning to avoid unsafe behaviors through experience.
+
+- Pros: Balances exploration flexibility with constraint learning; enables discovery of constraint boundaries; natural integration of safety requirements into learning; allows gradual constraint tightening; maintains exploration while encouraging feasible behaviors.
+- Cons: May waste significant training time learning basic constraints; requires careful penalty tuning; potential for persistent constraint violations; slower convergence compared to hard constraints; may not guarantee constraint satisfaction.
+
+Constrained exploration provides the most practical approach for traffic signal control, ensuring all learned behaviors are deployable while maintaining sufficient exploration for effective learning. The constraints should match real-world signal requirements including minimum green times (typically 5-10 seconds), appropriate clearance intervals, and maximum green durations (60-120 seconds). Unconstrained exploration should only be used in research contexts where understanding constraint effects is specifically of interest, as it significantly reduces training efficiency and deployment viability.
 
 ### Summary
 
@@ -177,9 +191,9 @@ These formulation choices are deeply interdependent. The training scope shapes t
 - Agent Architecture: Centralized (direct coordination, optimal for proof-of-concept)
 - Input Model: Macroscopic (compact state space, stable training)
 - Reward Design: Individual vehicle rewards, global spatial scope, intermediate rewards, delta measurement, time-windowed credit distribution
-- Action Space: Phase + Duration (richer control than fixed phases)
-- Decision Frequency: Flexible parameter for empirical optimization (balance responsiveness vs stability)
-- Constraints: Enforce minimum green times (realistic, prevents unsafe policies)
+- Action Representation: Phase + Duration (richer control than fixed phases)
+- Time Resolution: Flexible parameter for empirical optimization (balance responsiveness vs stability)
+- Exploration & Constraints: Enforce minimum green times (realistic, prevents unsafe policies)
 
 ## 3. Environment Design
 
