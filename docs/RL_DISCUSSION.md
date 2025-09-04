@@ -191,218 +191,369 @@ These formulation choices are deeply interdependent. The training scope shapes t
 - Agent Architecture: Centralized (direct coordination, optimal for proof-of-concept)
 - Input Model: Macroscopic (compact state space, stable training)
 - Reward Design: Individual vehicle rewards, global spatial scope, intermediate rewards, delta measurement, time-windowed credit distribution
-- Action Representation: Phase + Duration (richer control than fixed phases)
+- Action Representation: Phase + Discrete Duration Selection (simplified discrete action space)
 - Time Resolution: Flexible parameter for empirical optimization (balance responsiveness vs stability)
 - Exploration & Constraints: Enforce minimum green times (realistic, prevents unsafe policies)
 
-## 3. Environment Design
+## 3. RL Environment Design
 
-This chapter translates the theoretical problem formulation into a concrete reinforcement learning environment. While Chapter 2 explored the full space of design choices, this chapter focuses on implementing the recommended configuration: centralized agent, macroscopic state representation, global reward design, and phase selection with fixed durations. We cover the practical aspects of environment construction—how to structure the state space, define meaningful rewards and integrate with traffic simulation. The goal is to bridge the gap between conceptual design decisions and working RL implementation, providing the foundation for agent training and performance assessment.
+This chapter translates the design choices from Chapter 2 into a concrete RL environment architecture. We focus on the recommended starting configuration: centralized agent with macroscopic state representation, global reward design, and phase+duration control. The goal is to establish the architectural foundation that bridges theoretical formulation with practical implementation, ensuring the RL system can effectively learn network-wide traffic coordination.
 
-### RL Environment Components
+### Environment Architecture Overview
 
-**State space design for macroscopic inputs (per the recommended starting configuration)**: Our RL state space adopts the same macroscopic intermediate values computed by the Tree Method implementation. This design choice enables direct performance comparison between the RL approach and Tree Method on identical traffic state representations, eliminating variability from different input processing pipelines. Since the Tree Method already computes sophisticated traffic flow indicators—average speeds, densities using May's equation, flow rates, and congestion status—we leverage this existing computational framework while adapting the representation for neural network learning.
+The RL environment acts as a wrapper around the existing SUMO simulation infrastructure, providing a standard OpenAI Gym interface while leveraging the sophisticated traffic analysis capabilities already built into the Tree Method system. This architectural choice enables direct performance comparison between RL and Tree Method approaches using identical traffic state representations and simulation conditions.
 
-- **Network Structure Context** (static): Built from NetworkData class (net_data_builder.py:22-45) which extracts edge topology and junction connectivity from .net.xml files. Includes lane configurations per edge with capacity constraints, traffic light phase definitions from junction XML with controlled connections parsed via Link.add_my_phases() (node.py:30-38), free-flow speeds with geometric properties including edge distances and lane counts from Link. (link.py:6-26).
+**System Integration Strategy**: Rather than rebuilding traffic simulation capabilities, the RL environment extends the existing infrastructure. The Tree Method already computes the macroscopic traffic indicators needed for RL state representation—speeds, densities, flow rates, and congestion status. The RL system reuses these calculations while adding the vehicle tracking and reward computation components necessary for learning. This integration approach ensures consistency between baseline and RL evaluations while minimizing implementation complexity.
 
-- **Real-Time Traffic State** (updated every decision interval): Average speed per edge using Graph.fill_link_in_step() which calls traci.edge.getLastStepMeanSpeed() (graph.py:124-125), then aggregated via Link.add_speed_to_calculation() (link.py:56-60). Traffic density calculated using May's fundamental diagram in Link.calc_k_by_u(): k = MAX_DENSITY × ((1 - (speed/free_flow_speed))^(1-M))^(1/(L-1)) with parameters MAX_DENSITY, M, L from config.py (link.py:78-79). Flow rate computed as q = speed × density × lanes in Link.calc_my_iteration_data() (link.py:88-90). Congestion status determined by Link.is_loaded = current_speed < q_max_properties.q_max_u where optimal speed comes from Link.calc_max_properties() (link.py:62-73, 91).
+### State Space Design
 
-- **Signal Control Context** (per intersection): Current active phase retrieved via JunctionNode.save_phase() calling traci.trafficlight.getPhase() (node.py:87-88). Phase transition history tracked in JunctionNode.phases_breakdown_per_iter including switch counts and duration breakdowns (node.py:90-102). Time-loss accumulation computed in Link.calc_my_iteration_data() as actual_time - optimal_time difference, with optimal times from Link.q_max_properties and actual times from current speeds (link.py:100-105).
+The state representation implements the macroscopic input model from Chapter 2, providing the centralized agent with comprehensive network-wide traffic information in a compact, normalized format suitable for neural network processing.
 
-- **Network Propagation Context** (neighborhood-based): Upstream congestion from Link.links_to_me populated by Link.join_links_to_me() using network connectivity (link.py:28-38). Downstream capacity from Link.links_from_me via Link.join_links_from_me() (link.py:40-49). Bottleneck tree membership tracked in Link.in_tree_fathers and processed by IterationTrees.all_trees_per_iteration, with costs computed via Link.calc_heads_costs() for Tree Method integration (link.py:114-123).
+**Traffic Flow Representation**: Each network edge contributes four normalized traffic indicators that capture current conditions and congestion status. Speed values represent current flow efficiency relative to free-flow conditions. Density measurements using traffic flow theory indicate edge utilization levels. Flow rates capture actual vehicle throughput on each edge. Congestion flags provide binary indicators of bottleneck conditions that require immediate attention.
 
-**Action space for dynamic phase control**: The centralized agent simultaneously controls all intersections, selecting discrete phase indices (0 to len(phases)-1) AND continuous duration values for each intersection within safety bounds [MIN_PHASE_TIME, MAX_PHASE_TIME]. Action dimensionality scales as num_intersections × (num_phases + 1) for phase selection plus duration control. This expands the solution space from Tree Method's fixed algorithmic durations to learned optimal timing patterns with direct coordination across the entire network. Implementation through define_tl_program(junction_id, phase_index, learned_duration) with duration clipping for constraint enforcement (node.py:12-14, config.py:2). Safety constraints enforce MIN_PHASE_TIME = 10 seconds minimum green (config.py:2) and maximum phase durations to prevent gridlock, with validation through existing JunctionNode constraint checking (node.py:104-115).
+**Signal State Representation**: Each intersection contributes timing and phase information that enables coordinated signal control. Current active phases indicate the present signal configuration across all network intersections. Phase timing information shows remaining durations and recent transition history. This signal context allows the centralized agent to make informed coordination decisions based on current network-wide signal states.
 
-**Reward function**: The reward system implements the theoretical framework from Chapter 2: individual vehicle rewards with global spatial scope, intermediate timing, delta measurement, and time-windowed credit distribution. This translates into a two-component system that provides both dense intermediate learning signals and final episode performance evaluation.
+**Network Connectivity Context**: The state representation includes spatial relationships between network elements to support coordination learning. Upstream and downstream connectivity information enables the agent to understand how local decisions affect neighboring intersections. Traffic propagation patterns from congested areas help identify coordination opportunities for implementing strategies like green wave progression.
 
-**Two-Component Reward Architecture**:
+**State Vector Construction**: All network information is concatenated into a single normalized vector with fixed dimensionality determined by the network topology. For a network with E edges and J junctions, the state vector has dimensionality E × 4 + J × 2 (four traffic indicators per edge plus two signal features per junction). This fixed-size representation enables efficient neural network processing while capturing all essential traffic and signal information needed for coordination decisions.
 
-The reward system combines frequent intermediate penalties based on individual vehicle performance with final episode throughput rewards. At regular measurement intervals (every N seconds), the system evaluates each vehicle's additional waiting time since the last measurement and applies penalties to all network decisions since that vehicle began its journey. At episode completion, the system provides network-wide throughput rewards for vehicles successfully completing their trips.
+### Action Space Design
 
-**Individual Vehicle Tracking and Measurement**:
+The action space implements the phase+duration control choice from Chapter 2, enabling the centralized agent to make coordinated timing decisions across all network intersections simultaneously.
 
-Each vehicle's journey through the network is tracked from entry to completion, maintaining temporal records of waiting time accumulation. Vehicle tracking leverages SUMO's TraCI interface through traci.vehicle.getIDList() to enumerate active vehicles and traci.vehicle.getAccumulatedWaitingTime() to measure individual waiting times. Delta measurement computes the additional waiting time since the last measurement interval: Δwait_time = current_wait_time - previous_wait_time. This approach captures the immediate impact of recent signal decisions on individual vehicle performance while avoiding double-counting waiting time across measurement periods.
+**Fully Discrete Actions**: Each intersection requires two discrete control decisions: which traffic signal phase to activate and which duration to select from predefined options (e.g., 10, 15, 20, 30, 45, 60, 90, 120 seconds). This discrete action space simplifies learning while maintaining practical control flexibility and alignment with real-world signal operations.
 
-**Intermediate Reward Computation**:
+**Centralized Coordination**: The centralized agent simultaneously controls all intersections in the fixed network topology through discrete action selection. This enables direct coordination across the entire network while providing stable learning through the simplified discrete action space.
 
-At each measurement interval, the system iterates through all active vehicles, computes their waiting time deltas, and converts these into penalty signals. The reward formula is: penalty = -Δwait_time, where positive waiting time increases result in negative rewards. These penalties are applied to all network decisions made since each vehicle started its journey, implementing the time-windowed credit distribution strategy. Vehicles with longer journey times generate more penalty events, naturally weighting the learning signal toward vehicles most affected by network-wide coordination decisions.
+**Safety Constraint Integration**: Duration actions are bounded by traffic engineering safety requirements including minimum green times and maximum phase durations. These constraints prevent the agent from learning unsafe or unrealistic signal behaviors while maintaining sufficient exploration space for effective timing optimization. The constraint enforcement becomes part of the environment interface, ensuring all learned policies remain deployable in real-world systems.
 
-**Credit Distribution Implementation**:
+### Reward System
 
-The credit distribution mechanism maintains timestamped records of all signal timing decisions made by the centralized agent. When a vehicle generates a penalty at time T, the system identifies all decisions made since that vehicle's journey start time and applies the penalty to those decisions. This implements global spatial scope (all network locations receive the penalty) with time-windowed temporal scope (only decisions since vehicle start receive credit). The implementation tracks decision_timestamps for each policy action and vehicle_start_times for journey tracking, enabling precise temporal attribution of penalty signals to relevant decision periods.
+The reward system uses two separate components: intermediate vehicle penalties during episodes and throughput bonuses at episode completion.
 
-**Integration with SUMO TraCI and Existing Infrastructure**:
+**Intermediate Vehicle Penalties**: At regular measurement intervals, vehicles with increased waiting time generate penalties applied to global network decisions:
 
-The reward system integrates with existing Tree Method infrastructure through Graph.add_vehicles_to_step() and Graph.close_prev_vehicle_step() methods (graph.py:94-120), extending vehicle tracking to include waiting time history. Vehicle journey completion detection uses Graph.ended_vehicles_count to trigger final throughput rewards. The system maintains compatibility with existing TraCI integration patterns while adding vehicle-specific reward computation capabilities. Decision timestamp tracking integrates with the centralized agent's action execution through define_tl_program() calls (node.py:12-14), creating an audit trail that enables precise credit assignment to specific signal timing decisions.
+```
+For each vehicle i at measurement time:
+  Δwait_time_i = current_waiting_time_i - previous_waiting_time_i
+  if Δwait_time_i > 0:
+    penalty_i = -Δwait_time_i
+    Apply penalty_i to ALL global decisions made since vehicle_i started
+```
 
-**Final Episode Throughput Rewards**:
+**Global Decision Attribution**: Each vehicle's penalty affects all network-wide signal control decisions made during that vehicle's journey. Multiple vehicles can penalize the same global decision if they were all in the network when it was made.
 
-At episode completion, the system provides positive rewards based on network-wide throughput performance: reward = α × completed_vehicles, where α is a scaling factor that balances intermediate penalties with final performance incentives. This component ensures that the agent optimizes for overall system performance rather than simply minimizing individual waiting times. The throughput reward uses existing Graph.ended_vehicles_count tracking to maintain consistency with Tree Method performance measurement approaches.
+**Episode Completion Rewards**: Only at episode end, provide throughput bonuses:
 
-### Training Environment Implementation
+```
+R_episode = α × total_completed_vehicles
+```
 
-This section covers the practical technical implementation details for building the RL training environment. While the previous section established the conceptual framework—state representation, action spaces, and reward functions—this section focuses on the engineering infrastructure that makes RL training possible. We detail how to bridge the gap between SUMO traffic simulation and reinforcement learning algorithms, covering the essential technical components: simulation integration, data preprocessing, safety enforcement, and training episode management. This is the technical "plumbing" that transforms our conceptual RL design into a working training system.
+The scaling factor α balances episode rewards against accumulated intermediate penalties. If α is too low, the agent focuses primarily on reducing individual vehicle waiting times but may sacrifice overall throughput. If α is too high, the agent prioritizes completing vehicles quickly but may ignore service quality for vehicles currently in the network. The optimal α value depends on network characteristics (size, congestion levels) and training objectives.
 
-**SUMO TraCI simulation integration**: The RL environment integrates with the existing dbps system and SUMO simulation through TraCI (Traffic Control Interface). The environment wraps around SUMO's simulation loop, collecting comprehensive network-wide traffic state data through TraCI API calls like traci.edge.getLastStepMeanSpeed() and traci.vehicle.getIDList(), which are already used in Tree Method's Graph.fill_link_in_step() and Graph.add_vehicles_to_step() methods (graph.py:124-137). The centralized agent executes actions across all intersections simultaneously through existing TraCI commands via define_tl_program() function that calls traci.trafficlight.setPhase() and setPhaseDuration() (node.py:12-14). The environment maintains sync with SUMO's simulation steps, collecting complete network observations and applying coordinated RL actions at regular decision intervals while preserving the existing Tree Method infrastructure for fair performance comparison.
+## 4. Training Framework Strategy
 
-**State preprocessing and normalization strategies**: Raw traffic data from Tree Method's calculations must be converted into a single comprehensive neural network input vector for the centralized agent. Traffic speeds from Link.calc_iteration_speed (link.py:56-58) require normalization to [0,1] range using speed limits as maximum bounds. Density values from Link.calc_k_by_u() (link.py:78-79) normalize against MAX_DENSITY parameter. Flow rates from Link.calc_my_iteration_data() (link.py:88-90) need scaling by lane capacity. Vehicle counts from Head.fill_my_count() require normalization by intersection approach capacity. All edge and intersection features are concatenated into a single state vector with dimensionality scaling linearly with network size (num_edges × edge_features + num_intersections × intersection_features). Network-wide features like Graph.ended_vehicles_count and Graph.vehicle_total_time need temporal normalization to handle varying episode lengths.
+This chapter establishes the strategic approach for training RL agents on network-wide traffic control. We focus on algorithm selection rationale, training configuration principles, and the integration of vehicle-based credit assignment with modern RL algorithms. The framework builds on Chapter 3's environment design to create an effective learning system for coordinated signal control.
 
-**Constraint enforcement (minimum green times)**: Safety constraints prevent the RL agent from selecting unsafe or unrealistic signal sequences during training exploration. The environment enforces MIN_PHASE_TIME = 10 seconds (config.py:2) by clipping RL duration actions across all intersections before TraCI execution. Duration values below minimum are automatically adjusted, while maximum phase durations prevent gridlock scenarios. Phase transition validation ensures yellow and all-red clearance intervals are maintained at each intersection simultaneously. The environment integrates with existing JunctionNode constraint checking (node.py:104-115) to validate signal sequences before SUMO execution. Constraint violations trigger action rejection with penalty signals, teaching the agent to respect traffic engineering safety requirements while exploring optimal coordinated timing policies.
+### Algorithm Selection Rationale
 
-**Episode management and environment reset**: Training episodes align with SUMO simulation duration, with each episode representing a complete traffic scenario from initialization to termination. Episode initialization involves SUMO simulation restart through dbps system, network state reset, and vehicle generation restart with consistent random seeds for reproducible training. State reset procedures clear previous episode data from Graph and Link objects while preserving network topology and configuration. Episode statistics collection tracks key training metrics like total completions, average travel times, and reward accumulation for training monitoring and convergence assessment. Environment reset handles simulation warm-up periods to ensure realistic traffic conditions before RL decision-making begins, preventing training on artificial empty-network scenarios.
+Selecting the right RL algorithm for traffic control requires careful consideration of domain-specific constraints that distinguish this application from standard RL problems.
 
-## 4. Learning Framework Design (Algorithm Selection + Credit Assignment)
+**Domain-Specific Algorithm Requirements**: Traffic signal control imposes unique constraints on algorithm choice. The fully discrete action space (phase selection + discrete duration selection) enables standard RL algorithms including both value-based and policy gradient methods. Expensive simulation episodes demand high sample efficiency, favoring algorithms with proven performance on discrete action spaces. The centralized coordination requirement favors methods that can handle coordinated multi-intersection control effectively.
 
-Effective reinforcement learning requires two fundamental design decisions that jointly determine how agents learn from experience: the optimization algorithm that updates policy parameters and the credit assignment method that attributes performance outcomes to specific actions. These choices are interdependent - the selected algorithm constrains viable credit assignment strategies, while credit assignment requirements influence algorithm suitability. For network-wide traffic control, both decisions must account for the unique challenges of coordinated multi-intersection control where individual signal timing decisions produce delayed, distributed effects across the entire network.
+**Algorithm Categories and Traffic Control Fit**:
 
-### RL Algorithm Selection
+**Value-Based Methods**: DQN can handle discrete phase and duration selection through standard Q-value estimation for each intersection. The discrete action space enables efficient exploration and often provides better sample efficiency than policy gradient methods in traffic control scenarios.
 
-Algorithm selection for traffic signal control presents unique challenges that distinguish it from standard RL applications. The centralized agent must handle large action spaces and coordinate decisions across multiple intersections simultaneously. The choice of learning algorithm fundamentally determines training feasibility, sample efficiency, and deployment viability for network-wide traffic control.
+**Policy Gradient Methods**: Direct policy optimization may provide better coordination learning through joint action optimization. These methods can handle the discrete action space naturally while potentially discovering better coordination patterns than value-based approaches.
 
-**Algorithm Categories for Traffic Control**
-The choice of optimization algorithm determines how policy parameters are updated based on collected experience. Traffic signal control places specific demands on this choice: mixed discrete-continuous action spaces for phase selection and duration control and expensive simulation episodes that limit sample collectio. These constraints significantly narrow the space of viable algorithms compared to standard reinforcement learning applications.
+**Actor-Critic Hybrid Approaches**: Combining policy gradients with value function guidance provides the benefits of direct policy optimization while adding variance reduction through learned value estimates. The actor-critic architecture naturally aligns with traffic control intuition: the critic evaluates traffic states while the actor decides signal timing actions.
 
-- **Value-Based Methods (DQN variants)**: Deep Q-Networks learn action-value functions but face significant limitations in traffic control applications. DQN handles discrete action spaces well but struggles with the continuous duration component of our phase+duration action space. Extensions like DDPG for continuous control require separate treatment of discrete phase selection, leading to complex hybrid architectures. Additionally, Q-learning's sample efficiency suffers in high-dimensional action spaces, making training prohibitively expensive when simulation episodes require substantial computational resources.
+**Algorithm Options**: Both DQN variants and PPO become viable choices for centralized traffic control. DQN offers simpler implementation and often better sample efficiency for discrete action spaces, while PPO may provide superior coordination learning through joint action optimization. The choice between them depends on training preferences: DQN for simplicity and sample efficiency, or PPO for potentially better coordination discovery.
 
-- **Policy Gradient Methods (PPO, A2C)**: Policy gradient approaches directly optimize policy parameters and naturally handle mixed discrete-continuous action spaces through appropriate output layer designs. PPO's clipped objective provides training stability crucial for large action spaces, preventing destructive policy updates that could destabilize traffic coordination. A2C offers computational efficiency through synchronous updates and lower memory requirements, important considerations for centralized agents processing large state vectors. These methods excel in environments where exploration matters more than precise value estimation.
+### Training Configuration Strategy
 
-- **Actor-Critic Approaches**: Hybrid methods combine policy gradient flexibility with value function guidance, offering advantages for traffic control. The actor network naturally outputs both discrete phase selections and continuous durations, while the critic provides variance reduction for policy gradient updates. This architecture aligns well with traffic control intuition: the critic evaluates traffic states (congestion assessment) while the actor decides signal actions (phase timing). Actor-critic methods also support more sophisticated exploration strategies than pure policy gradient approaches.
+Effective training for traffic control requires domain-specific configuration that accounts for expensive simulations, complex coordination requirements, and the unique reward structure established in Chapter 3.
 
-**Selection Criteria for Traffic Control**
-Algorithm selection requires systematic evaluation against criteria that reflect the specific demands of traffic signal control. These criteria prioritize the unique constraints and requirements of network-wide coordination over general machine learning performance metrics.
+**Training Stability Considerations**: Traffic control training faces several stability challenges that require careful algorithmic configuration. The large action space from centralized control can lead to training instability if policy updates are too aggressive. The two-component reward system creates varying gradient magnitudes that need proper balancing. The complex coordination requirements mean that small policy changes can have large performance effects, requiring conservative training approaches.
 
-- **Action Space Compatibility**: The mixed discrete-continuous nature of phase selection and duration control favors policy gradient and actor-critic methods over value-based approaches. Neural network architectures must output discrete probability distributions for phase selection alongside continuous duration values, a requirement naturally handled by policy-based methods.
+**Sample Efficiency Requirements**: Traffic simulations are computationally expensive, making sample efficiency a critical constraint. Training configurations must maximize learning from limited environment interactions. This requirement favors algorithms with good sample efficiency and training approaches that can leverage existing domain knowledge rather than learning everything from scratch.
 
-- **Sample Efficiency**: Traffic simulations are computationally expensive, making sample efficiency critical. Actor-critic methods provide better sample efficiency than pure policy gradients through value function guidance, while policy methods generally require fewer environment interactions than Q-learning for complex action spaces.
+**Hyperparameter Strategy for Traffic Control**: Domain-specific hyperparameter choices can significantly improve training effectiveness. Conservative learning rates prevent destabilization of learned coordination patterns. Appropriate batch sizes balance learning stability with memory constraints from large state vectors. Clip ranges should be tuned to prevent large policy updates while maintaining sufficient exploration capacity.
 
-- **Training Stability**: Large action spaces and complex coordination requirements demand stable training algorithms. PPO's clipping mechanism prevents large policy updates that could disrupt learned coordination patterns, while A2C's synchronous updates avoid the instability issues of asynchronous methods in centralized control scenarios.
+### Credit Assignment Integration
 
-**Recommended Algorithm and Justification**
+The vehicle-based reward system from Chapter 3 requires specific integration with the chosen RL algorithm to ensure stable learning and effective credit attribution.
 
-**Proximal Policy Optimization (PPO)** seems as the optimal choice for centralized traffic control. PPO's actor-critic architecture naturally handles mixed discrete-continuous actions through separate output heads: a softmax layer for phase selection and a continuous output for durations. The clipped objective prevents destructive policy updates that could eliminate beneficial coordination behaviors learned during training. PPO's proven stability and sample efficiency make it well-suited for the expensive simulation environment, while its straightforward implementation facilitates integration with existing traffic simulation infrastructure. The algorithm's robust performance across diverse RL domains provides confidence for traffic control applications where coordination complexity and action space size present significant challenges.
+**Multi-Signal Reward Handling**: Unlike standard RL applications with single reward signals, the traffic control system generates multiple simultaneous vehicle penalties at each time step. The training framework must aggregate these signals appropriately while preserving the learning information from individual vehicle experiences.
 
-### Credit Assignment Methods
+**Temporal Credit Distribution**: The time-windowed credit assignment strategy connects vehicle performance outcomes to the specific signal decisions that influenced those outcomes. This temporal attribution mechanism must integrate with the algorithm's gradient computation to ensure recent decisions receive appropriate credit for their effects on vehicle performance.
 
-The car-based intermediate reward system from Chapter 3 requires specific algorithmic integration within PPO to ensure stable learning and efficient gradient computation. Unlike traditional RL applications with single reward signals per time step, our system generates multiple simultaneous vehicle penalties at each measurement interval, requiring careful handling of gradient computation and variance control.
+**Variance Management**: The frequent intermediate rewards from vehicle tracking can increase gradient variance compared to sparse episode-based signals. The training framework must balance the dense feedback benefits against potential training instability from high-variance gradients.
 
-**Policy Gradient Integration with Vehicle Penalties**:
-
-PPO's policy gradient computation must accommodate multiple reward signals per time step as different vehicles trigger penalties simultaneously. At each measurement interval, the system collects all vehicle waiting time penalties: R_t = Σ(-Δwait_time_i) for all vehicles i generating penalties at time t. These aggregated penalties integrate into PPO's advantage calculation alongside the final episode throughput reward, creating a two-component gradient signal that balances immediate vehicle performance feedback with long-term network optimization objectives.
-
-**Timestamped Decision Attribution**:
-
-The time-windowed credit distribution strategy requires algorithmic mapping between vehicle penalties and the specific decisions that influenced those vehicles. PPO maintains a decision history buffer storing (timestamp, action, intersection_id) tuples for all signal timing decisions. When a vehicle generates a penalty at time t, the system identifies all decisions made since that vehicle's journey start time and applies the penalty to those specific policy gradient computations. This creates a sparse gradient update pattern where recent decisions receive penalties from multiple vehicles while older decisions receive fewer penalty signals as their affected vehicles complete journeys.
-
-**Variance Reduction for Dense Reward Signals**:
-
-The frequent intermediate penalties can introduce higher gradient variance compared to sparse episode-based rewards. PPO's advantage estimation provides natural variance reduction through the critic network, which learns to predict expected performance from current traffic states. The critic evaluation V(s_t) serves as a baseline for both vehicle penalties and episode rewards: Advantage = R_t - V(s_t), where R_t includes both immediate vehicle penalties and future episode rewards. This baseline subtraction reduces variance from environmental stochasticity while preserving the learning signal from actual policy improvements.
-
-**Training Stability and Reward Balance**:
-
-The two-component reward system requires careful balance between frequent intermediate penalties (typically small, frequent signals) and episode throughput rewards (larger, sparse signals). PPO's clipped objective provides stability against large policy updates from occasional high-magnitude penalty accumulations when multiple vehicles simultaneously experience significant waiting time increases. The reward scaling parameter α for throughput rewards allows empirical tuning to balance immediate vehicle feedback against long-term network performance optimization, ensuring the agent learns both responsive local control and strategic network coordination.
+**Reward Component Balancing**: The dual reward structure requires careful weighting between immediate vehicle penalties and episode throughput rewards. The training framework must provide mechanisms for tuning this balance to ensure the agent learns both responsive vehicle service and effective network-wide coordination.
 
 ## 5. Implementation Guide
 
-This chapter provides step-by-step implementation instructions for building the RL traffic control system. The implementation extends the existing SUMO/Tree Method infrastructure with a custom OpenAI Gym environment and Stable-Baselines3 PPO training.
+This chapter provides detailed step-by-step instructions for building the RL traffic control system. We'll implement a custom OpenAI Gym environment that integrates with the existing SUMO/Tree Method infrastructure, followed by PPO training using Stable-Baselines3.
 
-### Implementation Overview and File Structure
+### Implementation Architecture Overview
 
-**Core Implementation Components**:
+Before diving into specific implementation steps, it's important to understand how all the RL components fit together with the existing system.
 
-- `src/rl/traffic_env.py`: Custom Gym environment wrapping SUMO simulation
-- `src/rl/vehicle_tracker.py`: Individual vehicle tracking and reward computation
-- `src/rl/train.py`: PPO training script using Stable-Baselines3
-- `src/rl/evaluate.py`: RL vs Tree Method comparison evaluation
+**System Architecture**: The RL implementation consists of four main components that work together: a Gym environment wrapper that interfaces with SUMO simulation, a vehicle tracking system that monitors individual vehicle journeys for reward computation, a state collection system that gathers network-wide traffic information, and a training pipeline that orchestrates the learning process using PPO.
 
-**Integration Points with Existing System**:
+**Integration with Existing Infrastructure**: The RL system extends rather than replaces the existing Tree Method infrastructure. It reuses the sophisticated traffic analysis calculations already implemented while adding vehicle tracking and reward computation capabilities. This approach ensures consistency between RL and Tree Method evaluations while minimizing implementation complexity.
 
-- Extends existing `Graph`, `Link`, and `JunctionNode` classes for RL state collection
-- Uses existing `define_tl_program()` function for RL action execution
-- Leverages existing TraCI integration and SUMO configuration generation
+**Data Flow Design**: Traffic information flows from SUMO through the existing analysis pipeline to create RL state vectors. Vehicle performance data flows through the new tracking system to generate reward signals. Control actions flow from the RL agent through the existing signal control interface back to SUMO. This bidirectional integration maintains all existing capabilities while enabling RL learning.
 
-**Required Library Dependencies**:
-Install Stable-Baselines3, OpenAI Gym, NumPy, and ensure existing SUMO/TraCI dependencies are available. The implementation builds on the existing infrastructure rather than replacing it.
+### Implementation Roadmap
 
-### Step 1: Custom Gym Environment Implementation
+The implementation follows a systematic build-and-test approach that ensures each component works correctly before adding complexity.
 
-**TrafficControlEnv Class Structure**:
-Create a new class inheriting from gym.Env that wraps the existing SUMO simulation. The class requires initialization with the existing configuration system, loading the same Graph and JunctionNode objects used by Tree Method. The environment manages the complete simulation lifecycle including reset, step execution, and termination detection.
+**Phase 1: Environment Skeleton** - Create basic Gym environment structure with dummy implementations to verify interface compatibility with RL libraries before adding complexity.
 
-**Observation Space Design**:
-Define a continuous observation space using gym.spaces.Box with normalized values between 0.0 and 1.0. The observation space dimensions should equal the total state vector size calculated from the number of edges and intersections in the network. Each edge contributes multiple features (speed, density, flow, congestion status) and each intersection contributes phase and timing information.
+**Phase 2: State Integration** - Connect the environment to existing traffic analysis calculations and implement state vector construction and normalization.
 
-**Action Space Configuration**:
-Implement a continuous action space where each intersection requires two values: phase probability distribution (processed through softmax) and normalized duration value. The total action space dimension equals 2 × number_of_intersections. Actions are processed to select discrete phases and convert normalized durations to actual timing values within safety constraints.
+**Phase 3: Action Execution** - Implement action processing and integrate with existing signal control interface, including safety constraint enforcement.
 
-**Core Environment Methods**:
-The step() method must execute five sequential operations: process RL actions through TraCI calls, advance the SUMO simulation by one time step, collect new state observations using existing Tree Method calculations, compute rewards through the vehicle tracking system, and determine episode termination based on simulation completion or time limits. The reset() method restarts the SUMO simulation and returns the initial state observation.
+**Phase 4: Vehicle Tracking** - Add individual vehicle monitoring and basic reward computation capabilities.
 
-### Step 2: Vehicle Tracking and Reward System
+**Phase 5: Complete Reward System** - Implement full two-component reward architecture with temporal credit assignment.
 
-**Graph Class Extensions for RL**:
-Extend the existing Graph class with RL-specific vehicle tracking capabilities. Add data structures to maintain vehicle journey histories, decision timestamps for credit assignment, and measurement interval tracking. The extensions should integrate seamlessly with existing Graph functionality without disrupting Tree Method operations.
+**Phase 6: Training Integration** - Create PPO training script and validate end-to-end learning functionality.
 
-**Vehicle Journey Tracking**:
-Implement individual vehicle monitoring that captures vehicle start times, route information, and accumulated waiting times. Each vehicle requires tracking from network entry to completion or episode termination. The tracking system must handle dynamic vehicle populations as vehicles enter and leave the simulation.
+**Testing Strategy**: Each phase includes component-specific tests using simple 3×3 grid networks before scaling to larger configurations. Validation compares RL environment outputs with Tree Method outputs to ensure consistency.
 
-**Reward Computation Mechanics**:
-Develop the two-component reward system with intermediate vehicle penalties and final episode throughput rewards. Vehicle penalties are computed at regular measurement intervals by calculating waiting time deltas for all active vehicles. The penalty system applies negative rewards proportional to additional waiting time accumulated since the last measurement. Episode rewards provide positive signals based on total vehicle completions.
+### Required Dependencies and Setup
 
-**Credit Assignment Implementation**:
-Build the time-windowed credit distribution system that maps vehicle penalties to relevant signal timing decisions. Maintain timestamp records for all signal control actions and apply penalties to decisions made since each vehicle's journey began. The system ensures that early coordination decisions receive appropriate credit for their long-term effects on vehicle performance.
+**Library Requirements**: Install Stable-Baselines3 for PPO implementation, OpenAI Gym for environment interface, and NumPy for numerical operations. Ensure existing SUMO/TraCI dependencies remain functional.
 
-### Step 3: State Space Implementation
+**Development Environment**: The implementation builds on the existing Python codebase structure. Create new files in `src/rl/` directory while extending existing classes in `src/orchestration/` and `src/sumo_integration/` as needed.
 
-**Integration with Tree Method State Collection**:
-Leverage existing Tree Method calculations for traffic state representation. Use the existing Link.calc_my_iteration_data() method that computes speed, density, flow rates, and congestion status. Build the state vector by iterating through all network edges and extracting the computed traffic metrics, ensuring consistency with Tree Method's traffic analysis.
+### Step 1: Gym Environment Foundation
 
-**State Vector Construction**:
-Construct the observation vector by concatenating normalized traffic metrics from all edges followed by signal timing information from all intersections. Edge features include normalized speed (current_speed/free_flow_speed), normalized density (density/MAX_DENSITY), normalized flow (flow/capacity), and binary congestion flags. Junction features include normalized current phase and normalized remaining duration.
+**TrafficControlEnv Class Structure**: Create a new class inheriting from `gym.Env` that wraps the existing SUMO simulation infrastructure. Initialize the environment with the same configuration system used by Tree Method, ensuring identical network and traffic conditions for fair comparison.
 
-**Normalization Strategy**:
-Implement consistent normalization across all state components to maintain values within the 0.0-1.0 range expected by the observation space. Use network-specific parameters like speed limits, capacity constraints, and timing bounds for normalization. Ensure normalization parameters remain constant across training episodes to maintain learning consistency.
+```python
+class TrafficControlEnv(gym.Env):
+    def __init__(self, config):
+        # Initialize with existing configuration system
+        # Load same Graph and JunctionNode objects as Tree Method
+        # Set up observation and action spaces
 
-### Step 4: Training Script Setup
+    def step(self, action):
+        # Process RL actions and apply to SUMO
+        # Advance simulation one time step
+        # Collect state observations
+        # Compute rewards from vehicle tracking
+        # Return (observation, reward, done, info)
 
-**Stable-Baselines3 Integration**:
-Create the training script using Stable-Baselines3's PPO implementation with traffic-specific parameter configuration. Initialize the environment using the existing configuration system and validate the implementation using Stable-Baselines3's environment checking utilities before training begins.
+    def reset(self):
+        # Restart SUMO simulation
+        # Initialize vehicle tracking
+        # Return initial observation
+```
 
-**PPO Configuration for Traffic Control**:
-Configure PPO with conservative learning parameters appropriate for expensive simulation environments. Use lower learning rates (2e-4) to ensure stable learning with costly episodes. Apply tighter clip ranges (0.1) to prevent large policy updates that could destabilize learned coordination patterns. Set appropriate batch sizes (1024) considering memory constraints from large state vectors.
+**Observation Space Design**: Define the state space using `gym.spaces.Box` with normalized values between 0.0 and 1.0. Calculate dimensions from network topology: `num_edges × edge_features + num_intersections × intersection_features`. Each edge contributes traffic flow indicators while each intersection contributes signal timing information.
 
-**Training Pipeline Setup**:
-Implement the complete training workflow including environment initialization, model configuration, training execution, and model persistence. Include logging and monitoring capabilities to track training progress, episode rewards, and convergence metrics. Design the pipeline to support training interruption and resumption for long training runs.
+**Action Space Configuration**: Implement continuous action space using `gym.spaces.Box` where each intersection requires phase selection values and duration values. The action space dimension equals `2 × num_intersections`. Process actions through softmax for phase selection and scaling for duration values within safety bounds.
 
-### Step 5: Integration Testing and Next Steps
+**Environment Lifecycle Management**: Implement the core Gym interface methods with proper integration to existing simulation infrastructure. The `step()` method coordinates action execution, simulation advancement, state collection, and reward computation. The `reset()` method handles simulation restart and state initialization.
 
-**Incremental Implementation Strategy**:
-Follow a systematic approach starting with environment skeleton implementation using dummy rewards to verify basic Gym interface functionality. Progressively add state collection integration, action execution connectivity, vehicle tracking capabilities, reward computation validation, and finally complete PPO training integration.
+### Step 2: Vehicle Tracking System
 
-**Component Testing Approach**:
-Develop unit tests for individual components including state collection accuracy, action execution correctness, and reward computation verification. Create integration tests using simple 3×3 grid networks to validate end-to-end functionality before scaling to larger networks. Compare RL environment state collection outputs with Tree Method outputs to ensure consistency.
+**VehicleTracker Class Implementation**: Create a dedicated class to monitor individual vehicle journeys and compute reward signals based on performance changes.
 
-**Validation and Debugging**:
-Implement comprehensive validation checks at each integration step. Verify that state vectors maintain expected dimensionality and normalization ranges. Confirm that action execution produces valid signal timing sequences. Validate that vehicle tracking accurately captures journey information and waiting time calculations. Test reward computation across different traffic scenarios to ensure proper penalty and credit assignment.
+```python
+class VehicleTracker:
+    def __init__(self):
+        self.vehicle_histories = {}  # Track journey data per vehicle
+        self.decision_timestamps = []  # Log signal control decisions
+        self.last_measurement_time = 0
 
-## 6. Evaluation
+    def update_vehicles(self, current_time):
+        # Get active vehicles from TraCI
+        # Update waiting times and journey data
+        # Compute penalties for vehicles with increased waiting times
 
-### Evaluation Setup
+    def record_decision(self, timestamp, actions):
+        # Log signal timing decisions with timestamps
+        # Enable credit assignment to recent decisions
 
-Compare RL agent vs Tree Method on identical networks and traffic scenarios.
+    def compute_intermediate_rewards(self):
+        # Calculate vehicle-based penalties
+        # Apply time-windowed credit distribution
+        # Return aggregated reward signal
+```
 
-### Metrics
+**Journey Tracking Design**: Monitor each vehicle from network entry to completion, maintaining records of start times, routes, and accumulated waiting times. Handle dynamic vehicle populations as vehicles enter and leave the simulation throughout episodes.
 
-- **Throughput**: Total completed vehicles
-- **Waiting time**: Average per vehicle
+**Reward Computation Strategy**: Implement the two-component reward system with intermediate vehicle penalties and final episode throughput bonuses. Calculate waiting time deltas at measurement intervals and convert to penalty signals. Provide episode completion rewards based on total vehicle throughput.
 
-### Success Criteria
+**Credit Assignment Implementation**: Build the time-windowed attribution system that connects vehicle performance outcomes to relevant signal control decisions. Maintain decision timestamp records and apply penalties to decisions made since each vehicle's journey began.
 
-- **Throughput-based**:
+### Step 3: State Collection Integration
 
-- RL achieves >10% improvement in total completed vehicles vs Tree Method
-- RL completes >95% of spawned vehicles (high completion rate threshold)
+**State Vector Construction**: Build the observation vector by integrating with existing traffic analysis calculations. Reuse the sophisticated traffic flow computations already implemented in the Tree Method system rather than reimplementing traffic analysis.
 
-- **Waiting time-based**:
+```python
+def build_state_vector(self):
+    edge_features = []
+    for edge in self.network.edges:
+        # Collect normalized traffic indicators
+        speed_norm = edge.current_speed / edge.speed_limit
+        density_norm = edge.density / MAX_DENSITY
+        flow_norm = edge.flow / edge.capacity
+        congestion_flag = 1.0 if edge.is_congested else 0.0
+        edge_features.extend([speed_norm, density_norm, flow_norm, congestion_flag])
 
-- RL reduces average waiting time by >15% compared to Tree Method
-- RL reduces maximum individual vehicle waiting time by >20%
+    junction_features = []
+    for junction in self.network.junctions:
+        phase_norm = junction.current_phase / len(junction.phases)
+        duration_norm = junction.remaining_time / MAX_PHASE_TIME
+        junction_features.extend([phase_norm, duration_norm])
+
+    return np.array(edge_features + junction_features)
+```
+
+**Normalization Strategy**: Ensure all state components remain within [0.0, 1.0] bounds using network-specific parameters. Use speed limits, capacity constraints, and timing bounds for consistent normalization across episodes.
+
+### Step 4: Action Execution System
+
+**Action Processing**: Convert RL agent outputs into valid signal control commands while enforcing safety constraints.
+
+```python
+def process_actions(self, raw_actions):
+    actions = []
+    for i, junction in enumerate(self.network.junctions):
+        # Extract phase and duration for this intersection
+        phase_logits = raw_actions[i*2:(i*2)+len(junction.phases)]
+        duration_raw = raw_actions[i*2+1]
+
+        # Process phase selection through softmax
+        phase_probs = softmax(phase_logits)
+        selected_phase = np.argmax(phase_probs)
+
+        # Scale and constrain duration
+        duration = np.clip(duration_raw * MAX_PHASE_TIME, MIN_PHASE_TIME, MAX_PHASE_TIME)
+
+        actions.append((selected_phase, duration))
+    return actions
+```
+
+**Signal Control Integration**: Execute processed actions through the existing signal control interface, ensuring compatibility with the current TraCI integration and maintaining safety constraint enforcement.
+
+### Step 5: Training Script Development
+
+**PPO Configuration**: Set up Stable-Baselines3 PPO with traffic control-specific parameters.
+
+```python
+from stable_baselines3 import PPO
+from stable_baselines3.common.env_checker import check_env
+
+# Validate environment implementation
+env = TrafficControlEnv(config)
+check_env(env)
+
+# Configure PPO for traffic control
+model = PPO(
+    "MlpPolicy",
+    env,
+    learning_rate=2e-4,  # Conservative for expensive episodes
+    clip_range=0.1,      # Prevent large policy updates
+    batch_size=1024,     # Balance stability and memory
+    verbose=1
+)
+
+# Training execution
+model.learn(total_timesteps=100000)
+model.save("traffic_control_policy")
+```
+
+**Training Pipeline**: Implement monitoring and logging to track training progress, episode rewards, and convergence metrics. Include capabilities for training interruption and resumption.
+
+### Step 6: Component Testing and Validation
+
+**Incremental Testing Strategy**: Test each component independently before integration. Start with simple 3×3 grid networks and scale up to validate performance and stability.
+
+**Validation Methodology**: Compare RL environment state outputs with Tree Method outputs to ensure consistency. Verify action execution produces valid signal sequences. Test reward computation across different traffic scenarios.
+
+**Integration Testing**: Validate end-to-end functionality from environment initialization through training execution. Ensure the complete system can train effectively and produce viable policies.
+
+## 6. Evaluation & Validation Methodology
+
+This chapter provides comprehensive guidance for evaluating RL traffic control systems and validating implementation correctness. We cover experimental design principles, validation strategies, performance metrics, and practical debugging approaches to ensure reliable assessment of RL agent performance against baseline methods.
+
+### Evaluation Strategy Framework
+
+Effective evaluation of RL traffic control requires systematic comparison against established baselines using rigorous experimental methodology that accounts for the stochastic nature of both traffic simulation and RL training.
+
+**Baseline Selection Strategy**: Compare RL agents primarily against Tree Method as the main baseline, since both systems use identical traffic state representations and simulation infrastructure. Include additional baselines like SUMO's actuated control and fixed timing for broader context. Ensure all methods operate on identical network configurations and traffic scenarios to eliminate confounding variables.
+
+**Experimental Design Principles**: Use controlled experimentation with systematic parameter variation to assess RL performance across different traffic conditions. Test multiple network sizes, vehicle densities, and traffic patterns to evaluate generalization capability. Employ statistical methodology with multiple independent runs using different random seeds to account for both RL training variance and traffic simulation stochasticity.
+
+**Fair Comparison Requirements**: Ensure all methods receive identical inputs including network topology, vehicle routes, departure patterns, and simulation parameters. Use the same SUMO configuration and TraCI integration for all approaches. Maintain consistent measurement intervals and evaluation metrics across different control methods to enable valid performance comparisons.
+
+### Implementation Validation
+
+Before conducting performance evaluations, thoroughly validate that the RL implementation works correctly and produces reasonable behaviors.
+
+**Environment Validation**: Test the Gym environment implementation using Stable-Baselines3's built-in validation tools. Verify that state vectors maintain expected dimensionality and normalization ranges across different network configurations. Confirm that action processing produces valid signal timing sequences that respect safety constraints. Validate that reward computation generates reasonable signals and that episode management handles simulation reset correctly.
+
+**State Collection Validation**: Compare RL environment state vectors with Tree Method state calculations to ensure consistency. The two systems should produce identical traffic flow measurements for the same simulation conditions. Test state collection across different traffic scenarios to verify robustness and accuracy.
+
+**Action Execution Validation**: Verify that RL actions translate correctly into SUMO signal control commands. Test that phase selections and duration values remain within specified bounds. Confirm that signal transitions follow safe timing sequences and that multiple intersection coordination works correctly.
+
+**Vehicle Tracking Validation**: Test the reward system with known traffic scenarios where outcomes can be predicted. Verify that individual vehicle tracking accurately captures journey information and waiting time changes. Validate that credit assignment correctly attributes performance outcomes to relevant signal decisions.
+
+### Performance Evaluation Methodology
+
+**Experimental Configuration**: Design experiments that systematically test RL performance across relevant traffic control scenarios while maintaining statistical rigor.
+
+**Traffic Scenario Design**: Create diverse traffic scenarios that test different aspects of coordination capability including rush hour patterns with high demand, light traffic scenarios for efficiency testing, congestion bottleneck situations for coordination assessment, and mixed traffic patterns combining different vehicle types and routing strategies.
+
+**Statistical Methodology**: Conduct multiple independent runs (minimum 20 per condition) with different random seeds for both RL training and traffic simulation. Use appropriate statistical tests to assess significance of performance differences. Report confidence intervals and effect sizes rather than just mean comparisons.
+
+**Metrics and Measurement**: Focus on metrics that capture both system efficiency and individual vehicle service quality.
+
+**System-Level Metrics**:
+
+- **Total Throughput**: Number of vehicles completing their journeys successfully
+- **Network Capacity Utilization**: Ratio of completed vehicles to total spawned vehicles
+- **Average Network Travel Time**: Mean time from vehicle entry to exit across all completed journeys
+- **Congestion Duration**: Total time network spends in congested states
+
+**Individual-Level Metrics**:
+
+- **Average Vehicle Waiting Time**: Mean waiting time per vehicle across all completed journeys
+- **Maximum Individual Waiting Time**: Worst-case individual vehicle experience
+- **Service Quality Distribution**: Percentile analysis of individual waiting times (50th, 90th, 95th percentiles)
+- **Journey Completion Rate**: Percentage of vehicles reaching their destinations within episode time limits
+
+### Success Criteria and Interpretation
+
+**Performance Threshold Selection**: Choose success criteria based on domain knowledge and baseline performance rather than arbitrary percentages. Consider the magnitude of improvement demonstrated by Tree Method in research literature and set realistic expectations for RL performance.
+
+**Recommended Success Criteria**:
+
+- **Throughput Improvement**: RL achieves 5-15% improvement in completed vehicles vs Tree Method (accounting for training variance)
+- **Waiting Time Reduction**: RL reduces average waiting time by 10-25% compared to baseline methods
+- **Service Quality**: RL improves 90th percentile waiting times, demonstrating better worst-case performance
+- **Consistency**: RL performance remains stable across different random seeds and traffic scenarios
+
+**Interpretation Guidelines**: Assess not just mean performance improvements but also consistency and robustness across different conditions. Consider training stability and convergence characteristics as indicators of implementation quality. Analyze failure modes and edge cases to understand RL agent limitations and areas for improvement.
+
+### Debugging and Troubleshooting
+
+**Common Implementation Issues**:
+
+**Training Instability**: If RL training shows high variance or poor convergence, check reward scaling balance between vehicle penalties and throughput rewards. Verify state normalization consistency and action space constraint enforcement. Consider reducing learning rates or increasing batch sizes for more stable updates.
+
+**Poor Performance vs Baselines**: If RL underperforms baselines significantly, validate that state collection captures relevant traffic information. Check that action execution correctly translates to signal control. Verify reward system provides appropriate learning signals and not conflicting objectives.
+
+**Integration Problems**: If the RL system produces errors or crashes, systematically test each component independently. Validate environment reset functionality and episode management. Check TraCI integration and simulation lifecycle handling.
+
+**Debugging Methodology**: Use systematic diagnosis starting with component-level validation before investigating system-level issues. Log intermediate values for state vectors, actions, and rewards to identify problematic patterns. Test with progressively complex scenarios starting from simple traffic conditions.
+
+**Performance Analysis Tools**: Implement logging and visualization tools to analyze RL agent behavior during training and evaluation. Track learning curves, action distributions, and reward patterns to identify optimization opportunities and diagnose training issues.
