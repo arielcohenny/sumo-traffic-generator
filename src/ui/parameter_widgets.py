@@ -395,7 +395,7 @@ class ParameterWidgets:
             help="Resolution of zone generation grid"
         )
 
-        attractiveness_options = ["land_use", "poisson", "gravity", "iac", "hybrid"]
+        attractiveness_options = ["land_use", "poisson", "iac"]
         params["attractiveness"] = st.selectbox(
             "Attractiveness Method",
             attractiveness_options,

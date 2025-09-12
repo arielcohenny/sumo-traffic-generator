@@ -179,8 +179,8 @@ def _add_zone_arguments(parser: argparse.ArgumentParser) -> None:
         "--attractiveness",
         type=str,
         default=DEFAULT_ATTRACTIVENESS,
-        choices=["poisson", "land_use", "gravity", "iac", "hybrid"],
-        help=f"Edge attractiveness method: '{DEFAULT_ATTRACTIVENESS}' (default), 'land_use', 'gravity', 'iac', or 'hybrid'."
+        choices=["poisson", "land_use", "iac"],
+        help=f"Edge attractiveness method: '{DEFAULT_ATTRACTIVENESS}' (default), 'land_use', or 'iac'."
     )
     parser.add_argument(
         "--time_dependent",

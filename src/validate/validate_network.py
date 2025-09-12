@@ -473,7 +473,7 @@ def verify_assign_edge_attractiveness(
     Parameters
     ----------
     seed : random seed used for generation
-    method : attractiveness method used ('poisson', 'land_use', 'gravity', 'iac', 'hybrid')
+    method : attractiveness method used ('poisson', 'land_use', 'iac')
     time_dependent : whether time dependency was applied
     tolerance : acceptable deviation from expected values for Poisson method
     """
@@ -590,7 +590,7 @@ def verify_assign_edge_attractiveness(
                 f"Land use method should produce more varied attractiveness values "
                 f"(found {unique_depart}/{unique_arrive} unique values, expected at least {min_required})")
 
-    elif method in ["gravity", "iac", "hybrid"]:
+    elif method == "iac":
         # These methods should produce varied results due to spatial factors
         depart_std = statistics.stdev(
             depart_attrs) if len(depart_attrs) > 1 else 0

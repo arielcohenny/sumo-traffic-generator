@@ -62,13 +62,11 @@ Simulation duration in seconds.
 
 ### `--attractiveness` (str, default: "land_use")
 
-Sets the departure and arrival attractiveness of each edge. Five methods available:
+Sets the departure and arrival attractiveness of each edge. Three methods available:
 
 - `land_use`: Zone-based calculation (default)
 - `poisson`: Random distribution
-- `gravity`: Distance-based model
 - `iac`: Intersection accessibility calculation
-- `hybrid`: Combined approach
 
 ### `--time_dependent` (flag)
 
@@ -365,7 +363,7 @@ D1E1=tail:2,head:
 - **Current**: Implemented via argparse choices
 - **Existing Checks**:
 
-  - `--attractiveness`: {"poisson", "land_use", "gravity", "iac", "hybrid"}
+  - `--attractiveness`: {"poisson", "land_use", "iac"}
   - `--traffic_light_strategy`: {"opposites", "incoming"}
   - `--traffic_control`: {"tree_method", "actuated", "fixed"}
 

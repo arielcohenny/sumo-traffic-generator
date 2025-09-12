@@ -293,55 +293,6 @@ def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root, 
     return depart_attr, arrive_attr
 
 
-def calculate_attractiveness_gravity(edge_id: str, network_tree, time_dependent: bool = False) -> tuple:
-    """Calculate attractiveness using gravity model"""
-    # Gravity model parameters from research
-    d_param = 0.95
-    g_param = 1.02
-
-    # Calculate edge centrality (simplified as number of connections)
-    edge_elem = None
-    root = network_tree.getroot()
-
-    for edge in root.findall('edge'):
-        if edge.get('id') == edge_id:
-            edge_elem = edge
-            break
-
-    if edge_elem is None:
-        return calculate_attractiveness_poisson(0, time_dependent)
-
-    # Get from/to nodes
-    from_node = edge_elem.get('from')
-    to_node = edge_elem.get('to')
-
-    # Count connections (simplified cluster size)
-    from_connections = len([e for e in root.findall('edge') if e.get(
-        'from') == from_node or e.get('to') == from_node])
-    to_connections = len([e for e in root.findall('edge') if e.get(
-        'from') == to_node or e.get('to') == to_node])
-    cluster_size = (from_connections + to_connections) / 2
-
-    # Simplified distance (could be enhanced with actual coordinates)
-    distance = 1.0  # Normalized distance
-
-    # Base random attractiveness
-    base_random = max(0.1, np.random.normal(1.0, 0.3))
-
-    # Calculate gravity-based attractiveness
-    gravity_factor = (d_param ** distance) * \
-        (g_param ** cluster_size) * base_random
-
-    depart_attr = max(1, int(CONFIG.LAMBDA_DEPART * gravity_factor))
-    arrive_attr = max(1, int(CONFIG.LAMBDA_ARRIVE * gravity_factor))
-
-    # Apply time dependency if enabled
-    if time_dependent:
-        time_mult = get_time_multipliers(True, 12)
-        depart_attr = max(1, int(depart_attr * time_mult['depart']))
-        arrive_attr = max(1, int(arrive_attr * time_mult['arrive']))
-
-    return depart_attr, arrive_attr
 
 
 def calculate_attractiveness_iac(edge_id: str, zones_data: list, edg_root, network_tree, time_dependent: bool = False) -> tuple:
@@ -349,10 +300,6 @@ def calculate_attractiveness_iac(edge_id: str, zones_data: list, edg_root, netwo
     # IAC parameters from research
     d_param = 0.95
     g_param = 1.02
-
-    # Get gravity components
-    depart_gravity, arrive_gravity = calculate_attractiveness_gravity(
-        edge_id, network_tree, False)
 
     # Get land use components
     depart_land, arrive_land = calculate_attractiveness_land_use(
@@ -367,13 +314,11 @@ def calculate_attractiveness_iac(edge_id: str, zones_data: list, edg_root, netwo
     # Spatial preference (simplified)
     f_spatial = 1.0
 
-    # Calculate IAC
-    gravity_norm = (depart_gravity + arrive_gravity) / \
-        (2 * CONFIG.LAMBDA_DEPART + 2 * CONFIG.LAMBDA_ARRIVE)
+    # Calculate IAC using only land use
     land_norm = (depart_land + arrive_land) / \
         (2 * CONFIG.LAMBDA_DEPART + 2 * CONFIG.LAMBDA_ARRIVE)
 
-    iac_factor = gravity_norm * land_norm * theta * m_rand * f_spatial
+    iac_factor = land_norm * theta * m_rand * f_spatial
 
     depart_attr = max(1, int(CONFIG.LAMBDA_DEPART * iac_factor))
     arrive_attr = max(1, int(CONFIG.LAMBDA_ARRIVE * iac_factor))
@@ -387,44 +332,6 @@ def calculate_attractiveness_iac(edge_id: str, zones_data: list, edg_root, netwo
     return depart_attr, arrive_attr
 
 
-def calculate_attractiveness_hybrid(edge_id: str, zones_data: list, edg_root, network_tree, time_dependent: bool = False) -> tuple:
-    """Calculate attractiveness using hybrid approach"""
-    # Get base Poisson values
-    depart_poisson, arrive_poisson = calculate_attractiveness_poisson(0, False)
-
-    # Get land use adjustment (with reduced impact)
-    depart_land, arrive_land = calculate_attractiveness_land_use(
-        edge_id, zones_data, edg_root, False)
-    land_factor_depart = depart_land / max(1, CONFIG.LAMBDA_DEPART)
-    land_factor_arrive = arrive_land / max(1, CONFIG.LAMBDA_ARRIVE)
-
-    # Reduce land use impact for hybrid (50% weight)
-    land_factor_depart = 1.0 + 0.5 * (land_factor_depart - 1.0)
-    land_factor_arrive = 1.0 + 0.5 * (land_factor_arrive - 1.0)
-
-    # Get spatial adjustment
-    depart_gravity, arrive_gravity = calculate_attractiveness_gravity(
-        edge_id, network_tree, False)
-    spatial_factor_depart = depart_gravity / max(1, CONFIG.LAMBDA_DEPART)
-    spatial_factor_arrive = arrive_gravity / max(1, CONFIG.LAMBDA_ARRIVE)
-
-    # Reduce spatial impact for hybrid (30% weight)
-    spatial_factor_depart = 1.0 + 0.3 * (spatial_factor_depart - 1.0)
-    spatial_factor_arrive = 1.0 + 0.3 * (spatial_factor_arrive - 1.0)
-
-    # Combine factors
-    depart_attr = max(
-        1, int(depart_poisson * land_factor_depart * spatial_factor_depart))
-    arrive_attr = max(
-        1, int(arrive_poisson * land_factor_arrive * spatial_factor_arrive))
-
-    # Apply time dependency if enabled
-    if time_dependent:
-        time_mult = get_time_multipliers(True, 12)
-        depart_attr = max(1, int(depart_attr * time_mult['depart']))
-        arrive_attr = max(1, int(arrive_attr * time_mult['arrive']))
-
-    return depart_attr, arrive_attr
 
 
 def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependent: bool = False, start_time_hour: float = 0.0) -> None:
@@ -438,7 +345,7 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
     Parameters
     ----------
     seed : random seed for reproducibility
-    method : attractiveness calculation method ('poisson', 'land_use', 'gravity', 'iac', 'hybrid')
+    method : attractiveness calculation method ('poisson', 'land_use', 'iac')
     time_dependent : whether to generate 4-phase time-of-day profiles
     start_time_hour : real-world hour when simulation starts (0-24)
     """
@@ -450,12 +357,12 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
 
     # Load zone data if needed
     zones_data = []
-    if method in ['land_use', 'iac', 'hybrid']:
+    if method in ['land_use', 'iac']:
         zones_data = load_zones_data()
 
     # Load edge data if needed for spatial methods
     edg_root = None
-    if method in ['land_use', 'iac', 'hybrid']:
+    if method in ['land_use', 'iac']:
         try:
             edg_file = CONFIG.network_edg_file
             edg_tree = ET.parse(edg_file)
@@ -488,14 +395,8 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
             elif method == "land_use":
                 base_depart, base_arrive = calculate_attractiveness_land_use(
                     edge_id, zones_data, edg_root, False)
-            elif method == "gravity":
-                base_depart, base_arrive = calculate_attractiveness_gravity(
-                    edge_id, tree, False)
             elif method == "iac":
                 base_depart, base_arrive = calculate_attractiveness_iac(
-                    edge_id, zones_data, edg_root, tree, False)
-            elif method == "hybrid":
-                base_depart, base_arrive = calculate_attractiveness_hybrid(
                     edge_id, zones_data, edg_root, tree, False)
             else:
                 base_depart, base_arrive = calculate_attractiveness_poisson(
@@ -528,14 +429,8 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
             elif method == "land_use":
                 depart_attr, arrive_attr = calculate_attractiveness_land_use(
                     edge_id, zones_data, edg_root, False)
-            elif method == "gravity":
-                depart_attr, arrive_attr = calculate_attractiveness_gravity(
-                    edge_id, tree, False)
             elif method == "iac":
                 depart_attr, arrive_attr = calculate_attractiveness_iac(
-                    edge_id, zones_data, edg_root, tree, False)
-            elif method == "hybrid":
-                depart_attr, arrive_attr = calculate_attractiveness_hybrid(
                     edge_id, zones_data, edg_root, tree, False)
             else:
                 depart_attr, arrive_attr = calculate_attractiveness_poisson(

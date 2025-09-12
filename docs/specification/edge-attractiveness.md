@@ -49,31 +49,15 @@
   - Residential areas: High arrival (1.4x), moderate departure (0.8x) - people return home
   - Employment areas: High departure (1.3x), moderate arrival (0.9x) - people leave for work
 
-**3. Gravity Method (`--attractiveness gravity`)**
+**3. IAC Method (`--attractiveness iac`)**
 
-- **Algorithm**: Models traffic attractiveness based on network accessibility and connectivity patterns
-- **Process**: For each edge, calculates a "cluster size" by counting how many other edges connect to the same start and end nodes, representing the edge's position in the network hierarchy. Applies exponential decay with distance (using normalized distance of 1.0) and exponential growth with cluster connectivity. Multiplies by a random baseline factor to introduce variation.
-- **Network Theory**: Based on gravity models from transportation planning where locations with better connectivity (more connections) attract more traffic, similar to how larger cities attract more travelers in regional models
-- **Centrality Logic**: Edges connecting highly connected nodes (major intersections) get higher attractiveness than edges connecting peripheral nodes, reflecting real-world patterns where arterial roads carry more traffic than residential streets
-- **Parameters**: `d_param = 0.95` (distance decay), `g_param = 1.02` (connectivity amplification)
-- **Stochastic Element**: Includes random baseline factor to prevent purely deterministic results
-
-**4. IAC Method (`--attractiveness iac`)**
-
-- **Algorithm**: Integrated Attraction Coefficient that synthesizes multiple urban planning factors into a comprehensive attractiveness measure
-- **Process**: Calculates separate gravity and land use components, then normalizes them against baseline values to create dimensionless factors. Introduces a random "mood" factor representing daily variations in travel behavior and a spatial preference factor. Multiplies all components together with a base attractiveness coefficient to produce the final IAC value.
-- **Multi-Factor Integration**: Combines the network connectivity insights from gravity models with the land use patterns from zoning analysis, while accounting for behavioral unpredictability through stochastic elements
-- **Research Foundation**: Based on established IAC methodology from urban traffic modeling literature that recognizes traffic generation as a function of both infrastructure (connectivity) and land use (activity patterns)
-- **Normalization Strategy**: Converts gravity and land use results to relative factors (comparing against baseline Poisson values) so they can be meaningfully combined regardless of their original scales
+- **Algorithm**: Integrated Attraction Coefficient that synthesizes urban planning factors into a comprehensive attractiveness measure
+- **Process**: Calculates land use components, then normalizes them against baseline values to create dimensionless factors. Introduces a random "mood" factor representing daily variations in travel behavior and a spatial preference factor. Multiplies all components together with a base attractiveness coefficient to produce the final IAC value.
+- **Multi-Factor Integration**: Combines land use patterns from zoning analysis with behavioral unpredictability through stochastic elements
+- **Research Foundation**: Based on established IAC methodology from urban traffic modeling literature that recognizes traffic generation as a function of land use activity patterns
+- **Normalization Strategy**: Converts land use results to relative factors (comparing against baseline Poisson values) for meaningful integration
 - **Behavioral Elements**: Includes random mood factor and spatial preference to capture human decision-making variability in travel choices
 
-**5. Hybrid Method (`--attractiveness hybrid`)**
-
-- **Algorithm**: Combines multiple methodologies using a carefully balanced weighting scheme to capture benefits of each approach while mitigating individual weaknesses
-- **Process**: Starts with pure Poisson values as the foundation, then calculates land use and gravity adjustments separately. Converts these adjustments to multiplicative factors relative to Poisson baselines, then reduces their impact (land use to 50%, gravity to 30%) to prevent any single method from dominating. Applies these dampened factors sequentially to the base Poisson values.
-- **Weighting Philosophy**: Uses Poisson as the stable foundation (100% weight) because it provides consistent baseline variation. Land use gets moderate influence (50%) to incorporate spatial realism without over-constraining results. Gravity gets lighter influence (30%) to add network topology awareness without creating extreme centrality bias.
-- **Robustness Strategy**: By combining methods with reduced individual impacts, the hybrid approach is less sensitive to problems in any single methodology (e.g., poor zone data or network topology issues) while still benefiting from their insights
-- **Computational Balance**: Provides realistic spatial and topological variation while maintaining computational efficiency and avoiding the complexity of full IAC integration
 
 ### Temporal Variation System (4-Phase)
 
@@ -112,7 +96,7 @@
 
 ## Spatial Analysis Integration
 
-**Zone-Edge Adjacency Detection** (for land_use, iac, hybrid methods):
+**Zone-Edge Adjacency Detection** (for land_use, iac methods):
 
 - **Edge Geometry**: Parse edge shape coordinates from network
 - **Zone Polygon**: Load zone polygon coordinates from zones file

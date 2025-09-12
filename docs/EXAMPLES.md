@@ -97,6 +97,6 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 7500 
 Low-density weekend traffic with uniform departure timing.
 
 ```bash
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 400 --departure_pattern uniform --start_time_hour 10.0 --attractiveness hybrid --end-time 7200 --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 400 --departure_pattern uniform --start_time_hour 10.0 --attractiveness land_use --end-time 7200 --gui
 ```
 

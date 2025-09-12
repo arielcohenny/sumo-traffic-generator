@@ -177,7 +177,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 -
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1000 --step-length 1.0 --end-time 9000 --departure_pattern six_periods --routing_strategy 'shortest 40 realtime 60' --seed 123 --gui
 
 # Scenario 10: Multi-Modal Traffic Mix
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 850 --step-length 1.0 --end-time 16200 --departure_pattern six_periods --vehicle_types 'passenger 50 commercial 40 public 10' --attractiveness hybrid --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 850 --step-length 1.0 --end-time 16200 --departure_pattern six_periods --vehicle_types 'passenger 50 commercial 40 public 10' --attractiveness land_use --gui
 
 # Quick Development Tests
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 500 --end-time 1800 --gui
@@ -531,7 +531,7 @@ dbps
   - Even distribution of tail lanes to head lanes for optimal traffic flow
   - **Recent Fixes**: Resolved TraCI integration errors and XML parsing issues (Phase handling, Vehicle ID extraction)
 - **Lane Count Algorithms**: Three modes for lane assignment - `realistic` (zone-based demand calculation), `random` (randomized within bounds), and `fixed` (uniform count)
-- **Edge Attractiveness Methods**: Five research-based methods (land_use, poisson, gravity, iac, hybrid) with 4-phase temporal system
+- **Edge Attractiveness Methods**: Three research-based methods (land_use, poisson, iac) with 4-phase temporal system
 - **4-Phase Temporal System**:
   - Research-based bimodal traffic patterns with morning/evening peaks
   - Pre-calculated attractiveness profiles for efficient simulation

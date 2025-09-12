@@ -174,9 +174,7 @@ Departure and arrival attractiveness calculation method.
 - **Methods**:
   - `land_use`: Zone-based land use attractiveness (default)
   - `poisson`: Random Poisson distribution
-  - `gravity`: Distance-based gravity model
   - `iac`: Intersection accessibility calculation
-  - `hybrid`: Combined approach
 - **Example**: `--attractiveness land_use`
 
 #### `--time_dependent` (flag)

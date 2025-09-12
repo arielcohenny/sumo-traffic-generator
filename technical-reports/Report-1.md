@@ -229,9 +229,9 @@ The T5 implementation establishes the network analysis foundation essential for 
 
 The network analysis implements a comprehensive 4-phase temporal system with configurable bimodal traffic patterns featuring morning and evening peaks. The system uses pre-calculated attractiveness profiles for efficient simulation with real-time phase switching during simulation based on start time.
 
-The temporal system supports both full-day (24h) and rush hour analysis with 1:1 time mapping (1 sim second = 1 real second). Five attractiveness methods (land_use, poisson, gravity, iac, hybrid) integrate with the 4-phase system for realistic traffic generation.
+The temporal system supports both full-day (24h) and rush hour analysis with 1:1 time mapping (1 sim second = 1 real second). Three attractiveness methods (land_use, poisson, iac) integrate with the 4-phase system for realistic traffic generation.
 
-Key parameters include `--time_dependent` flag to apply 4-phase time-of-day variations, `--start_time_hour` (0-24 hours) to set real-world simulation start time, and `--attractiveness` parameter to select from the five available methods.
+Key parameters include `--time_dependent` flag to apply 4-phase time-of-day variations, `--start_time_hour` (0-24 hours) to set real-world simulation start time, and `--attractiveness` parameter to select from the three available methods.
 
 #### 3.2.6 Land Use Zone Generation
 
@@ -770,7 +770,7 @@ pytest>=7.0.0        # Unit testing framework
 **Zone and Attractiveness Parameters**:
 
 ```bash
---attractiveness STR           # Attractiveness method: land_use/poisson/gravity/iac/hybrid (default: "land_use")
+--attractiveness STR           # Attractiveness method: land_use/poisson/iac (default: "land_use")
 --time_dependent BOOL          # Enable 4-phase temporal variation
 --start_time_hour FLOAT        # Real-world start time 0-24h (default: 7.0)
 --land_use_block_size_m FLOAT  # Zone resolution in meters (default: 25.0)
