@@ -171,13 +171,8 @@ def _validate_departure_pattern(departure_pattern: str) -> None:
         _validate_rush_hours_pattern(departure_pattern)
         return
     
-    # Check for hourly pattern
-    if departure_pattern.startswith("hourly:"):
-        _validate_hourly_pattern(departure_pattern)
-        return
-    
     raise ValidationError(f"Invalid departure pattern: {departure_pattern}. "
-                         f"Valid patterns: 'six_periods', 'uniform', 'rush_hours:...', 'hourly:...'")
+                         f"Valid patterns: 'six_periods', 'uniform', 'rush_hours:...'")
 
 
 def _validate_rush_hours_pattern(pattern: str) -> None:
@@ -234,54 +229,6 @@ def _validate_rush_hours_pattern(pattern: str) -> None:
     
     if abs(total_percentage - 100.0) > 0.01:
         raise ValidationError(f"Rush hours percentages must sum to 100, got {total_percentage}")
-
-
-def _validate_hourly_pattern(pattern: str) -> None:
-    """Validate hourly pattern format."""
-    
-    # Pattern: hourly:7:25,8:35,rest:5
-    pattern_part = pattern[len("hourly:"):]
-    parts = pattern_part.split(",")
-    
-    if len(parts) < 2:
-        raise ValidationError(f"Hourly pattern must have at least one hour:percentage and 'rest' percentage")
-    
-    # Check that last part is 'rest:XX'
-    rest_part = parts[-1]
-    if not rest_part.startswith("rest:"):
-        raise ValidationError(f"Hourly pattern must end with 'rest:XX', got: {rest_part}")
-    
-    try:
-        rest_percentage = float(rest_part[5:])
-        if rest_percentage < 0 or rest_percentage > 100:
-            raise ValidationError(f"Rest percentage must be 0-100, got {rest_percentage}")
-    except ValueError:
-        raise ValidationError(f"Invalid rest percentage in: {rest_part}")
-    
-    # Validate hourly assignments
-    total_percentage = rest_percentage
-    for part in parts[:-1]:
-        if ":" not in part:
-            raise ValidationError(f"Invalid hourly format: {part}")
-        
-        hour_str, percentage_str = part.split(":", 1)
-        try:
-            hour = float(hour_str)
-            if hour < 0 or hour >= 24:
-                raise ValidationError(f"Hour must be 0-24, got {hour}")
-        except ValueError:
-            raise ValidationError(f"Invalid hour in: {part}")
-        
-        try:
-            percentage = float(percentage_str)
-            if percentage < 0 or percentage > 100:
-                raise ValidationError(f"Percentage must be 0-100, got {percentage}")
-            total_percentage += percentage
-        except ValueError:
-            raise ValidationError(f"Invalid percentage in: {part}")
-    
-    if abs(total_percentage - 100.0) > 0.01:
-        raise ValidationError(f"Hourly percentages must sum to 100, got {total_percentage}")
 
 
 

@@ -138,7 +138,7 @@ The T4 implementation addresses the research proposal's vehicle system requireme
 
 #### 3.1.5 Advanced Departure Pattern System
 
-The vehicle system implements a 6-period departure pattern system that replaces sequential departure (0, 1, 2, 3...) with realistic temporal distribution. The system provides configurable departure patterns including six_periods, uniform distribution, custom rush_hours, and granular hourly control.
+The vehicle system implements a 6-period departure pattern system that replaces sequential departure (0, 1, 2, 3...) with realistic temporal distribution. The system provides configurable departure patterns including six_periods, uniform distribution, and custom rush_hours.
 
 The system automatically scales to simulation end_time (default 24 hours) and maintains compatibility with all routing strategies and vehicle types.
 

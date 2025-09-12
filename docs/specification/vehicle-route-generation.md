@@ -92,11 +92,6 @@
 - **Format**: Defines specific rush hour periods with percentages, remainder distributed to other times
 - **Flexibility**: Allows custom peak periods for specific scenarios
 
-**4. Granular Hourly Pattern ("hourly:7:25,8:35,rest:5")**
-
-- **Format**: Assigns specific percentages to individual hours
-- **Control**: Fine-grained temporal control for detailed analysis
-
 ### Routing Strategy System (4-Strategy Classification)
 
 **Routing Strategy Assignment (`--routing_strategy` parameter):**

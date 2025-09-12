@@ -13,7 +13,7 @@ All vehicle types (passenger, commercial, public) follow four fundamental route 
 
 ### Integration with Existing Systems
 
-**Departure Pattern Integration**: Route selection timing follows existing temporal patterns (six_periods, uniform, rush_hours, hourly). Morning rush hours favor in-bound routes to business zones, evening rush hours favor out-bound routes from residential areas.
+**Departure Pattern Integration**: Route selection timing follows existing temporal patterns (six_periods, uniform, rush_hours). Morning rush hours favor in-bound routes to business zones, evening rush hours favor out-bound routes from residential areas.
 
 **Attractiveness Method Integration**: Route endpoints are selected using existing attractiveness methods (land_use, poisson, gravity, iac, hybrid). In-bound routes target high-arrival attractiveness inner edges, out-bound routes originate from high-departure attractiveness inner edges.
 
@@ -72,11 +72,6 @@ Each vehicle type requires four percentage arguments to specify route pattern di
 - Rush Hours + Gravity: Rush hours prefer shorter routes to reduce congestion
 - Rush Hours + IAC: Rush periods emphasize high-accessibility employment areas
 - Rush Hours + Hybrid: Custom temporal weighting of all methods during defined rush periods
-- Hourly + Land Use: Each hour targets different zone types based on hourly weights
-- Hourly + Poisson: Hourly attractiveness modulation of random values
-- Hourly + Gravity: Hourly distance preference adjustments
-- Hourly + IAC: Hour-specific accessibility emphasis
-- Hourly + Hybrid: Hour-by-hour method combination weighting
 
 **Out-bound (Inner → Boundary)**
 - Six Periods + Land Use: Morning from residential, evening from employment zones
@@ -2937,7 +2932,7 @@ MAX_FALLBACK_USAGE_PERCENT = 5  # Maximum acceptable fallback usage
 # Big plan validation constants
 EXPECTED_ROUTE_PATTERN_COUNT = 4  # in, out, inner, pass
 EXPECTED_VEHICLE_TYPES = ['passenger', 'commercial', 'public']
-EXPECTED_DEPARTURE_PATTERNS = ['six_periods', 'uniform', 'rush_hours', 'hourly']
+EXPECTED_DEPARTURE_PATTERNS = ['six_periods', 'uniform', 'rush_hours']
 EXPECTED_ATTRACTIVENESS_METHODS = ['land_use', 'poisson', 'gravity', 'iac', 'hybrid']
 EXPECTED_ROUTING_STRATEGIES = ['shortest', 'realtime', 'fastest', 'attractiveness']
 
@@ -3597,9 +3592,7 @@ def _get_temporal_phase(self, departure_time: int, departure_pattern: str) -> st
                 return 'rush'
         return 'off_peak'
         
-    elif departure_pattern == 'hourly':
-        return f'hour_{int(hour)}'  # Specific hour for granular control
-        
+    
     else:  # uniform
         return 'uniform'  # No temporal preference
 ```
@@ -4621,7 +4614,7 @@ def test_complete_attractiveness_integration_matrix():
     """Test all combinations from big plan matrix."""
     patterns = ['in', 'out', 'inner', 'pass']
     methods = ['land_use', 'poisson', 'gravity', 'iac', 'hybrid']
-    departure_patterns = ['six_periods', 'uniform', 'rush_hours', 'hourly'] 
+    departure_patterns = ['six_periods', 'uniform', 'rush_hours'] 
     vehicle_types = ['passenger', 'commercial', 'public']
     
     for pattern in patterns:
@@ -5541,8 +5534,7 @@ DEPARTURE_PATTERN_DISPATCH_MULTIPLIERS = {       # Dispatch frequency multiplier
     'rush_hours': {
         'rush': 0.5,           # Double frequency during rush
         'off_peak': 1.5        # Reduced frequency off-peak
-    },
-    'hourly': 1.0              # Base frequency, can be modified per hour
+    }
 }
 
 # Route assignment fallback constants
@@ -5902,7 +5894,7 @@ class PublicVehicleManager:
                 else:
                     multiplier = DEPARTURE_PATTERN_DISPATCH_MULTIPLIERS['rush_hours']['off_peak']
                     
-            else:  # uniform or hourly
+            else:  # uniform
                 multiplier = DEPARTURE_PATTERN_DISPATCH_MULTIPLIERS.get(departure_pattern, 1.0)
             
             # Calculate final frequency

@@ -63,7 +63,7 @@ def generate_vehicle_routes(net_file: str | Path,
         routing_strategy: Routing strategy specification (e.g., "shortest 70 realtime 30")
         vehicle_types: Vehicle types specification (e.g., "passenger 70 commercial 20 public 10")
         end_time: Total simulation duration in seconds for temporal distribution
-        departure_pattern: Departure pattern ("six_periods", "uniform", "rush_hours:7-9:40,17-19:30", "hourly:...")
+        departure_pattern: Departure pattern ("six_periods", "uniform", "rush_hours:7-9:40,17-19:30")
     """
     # Create separate RNGs for private and public traffic
     private_rng = random.Random(private_traffic_seed)
@@ -180,8 +180,6 @@ def _generate_departure_time(rng, departure_pattern: str, end_time: int) -> int:
     elif departure_pattern.startswith("rush_hours:"):
         return _generate_rush_hours_departure(rng, departure_pattern, end_time)
 
-    elif departure_pattern.startswith("hourly:"):
-        return _generate_hourly_departure(rng, departure_pattern, end_time)
 
     else:
         # Default to six_periods if unknown pattern
@@ -284,39 +282,6 @@ def _generate_rush_hours_departure(rng, pattern: str, end_time: int) -> int:
     return int(departure_time)
 
 
-def _generate_hourly_departure(rng, pattern: str, end_time: int) -> int:
-    """
-    Generate departure time using hourly weights.
-    Format: "hourly:7:25,8:35,9:20,17:30,18:25,19:15,rest:5"
-    """
-    # Parse pattern
-    parts = pattern.split(":", 1)[1].split(",")
-    hourly_weights = {}
-    rest_weight = 5
-
-    for part in parts:
-        if part.startswith("rest:"):
-            rest_weight = int(part.split(":")[1])
-        else:
-            hour, weight = part.split(":")
-            hourly_weights[int(hour)] = int(weight)
-
-    # Create 24-hour weight array
-    weights = [rest_weight] * 24
-    for hour, weight in hourly_weights.items():
-        weights[hour] = weight
-
-    # Choose hour
-    chosen_hour = rng.choices(range(24), weights=weights)[0]
-
-    # Generate time within chosen hour
-    scale_factor = end_time / 86400
-    hour_start = chosen_hour * 3600 * scale_factor
-    hour_end = (chosen_hour + 1) * 3600 * scale_factor
-    departure_time = rng.uniform(hour_start, min(
-        hour_end, end_time * SIMULATION_END_FACTOR_SIX_PERIODS))
-
-    return int(departure_time)
 
 
 def execute_route_generation(args) -> None:

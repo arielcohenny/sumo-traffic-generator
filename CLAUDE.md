@@ -556,7 +556,7 @@ dbps
 - **Vehicle Departure Patterns**:
   - Replaced sequential departure (0, 1, 2, 3...) with realistic temporal distribution based on research papers
   - Default: six_periods system with research-based 6-period daily structure (Morning 20%, Morning Rush 30%, Noon 25%, Evening Rush 20%, Evening 4%, Night 1%)
-  - Alternative patterns: uniform distribution, custom rush_hours, granular hourly control
+  - Alternative patterns: uniform distribution, custom rush_hours
   - Automatically scales to simulation end_time (default 24 hours)
   - Compatible with all routing strategies and vehicle types
   - CLI support via --traffic_light_strategy parameter

@@ -101,7 +101,6 @@ Vehicle departure timing pattern.
   - `uniform`: Even distribution across simulation time (default)
   - `six_periods`: Research-based daily structure (Morning 20%, Morning Rush 30%, Noon 25%, Evening Rush 20%, Evening 4%, Night 1%)
   - `rush_hours:7-9:40,17-19:30,rest:10`: Custom rush hour definition
-  - `hourly:7:25,8:35,rest:5`: Granular hourly control
 - **Example**: `--departure_pattern uniform`
 
 ### Simulation Control Arguments

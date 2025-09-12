@@ -215,7 +215,7 @@ class ParameterWidgets:
         params["vehicle_types"] = f"passenger {passenger_pct} commercial {commercial_pct} public {public_pct}"
 
         # Departure pattern
-        departure_options = ["six_periods", "uniform", "rush_hours", "hourly"]
+        departure_options = ["six_periods", "uniform", "rush_hours"]
         departure_pattern = st.selectbox(
             "Departure Pattern",
             departure_options,

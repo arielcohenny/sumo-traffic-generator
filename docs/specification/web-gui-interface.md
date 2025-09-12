@@ -168,7 +168,6 @@ open http://localhost:8501
   - "Six Periods" (research-based daily pattern)
   - "Uniform" (even distribution)
   - "Custom Rush Hours" (opens time configuration)
-  - "Custom Hourly" (opens hourly weight configuration)
 - **Conditional Inputs**: Additional time configuration widgets based on selection
 
 #### 3. **Simulation Control Section**

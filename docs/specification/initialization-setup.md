@@ -85,7 +85,6 @@ Vehicle departure timing. Four patterns available:
 - `six_periods`: Research-based daily structure
 - `uniform`: Even distribution
 - `rush_hours:7-9:40,17-19:30,rest:10`: Custom rush hour definition
-- `hourly:7:25,8:35,rest:5`: Granular hourly control
 
 ### `--routing_strategy` (str, default: "shortest 100")
 
@@ -318,7 +317,6 @@ D1E1=tail:2,head:
 - **Needed Checks**:
   - Valid pattern names: {"six_periods", "uniform"}
   - Format validation for "rush_hours:7-9:40,17-19:30,rest:10"
-  - Format validation for "hourly:7:25,8:35,rest:5"
   - Hour range validation (0-24)
   - Percentage validation for custom patterns
   - Time range validation (start < end hours)
