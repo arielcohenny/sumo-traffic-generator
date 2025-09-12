@@ -69,7 +69,6 @@ class TestSyntheticGridScenarios:
             "--num_vehicles", "200",  # Reduced from 800
             "--step-length", "1.0",
             "--departure_pattern", "six_periods",
-            "--start_time_hour", "7.0",
             "--seed", "42"
         ])
 
