@@ -81,7 +81,7 @@ STEP_LENGTH_STEP = 1.0
 # End Time (Duration)
 DEFAULT_END_TIME = 7200  # 2 hours in seconds
 MIN_END_TIME = 1
-MAX_END_TIME = 172800  # 48 hours in seconds
+MAX_END_TIME = 86400  # 24 hours in seconds
 STEP_END_TIME = 3600  # 1 hour increments
 
 # =============================================================================
@@ -146,7 +146,7 @@ DEFAULT_REST_PCT = 30
 # Chart Display
 DEFAULT_CHART_HEIGHT = 400
 
-# Error Log Display  
+# Error Log Display
 ERROR_LOG_TRUNCATE_LIMIT = 2000
 
 # File Handling

@@ -214,7 +214,7 @@ open http://localhost:8501
 **Simulation Duration**
 
 - **Widget**: Slider with time unit conversion
-- **Range**: 1-172,800 seconds (default: 7200s/2 hours)
+- **Range**: 1-86,400 seconds (default: 7200s/2 hours)
 - **Display**: Multiple time formats (seconds, minutes, hours)
 - **Presets**: Quick selection buttons (30min, 1hr, 2hr, 4hr, 8hr)
 

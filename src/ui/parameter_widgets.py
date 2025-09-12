@@ -18,7 +18,7 @@ from src.constants import (
     DEFAULT_START_TIME_HOUR, DEFAULT_BOTTLENECK_DETECTION_INTERVAL, DEFAULT_ATLCS_INTERVAL,
     DEFAULT_TREE_METHOD_INTERVAL, DEFAULT_ATTRACTIVENESS, DEFAULT_LANE_COUNT,
     DEFAULT_DEPARTURE_PATTERN, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL,
-    
+
     # Min/Max Values
     MIN_GRID_DIMENSION, MAX_GRID_DIMENSION, MIN_BLOCK_SIZE_M, MAX_BLOCK_SIZE_M,
     MIN_LANE_COUNT, MAX_LANE_COUNT, MIN_NUM_VEHICLES, MAX_NUM_VEHICLES,
@@ -27,15 +27,15 @@ from src.constants import (
     MIN_START_TIME_HOUR, MAX_START_TIME_HOUR, MIN_BOTTLENECK_DETECTION_INTERVAL,
     MAX_BOTTLENECK_DETECTION_INTERVAL, MIN_ATLCS_INTERVAL, MAX_ATLCS_INTERVAL,
     MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL,
-    
+
     # Step Values
     STEP_BLOCK_SIZE_M, STEP_NUM_VEHICLES, STEP_LENGTH_STEP, STEP_END_TIME,
     STEP_LAND_USE_BLOCK_SIZE_M, STEP_START_TIME_HOUR, STEP_TREE_METHOD_INTERVAL,
-    
+
     # Rush Hours Values
     DEFAULT_MORNING_START, DEFAULT_MORNING_END, DEFAULT_MORNING_PCT,
     DEFAULT_EVENING_START, DEFAULT_EVENING_END, DEFAULT_EVENING_PCT, DEFAULT_REST_PCT,
-    
+
     # Other Constants
     TEMP_FILE_PREFIX, DEFAULT_WORKSPACE_DIR
 )
@@ -50,7 +50,6 @@ class ParameterWidgets:
         params = {}
 
         st.subheader("🏗️ Network Configuration")
-
 
         params["grid_dimension"] = st.number_input(
             "Grid Dimension",
@@ -140,37 +139,37 @@ class ParameterWidgets:
 
         with routing_col1:
             shortest_pct = st.number_input(
-                "Shortest %", 
-                min_value=MIN_PERCENTAGE, 
-                max_value=MAX_PERCENTAGE, 
-                value=DEFAULT_SHORTEST_ROUTING_PCT, 
+                "Shortest %",
+                min_value=MIN_PERCENTAGE,
+                max_value=MAX_PERCENTAGE,
+                value=DEFAULT_SHORTEST_ROUTING_PCT,
                 key="shortest",
                 help="Static shortest path by distance using Dijkstra algorithm. Routes computed once, never change during simulation. Minimizes total distance traveled."
             )
         with routing_col2:
             realtime_pct = st.number_input(
-                "Realtime %", 
-                min_value=MIN_PERCENTAGE, 
-                max_value=MAX_PERCENTAGE, 
-                value=DEFAULT_REALTIME_ROUTING_PCT, 
+                "Realtime %",
+                min_value=MIN_PERCENTAGE,
+                max_value=MAX_PERCENTAGE,
+                value=DEFAULT_REALTIME_ROUTING_PCT,
                 key="realtime",
                 help="Dynamic routing that responds to current traffic conditions. 30-second rerouting intervals. Uses real-time traffic data to avoid congestion, like GPS apps that reroute around traffic jams. → 'What's fastest RIGHT NOW?' (reacts to live traffic)"
             )
         with routing_col3:
             fastest_pct = st.number_input(
-                "Fastest %", 
-                min_value=MIN_PERCENTAGE, 
-                max_value=MAX_PERCENTAGE, 
-                value=DEFAULT_FASTEST_ROUTING_PCT, 
+                "Fastest %",
+                min_value=MIN_PERCENTAGE,
+                max_value=MAX_PERCENTAGE,
+                value=DEFAULT_FASTEST_ROUTING_PCT,
                 key="fastest",
                 help="Dynamic routing optimized for minimum travel time. 45-second rerouting intervals. Focuses on speed/time rather than distance - may choose longer routes if they're faster. → 'What's typically the fastest route?' (optimizes for speed patterns)"
             )
         with routing_col4:
             attractiveness_pct = st.number_input(
-                "Attractiveness %", 
-                min_value=MIN_PERCENTAGE, 
-                max_value=MAX_PERCENTAGE, 
-                value=DEFAULT_ATTRACTIVENESS_ROUTING_PCT, 
+                "Attractiveness %",
+                min_value=MIN_PERCENTAGE,
+                max_value=MAX_PERCENTAGE,
+                value=DEFAULT_ATTRACTIVENESS_ROUTING_PCT,
                 key="attractiveness",
                 help="Multi-criteria routing combining efficiency + destination appeal. Balances shortest/fastest path with attractiveness of areas. Simulates drivers choosing scenic or interesting routes."
             )
@@ -262,7 +261,7 @@ class ParameterWidgets:
             help="Single seed sets all seeds to the same value (backward compatible). "
                  "Multiple seeds allow fine-grained control over network vs traffic generation."
         )
-        
+
         if seed_mode == "Single Seed (Simple)":
             # Original single seed behavior for backward compatibility
             use_random_seed = st.checkbox("Use Random Seed", value=True)
@@ -287,22 +286,27 @@ class ParameterWidgets:
                 )
         else:
             # Multiple seeds mode for advanced control
-            st.markdown("**Configure seeds for different simulation aspects:**")
-            
+            st.markdown(
+                "**Configure seeds for different simulation aspects:**")
+
             # Initialize session state for seeds with independent random values
             import random
             if 'multi_network_seed' not in st.session_state:
-                st.session_state.multi_network_seed = random.randint(MIN_SEED, MAX_SEED)
+                st.session_state.multi_network_seed = random.randint(
+                    MIN_SEED, MAX_SEED)
             if 'multi_private_seed' not in st.session_state:
-                st.session_state.multi_private_seed = random.randint(MIN_SEED, MAX_SEED)
+                st.session_state.multi_private_seed = random.randint(
+                    MIN_SEED, MAX_SEED)
             if 'multi_public_seed' not in st.session_state:
-                st.session_state.multi_public_seed = random.randint(MIN_SEED, MAX_SEED)
-            
+                st.session_state.multi_public_seed = random.randint(
+                    MIN_SEED, MAX_SEED)
+
             col1, col2, col3 = st.columns(3)
-            
+
             with col1:
                 st.markdown("**Network Structure**")
-                st.caption("Junction removal, lanes, land use, edge attractiveness")
+                st.caption(
+                    "Junction removal, lanes, land use, edge attractiveness")
                 params["network-seed"] = st.number_input(
                     "Network Seed",
                     min_value=MIN_SEED,
@@ -312,7 +316,7 @@ class ParameterWidgets:
                 )
                 # Update session state when user changes value manually
                 st.session_state.multi_network_seed = params["network-seed"]
-            
+
             with col2:
                 st.markdown("**Private Traffic**")
                 st.caption("Passenger & commercial vehicles")
@@ -325,7 +329,7 @@ class ParameterWidgets:
                 )
                 # Update session state when user changes value manually
                 st.session_state.multi_private_seed = params["private-traffic-seed"]
-            
+
             with col3:
                 st.markdown("**Public Traffic**")
                 st.caption("Public transportation vehicles")
@@ -338,12 +342,15 @@ class ParameterWidgets:
                 )
                 # Update session state when user changes value manually
                 st.session_state.multi_public_seed = params["public-traffic-seed"]
-            
+
             # Generate completely independent seeds
             if st.button("Generate New Seeds"):
-                st.session_state.multi_network_seed = random.randint(MIN_SEED, MAX_SEED)
-                st.session_state.multi_private_seed = random.randint(MIN_SEED, MAX_SEED)
-                st.session_state.multi_public_seed = random.randint(MIN_SEED, MAX_SEED)
+                st.session_state.multi_network_seed = random.randint(
+                    MIN_SEED, MAX_SEED)
+                st.session_state.multi_private_seed = random.randint(
+                    MIN_SEED, MAX_SEED)
+                st.session_state.multi_public_seed = random.randint(
+                    MIN_SEED, MAX_SEED)
                 st.rerun()
 
         params["step_length"] = st.number_input(
@@ -359,7 +366,7 @@ class ParameterWidgets:
         params["end_time"] = st.number_input(
             "Simulation Duration (seconds)",
             min_value=MIN_END_TIME,
-            max_value=MAX_END_TIME,  # 48 hours in seconds
+            max_value=MAX_END_TIME,  # 24 hours in seconds
             value=DEFAULT_END_TIME,  # 24 hours in seconds
             step=STEP_END_TIME,  # 1 hour increments
             help="How long to run the simulation in seconds"
@@ -370,7 +377,7 @@ class ParameterWidgets:
             value=False,
             help="Open visual simulation interface (slower but interactive)"
         )
-        
+
         params["workspace"] = st.text_input(
             "Workspace Directory",
             value=DEFAULT_WORKSPACE_DIR,
