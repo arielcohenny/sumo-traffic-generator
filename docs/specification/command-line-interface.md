@@ -170,7 +170,8 @@ Simulation duration in seconds.
 - **Range**: 1-86,400 seconds (24 hours)
 - **Default**: 7200 seconds (2 hours)
 - **Step**: 3600 second (1 hour) increments recommended
-- **Example**: `--end-time 3600` (1 hour simulation)
+- **Constraint**: Only configurable with `uniform` departure pattern; other patterns require 86,400s (24 hours)
+- **Example**: `--end-time 3600` (1 hour simulation with uniform pattern)
 
 #### `--gui` (flag)
 
@@ -229,7 +230,8 @@ Real-world hour when simulation starts (0-24) for temporal attractiveness.
 - **Range**: 0.0-24.0 hours
 - **Step**: 0.5 hour increments
 - **Used with**: `--time_dependent` flag
-- **Example**: `--start_time_hour 7.5` (7:30 AM start)
+- **Constraint**: Only configurable with `uniform` departure pattern; other patterns require 0.0 (midnight)
+- **Example**: `--start_time_hour 7.5` (7:30 AM start with uniform pattern)
 
 ### Traffic Control Arguments
 

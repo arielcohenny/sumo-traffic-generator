@@ -37,7 +37,10 @@ from src.constants import (
     DEFAULT_EVENING_START, DEFAULT_EVENING_END, DEFAULT_EVENING_PCT, DEFAULT_REST_PCT,
 
     # Other Constants
-    TEMP_FILE_PREFIX, DEFAULT_WORKSPACE_DIR
+    TEMP_FILE_PREFIX, DEFAULT_WORKSPACE_DIR,
+    
+    # Departure Pattern Constraints
+    UNIFORM_DEPARTURE_PATTERN, FIXED_START_TIME_HOUR, FIXED_END_TIME
 )
 
 
@@ -213,7 +216,7 @@ class ParameterWidgets:
 
         params["vehicle_types"] = f"passenger {passenger_pct} commercial {commercial_pct} public {public_pct}"
 
-        # Departure pattern
+        # Departure pattern with session state for cross-section coordination
         departure_options = ["six_periods", "uniform", "rush_hours"]
         departure_pattern = st.selectbox(
             "Departure Pattern",
@@ -221,6 +224,13 @@ class ParameterWidgets:
             index=departure_options.index(DEFAULT_DEPARTURE_PATTERN),
             help="How vehicles are distributed over time"
         )
+        
+        # Store in session state for other sections to access
+        st.session_state.departure_pattern = departure_pattern
+        
+        # Show constraint info for non-uniform patterns
+        if departure_pattern != UNIFORM_DEPARTURE_PATTERN:
+            st.info("ℹ️ **Time constraints**: Non-uniform patterns require midnight start (0.0h) and 24-hour duration (86400s) for realistic daily cycles.")
 
         if departure_pattern == "rush_hours":
             st.write("Custom Rush Hours Pattern:")
@@ -362,15 +372,40 @@ class ParameterWidgets:
             help="Simulation time step granularity in complete seconds"
         )
 
-        # Time input in seconds (no conversion)
-        params["end_time"] = st.number_input(
-            "Simulation Duration (seconds)",
-            min_value=MIN_END_TIME,
-            max_value=MAX_END_TIME,  # 24 hours in seconds
-            value=DEFAULT_END_TIME,  # 24 hours in seconds
-            step=STEP_END_TIME,  # 1 hour increments
-            help="How long to run the simulation in seconds"
-        )
+        # Time input with departure pattern constraints
+        departure_pattern = st.session_state.get('departure_pattern', DEFAULT_DEPARTURE_PATTERN)
+        is_uniform_pattern = departure_pattern == UNIFORM_DEPARTURE_PATTERN
+        
+        if is_uniform_pattern:
+            # Show normal end_time control for uniform pattern
+            params["end_time"] = st.number_input(
+                "Simulation Duration (seconds)",
+                min_value=MIN_END_TIME,
+                max_value=MAX_END_TIME,
+                value=DEFAULT_END_TIME,
+                step=STEP_END_TIME,
+                help="How long to run the simulation in seconds"
+            )
+        else:
+            # Fixed duration for non-uniform patterns
+            params["end_time"] = FIXED_END_TIME
+            st.info(f"🕐 **Fixed Duration**: {FIXED_END_TIME:,} seconds (24 hours) - required for '{departure_pattern}' pattern")
+
+        # Start time with departure pattern constraints
+        if is_uniform_pattern:
+            # Show normal start_time_hour control for uniform pattern
+            params["start_time_hour"] = st.slider(
+                "Simulation Start Time (hour)",
+                min_value=MIN_START_TIME_HOUR,
+                max_value=MAX_START_TIME_HOUR,
+                value=DEFAULT_START_TIME_HOUR,
+                step=STEP_START_TIME_HOUR,
+                help="Real-world hour when simulation begins (0 = midnight)"
+            )
+        else:
+            # Fixed start time for non-uniform patterns
+            params["start_time_hour"] = FIXED_START_TIME_HOUR
+            st.info(f"🌙 **Fixed Start Time**: {FIXED_START_TIME_HOUR} hours (midnight) - required for '{departure_pattern}' pattern")
 
         params["gui"] = st.checkbox(
             "Launch SUMO GUI",
@@ -413,15 +448,6 @@ class ParameterWidgets:
         params["time_dependent"] = st.checkbox(
             "Time-Dependent Attractiveness",
             help="Apply 4-phase time-of-day variations"
-        )
-
-        params["start_time_hour"] = st.slider(
-            "Simulation Start Time (hour)",
-            min_value=MIN_START_TIME_HOUR,
-            max_value=MAX_START_TIME_HOUR,
-            value=DEFAULT_START_TIME_HOUR,
-            step=STEP_START_TIME_HOUR,
-            help="Real-world hour when simulation begins (0 = midnight)"
         )
 
         return params

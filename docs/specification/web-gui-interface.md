@@ -213,10 +213,19 @@ open http://localhost:8501
 
 **Simulation Duration**
 
-- **Widget**: Slider with time unit conversion
+- **Widget**: Slider with time unit conversion (conditionally enabled)
 - **Range**: 1-86,400 seconds (default: 7200s/2 hours)
 - **Display**: Multiple time formats (seconds, minutes, hours)
 - **Presets**: Quick selection buttons (30min, 1hr, 2hr, 4hr, 8hr)
+- **Constraint**: Only configurable with `uniform` departure pattern; fixed at 86,400s (24h) for other patterns
+
+**Simulation Start Time**
+
+- **Widget**: Time picker with 24-hour format (conditionally enabled)
+- **Range**: 0.0-24.0 hours (step: 0.5 hours)
+- **Display**: Both 24-hour (14:30) and 12-hour (2:30 PM) formats
+- **Integration**: Works with time dependency and departure patterns
+- **Constraint**: Only configurable with `uniform` departure pattern; fixed at 0.0 (midnight) for other patterns
 
 **SUMO GUI Option**
 
@@ -248,14 +257,6 @@ open http://localhost:8501
 
 - **Widget**: Checkbox with temporal pattern preview
 - **Description**: "Apply 4-phase temporal variations (morning peak, midday, evening peak, night)"
-- **Conditional**: Enables start time hour selection
-
-**Start Time Hour**
-
-- **Widget**: Time picker with 24-hour format
-- **Range**: 0.0-24.0 hours (step: 0.5 hours)
-- **Display**: Both 24-hour (14:30) and 12-hour (2:30 PM) formats
-- **Integration**: Works with time dependency and departure patterns
 
 #### 5. **Traffic Control Section**
 

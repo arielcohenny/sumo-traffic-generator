@@ -10,6 +10,12 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from src.config import CONFIG
+from src.constants import (
+    UNIFORM_DEPARTURE_PATTERN, FIXED_START_TIME_HOUR, FIXED_END_TIME,
+    DEFAULT_START_TIME_HOUR, DEFAULT_END_TIME,
+    SENTINEL_START_TIME_HOUR, SENTINEL_END_TIME
+)
+from src.utils.logging import get_logger
 from typing import Tuple, List, Dict, Any
 
 try:
@@ -32,6 +38,9 @@ def validate_arguments(args) -> None:
         ValidationError: If any argument is invalid
     """
     
+    # FIRST: Smart parameter fixing for departure pattern constraints
+    _smart_fix_departure_pattern_constraints(args)
+    
     # Individual argument validations
     _validate_numeric_ranges(args)
     _validate_routing_strategy(args.routing_strategy)
@@ -50,6 +59,7 @@ def validate_arguments(args) -> None:
     
     # NEW: Custom lanes cross-validation
     _validate_custom_lanes_cross_arguments(args)
+    
 
 
 def _validate_numeric_ranges(args) -> None:
@@ -486,3 +496,53 @@ def _validate_sample_arguments(args) -> None:
         
     if incompatible:
         raise ValidationError(f"--tree_method_sample incompatible with: {', '.join(incompatible)}")
+
+
+def _smart_fix_departure_pattern_constraints(args) -> None:
+    """Smart parameter fixing for departure pattern constraints.
+    
+    Auto-fixes sentinel values (not explicitly provided by user) but validates
+    explicit values and shows errors if they are incorrect.
+    
+    Args:
+        args: Parsed command line arguments (modified in place)
+        
+    Raises:
+        ValidationError: If user explicitly provided incorrect values
+    """
+    logger = get_logger(__name__)
+    
+    if args.departure_pattern != UNIFORM_DEPARTURE_PATTERN:
+        # Handle start_time_hour
+        if args.start_time_hour == SENTINEL_START_TIME_HOUR:
+            # User didn't provide this parameter, auto-fix it
+            args.start_time_hour = FIXED_START_TIME_HOUR
+            logger.info(f"Auto-setting start_time_hour to {FIXED_START_TIME_HOUR} for '{args.departure_pattern}' pattern")
+        elif args.start_time_hour != FIXED_START_TIME_HOUR:
+            # User explicitly provided wrong value
+            raise ValidationError(
+                f"start_time_hour must be {FIXED_START_TIME_HOUR} for '{args.departure_pattern}' "
+                f"departure pattern (got {args.start_time_hour}). "
+                f"Only '{UNIFORM_DEPARTURE_PATTERN}' pattern allows custom start times."
+            )
+        
+        # Handle end_time
+        if args.end_time == SENTINEL_END_TIME:
+            # User didn't provide this parameter, auto-fix it
+            args.end_time = FIXED_END_TIME
+            logger.info(f"Auto-setting end_time to {FIXED_END_TIME} for '{args.departure_pattern}' pattern")
+        elif args.end_time != FIXED_END_TIME:
+            # User explicitly provided wrong value
+            raise ValidationError(
+                f"end_time must be {FIXED_END_TIME} seconds (24 hours) for '{args.departure_pattern}' "
+                f"departure pattern (got {args.end_time}). "
+                f"Only '{UNIFORM_DEPARTURE_PATTERN}' pattern allows custom durations."
+            )
+    else:
+        # For uniform pattern, convert sentinel values to real defaults
+        if args.start_time_hour == SENTINEL_START_TIME_HOUR:
+            args.start_time_hour = DEFAULT_START_TIME_HOUR
+        if args.end_time == SENTINEL_END_TIME:
+            args.end_time = DEFAULT_END_TIME
+
+

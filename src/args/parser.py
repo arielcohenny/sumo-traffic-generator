@@ -15,7 +15,8 @@ from src.constants import (
     DEFAULT_START_TIME_HOUR, DEFAULT_TRAFFIC_LIGHT_STRATEGY, 
     DEFAULT_TRAFFIC_CONTROL, DEFAULT_BOTTLENECK_DETECTION_INTERVAL,
     DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL,
-    MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL, DEFAULT_WORKSPACE_DIR
+    MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL, DEFAULT_WORKSPACE_DIR,
+    UNIFORM_DEPARTURE_PATTERN, SENTINEL_START_TIME_HOUR, SENTINEL_END_TIME
 )
 
 
@@ -151,8 +152,8 @@ def _add_simulation_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--end-time",
         type=int,
-        default=DEFAULT_END_TIME,
-        help=f"Total simulation duration in seconds. Default is {DEFAULT_END_TIME} (2 hours)."
+        default=SENTINEL_END_TIME,
+        help=f"Total simulation duration in seconds. Default is {DEFAULT_END_TIME} (2 hours). Note: Only configurable with '{UNIFORM_DEPARTURE_PATTERN}' departure pattern; other patterns require 86400s (24h)."
     )
     parser.add_argument(
         "--gui",
@@ -190,8 +191,8 @@ def _add_zone_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--start_time_hour",
         type=float,
-        default=DEFAULT_START_TIME_HOUR,
-        help=f"Real-world hour when simulation starts (0-24, default: {DEFAULT_START_TIME_HOUR} for midnight)"
+        default=SENTINEL_START_TIME_HOUR,
+        help=f"Real-world hour when simulation starts (0-24, default: {DEFAULT_START_TIME_HOUR} for midnight). Note: Only configurable with '{UNIFORM_DEPARTURE_PATTERN}' departure pattern; other patterns require 0.0 (midnight)."
     )
 
 

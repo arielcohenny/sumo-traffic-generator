@@ -62,6 +62,15 @@ MAX_PERCENTAGE = 100
 
 # Departure Patterns
 DEFAULT_DEPARTURE_PATTERN = 'uniform'
+UNIFORM_DEPARTURE_PATTERN = 'uniform'  # For constraint checking
+
+# Departure Pattern Time Constraints
+FIXED_START_TIME_HOUR = 0.0    # Midnight start for non-uniform patterns
+FIXED_END_TIME = 86400         # 24 hours for non-uniform patterns (same as MAX_END_TIME)
+
+# Sentinel Values (to detect if user explicitly provided parameters)
+SENTINEL_START_TIME_HOUR = -999.0  # Impossible start time to detect defaults
+SENTINEL_END_TIME = -999           # Impossible end time to detect defaults
 
 # =============================================================================
 # SIMULATION CONSTANTS
