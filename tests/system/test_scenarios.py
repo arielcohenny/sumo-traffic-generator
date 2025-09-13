@@ -66,7 +66,7 @@ class TestSyntheticGridScenarios:
             "--grid_dimension", "5",
             "--block_size_m", "150",
             "--junctions_to_remove", "1",
-            "--num_vehicles", "200",  # Reduced from 800
+            "--num_vehicles", "200",
             "--step-length", "1.0",
             "--departure_pattern", "six_periods",
             "--seed", "42"
