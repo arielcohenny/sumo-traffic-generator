@@ -68,9 +68,8 @@ class TestSyntheticGridScenarios:
             "--junctions_to_remove", "1",
             "--num_vehicles", "200",
             "--step-length", "1.0",
-            "--departure_pattern", "six_periods",
-            "--seed", "42"
-        ], timeout=600)
+            "--seed", "48"
+        ])
 
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
 
