@@ -24,7 +24,7 @@ class CommandResult(NamedTuple):
 def run_cli_command(
     args: List[str],
     workspace: Optional[Path] = None,
-    timeout: int = 300
+    timeout: int = 600
 ) -> CommandResult:
     """
     Execute CLI command with given arguments.

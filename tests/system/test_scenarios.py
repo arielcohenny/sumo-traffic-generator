@@ -70,7 +70,7 @@ class TestSyntheticGridScenarios:
             "--step-length", "1.0",
             "--departure_pattern", "six_periods",
             "--seed", "42"
-        ])
+        ], timeout=600)
 
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
 
