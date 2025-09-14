@@ -215,21 +215,12 @@ Departure and arrival attractiveness calculation method.
   - `iac`: Intersection accessibility calculation
 - **Example**: `--attractiveness land_use`
 
-#### `--time_dependent` (flag)
-
-Apply 4-phase temporal variations to attractiveness values.
-
-- **Phases**: Morning peak, midday, evening peak, night
-- **Requires**: `--start_time_hour` for proper phase calculation
-- **Example**: `--time_dependent --start_time_hour 7.0`
-
 #### `--start_time_hour` (float, default: 0.0)
 
 Real-world hour when simulation starts (0-24) for temporal attractiveness.
 
 - **Range**: 0.0-24.0 hours
 - **Step**: 0.5 hour increments
-- **Used with**: `--time_dependent` flag
 - **Constraint**: Only configurable with `uniform` departure pattern; other patterns require 0.0 (midnight)
 - **Example**: `--start_time_hour 7.5` (7:30 AM start with uniform pattern)
 
@@ -352,7 +343,6 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 6 --num_vehicles 1000 
 env PYTHONUNBUFFERED=1 python -m src.cli \
   --departure_pattern "rush_hours:7-9:60,17-19:30,rest:10" \
   --start_time_hour 7.0 \
-  --time_dependent \
   --num_vehicles 1500
 ```
 

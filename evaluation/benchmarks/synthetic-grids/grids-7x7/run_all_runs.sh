@@ -88,7 +88,6 @@ def generate_experiment_combinations(config):
             'lane_assignment': shared['lane_assignment'],
             'attractiveness': shared['attractiveness'],
             'step_length': shared['step_length'],
-            'time_dependent': shared['time_dependent'],
             'traffic_control_methods': shared['traffic_control_methods']
         }
         experiments.append(experiment)
@@ -184,7 +183,6 @@ BASE_PARAMS="--grid_dimension {experiment['grid_dimension']} \\
 --lane_count {experiment['lane_assignment']} \\
 --attractiveness {experiment['attractiveness']} \\
 --step-length {experiment['step_length']} \\
-{('--time_dependent' if experiment['time_dependent'] else '')} \\
 --seed ${{SEED:-42}}"
 
 # Run each traffic control method

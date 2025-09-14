@@ -104,8 +104,6 @@ def generate_command_line(params: Dict[str, Any]) -> str:
     cmd_parts.append(
         f"--attractiveness {params.get('attractiveness', DEFAULT_ATTRACTIVENESS)}")
 
-    if params.get('time_dependent', False):
-        cmd_parts.append("--time_dependent")
 
     cmd_parts.append(
         f"--start_time_hour {params.get('start_time_hour', DEFAULT_START_TIME_HOUR)}")
@@ -194,8 +192,6 @@ def convert_params_to_args(params: Dict[str, Any]) -> argparse.Namespace:
     args_list.extend(
         ["--attractiveness", params.get("attractiveness", DEFAULT_ATTRACTIVENESS)])
 
-    if params.get("time_dependent", False):
-        args_list.append("--time_dependent")
 
     args_list.extend(
         ["--start_time_hour", str(params.get("start_time_hour", DEFAULT_START_TIME_HOUR))])

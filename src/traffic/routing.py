@@ -183,8 +183,10 @@ class AttractivenessRoutingStrategy(RoutingStrategy):
         for edge_id in route_edges:
             try:
                 edge = self.net.getEdge(edge_id)
-                # Get attractiveness from edge attributes if available
-                arrive_attr = getattr(edge, 'arrive_attractiveness', None)
+                # Get attractiveness from phase-specific attributes if available
+                current_phase = getattr(edge, 'current_phase', 'morning_peak')
+                arrive_attr_name = f"{current_phase}_arrive_attractiveness"
+                arrive_attr = getattr(edge, arrive_attr_name, None)
                 if arrive_attr is not None:
                     attractiveness_score += float(arrive_attr)
                     valid_edges += 1

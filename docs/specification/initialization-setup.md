@@ -29,13 +29,16 @@
 
 ### `--grid_dimension` (float, default: 5)
 
-Defines the grid's number of rows and columns for synthetic network generation. 
+Defines the grid's number of rows and columns for synthetic network generation.
+
 ### `--block_size_m` (int, default: 200)
 
-Sets block size in meters for grid network generation. 
+Sets block size in meters for grid network generation.
+
 ### `--junctions_to_remove` (str, default: "0")
 
-Number of junctions to remove or comma-separated list of specific junction IDs (e.g., "5" or "A0,B1,C2"). 
+Number of junctions to remove or comma-separated list of specific junction IDs (e.g., "5" or "A0,B1,C2").
+
 ### `--lane_count` (str, default: "realistic")
 
 Sets the lane count. 3 algorithms are available:
@@ -68,13 +71,9 @@ Sets the departure and arrival attractiveness of each edge. Three methods availa
 - `poisson`: Random distribution
 - `iac`: Intersection accessibility calculation
 
-### `--time_dependent` (flag)
-
-Applies 4-phase variations to synthetic zone attractiveness.
-
 ### `--start_time_hour` (float, default: 0.0)
 
-Real-world hour when simulation starts (0-24) for temporal attractiveness. Used with `--time_dependent` for phase calculation.
+Real-world hour when simulation starts (0-24) for temporal attractiveness. Used for 4-phase variation calculation.
 
 ### `--departure_pattern` (str, default: "uniform")
 
@@ -103,7 +102,8 @@ Vehicle type distribution. Three types with percentage assignment:
 
 ### `--traffic_light_strategy` (str, default: "opposites")
 
-Applied strategies for traffic lights. Two strategies available. 
+Applied strategies for traffic lights. Two strategies available.
+
 - `opposites`: Opposing directions signal together
 - `incoming`: Each edge gets separate phase
 
@@ -203,7 +203,6 @@ python -m src.cli --traffic_control atlcs --tree-method-interval 90 --bottleneck
 ### `--gui` (flag)
 
 Launch SUMO GUI.
-
 
 ### `--land_use_block_size_m` (float, default: 25.0)
 
@@ -319,7 +318,6 @@ D1E1=tail:2,head:
   - Percentage validation for custom patterns
   - Time range validation (start < end hours)
 
-
 ### Numeric Range Validations
 
 - **Current**: Basic type checking only
@@ -354,7 +352,6 @@ D1E1=tail:2,head:
 - **Current**: Not implemented
 - **Needed Checks**:
   - Tree Method sample vs grid parameters (mutually exclusive usage)
-  - Time-dependent features requiring appropriate end-time duration
   - Grid dimension vs junctions to remove capacity limits
   - Traffic light strategy compatibility with network type
 

@@ -445,10 +445,6 @@ class ParameterWidgets:
             help="Algorithm for calculating edge attractiveness"
         )
 
-        params["time_dependent"] = st.checkbox(
-            "Time-Dependent Attractiveness",
-            help="Apply 4-phase time-of-day variations"
-        )
 
         return params
 

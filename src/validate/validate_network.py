@@ -459,7 +459,6 @@ def _to_float(val):
 def verify_assign_edge_attractiveness(
     seed: int,
     method: str = "poisson",
-    time_dependent: bool = False,
     tolerance: float = 0.5,  # ±50 % of λ is acceptable
 ) -> None:
     """Validate that attractiveness attributes exist and are plausible.
@@ -474,7 +473,6 @@ def verify_assign_edge_attractiveness(
     ----------
     seed : random seed used for generation
     method : attractiveness method used ('poisson', 'land_use', 'iac')
-    time_dependent : whether time dependency was applied
     tolerance : acceptable deviation from expected values for Poisson method
     """
 
@@ -501,35 +499,46 @@ def verify_assign_edge_attractiveness(
         if edge_id and edge_id.startswith(":"):
             continue
 
-        # Check for attractiveness attributes
-        depart_attr = edge_elem.get("depart_attractiveness")
-        arrive_attr = edge_elem.get("arrive_attractiveness")
-
-        if depart_attr is None:
-            raise ValidationError(
-                f"Edge {edge_id} missing depart_attractiveness")
-        if arrive_attr is None:
-            raise ValidationError(
-                f"Edge {edge_id} missing arrive_attractiveness")
-
-        # Parse values (may be wrapped in brackets)
-        try:
-            depart_val = _to_float(depart_attr.strip("[]"))
-            arrive_val = _to_float(arrive_attr.strip("[]"))
-        except ValueError:
-            raise ValidationError(
-                f"Edge {edge_id} has invalid attractiveness values")
-
-        # Check non-negative
-        if depart_val < 0:
-            raise ValidationError(
-                f"Edge {edge_id} has negative depart_attractiveness: {depart_val}")
-        if arrive_val < 0:
-            raise ValidationError(
-                f"Edge {edge_id} has negative arrive_attractiveness: {arrive_val}")
-
-        depart_attrs.append(depart_val)
-        arrive_attrs.append(arrive_val)
+        # Check for phase-specific attractiveness attributes
+        phases = ["morning_peak", "midday_offpeak", "evening_peak", "night_low"]
+        
+        # Collect all temporal attractiveness values for this edge
+        edge_depart_values = []
+        edge_arrive_values = []
+        
+        for phase in phases:
+            depart_attr = edge_elem.get(f"{phase}_depart_attractiveness")
+            arrive_attr = edge_elem.get(f"{phase}_arrive_attractiveness")
+            
+            if depart_attr is None:
+                raise ValidationError(
+                    f"Edge {edge_id} missing {phase}_depart_attractiveness")
+            if arrive_attr is None:
+                raise ValidationError(
+                    f"Edge {edge_id} missing {phase}_arrive_attractiveness")
+            
+            # Parse values (may be wrapped in brackets)
+            try:
+                depart_val = _to_float(depart_attr.strip("[]"))
+                arrive_val = _to_float(arrive_attr.strip("[]"))
+            except ValueError:
+                raise ValidationError(
+                    f"Edge {edge_id} has invalid attractiveness values for phase {phase}")
+            
+            # Check non-negative
+            if depart_val < 0:
+                raise ValidationError(
+                    f"Edge {edge_id} has negative {phase}_depart_attractiveness: {depart_val}")
+            if arrive_val < 0:
+                raise ValidationError(
+                    f"Edge {edge_id} has negative {phase}_arrive_attractiveness: {arrive_val}")
+            
+            edge_depart_values.append(depart_val)
+            edge_arrive_values.append(arrive_val)
+        
+        # Add all temporal values to the global collections for statistical validation
+        depart_attrs.extend(edge_depart_values)
+        arrive_attrs.extend(edge_arrive_values)
 
     if not depart_attrs:
         raise ValidationError("No edges with attractiveness attributes found")
@@ -545,9 +554,8 @@ def verify_assign_edge_attractiveness(
         expected_arrive = CONFIG.LAMBDA_ARRIVE
 
         # Adjust expectations for time dependency
-        if time_dependent:
-            # Use broader tolerance for time-dependent methods as they modify base values
-            tolerance = tolerance * 1.5
+        # Use broader tolerance for time-dependent methods as they modify base values
+        tolerance = tolerance * 1.5
 
         # Check means are within tolerance
         if abs(depart_mean - expected_depart) > tolerance * expected_depart:
@@ -583,8 +591,13 @@ def verify_assign_edge_attractiveness(
         # This is a basic check - in reality we'd validate against actual zone data
         unique_depart = len(set(depart_attrs))
         unique_arrive = len(set(arrive_attrs))
-        min_required = max(2, min(5, len(depart_attrs) // 20))  # More lenient: at most 5, at least 2
-        
+        # More lenient: at most 5, at least 2
+        min_required = max(2, min(5, len(depart_attrs) // 20))
+
+        print(f"depart_attrs {depart_attrs} arrive_attrs {arrive_attrs}")
+        print(
+            f"Unique depart: {unique_depart}, Unique arrive: {unique_arrive}, Min required: {min_required}")
+
         if unique_depart < min_required and unique_arrive < min_required:
             raise ValidationError(
                 f"Land use method should produce more varied attractiveness values "

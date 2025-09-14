@@ -74,8 +74,8 @@ class _Config:
         self.HEAD_DISTANCE = 50  # head distance from the downstream end when splitting edges
         self.MIN_LANES = MIN_LANE_COUNT  # Backward compatibility alias
         self.MAX_LANES = MAX_LANE_COUNT  # Backward compatibility alias
-        self.LAMBDA_DEPART = 3.5  # edge attractiveness
-        self.LAMBDA_ARRIVE = 2.0
+        self.LAMBDA_DEPART = 10.0  # edge attractiveness (increased for 1-20 range)
+        self.LAMBDA_ARRIVE = 10.0  # edge attractiveness (increased for 1-20 range)
 
         # ---------- simulation verification ----------
         self.SIMULATION_VERIFICATION_FREQUENCY = 30  # Verify algorithm every N simulation steps

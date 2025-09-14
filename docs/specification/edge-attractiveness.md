@@ -15,7 +15,7 @@
 
 - **Step**: Assign departure and arrival attractiveness values to all network edges
 - **Function**: `assign_edge_attractiveness()` in `src/network/edge_attrs.py`
-- **Arguments Used**: `--attractiveness`, `--time_dependent`, `--start_time_hour`, `--seed`
+- **Arguments Used**: `--attractiveness`, `--start_time_hour`, `--seed`
 - **Input Files**:
   - `workspace/grid.net.xml` (rebuilt network with final edge definitions)
   - `workspace/zones.poly.xml` (zones with correct coordinate system from Steps 2/5)
@@ -61,7 +61,7 @@
 
 ### Temporal Variation System (4-Phase)
 
-**Time-Dependent Mode (`--time_dependent` flag):**
+**Time-Dependent Mode (Always Enabled):**
 
 **Phase Definition**:
 

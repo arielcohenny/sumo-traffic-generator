@@ -208,137 +208,187 @@ def get_phase_multipliers(phase: str) -> dict:
     return PHASE_MULTIPLIERS.get(phase, {"depart": 1.0, "arrive": 1.0})
 
 
-def get_time_multipliers(time_dependent: bool, hour_of_day: float = 12.0) -> dict:
+def get_time_multipliers(hour_of_day: float = 12.0) -> dict:
     """Get time-dependent multipliers for attractiveness (legacy function)"""
-    if not time_dependent:
-        return {'depart': 1.0, 'arrive': 1.0}
-
-    # Use new phase-based system
+    # Use phase-based system
     phase = get_current_phase(hour_of_day)
     return get_phase_multipliers(phase)
 
 
-def calculate_attractiveness_poisson(seed: int, time_dependent: bool = False) -> tuple:
-    """Calculate attractiveness using Poisson distribution"""
-    depart_base = np.random.poisson(lam=CONFIG.LAMBDA_DEPART)
-    arrive_base = np.random.poisson(lam=CONFIG.LAMBDA_ARRIVE)
+def calculate_attractiveness_poisson(seed: int, edge_id: str = "") -> dict:
+    """Calculate attractiveness using Poisson distribution for all 4 time periods.
+    
+    Returns 8 values (departure/arrival × 4 phases) in 1-20 range.
+    """
+    # Edge-specific variation for reproducible but varied results
+    edge_hash = hash(edge_id) % 10000 if edge_id else 0
+    
+    phases = {}
+    phase_names = ["morning_peak", "midday_offpeak", "evening_peak", "night_low"]
+    
+    for phase in phase_names:
+        # Different lambda values for each phase to create variety
+        phase_hash = hash(phase) % 1000
+        
+        # Generate values with phase and edge-specific variation
+        depart_lambda = CONFIG.LAMBDA_DEPART + (edge_hash * 0.001) + (phase_hash * 0.01)
+        arrive_lambda = CONFIG.LAMBDA_ARRIVE + (edge_hash * 0.001) + (phase_hash * 0.01)
+        
+        # Generate Poisson values and clamp to 1-20 range
+        depart_raw = np.random.poisson(lam=depart_lambda)
+        arrive_raw = np.random.poisson(lam=arrive_lambda)
+        
+        phases[phase] = {
+            'depart': max(1, min(20, depart_raw)),
+            'arrive': max(1, min(20, arrive_raw))
+        }
+    
+    return phases
 
-    if time_dependent:
-        # Use midday as default for base calculation
-        time_mult = get_time_multipliers(True, 12)
-        depart_base = max(1, int(depart_base * time_mult['depart']))
-        arrive_base = max(1, int(arrive_base * time_mult['arrive']))
 
-    return depart_base, arrive_base
-
-
-def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root, time_dependent: bool = False) -> tuple:
-    """Calculate attractiveness based on land use zones"""
-    # Land use multipliers based on research
-    land_use_multipliers = {
-        'Residential': {'depart': 0.8, 'arrive': 1.4},
-        'Employment': {'depart': 1.3, 'arrive': 0.9},
-        'Mixed': {'depart': 1.1, 'arrive': 1.1},
-        'Entertainment/Retail': {'depart': 0.7, 'arrive': 1.3},
-        'Public Buildings': {'depart': 0.9, 'arrive': 1.0},
-        'Public Open Space': {'depart': 0.6, 'arrive': 0.8}
+def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root) -> dict:
+    """Calculate attractiveness based on land use zones with realistic temporal patterns.
+    
+    Returns 8 values (departure/arrival × 4 phases) in 1-20 range based on zone types.
+    """
+    # Realistic temporal patterns for each zone type (1-20 range)
+    land_use_temporal_patterns = {
+        'Residential': {
+            'morning_peak': {'depart': 15, 'arrive': 3},    # People leaving for work
+            'midday_offpeak': {'depart': 8, 'arrive': 8},   # Moderate activity
+            'evening_peak': {'depart': 3, 'arrive': 15},    # People coming home
+            'night_low': {'depart': 1, 'arrive': 1}         # Very low activity
+        },
+        'Employment': {
+            'morning_peak': {'depart': 3, 'arrive': 18},    # People arriving for work  
+            'midday_offpeak': {'depart': 6, 'arrive': 6},   # Lunch, meetings
+            'evening_peak': {'depart': 18, 'arrive': 3},    # People leaving work
+            'night_low': {'depart': 2, 'arrive': 2}         # Security, cleaning
+        },
+        'Mixed': {
+            'morning_peak': {'depart': 10, 'arrive': 10},   # Balanced activity
+            'midday_offpeak': {'depart': 12, 'arrive': 12}, # Peak mixed activity
+            'evening_peak': {'depart': 10, 'arrive': 10},   # Balanced activity
+            'night_low': {'depart': 4, 'arrive': 4}         # Restaurants, services
+        },
+        'Entertainment/Retail': {
+            'morning_peak': {'depart': 2, 'arrive': 8},     # Opening, staff arriving
+            'midday_offpeak': {'depart': 10, 'arrive': 12}, # Shopping, services
+            'evening_peak': {'depart': 8, 'arrive': 16},    # Peak entertainment
+            'night_low': {'depart': 12, 'arrive': 8}        # Bars, restaurants
+        },
+        'Public Buildings': {
+            'morning_peak': {'depart': 4, 'arrive': 12},    # Services opening
+            'midday_offpeak': {'depart': 8, 'arrive': 10},  # Peak service hours
+            'evening_peak': {'depart': 6, 'arrive': 6},     # Reduced activity
+            'night_low': {'depart': 1, 'arrive': 1}         # Mostly closed
+        },
+        'Public Open Space': {
+            'morning_peak': {'depart': 6, 'arrive': 6},     # Exercise, commuting
+            'midday_offpeak': {'depart': 8, 'arrive': 8},   # Recreation
+            'evening_peak': {'depart': 10, 'arrive': 10},   # After-work activities
+            'night_low': {'depart': 2, 'arrive': 2}         # Limited night activity
+        }
     }
-
-    # Get base Poisson values
-    depart_base = np.random.poisson(lam=CONFIG.LAMBDA_DEPART)
-    arrive_base = np.random.poisson(lam=CONFIG.LAMBDA_ARRIVE)
 
     # Find adjacent zones
     adjacent_zones = find_adjacent_zones(edge_id, zones_data, edg_root)
 
-    if adjacent_zones:
-        # Calculate weighted average based on zone attractiveness
-        total_weight = 0
-        weighted_depart = 0
-        weighted_arrive = 0
+    phases = {}
+    phase_names = ["morning_peak", "midday_offpeak", "evening_peak", "night_low"]
+    
+    # Edge-specific base variation
+    edge_hash = hash(edge_id) % 100
+    base_variation = 1 + (edge_hash * 0.01)  # 1.0 to 2.0 multiplier
+    
+    for phase in phase_names:
+        if adjacent_zones:
+            # Calculate weighted average based on zone types and attractiveness
+            total_weight = 0
+            weighted_depart = 0
+            weighted_arrive = 0
 
-        for zone in adjacent_zones:
-            zone_type = zone.get('type', 'Mixed')
-            attractiveness = float(
-                zone.get('attractiveness', 0.5))
+            for zone in adjacent_zones:
+                zone_type = zone.get('type', 'Mixed')
+                attractiveness = float(zone.get('attractiveness', 0.5))
+                
+                pattern = land_use_temporal_patterns.get(
+                    zone_type, land_use_temporal_patterns['Mixed'])
+                
+                weighted_depart += pattern[phase]['depart'] * attractiveness
+                weighted_arrive += pattern[phase]['arrive'] * attractiveness
+                total_weight += attractiveness
 
-            multipliers = land_use_multipliers.get(
-                zone_type, {'depart': 1.0, 'arrive': 1.0})
-
-            weighted_depart += multipliers['depart'] * attractiveness
-            weighted_arrive += multipliers['arrive'] * attractiveness
-            total_weight += attractiveness
-
-        if total_weight > 0:
-            avg_depart_mult = weighted_depart / total_weight
-            avg_arrive_mult = weighted_arrive / total_weight
+            if total_weight > 0:
+                avg_depart = weighted_depart / total_weight
+                avg_arrive = weighted_arrive / total_weight
+            else:
+                # Fallback to Mixed pattern
+                avg_depart = land_use_temporal_patterns['Mixed'][phase]['depart']
+                avg_arrive = land_use_temporal_patterns['Mixed'][phase]['arrive']
         else:
-            avg_depart_mult = 1.0
-            avg_arrive_mult = 1.0
-    else:
-        # Default multipliers if no zones found
-        avg_depart_mult = 1.0
-        avg_arrive_mult = 1.0
+            # No zones found - use Mixed pattern as default
+            avg_depart = land_use_temporal_patterns['Mixed'][phase]['depart']
+            avg_arrive = land_use_temporal_patterns['Mixed'][phase]['arrive']
 
-    # Apply multipliers
-    depart_attr = max(1, int(depart_base * avg_depart_mult))
-    arrive_attr = max(1, int(arrive_base * avg_arrive_mult))
+        # Apply edge variation and ensure 1-20 range
+        phases[phase] = {
+            'depart': max(1, min(20, int(avg_depart * base_variation))),
+            'arrive': max(1, min(20, int(avg_arrive * base_variation)))
+        }
 
-    # Apply time dependency if enabled
-    if time_dependent:
-        time_mult = get_time_multipliers(True, 12)
-        depart_attr = max(1, int(depart_attr * time_mult['depart']))
-        arrive_attr = max(1, int(arrive_attr * time_mult['arrive']))
-
-    return depart_attr, arrive_attr
+    return phases
 
 
 
 
-def calculate_attractiveness_iac(edge_id: str, zones_data: list, edg_root, network_tree, time_dependent: bool = False) -> tuple:
-    """Calculate attractiveness using Integrated Attraction Coefficient (IAC)"""
-    # IAC parameters from research
-    d_param = 0.95
-    g_param = 1.02
+def calculate_attractiveness_iac(edge_id: str, zones_data: list, edg_root, network_tree) -> dict:
+    """Calculate attractiveness using Integrated Attraction Coefficient (IAC) with temporal patterns.
+    
+    Returns 8 values (departure/arrival × 4 phases) in 1-20 range.
+    Applies spatial IAC factors to land use temporal patterns.
+    """
+    # Get land use temporal patterns as base
+    land_use_patterns = calculate_attractiveness_land_use(edge_id, zones_data, edg_root)
+    
+    # IAC parameters from research (unused variables removed to avoid warnings)
+    # Base attractiveness factor (theta)
+    edge_hash = hash(edge_id) % 1000
+    theta = max(0.5, min(2.0, 1.0 + (edge_hash * 0.001)))  # 0.5-2.0 range
+    
+    # Random mood factor with edge-specific seed
+    np.random.seed(hash(edge_id) % 10000)
+    m_rand = max(0.7, min(1.5, np.random.normal(1.0, 0.2)))  # 0.7-1.5 range
+    
+    # Spatial preference based on edge connectivity (simplified)
+    # In real implementation, this would analyze network topology
+    f_spatial = max(0.8, min(1.3, 1.0 + ((edge_hash % 100) * 0.005)))  # 0.8-1.3 range
+    
+    # Combined IAC factor
+    iac_factor = theta * m_rand * f_spatial  # Typical range: 0.3-4.0
+    
+    # Apply IAC factor to land use patterns
+    phases = {}
+    for phase, values in land_use_patterns.items():
+        # Apply IAC factor and ensure 1-20 range
+        depart_iac = values['depart'] * iac_factor
+        arrive_iac = values['arrive'] * iac_factor
+        
+        phases[phase] = {
+            'depart': max(1, min(20, int(depart_iac))),
+            'arrive': max(1, min(20, int(arrive_iac)))
+        }
+    
+    return phases
 
-    # Get land use components
-    depart_land, arrive_land = calculate_attractiveness_land_use(
-        edge_id, zones_data, edg_root, False)
-
-    # Base attractiveness (theta)
-    theta = max(0.1, np.random.normal(1.0, 0.3))
-
-    # Random mood factor
-    m_rand = max(0.5, np.random.normal(1.0, 0.2))
-
-    # Spatial preference (simplified)
-    f_spatial = 1.0
-
-    # Calculate IAC using only land use
-    land_norm = (depart_land + arrive_land) / \
-        (2 * CONFIG.LAMBDA_DEPART + 2 * CONFIG.LAMBDA_ARRIVE)
-
-    iac_factor = land_norm * theta * m_rand * f_spatial
-
-    depart_attr = max(1, int(CONFIG.LAMBDA_DEPART * iac_factor))
-    arrive_attr = max(1, int(CONFIG.LAMBDA_ARRIVE * iac_factor))
-
-    # Apply time dependency if enabled
-    if time_dependent:
-        time_mult = get_time_multipliers(True, 12)
-        depart_attr = max(1, int(depart_attr * time_mult['depart']))
-        arrive_attr = max(1, int(arrive_attr * time_mult['arrive']))
-
-    return depart_attr, arrive_attr
 
 
 
-
-def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependent: bool = False, start_time_hour: float = 0.0) -> None:
+def assign_edge_attractiveness(seed: int, method: str = "poisson", start_time_hour: float = 0.0) -> None:
     """
     Adds attractiveness attributes to each edge in the .net.xml file.
 
-    When time_dependent=True, generates 4 phase-specific profiles:
+    Generates 4 phase-specific profiles:
     - Base attributes: depart_attractiveness, arrive_attractiveness
     - Phase-specific: [phase]_depart_attractiveness, [phase]_arrive_attractiveness
 
@@ -346,7 +396,6 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
     ----------
     seed : random seed for reproducibility
     method : attractiveness calculation method ('poisson', 'land_use', 'iac')
-    time_dependent : whether to generate 4-phase time-of-day profiles
     start_time_hour : real-world hour when simulation starts (0-24)
     """
     np.random.seed(seed)
@@ -371,14 +420,10 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
             edg_root = None
 
     # Get all phases for time-dependent mode
-    if time_dependent:
-        phases = ["morning_peak", "midday_offpeak",
-                  "evening_peak", "night_low"]
-        # Determine starting phase based on start_time_hour
-        current_phase = get_current_phase(start_time_hour)
-    else:
-        phases = [None]  # Single calculation without time dependency
-        current_phase = None
+    phases = ["morning_peak", "midday_offpeak",
+              "evening_peak", "night_low"]
+    # Determine starting phase based on start_time_hour
+    current_phase = get_current_phase(start_time_hour)
 
     for edge in root.findall("edge"):
         edge_id = edge.get('id')
@@ -387,57 +432,28 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", time_dependen
         if edge_id and edge_id.startswith(":"):
             continue
 
-        if time_dependent:
-            # Generate base attractiveness without time dependency
-            if method == "poisson":
-                base_depart, base_arrive = calculate_attractiveness_poisson(
-                    seed, False)
-            elif method == "land_use":
-                base_depart, base_arrive = calculate_attractiveness_land_use(
-                    edge_id, zones_data, edg_root, False)
-            elif method == "iac":
-                base_depart, base_arrive = calculate_attractiveness_iac(
-                    edge_id, zones_data, edg_root, tree, False)
-            else:
-                base_depart, base_arrive = calculate_attractiveness_poisson(
-                    seed, False)
-
-            # Generate phase-specific profiles
-            for phase in phases:
-                multipliers = get_phase_multipliers(phase)
-                phase_depart = max(1, int(base_depart * multipliers['depart']))
-                phase_arrive = max(1, int(base_arrive * multipliers['arrive']))
-
-                edge.set(f"{phase}_depart_attractiveness", str(phase_depart))
-                edge.set(f"{phase}_arrive_attractiveness", str(phase_arrive))
-
-            # Set current phase as active attributes
-            current_multipliers = get_phase_multipliers(current_phase)
-            current_depart = max(
-                1, int(base_depart * current_multipliers['depart']))
-            current_arrive = max(
-                1, int(base_arrive * current_multipliers['arrive']))
-            edge.set("depart_attractiveness", str(current_depart))
-            edge.set("arrive_attractiveness", str(current_arrive))
-            edge.set("current_phase", current_phase)
-
+        # Generate all 8 attractiveness values directly
+        if method == "poisson":
+            phase_values = calculate_attractiveness_poisson(seed)
+        elif method == "land_use":
+            phase_values = calculate_attractiveness_land_use(
+                edge_id, zones_data, edg_root)
+        elif method == "iac":
+            phase_values = calculate_attractiveness_iac(
+                edge_id, zones_data, edg_root, tree)
         else:
-            # Non-time-dependent: single calculation
-            if method == "poisson":
-                depart_attr, arrive_attr = calculate_attractiveness_poisson(
-                    seed, False)
-            elif method == "land_use":
-                depart_attr, arrive_attr = calculate_attractiveness_land_use(
-                    edge_id, zones_data, edg_root, False)
-            elif method == "iac":
-                depart_attr, arrive_attr = calculate_attractiveness_iac(
-                    edge_id, zones_data, edg_root, tree, False)
-            else:
-                depart_attr, arrive_attr = calculate_attractiveness_poisson(
-                    seed, False)
+            phase_values = calculate_attractiveness_poisson(seed)
 
-            edge.set("depart_attractiveness", str(depart_attr))
-            edge.set("arrive_attractiveness", str(arrive_attr))
+        # Set phase-specific attributes directly from calculated values
+        for phase in phases:
+            depart_val = phase_values[phase]['depart']
+            arrive_val = phase_values[phase]['arrive']
+            
+            edge.set(f"{phase}_depart_attractiveness", str(depart_val))
+            edge.set(f"{phase}_arrive_attractiveness", str(arrive_val))
+
+        # Store current phase for dynamic lookup by other components
+        edge.set("current_phase", current_phase)
 
     tree.write(net_file, encoding="utf-8")
 
@@ -454,14 +470,12 @@ def execute_attractiveness_assignment(args) -> None:
     assign_edge_attractiveness(
         get_network_seed(args),
         args.attractiveness,
-        args.time_dependent,
         args.start_time_hour
     )
     try:
         verify_assign_edge_attractiveness(
             get_network_seed(args),
-            args.attractiveness,
-            args.time_dependent
+            args.attractiveness
         )
     except ValidationError as ve:
         logger.error(f"Failed to assign edge attractiveness: {ve}")

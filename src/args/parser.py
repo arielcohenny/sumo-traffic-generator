@@ -184,11 +184,6 @@ def _add_zone_arguments(parser: argparse.ArgumentParser) -> None:
         help=f"Edge attractiveness method: '{DEFAULT_ATTRACTIVENESS}' (default), 'land_use', or 'iac'."
     )
     parser.add_argument(
-        "--time_dependent",
-        action="store_true",
-        help="Apply 4-phase time-of-day variations to the selected attractiveness method"
-    )
-    parser.add_argument(
         "--start_time_hour",
         type=float,
         default=SENTINEL_START_TIME_HOUR,
