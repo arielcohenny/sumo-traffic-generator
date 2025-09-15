@@ -123,7 +123,7 @@ class TestSyntheticGridScenarios:
             "--step-length", "1.0",
             "--end-time", "300",      # 5 minutes instead of 4.5 hours
             "--departure_pattern", "uniform",
-            "--vehicle_types", "passenger 50 commercial 40 public 10",
+            "--vehicle_types", "passenger 90 public 10",
             "--attractiveness", "poisson",
             "--routing_strategy", "shortest 70 realtime 30",
             "--seed", "42"
@@ -134,7 +134,7 @@ class TestSyntheticGridScenarios:
         assertions = get_workspace_assertions()
         assertions.assert_simulation_completed_successfully()
         assertions.assert_vehicle_types_generated(
-            ["passenger", "commercial", "public"])
+            ["passenger", "public"])
 
 
 class TestTreeMethodSample:

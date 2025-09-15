@@ -92,12 +92,11 @@ Vehicle routing behavior. Four strategies with percentage mixing:
 - `fastest`: 45-second fastest path rerouting
 - `attractiveness`: Multi-criteria routing
 
-### `--vehicle_types` (str, default: "passenger 60 commercial 30 public 10")
+### `--vehicle_types` (str, default: "passenger 90 public 10")
 
-Vehicle type distribution. Three types with percentage assignment:
+Vehicle type distribution. Two types with percentage assignment:
 
 - `passenger`: Cars (5.0m length, 13.9 m/s max speed)
-- `commercial`: Trucks (12.0m length, 10.0 m/s max speed)
 - `public`: Buses (10.0m length, 11.1 m/s max speed)
 
 ### `--traffic_light_strategy` (str, default: "opposites")
@@ -303,7 +302,7 @@ D1E1=tail:2,head:
 - **Current**: Implemented in `parse_vehicle_types()` in `src/traffic/vehicle_types.py`
 - **Checks**:
   - Format validation: Must be pairs of vehicle type + percentage
-  - Valid types: {"passenger", "commercial", "public"}
+  - Valid types: {"passenger", "public"}
   - Percentage range: 0-100 for each type
   - Sum validation: Percentages must sum to exactly 100 (±0.01 tolerance)
   - Type validation: Percentage values must be valid floats

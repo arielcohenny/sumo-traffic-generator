@@ -30,7 +30,6 @@ class TestGlobalConfig:
     def test_vehicle_types_configuration(self):
         """Test vehicle types configuration."""
         assert 'passenger' in CONFIG.vehicle_types
-        assert 'commercial' in CONFIG.vehicle_types
         assert 'public' in CONFIG.vehicle_types
         
         # Check passenger vehicle config
@@ -91,9 +90,8 @@ class TestConfigIntegration:
         total = sum(distribution.values())
         assert total == 100.0
         
-        # Should have all three types
+        # Should have both types
         assert "passenger" in distribution
-        assert "commercial" in distribution
         assert "public" in distribution
 
     @pytest.mark.unit

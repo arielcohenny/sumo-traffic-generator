@@ -43,7 +43,7 @@
   - Apply land use multipliers to the zone-derived base values instead of random Poisson values
   - Ensure edges with no adjacent zones get minimal but non-zero attractiveness (e.g., default value of 1)
 - **Land Use Logic**: Different land use types generate different traffic patterns - residential areas attract incoming traffic (people coming home) while employment areas generate outgoing traffic (people leaving for work). Mixed-use areas have balanced patterns.
-- **Spatial Analysis**: Uses geometric intersection and distance calculations to determine edge-zone adjacency, ensuring edges near commercial districts get higher arrival attractiveness while edges near residential areas get higher departure attractiveness
+- **Spatial Analysis**: Uses geometric intersection and distance calculations to determine edge-zone adjacency, ensuring edges near business districts get higher arrival attractiveness while edges near residential areas get higher departure attractiveness
 - **Zone Types**: Residential, Employment, Mixed, Entertainment/Retail, Public Buildings, Public Open Space
 - **Examples**:
   - Residential areas: High arrival (1.4x), moderate departure (0.8x) - people return home

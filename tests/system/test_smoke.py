@@ -120,7 +120,7 @@ class TestQuickValidation:
             "--grid_dimension", "3",
             "--num_vehicles", "10",
             "--end-time", "30",
-            "--vehicle_types", "passenger 70 commercial 20 public 10",
+            "--vehicle_types", "passenger 90 public 10",
             "--seed", "1"
         ])
 
@@ -201,7 +201,7 @@ class TestErrorHandling:
         # Vehicle types that don't sum to 100
         result = run_cli_command([
             "--grid_dimension", "3",
-            "--vehicle_types", "passenger 50 commercial 30",  # Missing 20%
+            "--vehicle_types", "passenger 50",  # Missing 50%
             "--num_vehicles", "10"
         ], workspace=temp_workspace)
 

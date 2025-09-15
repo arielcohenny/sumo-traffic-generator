@@ -13,7 +13,7 @@ from src.constants import (
     DEFAULT_GRID_DIMENSION, DEFAULT_BLOCK_SIZE_M, DEFAULT_FIXED_LANE_COUNT,
     DEFAULT_NUM_VEHICLES, DEFAULT_SHORTEST_ROUTING_PCT, DEFAULT_REALTIME_ROUTING_PCT,
     DEFAULT_FASTEST_ROUTING_PCT, DEFAULT_ATTRACTIVENESS_ROUTING_PCT,
-    DEFAULT_PASSENGER_VEHICLE_PCT, DEFAULT_COMMERCIAL_VEHICLE_PCT, DEFAULT_PUBLIC_VEHICLE_PCT,
+    DEFAULT_PASSENGER_VEHICLE_PCT, DEFAULT_PUBLIC_VEHICLE_PCT,
     DEFAULT_SEED, DEFAULT_STEP_LENGTH, DEFAULT_END_TIME, DEFAULT_LAND_USE_BLOCK_SIZE_M,
     DEFAULT_START_TIME_HOUR, DEFAULT_BOTTLENECK_DETECTION_INTERVAL, DEFAULT_ATLCS_INTERVAL,
     DEFAULT_TREE_METHOD_INTERVAL, DEFAULT_ATTRACTIVENESS, DEFAULT_LANE_COUNT,
@@ -197,24 +197,21 @@ class ParameterWidgets:
 
         # Vehicle types
         st.write("**Vehicle Types**")
-        vehicle_col1, vehicle_col2, vehicle_col3 = st.columns(3)
+        vehicle_col1, vehicle_col2 = st.columns(2)
 
         with vehicle_col1:
             passenger_pct = st.number_input(
                 "Passenger %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_PASSENGER_VEHICLE_PCT, key="passenger")
         with vehicle_col2:
-            commercial_pct = st.number_input(
-                "Commercial %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_COMMERCIAL_VEHICLE_PCT, key="commercial")
-        with vehicle_col3:
             public_pct = st.number_input(
                 "Public %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_PUBLIC_VEHICLE_PCT, key="public")
 
-        total_vehicles = passenger_pct + commercial_pct + public_pct
+        total_vehicles = passenger_pct + public_pct
         if total_vehicles != MAX_PERCENTAGE:
             st.error(
                 f"Vehicle type percentages must sum to {MAX_PERCENTAGE}% (current: {total_vehicles}%)")
 
-        params["vehicle_types"] = f"passenger {passenger_pct} commercial {commercial_pct} public {public_pct}"
+        params["vehicle_types"] = f"passenger {passenger_pct} public {public_pct}"
 
         # Departure pattern with session state for cross-section coordination
         departure_options = ["six_periods", "uniform", "rush_hours"]
@@ -329,7 +326,7 @@ class ParameterWidgets:
 
             with col2:
                 st.markdown("**Private Traffic**")
-                st.caption("Passenger & commercial vehicles")
+                st.caption("Passenger vehicles only")
                 params["private-traffic-seed"] = st.number_input(
                     "Private Traffic Seed",
                     min_value=MIN_SEED,

@@ -63,7 +63,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
 
 #### **Vehicle Display**
 
-- **Individual Vehicles**: Color-coded vehicles by type (passenger/commercial/public)
+- **Individual Vehicles**: Color-coded vehicles by type (passenger/public)
 - **Vehicle Information**: Click vehicles to see ID, route, speed, and status
 - **Traffic Density**: Visual representation of congestion levels
 - **Route Visualization**: Display of vehicle paths and destinations

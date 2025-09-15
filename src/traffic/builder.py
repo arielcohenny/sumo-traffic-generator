@@ -58,10 +58,10 @@ def generate_vehicle_routes(net_file: str | Path,
         net_file: Path to SUMO network file
         output_file: Output route file path
         num_vehicles: Number of vehicles to generate
-        private_traffic_seed: Random seed for private traffic (passenger, commercial)
+        private_traffic_seed: Random seed for private traffic (passenger only)
         public_traffic_seed: Random seed for public traffic
         routing_strategy: Routing strategy specification (e.g., "shortest 70 realtime 30")
-        vehicle_types: Vehicle types specification (e.g., "passenger 70 commercial 20 public 10")
+        vehicle_types: Vehicle types specification (e.g., "passenger 90 public 10")
         end_time: Total simulation duration in seconds for temporal distribution
         departure_pattern: Departure pattern ("six_periods", "uniform", "rush_hours:7-9:40,17-19:30")
     """
@@ -104,7 +104,7 @@ def generate_vehicle_routes(net_file: str | Path,
         )[0]
 
         # Select appropriate RNG, sampler, and routing mix based on vehicle type
-        if vtype in ['passenger', 'commercial']:
+        if vtype == 'passenger':
             # Private traffic
             current_rng = private_rng
             current_sampler = private_sampler

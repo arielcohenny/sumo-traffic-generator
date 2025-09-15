@@ -39,7 +39,7 @@ def get_network_seed(args: Any) -> int:
 
 
 def get_private_traffic_seed(args: Any) -> int:
-    """Get the private traffic seed for passenger and commercial vehicle generation.
+    """Get the private traffic seed for passenger vehicle generation.
 
     Controls: private vehicle type assignment, route generation, departure times.
 

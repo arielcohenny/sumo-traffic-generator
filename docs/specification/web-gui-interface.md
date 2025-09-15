@@ -174,10 +174,9 @@ open http://localhost:8501
 
 **Vehicle Type Distribution**
 
-- **Widget**: Three-component percentage sliders with vehicle icons
+- **Widget**: Two-component percentage sliders with vehicle icons
 - **Components**:
   - **Passenger**: Cars 🚗 (slider 0-100%)
-  - **Commercial**: Trucks 🚛 (slider 0-100%)
   - **Public**: Buses 🚌 (slider 0-100%)
 - **Validation**: Real-time sum validation (must equal 100%)
 - **Display**: Visual icons and percentage breakdown

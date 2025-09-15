@@ -107,7 +107,7 @@ def _add_traffic_arguments(parser: argparse.ArgumentParser) -> None:
         "--vehicle_types",
         type=str,
         default=DEFAULT_VEHICLE_TYPES,
-        help=f"Vehicle types with percentages (e.g., 'passenger 70 commercial 20 public 10'). Default: '{DEFAULT_VEHICLE_TYPES}'"
+        help=f"Vehicle types with percentages (e.g., 'passenger 90 public 10'). Default: '{DEFAULT_VEHICLE_TYPES}'"
     )
     parser.add_argument(
         "--departure_pattern",
@@ -134,7 +134,7 @@ def _add_simulation_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--private-traffic-seed",
         type=int,
-        help="Seed for private traffic generation (passenger and commercial vehicles). "
+        help="Seed for private traffic generation (passenger vehicles only). "
              "If not provided, uses --seed or random seed."
     )
     parser.add_argument(

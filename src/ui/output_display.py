@@ -251,7 +251,6 @@ class OutputDisplay:
                             # Define colors for vehicle types
                             vehicle_colors = {
                                 'passenger': '#28a745',    # Green
-                                'commercial': '#fd7e14',   # Orange
                                 'public': '#007bff'        # Blue
                             }
 

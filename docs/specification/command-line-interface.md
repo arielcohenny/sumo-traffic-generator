@@ -25,7 +25,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --num_vehicles 800 \
   --traffic_control tree_method \
   --routing_strategy "shortest 70 realtime 30" \
-  --vehicle_types "passenger 60 commercial 30 public 10" \
+  --vehicle_types "passenger 90 public 10" \
   --gui
 
 # Tree Method research sample
@@ -98,17 +98,16 @@ Vehicle routing behavior with percentage mixing of four strategies.
   - `"shortest 70 realtime 30"` (70% shortest, 30% realtime)
   - `"shortest 50 realtime 30 fastest 20"` (mixed strategies)
 
-#### `--vehicle_types` (str, default: "passenger 60 commercial 30 public 10")
+#### `--vehicle_types` (str, default: "passenger 90 public 10")
 
 Vehicle type distribution with percentage assignment.
 
 - **Types**:
   - `passenger`: Cars (5.0m length, 13.9 m/s max speed)
-  - `commercial`: Trucks (12.0m length, 10.0 m/s max speed)
   - `public`: Buses (10.0m length, 11.1 m/s max speed)
 - **Format**: Space-separated type-percentage pairs
 - **Validation**: Percentages must sum to 100
-- **Example**: `"passenger 70 commercial 20 public 10"`
+- **Example**: `"passenger 90 public 10"`
 
 #### `--departure_pattern` (str, default: "uniform")
 
@@ -141,7 +140,7 @@ Vehicle departure timing pattern.
 
 #### `--private-traffic-seed` (int, optional)
 
-**Private traffic seed**: Controls passenger and commercial vehicle generation (routes, departure times, vehicle type assignment).
+**Private traffic seed**: Controls passenger vehicle generation (routes, departure times, vehicle type assignment).
 
 - **Range**: 1-999,999
 - **Default**: Uses `--seed` value or random seed if not provided

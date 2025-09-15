@@ -165,7 +165,7 @@ def _validate_vehicle_types(vehicle_types: str) -> None:
         raise ValidationError(
             f"Vehicle types must be pairs of type + percentage, got: {vehicle_types}")
 
-    valid_types = {"passenger", "commercial", "public"}
+    valid_types = {"passenger", "public"}
     total_percentage = 0.0
 
     for i in range(0, len(parts), 2):

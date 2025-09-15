@@ -36,7 +36,7 @@ def calculate_lane_count_realistic(edge_id: str, edg_root, block_size_m: int = 2
     land_use_weights = {
         'Mixed': 1,                    # Highest traffic generation
         'Employment': 1,               # High peak traffic
-        'Entertainment/Retail': 1,    # High commercial traffic
+        'Entertainment/Retail': 1,    # High traffic
         'Public Buildings': 0.5,        # Moderate institutional traffic
         'Residential': 0.3,              # Moderate residential traffic
         'Public Open Space': 0.2         # Lower recreational traffic

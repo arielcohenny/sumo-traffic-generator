@@ -118,7 +118,7 @@ class TestTrafficGeneration:
             "--grid_dimension", "3",
             "--num_vehicles", "20",
             "--routing_strategy", "shortest 100",
-            "--vehicle_types", "passenger 80 commercial 20",
+            "--vehicle_types", "passenger 80 public 20",
             "--end-time", "60",
             "--seed", "42"
         ])
@@ -134,7 +134,7 @@ class TestTrafficGeneration:
         rou_content = rou_file.read_text()
         assert "<vehicle" in rou_content, "No vehicles in route file"
         assert 'type="passenger"' in rou_content, "Passenger vehicles not found"
-        assert 'type="commercial"' in rou_content, "Commercial vehicles not found"
+        assert 'type="public"' in rou_content, "Public vehicles not found"
 
     @pytest.mark.integration
     @pytest.mark.parametrize("departure_pattern", ["uniform", "six_periods"])
@@ -241,7 +241,7 @@ class TestPipelineSequence:
             "--lane_count", "realistic",
             "--num_vehicles", "25",
             "--routing_strategy", "shortest 70 realtime 30",
-            "--vehicle_types", "passenger 60 commercial 30 public 10",
+            "--vehicle_types", "passenger 90 public 10",
             "--departure_pattern", "six_periods",
             "--traffic_light_strategy", "opposites",
             "--traffic_control", "tree_method",
@@ -257,7 +257,7 @@ class TestPipelineSequence:
         assertions.assert_all_files_generated()
         assertions.assert_network_properties(expected_edges_min=10, expected_junctions_min=6)
         assertions.assert_vehicle_metrics_within_bounds(min_departed=15, max_travel_time=300)
-        assertions.assert_vehicle_types_generated(["passenger", "commercial", "public"])
+        assertions.assert_vehicle_types_generated(["passenger", "public"])
         assertions.assert_tree_method_active()
 
     @pytest.mark.integration

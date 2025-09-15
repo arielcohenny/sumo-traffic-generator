@@ -94,7 +94,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --time_dependent \
   --start_time_hour 7.0 \
   --routing_strategy 'shortest 70 realtime 30' \
-  --vehicle_types 'passenger 70 commercial 20 public 10' \
+  --vehicle_types 'passenger 90 public 10' \
   --departure_pattern six_periods \
   --traffic_control tree_method \
   --gui
@@ -177,7 +177,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 -
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1000 --step-length 1.0 --end-time 9000 --departure_pattern six_periods --routing_strategy 'shortest 40 realtime 60' --seed 123 --gui
 
 # Scenario 10: Multi-Modal Traffic Mix
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 850 --step-length 1.0 --end-time 16200 --departure_pattern six_periods --vehicle_types 'passenger 50 commercial 40 public 10' --attractiveness land_use --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 850 --step-length 1.0 --end-time 16200 --departure_pattern six_periods --vehicle_types 'passenger 90 public 10' --attractiveness land_use --gui
 
 # Quick Development Tests
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 500 --end-time 1800 --gui
@@ -334,7 +334,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-see
   - Land use zone clustering and type assignment
   - Edge attractiveness value generation
   
-- **`--private-traffic-seed`**: Controls passenger and commercial vehicle generation
+- **`--private-traffic-seed`**: Controls passenger vehicle generation
   - Vehicle type assignment for private vehicles
   - Route generation (start/end edges, path computation)
   - Departure time generation for private vehicles
@@ -426,7 +426,7 @@ Central configuration in `src/config.py` using dataclasses:
 - `LAMBDA_DEPART = 3.5`, `LAMBDA_ARRIVE = 2.0`: Poisson distribution parameters for edge attractiveness
 - `DEFAULT_JUNCTION_RADIUS = 10.0`: Junction radius in meters
 - `DEFAULT_ROUTING_STRATEGY = "shortest 100"`: Default routing strategy
-- `DEFAULT_VEHICLE_TYPES = "passenger 60 commercial 30 public 10"`: Default vehicle distribution
+- `DEFAULT_VEHICLE_TYPES = "passenger 90 public 10"`: Default vehicle distribution
 
 ### Land Use Zone Generation System
 
@@ -544,11 +544,11 @@ dbps
   - Dynamic rerouting via TraCI for realtime and fastest strategies
   - Integration with existing temporal and attractiveness systems
   - Research-based implementation mimicking GPS navigation apps
-- **3-Type Vehicle System**:
-  - Three vehicle types: passenger (cars), commercial (trucks), public (buses)
-  - Percentage-based vehicle assignment with CLI support (e.g., "passenger 70 commercial 20 public 10")
+- **2-Type Vehicle System**:
+  - Two vehicle types: passenger (cars), public (buses)
+  - Percentage-based vehicle assignment with CLI support (e.g., "passenger 90 public 10")
   - Validation ensures percentages sum to 100%
-  - Default distribution: 60% passenger, 30% commercial, 10% public
+  - Default distribution: 90% passenger, 10% public
   - Each type has distinct characteristics: length, maxSpeed, acceleration, deceleration, sigma
   - Seamless integration with routing strategies and temporal systems
 - **Traffic Light Strategies**:

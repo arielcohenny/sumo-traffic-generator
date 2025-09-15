@@ -7,8 +7,8 @@ def parse_vehicle_types(vehicle_types_arg: str) -> Dict[str, float]:
     Parse vehicle types argument into percentages dictionary.
 
     Examples:
-    - "passenger 60 commercial 30 public 10" -> {"passenger": 60.0, "commercial": 30.0, "public": 10.0}
-    - "passenger 70 commercial 20 public 10" -> {"passenger": 70.0, "commercial": 20.0, "public": 10.0}
+    - "passenger 90 public 10" -> {"passenger": 90.0, "public": 10.0}
+    - "passenger 80 public 20" -> {"passenger": 80.0, "public": 20.0}
     - "passenger 100" -> {"passenger": 100.0}
 
     Args:
@@ -29,7 +29,7 @@ def parse_vehicle_types(vehicle_types_arg: str) -> Dict[str, float]:
         raise ValueError(
             "Vehicle types format: 'type1 percentage1 type2 percentage2 ...'")
 
-    valid_types = {"passenger", "commercial", "public"}
+    valid_types = {"passenger", "public"}
     percentages = {}
 
     for i in range(0, len(tokens), 2):
@@ -69,7 +69,7 @@ def get_vehicle_weights(vehicle_distribution: Dict[str, float]) -> tuple:
         Tuple of (vehicle_type_names, weights) in consistent order
     """
     # Ensure consistent ordering
-    ordered_types = ["passenger", "commercial", "public"]
+    ordered_types = ["passenger", "public"]
 
     vehicle_names = []
     weights = []
@@ -91,7 +91,7 @@ def get_vehicle_weights(vehicle_distribution: Dict[str, float]) -> tuple:
     Raises:
         ValueError: If required vehicle types are missing or invalid
     """
-    required_types = {"passenger", "commercial", "public"}
+    required_types = {"passenger", "public"}
     available_types = set(vehicle_types_dict.keys())
 
     missing_types = required_types - available_types

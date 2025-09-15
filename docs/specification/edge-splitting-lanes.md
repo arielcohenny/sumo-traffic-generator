@@ -69,7 +69,7 @@
 - **Land Use Weights**: Apply traffic generation weights by zone type:
   - Mixed: 3.0 (highest traffic generation)
   - Employment: 2.5 (high peak traffic)
-  - Entertainment/Retail: 2.5 (high commercial traffic)
+  - Entertainment/Retail: 2.5 (high traffic)
   - Public Buildings: 2.0 (moderate institutional traffic)
   - Residential: 1.5 (moderate residential traffic)
   - Public Open Space: 1.0 (lower recreational traffic)
