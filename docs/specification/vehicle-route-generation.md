@@ -35,19 +35,7 @@
   - Sigma (driver imperfection): 0.5
 - **Behavior**: Most common vehicle type, represents private transportation
 
-**2. Commercial Vehicles (Default: 30%)**
-
-- **Vehicle Class**: Delivery trucks, freight vehicles, commercial vans
-- **SUMO Definition**: `vClass="truck"`
-- **Physical Characteristics**:
-  - Length: 12.0 meters
-  - Max Speed: 10.0 m/s (36 km/h)
-  - Acceleration: 1.3 m/s²
-  - Deceleration: 4.0 m/s²
-  - Sigma (driver imperfection): 0.5
-- **Behavior**: Larger, slower vehicles representing freight and delivery traffic
-
-**3. Public Transportation (Default: 10%)**
+**2. Public Transportation (Default: 10%)**
 
 - **Vehicle Class**: Buses, public transit vehicles
 - **SUMO Definition**: `vClass="bus"`
@@ -62,7 +50,7 @@
 **Vehicle Type Validation:**
 
 - **Percentage Sum**: Must total exactly 100%
-- **Format**: "passenger 70 commercial 20 public 10"
+- **Format**: "passenger 90 public 10"
 - **Assignment**: Each generated vehicle randomly assigned type based on percentages
 
 ### Departure Pattern System
@@ -91,11 +79,6 @@
 
 - **Format**: Defines specific rush hour periods with percentages, remainder distributed to other times
 - **Flexibility**: Allows custom peak periods for specific scenarios
-
-**4. Granular Hourly Pattern ("hourly:7:25,8:35,rest:5")**
-
-- **Format**: Assigns specific percentages to individual hours
-- **Control**: Fine-grained temporal control for detailed analysis
 
 ### Routing Strategy System (4-Strategy Classification)
 
@@ -129,7 +112,7 @@
 - **Algorithm**: Multi-criteria routing considering both travel time and edge attractiveness
 - **Behavior**: Vehicles prefer routes through higher-attractiveness areas
 - **Implementation**: Custom routing algorithm incorporating attractiveness weights
-- **Characteristics**: Simulates preference for main roads or commercial areas
+- **Characteristics**: Simulates preference for main roads or destination areas
 
 **Strategy Mixing:**
 

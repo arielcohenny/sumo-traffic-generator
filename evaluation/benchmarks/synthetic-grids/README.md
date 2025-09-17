@@ -131,8 +131,8 @@ The framework uses a single configuration file that controls all experimental pa
   },
   "shared_parameters": {
     "vehicle_types": [
-      "passenger 60 commercial 30 public 10",
-      "passenger 50 commercial 30 public 20"
+      "passenger 90 public 10",
+      "passenger 80 public 20"
     ],
     "routing_strategies": [
       "shortest 80 realtime 20",
@@ -163,7 +163,7 @@ Example - Adding a new vehicle type:
 ```bash
 # Edit the config file
 vim experiment_config.json
-# Add "passenger 70 commercial 25 public 5" to vehicle_types array
+# Add "passenger 95 public 5" to vehicle_types array
 
 # Run experiments - they automatically use the new configuration
 ./run_all_experiments.sh

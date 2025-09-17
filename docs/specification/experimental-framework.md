@@ -92,7 +92,7 @@ python analyze_results.py
 
 **Experimental Matrix per Grid**:
 - **Vehicle Count Levels**: 3 different traffic volumes
-- **Vehicle Types**: 2 distribution patterns (passenger/commercial/public)
+- **Vehicle Types**: 2 distribution patterns (passenger/public)
 - **Routing Strategies**: 3 approaches (shortest/realtime/fastest)
 - **Departure Patterns**: 3 temporal distributions
 - **Simulation Durations**: 2 time horizons
@@ -118,7 +118,7 @@ python analyze_results.py
     "9x9": {"vehicle_counts": [1500, 2250, 3000]}
   },
   "shared_parameters": {
-    "vehicle_types": ["passenger 60 commercial 30 public 10", "passenger 70 commercial 20 public 10"],
+    "vehicle_types": ["passenger 90 public 10", "passenger 80 public 20"],
     "routing_strategies": ["shortest 100", "realtime 60 fastest 40", "shortest 50 realtime 50"],
     "departure_patterns": ["uniform", "six_periods", "rush_hours:7-9:40,17-19:40,rest:20"]
   }

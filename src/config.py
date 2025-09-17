@@ -61,12 +61,11 @@ class _Config:
         # ---------- vehicle generation ----------
         self.vehicle_types = {
             "passenger": {"length": 5.0, "maxSpeed": 13.9, "accel": 2.6, "decel": 4.5, "sigma": 0.5},
-            "commercial": {"length": 12.0, "maxSpeed": 10.0, "accel": 1.3, "decel": 3.5, "sigma": 0.5},
             "public": {"length": 10.0, "maxSpeed": 11.1, "accel": 1.8, "decel": 4.0, "sigma": 0.5},
         }
 
         # Default vehicle type distribution (must sum to 100)
-        self.default_vehicle_distribution = {"passenger": 60.0, "commercial": 30.0, "public": 10.0}
+        self.default_vehicle_distribution = {"passenger": 90.0, "public": 10.0}
 
         # ---------- simulation parameters ----------
         self.RNG_SEED = 42
@@ -74,8 +73,8 @@ class _Config:
         self.HEAD_DISTANCE = 50  # head distance from the downstream end when splitting edges
         self.MIN_LANES = MIN_LANE_COUNT  # Backward compatibility alias
         self.MAX_LANES = MAX_LANE_COUNT  # Backward compatibility alias
-        self.LAMBDA_DEPART = 3.5  # edge attractiveness
-        self.LAMBDA_ARRIVE = 2.0
+        self.LAMBDA_DEPART = 10.0  # edge attractiveness (increased for 1-20 range)
+        self.LAMBDA_ARRIVE = 10.0  # edge attractiveness (increased for 1-20 range)
 
         # ---------- simulation verification ----------
         self.SIMULATION_VERIFICATION_FREQUENCY = 30  # Verify algorithm every N simulation steps

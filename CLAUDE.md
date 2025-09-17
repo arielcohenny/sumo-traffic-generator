@@ -94,7 +94,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --time_dependent \
   --start_time_hour 7.0 \
   --routing_strategy 'shortest 70 realtime 30' \
-  --vehicle_types 'passenger 70 commercial 20 public 10' \
+  --vehicle_types 'passenger 90 public 10' \
   --departure_pattern six_periods \
   --traffic_control tree_method \
   --gui
@@ -177,7 +177,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 -
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1000 --step-length 1.0 --end-time 9000 --departure_pattern six_periods --routing_strategy 'shortest 40 realtime 60' --seed 123 --gui
 
 # Scenario 10: Multi-Modal Traffic Mix
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 850 --step-length 1.0 --end-time 16200 --departure_pattern six_periods --vehicle_types 'passenger 50 commercial 40 public 10' --attractiveness hybrid --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 850 --step-length 1.0 --end-time 16200 --departure_pattern six_periods --vehicle_types 'passenger 90 public 10' --attractiveness land_use --gui
 
 # Quick Development Tests
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 500 --end-time 1800 --gui
@@ -294,6 +294,63 @@ cd evaluation/benchmarks/experiment-01-moderate-traffic && ./run_experiment.sh
 # Recommended: black, flake8/ruff, mypy
 ```
 
+## Seed System (Multiple Seeds Support)
+
+The system supports both single and multiple seed configurations for fine-grained experimental control:
+
+### Single Seed (Backward Compatible)
+
+```bash
+# Traditional approach - sets all seeds to the same value
+env PYTHONUNBUFFERED=1 python -m src.cli --seed 42 --num_vehicles 100 --gui
+```
+
+### Multiple Seeds (Advanced Control)
+
+For research and experimentation, you can control different aspects independently:
+
+```bash
+# Network structure vs traffic separation
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --network-seed 42 \
+  --private-traffic-seed 123 \
+  --public-traffic-seed 456 \
+  --num_vehicles 100 --gui
+
+# Example: Same network, different private traffic patterns
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 100 --public-traffic-seed 200 --num_vehicles 100
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 101 --public-traffic-seed 200 --num_vehicles 100  # Different private traffic, same public
+
+# Example: Same private traffic, different public transportation
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 100 --public-traffic-seed 200 --num_vehicles 100
+env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-seed 100 --public-traffic-seed 201 --num_vehicles 100  # Same private traffic, different public
+```
+
+### Seed Types
+
+- **`--network-seed`**: Controls network structure generation
+  - Junction removal selection
+  - Lane count assignment (when using "random" algorithm)  
+  - Land use zone clustering and type assignment
+  - Edge attractiveness value generation
+  
+- **`--private-traffic-seed`**: Controls passenger vehicle generation
+  - Vehicle type assignment for private vehicles
+  - Route generation (start/end edges, path computation)
+  - Departure time generation for private vehicles
+  
+- **`--public-traffic-seed`**: Controls public transportation vehicle generation
+  - Vehicle type assignment for public vehicles
+  - Route generation for public vehicles
+  - Departure time generation for public vehicles
+
+### Use Cases
+
+1. **Network Sensitivity Analysis**: Keep traffic patterns constant while testing different network topologies
+2. **Traffic Pattern Studies**: Keep network constant while varying private vs public traffic scenarios
+3. **Public Transport Planning**: Test different public transport schedules against consistent private traffic
+4. **Reproducible Research**: Enable precise control over experimental variables for scientific studies
+
 ## Architecture Overview
 
 ### Pipeline Architecture
@@ -369,7 +426,7 @@ Central configuration in `src/config.py` using dataclasses:
 - `LAMBDA_DEPART = 3.5`, `LAMBDA_ARRIVE = 2.0`: Poisson distribution parameters for edge attractiveness
 - `DEFAULT_JUNCTION_RADIUS = 10.0`: Junction radius in meters
 - `DEFAULT_ROUTING_STRATEGY = "shortest 100"`: Default routing strategy
-- `DEFAULT_VEHICLE_TYPES = "passenger 60 commercial 30 public 10"`: Default vehicle distribution
+- `DEFAULT_VEHICLE_TYPES = "passenger 90 public 10"`: Default vehicle distribution
 
 ### Land Use Zone Generation System
 
@@ -474,7 +531,7 @@ dbps
   - Even distribution of tail lanes to head lanes for optimal traffic flow
   - **Recent Fixes**: Resolved TraCI integration errors and XML parsing issues (Phase handling, Vehicle ID extraction)
 - **Lane Count Algorithms**: Three modes for lane assignment - `realistic` (zone-based demand calculation), `random` (randomized within bounds), and `fixed` (uniform count)
-- **Edge Attractiveness Methods**: Five research-based methods (land_use, poisson, gravity, iac, hybrid) with 4-phase temporal system
+- **Edge Attractiveness Methods**: Three research-based methods (land_use, poisson, iac) with 4-phase temporal system
 - **4-Phase Temporal System**:
   - Research-based bimodal traffic patterns with morning/evening peaks
   - Pre-calculated attractiveness profiles for efficient simulation
@@ -487,11 +544,11 @@ dbps
   - Dynamic rerouting via TraCI for realtime and fastest strategies
   - Integration with existing temporal and attractiveness systems
   - Research-based implementation mimicking GPS navigation apps
-- **3-Type Vehicle System**:
-  - Three vehicle types: passenger (cars), commercial (trucks), public (buses)
-  - Percentage-based vehicle assignment with CLI support (e.g., "passenger 70 commercial 20 public 10")
+- **2-Type Vehicle System**:
+  - Two vehicle types: passenger (cars), public (buses)
+  - Percentage-based vehicle assignment with CLI support (e.g., "passenger 90 public 10")
   - Validation ensures percentages sum to 100%
-  - Default distribution: 60% passenger, 30% commercial, 10% public
+  - Default distribution: 90% passenger, 10% public
   - Each type has distinct characteristics: length, maxSpeed, acceleration, deceleration, sigma
   - Seamless integration with routing strategies and temporal systems
 - **Traffic Light Strategies**:
@@ -499,7 +556,7 @@ dbps
 - **Vehicle Departure Patterns**:
   - Replaced sequential departure (0, 1, 2, 3...) with realistic temporal distribution based on research papers
   - Default: six_periods system with research-based 6-period daily structure (Morning 20%, Morning Rush 30%, Noon 25%, Evening Rush 20%, Evening 4%, Night 1%)
-  - Alternative patterns: uniform distribution, custom rush_hours, granular hourly control
+  - Alternative patterns: uniform distribution, custom rush_hours
   - Automatically scales to simulation end_time (default 24 hours)
   - Compatible with all routing strategies and vehicle types
   - CLI support via --traffic_light_strategy parameter

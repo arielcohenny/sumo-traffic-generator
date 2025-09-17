@@ -10,12 +10,14 @@ from src.config import CONFIG
 from src.constants import (
     DEFAULT_GRID_DIMENSION, DEFAULT_BLOCK_SIZE_M, DEFAULT_JUNCTIONS_TO_REMOVE,
     DEFAULT_LANE_COUNT, DEFAULT_NUM_VEHICLES, DEFAULT_ROUTING_STRATEGY,
-    DEFAULT_VEHICLE_TYPES, DEFAULT_DEPARTURE_PATTERN, DEFAULT_STEP_LENGTH,
+    DEFAULT_VEHICLE_TYPES, DEFAULT_PASSENGER_ROUTES, DEFAULT_PUBLIC_ROUTES,
+    DEFAULT_DEPARTURE_PATTERN, DEFAULT_STEP_LENGTH,
     DEFAULT_END_TIME, DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_ATTRACTIVENESS,
     DEFAULT_START_TIME_HOUR, DEFAULT_TRAFFIC_LIGHT_STRATEGY, 
     DEFAULT_TRAFFIC_CONTROL, DEFAULT_BOTTLENECK_DETECTION_INTERVAL,
     DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL,
-    MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL, DEFAULT_WORKSPACE_DIR
+    MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL, DEFAULT_WORKSPACE_DIR,
+    UNIFORM_DEPARTURE_PATTERN, SENTINEL_START_TIME_HOUR, SENTINEL_END_TIME
 )
 
 
@@ -106,13 +108,25 @@ def _add_traffic_arguments(parser: argparse.ArgumentParser) -> None:
         "--vehicle_types",
         type=str,
         default=DEFAULT_VEHICLE_TYPES,
-        help=f"Vehicle types with percentages (e.g., 'passenger 70 commercial 20 public 10'). Default: '{DEFAULT_VEHICLE_TYPES}'"
+        help=f"Vehicle types with percentages (e.g., 'passenger 90 public 10'). Default: '{DEFAULT_VEHICLE_TYPES}'"
     )
     parser.add_argument(
         "--departure_pattern",
         type=str,
         default=DEFAULT_DEPARTURE_PATTERN,
-        help=f"Vehicle departure pattern: '{DEFAULT_DEPARTURE_PATTERN}' (default, even distribution), 'six_periods' (research-based), 'rush_hours:7-9:40,17-19:30,rest:10', or 'hourly:7:25,8:35,rest:5'"
+        help=f"Vehicle departure pattern: '{DEFAULT_DEPARTURE_PATTERN}' (default, even distribution), 'six_periods' (research-based), 'rush_hours:7-9:40,17-19:30,rest:10'"
+    )
+    parser.add_argument(
+        "--passenger-routes",
+        type=str,
+        default=DEFAULT_PASSENGER_ROUTES,
+        help=f"Passenger vehicle route patterns with percentages (e.g., 'in 30 out 30 inner 25 pass 15'). Default: '{DEFAULT_PASSENGER_ROUTES}'"
+    )
+    parser.add_argument(
+        "--public-routes",
+        type=str,
+        default=DEFAULT_PUBLIC_ROUTES,
+        help=f"Public vehicle route patterns with percentages (e.g., 'in 25 out 25 inner 35 pass 15'). Default: '{DEFAULT_PUBLIC_ROUTES}'"
     )
 
 
@@ -121,7 +135,26 @@ def _add_simulation_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--seed",
         type=int,
-        help="Seed for generating randomness. If not provided, a random seed will be used."
+        help="Seed for generating randomness. If not provided, a random seed will be used. "
+             "Sets all seeds (network, private-traffic, public-traffic) to the same value."
+    )
+    parser.add_argument(
+        "--network-seed",
+        type=int,
+        help="Seed for network structure generation (junction removal, lane assignment, "
+             "land use, edge attractiveness). If not provided, uses --seed or random seed."
+    )
+    parser.add_argument(
+        "--private-traffic-seed",
+        type=int,
+        help="Seed for private traffic generation (passenger vehicles only). "
+             "If not provided, uses --seed or random seed."
+    )
+    parser.add_argument(
+        "--public-traffic-seed",
+        type=int,
+        help="Seed for public traffic generation (public vehicles). "
+             "If not provided, uses --seed or random seed."
     )
     parser.add_argument(
         "--step-length",
@@ -132,8 +165,8 @@ def _add_simulation_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--end-time",
         type=int,
-        default=DEFAULT_END_TIME,
-        help=f"Total simulation duration in seconds. Default is {DEFAULT_END_TIME} (2 hours)."
+        default=SENTINEL_END_TIME,
+        help=f"Total simulation duration in seconds. Default is {DEFAULT_END_TIME} (2 hours). Note: Only configurable with '{UNIFORM_DEPARTURE_PATTERN}' departure pattern; other patterns require 86400s (24h)."
     )
     parser.add_argument(
         "--gui",
@@ -160,19 +193,14 @@ def _add_zone_arguments(parser: argparse.ArgumentParser) -> None:
         "--attractiveness",
         type=str,
         default=DEFAULT_ATTRACTIVENESS,
-        choices=["poisson", "land_use", "gravity", "iac", "hybrid"],
-        help=f"Edge attractiveness method: '{DEFAULT_ATTRACTIVENESS}' (default), 'land_use', 'gravity', 'iac', or 'hybrid'."
-    )
-    parser.add_argument(
-        "--time_dependent",
-        action="store_true",
-        help="Apply 4-phase time-of-day variations to the selected attractiveness method"
+        choices=["poisson", "land_use", "iac"],
+        help=f"Edge attractiveness method: '{DEFAULT_ATTRACTIVENESS}' (default), 'land_use', or 'iac'."
     )
     parser.add_argument(
         "--start_time_hour",
         type=float,
-        default=DEFAULT_START_TIME_HOUR,
-        help=f"Real-world hour when simulation starts (0-24, default: {DEFAULT_START_TIME_HOUR} for midnight)"
+        default=SENTINEL_START_TIME_HOUR,
+        help=f"Real-world hour when simulation starts (0-24, default: {DEFAULT_START_TIME_HOUR} for midnight). Note: Only configurable with '{UNIFORM_DEPARTURE_PATTERN}' departure pattern; other patterns require 0.0 (midnight)."
     )
 
 

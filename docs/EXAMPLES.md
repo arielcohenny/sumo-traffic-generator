@@ -73,7 +73,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 200 -
 Mixed vehicle types with land use attractiveness model.
 
 ```bash
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 850 --vehicle_types 'passenger 50 commercial 40 public 10' --attractiveness land_use --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 850 --vehicle_types 'passenger 50 public 50' --attractiveness land_use --gui
 ```
 
 ### Advanced Routing
@@ -81,7 +81,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 -
 Three-strategy routing mix with time-dependent traffic patterns.
 
 ```bash
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 4 --num_vehicles 600 --routing_strategy 'shortest 40 realtime 30 fastest 30' --time_dependent --end-time 3600 --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 4 --num_vehicles 600 --routing_strategy 'shortest 40 realtime 30 fastest 30' --end-time 3600 --gui
 ```
 
 ### Extended Simulation
@@ -89,7 +89,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 4 --num_vehicles 600 -
 Full 24-hour city simulation with temporal traffic patterns.
 
 ```bash
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 7500 --end-time 86400 --departure_pattern six_periods --time_dependent --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 7500 --end-time 86400 --departure_pattern six_periods  --gui
 ```
 
 ### Weekend Pattern
@@ -97,6 +97,5 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 7500 
 Low-density weekend traffic with uniform departure timing.
 
 ```bash
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 400 --departure_pattern uniform --start_time_hour 10.0 --attractiveness hybrid --end-time 7200 --gui
+env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 400 --departure_pattern uniform --start_time_hour 10.0 --attractiveness land_use --end-time 7200 --gui
 ```
-

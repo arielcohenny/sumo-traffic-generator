@@ -13,7 +13,7 @@
 
 - **Step**: Execute SUMO simulation with real-time traffic control integration
 - **Function**: `SumoController.run()` in `src/sumo_integration/sumo_controller.py`
-- **Arguments Used**: `--traffic_control`, `--gui`, `--step_length`, `--end_time`, `--time_dependent`, `--start_time_hour`, `--routing_strategy`
+- **Arguments Used**: `--traffic_control`, `--gui`, `--step_length`, `--end_time`, `--start_time_hour`, `--routing_strategy`
 - **Input Files**:
   - `workspace/grid.sumocfg` (SUMO configuration file)
   - `workspace/grid.net.xml` (complete network with attractiveness)

@@ -13,12 +13,12 @@ from src.constants import (
     DEFAULT_GRID_DIMENSION, DEFAULT_BLOCK_SIZE_M, DEFAULT_FIXED_LANE_COUNT,
     DEFAULT_NUM_VEHICLES, DEFAULT_SHORTEST_ROUTING_PCT, DEFAULT_REALTIME_ROUTING_PCT,
     DEFAULT_FASTEST_ROUTING_PCT, DEFAULT_ATTRACTIVENESS_ROUTING_PCT,
-    DEFAULT_PASSENGER_VEHICLE_PCT, DEFAULT_COMMERCIAL_VEHICLE_PCT, DEFAULT_PUBLIC_VEHICLE_PCT,
-    DEFAULT_SEED, DEFAULT_STEP_LENGTH, DEFAULT_END_TIME, DEFAULT_LAND_USE_BLOCK_SIZE_M,
-    DEFAULT_START_TIME_HOUR, DEFAULT_BOTTLENECK_DETECTION_INTERVAL, DEFAULT_ATLCS_INTERVAL,
-    DEFAULT_TREE_METHOD_INTERVAL, DEFAULT_ATTRACTIVENESS, DEFAULT_LANE_COUNT,
-    DEFAULT_DEPARTURE_PATTERN, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL,
-    
+    DEFAULT_PASSENGER_VEHICLE_PCT, DEFAULT_PUBLIC_VEHICLE_PCT, DEFAULT_PASSENGER_ROUTES,
+    DEFAULT_PUBLIC_ROUTES, DEFAULT_SEED, DEFAULT_STEP_LENGTH, DEFAULT_END_TIME,
+    DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_START_TIME_HOUR, DEFAULT_BOTTLENECK_DETECTION_INTERVAL,
+    DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL, DEFAULT_ATTRACTIVENESS, DEFAULT_LANE_COUNT,
+    DEFAULT_DEPARTURE_PATTERN, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL, DEPARTURE_PATTERN_RUSH_HOURS, DEPARTURE_PATTERN_SIX_PERIODS, DEPARTURE_PATTERN_UNIFORM,
+
     # Min/Max Values
     MIN_GRID_DIMENSION, MAX_GRID_DIMENSION, MIN_BLOCK_SIZE_M, MAX_BLOCK_SIZE_M,
     MIN_LANE_COUNT, MAX_LANE_COUNT, MIN_NUM_VEHICLES, MAX_NUM_VEHICLES,
@@ -27,17 +27,20 @@ from src.constants import (
     MIN_START_TIME_HOUR, MAX_START_TIME_HOUR, MIN_BOTTLENECK_DETECTION_INTERVAL,
     MAX_BOTTLENECK_DETECTION_INTERVAL, MIN_ATLCS_INTERVAL, MAX_ATLCS_INTERVAL,
     MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL,
-    
+
     # Step Values
     STEP_BLOCK_SIZE_M, STEP_NUM_VEHICLES, STEP_LENGTH_STEP, STEP_END_TIME,
     STEP_LAND_USE_BLOCK_SIZE_M, STEP_START_TIME_HOUR, STEP_TREE_METHOD_INTERVAL,
-    
+
     # Rush Hours Values
-    DEFAULT_MORNING_START, DEFAULT_MORNING_END, DEFAULT_MORNING_PCT,
-    DEFAULT_EVENING_START, DEFAULT_EVENING_END, DEFAULT_EVENING_PCT, DEFAULT_REST_PCT,
-    
+    RUSH_HOUR_MORNING_START, RUSH_HOUR_MORNING_END, DEFAULT_MORNING_PCT,
+    RUSH_HOUR_EVENING_START, RUSH_HOUR_EVENING_END, DEFAULT_EVENING_PCT, DEFAULT_REST_PCT,
+
     # Other Constants
-    TEMP_FILE_PREFIX, DEFAULT_WORKSPACE_DIR
+    TEMP_FILE_PREFIX, DEFAULT_WORKSPACE_DIR,
+
+    # Departure Pattern Constraints
+    UNIFORM_DEPARTURE_PATTERN, FIXED_START_TIME_HOUR
 )
 
 
@@ -50,7 +53,6 @@ class ParameterWidgets:
         params = {}
 
         st.subheader("🏗️ Network Configuration")
-
 
         params["grid_dimension"] = st.number_input(
             "Grid Dimension",
@@ -140,37 +142,37 @@ class ParameterWidgets:
 
         with routing_col1:
             shortest_pct = st.number_input(
-                "Shortest %", 
-                min_value=MIN_PERCENTAGE, 
-                max_value=MAX_PERCENTAGE, 
-                value=DEFAULT_SHORTEST_ROUTING_PCT, 
+                "Shortest %",
+                min_value=MIN_PERCENTAGE,
+                max_value=MAX_PERCENTAGE,
+                value=DEFAULT_SHORTEST_ROUTING_PCT,
                 key="shortest",
                 help="Static shortest path by distance using Dijkstra algorithm. Routes computed once, never change during simulation. Minimizes total distance traveled."
             )
         with routing_col2:
             realtime_pct = st.number_input(
-                "Realtime %", 
-                min_value=MIN_PERCENTAGE, 
-                max_value=MAX_PERCENTAGE, 
-                value=DEFAULT_REALTIME_ROUTING_PCT, 
+                "Realtime %",
+                min_value=MIN_PERCENTAGE,
+                max_value=MAX_PERCENTAGE,
+                value=DEFAULT_REALTIME_ROUTING_PCT,
                 key="realtime",
                 help="Dynamic routing that responds to current traffic conditions. 30-second rerouting intervals. Uses real-time traffic data to avoid congestion, like GPS apps that reroute around traffic jams. → 'What's fastest RIGHT NOW?' (reacts to live traffic)"
             )
         with routing_col3:
             fastest_pct = st.number_input(
-                "Fastest %", 
-                min_value=MIN_PERCENTAGE, 
-                max_value=MAX_PERCENTAGE, 
-                value=DEFAULT_FASTEST_ROUTING_PCT, 
+                "Fastest %",
+                min_value=MIN_PERCENTAGE,
+                max_value=MAX_PERCENTAGE,
+                value=DEFAULT_FASTEST_ROUTING_PCT,
                 key="fastest",
                 help="Dynamic routing optimized for minimum travel time. 45-second rerouting intervals. Focuses on speed/time rather than distance - may choose longer routes if they're faster. → 'What's typically the fastest route?' (optimizes for speed patterns)"
             )
         with routing_col4:
             attractiveness_pct = st.number_input(
-                "Attractiveness %", 
-                min_value=MIN_PERCENTAGE, 
-                max_value=MAX_PERCENTAGE, 
-                value=DEFAULT_ATTRACTIVENESS_ROUTING_PCT, 
+                "Attractiveness %",
+                min_value=MIN_PERCENTAGE,
+                max_value=MAX_PERCENTAGE,
+                value=DEFAULT_ATTRACTIVENESS_ROUTING_PCT,
                 key="attractiveness",
                 help="Multi-criteria routing combining efficiency + destination appeal. Balances shortest/fastest path with attractiveness of areas. Simulates drivers choosing scenic or interesting routes."
             )
@@ -195,27 +197,101 @@ class ParameterWidgets:
 
         # Vehicle types
         st.write("**Vehicle Types**")
-        vehicle_col1, vehicle_col2, vehicle_col3 = st.columns(3)
+        vehicle_col1, vehicle_col2 = st.columns(2)
 
         with vehicle_col1:
             passenger_pct = st.number_input(
                 "Passenger %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_PASSENGER_VEHICLE_PCT, key="passenger")
         with vehicle_col2:
-            commercial_pct = st.number_input(
-                "Commercial %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_COMMERCIAL_VEHICLE_PCT, key="commercial")
-        with vehicle_col3:
             public_pct = st.number_input(
                 "Public %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_PUBLIC_VEHICLE_PCT, key="public")
 
-        total_vehicles = passenger_pct + commercial_pct + public_pct
+        total_vehicles = passenger_pct + public_pct
         if total_vehicles != MAX_PERCENTAGE:
             st.error(
                 f"Vehicle type percentages must sum to {MAX_PERCENTAGE}% (current: {total_vehicles}%)")
 
-        params["vehicle_types"] = f"passenger {passenger_pct} commercial {commercial_pct} public {public_pct}"
+        params["vehicle_types"] = f"passenger {passenger_pct} public {public_pct}"
 
-        # Departure pattern
-        departure_options = ["six_periods", "uniform", "rush_hours", "hourly"]
+        # Route Pattern Configuration
+        st.write("**🚗 Route Pattern Configuration**")
+        st.write("Configure spatial route patterns for different vehicle types")
+
+        # Passenger Route Patterns (show only if passenger percentage > 0)
+        if passenger_pct > 0:
+            st.write("*Passenger Vehicle Route Patterns*")
+            pass_col1, pass_col2, pass_col3, pass_col4 = st.columns(4)
+
+            with pass_col1:
+                passenger_in_pct = st.number_input(
+                    "In-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
+                    value=30, key="passenger_in",
+                    help="Start at network boundary, end inside network (external arrivals)")
+            with pass_col2:
+                passenger_out_pct = st.number_input(
+                    "Out-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
+                    value=30, key="passenger_out",
+                    help="Start inside network, end at boundary (departures to external)")
+            with pass_col3:
+                passenger_inner_pct = st.number_input(
+                    "Inner %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
+                    value=25, key="passenger_inner",
+                    help="Both start and end inside the network (local trips)")
+            with pass_col4:
+                passenger_pass_pct = st.number_input(
+                    "Pass-through %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
+                    value=15, key="passenger_pass",
+                    help="Start at boundary, end at different boundary (transit through area)")
+
+            total_passenger_routes = passenger_in_pct + \
+                passenger_out_pct + passenger_inner_pct + passenger_pass_pct
+            if total_passenger_routes != MAX_PERCENTAGE:
+                st.error(
+                    f"Passenger route percentages must sum to {MAX_PERCENTAGE}% (current: {total_passenger_routes}%)")
+
+            params["passenger_routes"] = f"in {passenger_in_pct} out {passenger_out_pct} inner {passenger_inner_pct} pass {passenger_pass_pct}"
+        else:
+            params["passenger_routes"] = DEFAULT_PASSENGER_ROUTES
+
+        # Public Route Patterns (show only if public percentage > 0)
+        if public_pct > 0:
+            st.write("*Public Vehicle Route Patterns*")
+            pub_col1, pub_col2, pub_col3, pub_col4 = st.columns(4)
+
+            with pub_col1:
+                public_in_pct = st.number_input(
+                    "In-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
+                    value=25, key="public_in",
+                    help="Transit routes bringing people into the urban area")
+            with pub_col2:
+                public_out_pct = st.number_input(
+                    "Out-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
+                    value=25, key="public_out",
+                    help="Transit routes taking people out of the urban area")
+            with pub_col3:
+                public_inner_pct = st.number_input(
+                    "Inner %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
+                    value=35, key="public_inner",
+                    help="Internal transit routes within the urban area")
+            with pub_col4:
+                public_pass_pct = st.number_input(
+                    "Pass-through %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
+                    value=15, key="public_pass",
+                    help="Transit routes passing through the area")
+
+            total_public_routes = public_in_pct + \
+                public_out_pct + public_inner_pct + public_pass_pct
+            if total_public_routes != MAX_PERCENTAGE:
+                st.error(
+                    f"Public route percentages must sum to {MAX_PERCENTAGE}% (current: {total_public_routes}%)")
+
+            params["public_routes"] = f"in {public_in_pct} out {public_out_pct} inner {public_inner_pct} pass {public_pass_pct}"
+        else:
+            params["public_routes"] = DEFAULT_PUBLIC_ROUTES
+
+        # Departure pattern with session state for cross-section coordination
+        departure_options = [DEPARTURE_PATTERN_SIX_PERIODS,
+                             DEPARTURE_PATTERN_UNIFORM, DEPARTURE_PATTERN_RUSH_HOURS]
         departure_pattern = st.selectbox(
             "Departure Pattern",
             departure_options,
@@ -223,19 +299,26 @@ class ParameterWidgets:
             help="How vehicles are distributed over time"
         )
 
+        # Store in session state for other sections to access
+        st.session_state.departure_pattern = departure_pattern
+
+        # Show constraint info for non-uniform patterns
+        if departure_pattern != UNIFORM_DEPARTURE_PATTERN:
+            st.info("ℹ️ **Time constraints**: Non-uniform patterns require midnight start (0.0h) and 24-hour duration (86400s) for realistic daily cycles.")
+
         if departure_pattern == "rush_hours":
             st.write("Custom Rush Hours Pattern:")
             morning_start = st.number_input(
-                "Morning Start", min_value=MIN_PERCENTAGE, max_value=23, value=DEFAULT_MORNING_START, key="morning_start")
+                "Morning Start", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_MORNING_START, key="morning_start")
             morning_end = st.number_input(
-                "Morning End", min_value=MIN_PERCENTAGE, max_value=23, value=DEFAULT_MORNING_END, key="morning_end")
+                "Morning End", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_MORNING_END, key="morning_end")
             morning_pct = st.number_input(
                 "Morning %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_MORNING_PCT, key="morning_pct")
 
             evening_start = st.number_input(
-                "Evening Start", min_value=MIN_PERCENTAGE, max_value=23, value=DEFAULT_EVENING_START, key="evening_start")
+                "Evening Start", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_EVENING_START, key="evening_start")
             evening_end = st.number_input(
-                "Evening End", min_value=MIN_PERCENTAGE, max_value=23, value=DEFAULT_EVENING_END, key="evening_end")
+                "Evening End", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_EVENING_END, key="evening_end")
             evening_pct = st.number_input(
                 "Evening %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_EVENING_PCT, key="evening_pct")
 
@@ -255,27 +338,104 @@ class ParameterWidgets:
 
         st.subheader("⚙️ Simulation Control")
 
-        # Seed configuration
-        use_random_seed = st.checkbox("Use Random Seed", value=True)
-        if use_random_seed:
-            if st.button("Generate New Seed"):
-                import random
-                st.session_state.generated_seed = random.randint(
+        # Seed configuration with multiple seed support
+        seed_mode = st.radio(
+            "Seed Configuration",
+            options=["Single Seed (Simple)", "Multiple Seeds (Advanced)"],
+            help="Single seed sets all seeds to the same value (backward compatible). "
+                 "Multiple seeds allow fine-grained control over network vs traffic generation."
+        )
+
+        if seed_mode == "Single Seed (Simple)":
+            # Original single seed behavior for backward compatibility
+            use_random_seed = st.checkbox("Use Random Seed", value=True)
+            if use_random_seed:
+                if st.button("Generate New Seed"):
+                    import random
+                    st.session_state.generated_seed = random.randint(
+                        MIN_SEED, MAX_SEED)
+
+                if 'generated_seed' not in st.session_state:
+                    st.session_state.generated_seed = DEFAULT_SEED
+
+                params["seed"] = st.session_state.generated_seed
+                st.info(f"Using seed: {params['seed']}")
+            else:
+                params["seed"] = st.number_input(
+                    "Custom Seed",
+                    min_value=MIN_SEED,
+                    max_value=MAX_SEED,
+                    value=DEFAULT_SEED,
+                    help="Reproducible random seed (sets all seeds to same value)"
+                )
+        else:
+            # Multiple seeds mode for advanced control
+            st.markdown(
+                "**Configure seeds for different simulation aspects:**")
+
+            # Initialize session state for seeds with independent random values
+            import random
+            if 'multi_network_seed' not in st.session_state:
+                st.session_state.multi_network_seed = random.randint(
+                    MIN_SEED, MAX_SEED)
+            if 'multi_private_seed' not in st.session_state:
+                st.session_state.multi_private_seed = random.randint(
+                    MIN_SEED, MAX_SEED)
+            if 'multi_public_seed' not in st.session_state:
+                st.session_state.multi_public_seed = random.randint(
                     MIN_SEED, MAX_SEED)
 
-            if 'generated_seed' not in st.session_state:
-                st.session_state.generated_seed = DEFAULT_SEED
+            col1, col2, col3 = st.columns(3)
 
-            params["seed"] = st.session_state.generated_seed
-            st.info(f"Using seed: {params['seed']}")
-        else:
-            params["seed"] = st.number_input(
-                "Custom Seed",
-                min_value=MIN_SEED,
-                max_value=MAX_SEED,
-                value=DEFAULT_SEED,
-                help="Reproducible random seed"
-            )
+            with col1:
+                st.markdown("**Network Structure**")
+                st.caption(
+                    "Junction removal, lanes, land use, edge attractiveness")
+                params["network-seed"] = st.number_input(
+                    "Network Seed",
+                    min_value=MIN_SEED,
+                    max_value=MAX_SEED,
+                    value=st.session_state.multi_network_seed,
+                    help="Seed for network structure generation"
+                )
+                # Update session state when user changes value manually
+                st.session_state.multi_network_seed = params["network-seed"]
+
+            with col2:
+                st.markdown("**Private Traffic**")
+                st.caption("Passenger vehicles only")
+                params["private-traffic-seed"] = st.number_input(
+                    "Private Traffic Seed",
+                    min_value=MIN_SEED,
+                    max_value=MAX_SEED,
+                    value=st.session_state.multi_private_seed,
+                    help="Seed for private vehicle generation"
+                )
+                # Update session state when user changes value manually
+                st.session_state.multi_private_seed = params["private-traffic-seed"]
+
+            with col3:
+                st.markdown("**Public Traffic**")
+                st.caption("Public transportation vehicles")
+                params["public-traffic-seed"] = st.number_input(
+                    "Public Traffic Seed",
+                    min_value=MIN_SEED,
+                    max_value=MAX_SEED,
+                    value=st.session_state.multi_public_seed,
+                    help="Seed for public vehicle generation"
+                )
+                # Update session state when user changes value manually
+                st.session_state.multi_public_seed = params["public-traffic-seed"]
+
+            # Generate completely independent seeds
+            if st.button("Generate New Seeds"):
+                st.session_state.multi_network_seed = random.randint(
+                    MIN_SEED, MAX_SEED)
+                st.session_state.multi_private_seed = random.randint(
+                    MIN_SEED, MAX_SEED)
+                st.session_state.multi_public_seed = random.randint(
+                    MIN_SEED, MAX_SEED)
+                st.rerun()
 
         params["step_length"] = st.number_input(
             "Step Length (seconds)",
@@ -286,22 +446,50 @@ class ParameterWidgets:
             help="Simulation time step granularity in complete seconds"
         )
 
-        # Time input in seconds (no conversion)
-        params["end_time"] = st.number_input(
-            "Simulation Duration (seconds)",
-            min_value=MIN_END_TIME,
-            max_value=MAX_END_TIME,  # 48 hours in seconds
-            value=DEFAULT_END_TIME,  # 24 hours in seconds
-            step=STEP_END_TIME,  # 1 hour increments
-            help="How long to run the simulation in seconds"
-        )
+        # Time input with departure pattern constraints
+        departure_pattern = st.session_state.get(
+            'departure_pattern', DEFAULT_DEPARTURE_PATTERN)
+        is_uniform_pattern = departure_pattern == UNIFORM_DEPARTURE_PATTERN
+
+        if is_uniform_pattern:
+            # Show normal end_time control for uniform pattern
+            params["end_time"] = st.number_input(
+                "Simulation Duration (seconds)",
+                min_value=MIN_END_TIME,
+                max_value=MAX_END_TIME,
+                value=DEFAULT_END_TIME,
+                step=STEP_END_TIME,
+                help="How long to run the simulation in seconds"
+            )
+        else:
+            # Fixed duration for non-uniform patterns
+            params["end_time"] = MAX_END_TIME
+            st.info(
+                f"🕐 **Fixed Duration**: {MAX_END_TIME:,} seconds (24 hours) - required for '{departure_pattern}' pattern")
+
+        # Start time with departure pattern constraints
+        if is_uniform_pattern:
+            # Show normal start_time_hour control for uniform pattern
+            params["start_time_hour"] = st.slider(
+                "Simulation Start Time (hour)",
+                min_value=MIN_START_TIME_HOUR,
+                max_value=MAX_START_TIME_HOUR,
+                value=DEFAULT_START_TIME_HOUR,
+                step=STEP_START_TIME_HOUR,
+                help="Real-world hour when simulation begins (0 = midnight)"
+            )
+        else:
+            # Fixed start time for non-uniform patterns
+            params["start_time_hour"] = FIXED_START_TIME_HOUR
+            st.info(
+                f"🌙 **Fixed Start Time**: {FIXED_START_TIME_HOUR} hours (midnight) - required for '{departure_pattern}' pattern")
 
         params["gui"] = st.checkbox(
             "Launch SUMO GUI",
             value=False,
             help="Open visual simulation interface (slower but interactive)"
         )
-        
+
         params["workspace"] = st.text_input(
             "Workspace Directory",
             value=DEFAULT_WORKSPACE_DIR,
@@ -326,26 +514,12 @@ class ParameterWidgets:
             help="Resolution of zone generation grid"
         )
 
-        attractiveness_options = ["land_use", "poisson", "gravity", "iac", "hybrid"]
+        attractiveness_options = ["land_use", "poisson", "iac"]
         params["attractiveness"] = st.selectbox(
             "Attractiveness Method",
             attractiveness_options,
             index=attractiveness_options.index(DEFAULT_ATTRACTIVENESS),
             help="Algorithm for calculating edge attractiveness"
-        )
-
-        params["time_dependent"] = st.checkbox(
-            "Time-Dependent Attractiveness",
-            help="Apply 4-phase time-of-day variations"
-        )
-
-        params["start_time_hour"] = st.slider(
-            "Simulation Start Time (hour)",
-            min_value=MIN_START_TIME_HOUR,
-            max_value=MAX_START_TIME_HOUR,
-            value=DEFAULT_START_TIME_HOUR,
-            step=STEP_START_TIME_HOUR,
-            help="Real-world hour when simulation begins (0 = midnight)"
         )
 
         return params

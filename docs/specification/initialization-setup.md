@@ -29,13 +29,16 @@
 
 ### `--grid_dimension` (float, default: 5)
 
-Defines the grid's number of rows and columns for synthetic network generation. 
+Defines the grid's number of rows and columns for synthetic network generation.
+
 ### `--block_size_m` (int, default: 200)
 
-Sets block size in meters for grid network generation. 
+Sets block size in meters for grid network generation.
+
 ### `--junctions_to_remove` (str, default: "0")
 
-Number of junctions to remove or comma-separated list of specific junction IDs (e.g., "5" or "A0,B1,C2"). 
+Number of junctions to remove or comma-separated list of specific junction IDs (e.g., "5" or "A0,B1,C2").
+
 ### `--lane_count` (str, default: "realistic")
 
 Sets the lane count. 3 algorithms are available:
@@ -62,21 +65,15 @@ Simulation duration in seconds.
 
 ### `--attractiveness` (str, default: "land_use")
 
-Sets the departure and arrival attractiveness of each edge. Five methods available:
+Sets the departure and arrival attractiveness of each edge. Three methods available:
 
 - `land_use`: Zone-based calculation (default)
 - `poisson`: Random distribution
-- `gravity`: Distance-based model
 - `iac`: Intersection accessibility calculation
-- `hybrid`: Combined approach
-
-### `--time_dependent` (flag)
-
-Applies 4-phase variations to synthetic zone attractiveness.
 
 ### `--start_time_hour` (float, default: 0.0)
 
-Real-world hour when simulation starts (0-24) for temporal attractiveness. Used with `--time_dependent` for phase calculation.
+Real-world hour when simulation starts (0-24) for temporal attractiveness. Used for 4-phase variation calculation.
 
 ### `--departure_pattern` (str, default: "uniform")
 
@@ -85,7 +82,6 @@ Vehicle departure timing. Four patterns available:
 - `six_periods`: Research-based daily structure
 - `uniform`: Even distribution
 - `rush_hours:7-9:40,17-19:30,rest:10`: Custom rush hour definition
-- `hourly:7:25,8:35,rest:5`: Granular hourly control
 
 ### `--routing_strategy` (str, default: "shortest 100")
 
@@ -96,17 +92,17 @@ Vehicle routing behavior. Four strategies with percentage mixing:
 - `fastest`: 45-second fastest path rerouting
 - `attractiveness`: Multi-criteria routing
 
-### `--vehicle_types` (str, default: "passenger 60 commercial 30 public 10")
+### `--vehicle_types` (str, default: "passenger 90 public 10")
 
-Vehicle type distribution. Three types with percentage assignment:
+Vehicle type distribution. Two types with percentage assignment:
 
 - `passenger`: Cars (5.0m length, 13.9 m/s max speed)
-- `commercial`: Trucks (12.0m length, 10.0 m/s max speed)
 - `public`: Buses (10.0m length, 11.1 m/s max speed)
 
 ### `--traffic_light_strategy` (str, default: "opposites")
 
-Applied strategies for traffic lights. Two strategies available. 
+Applied strategies for traffic lights. Two strategies available.
+
 - `opposites`: Opposing directions signal together
 - `incoming`: Each edge gets separate phase
 
@@ -207,7 +203,6 @@ python -m src.cli --traffic_control atlcs --tree-method-interval 90 --bottleneck
 
 Launch SUMO GUI.
 
-
 ### `--land_use_block_size_m` (float, default: 25.0)
 
 Zone cell size in meters for land use zone generation.
@@ -307,7 +302,7 @@ D1E1=tail:2,head:
 - **Current**: Implemented in `parse_vehicle_types()` in `src/traffic/vehicle_types.py`
 - **Checks**:
   - Format validation: Must be pairs of vehicle type + percentage
-  - Valid types: {"passenger", "commercial", "public"}
+  - Valid types: {"passenger", "public"}
   - Percentage range: 0-100 for each type
   - Sum validation: Percentages must sum to exactly 100 (±0.01 tolerance)
   - Type validation: Percentage values must be valid floats
@@ -318,11 +313,9 @@ D1E1=tail:2,head:
 - **Needed Checks**:
   - Valid pattern names: {"six_periods", "uniform"}
   - Format validation for "rush_hours:7-9:40,17-19:30,rest:10"
-  - Format validation for "hourly:7:25,8:35,rest:5"
   - Hour range validation (0-24)
   - Percentage validation for custom patterns
   - Time range validation (start < end hours)
-
 
 ### Numeric Range Validations
 
@@ -358,7 +351,6 @@ D1E1=tail:2,head:
 - **Current**: Not implemented
 - **Needed Checks**:
   - Tree Method sample vs grid parameters (mutually exclusive usage)
-  - Time-dependent features requiring appropriate end-time duration
   - Grid dimension vs junctions to remove capacity limits
   - Traffic light strategy compatibility with network type
 
@@ -367,7 +359,7 @@ D1E1=tail:2,head:
 - **Current**: Implemented via argparse choices
 - **Existing Checks**:
 
-  - `--attractiveness`: {"poisson", "land_use", "gravity", "iac", "hybrid"}
+  - `--attractiveness`: {"poisson", "land_use", "iac"}
   - `--traffic_light_strategy`: {"opposites", "incoming"}
   - `--traffic_control`: {"tree_method", "actuated", "fixed"}
 
