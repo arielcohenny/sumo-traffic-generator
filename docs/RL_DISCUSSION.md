@@ -80,7 +80,7 @@ The input representation defines how traffic conditions are observed and encoded
 - Pros: Direct topology encoding enabling parameter sharing; natural handling of irregular networks; supports transfer to new configurations; captures local and global propagation through message passing.
 - Cons: Requires careful feature engineering; computationally heavier than simpler approaches; limited maturity of GNN architectures for sequential decision-making; complex debugging due to message passing dynamics.
 
-Macroscopic representation provides the best balance of information content and computational efficiency for most traffic control applications. Microscopic detail is rarely necessary since traffic signals operate at aggregate flow levels, while graph-based approaches add complexity that may not justify performance gains for network-specific applications. Multi-scale hybrid approaches should be reserved for scenarios where computational resources are abundant and bottleneck locations are well-identified.
+Macroscopic representation may provide the best balance of information content and computational efficiency for most traffic control applications. Microscopic detail is rarely necessary since traffic signals operate at aggregate flow levels, while graph-based approaches add complexity that may not justify performance gains for network-specific applications. Multi-scale hybrid approaches should be reserved for scenarios where computational resources are abundant and bottleneck locations are well-identified.
 
 ### Reward Design
 
@@ -116,7 +116,7 @@ The reward structure fundamentally determines what behaviors the agent learns an
 - Pros: More frequent feedback reducing learning variance; enables identification of effective decision sequences; better sample efficiency; allows correction of poor strategies mid-episode.
 - Cons: Requires careful frequency tuning to avoid noise; may encourage short-term optimization; computational overhead from frequent measurements; potential interference with long-term learning.
 
-A hybrid approach combining individual vehicle tracking with intermediate global rewards often provides the best balance. Individual vehicle rewards enable precise credit assignment while intermediate global measurements capture coordination effects. The reward frequency should match the time scale of traffic signal effects to balance learning efficiency with computational practicality. Local rewards should be avoided unless computational constraints require distributed learning with minimal communication.
+A hybrid approach combining individual vehicle tracking with intermediate global rewards may provide the best balance. Individual vehicle rewards enable precise credit assignment while intermediate global measurements capture coordination effects. The reward frequency should match the time scale of traffic signal effects to balance learning efficiency with computational practicality. Local rewards should be avoided unless computational constraints require distributed learning with minimal communication.
 
 ### Action Representation
 
@@ -137,7 +137,7 @@ The action space defines how the RL agent controls traffic signal operations. Th
 - Pros: Most realistic reflecting actual signal controller operations; stable learning due to constrained action space; natural enforcement of minimum/maximum timing constraints; enables adaptive timing without complex duration prediction.
 - Cons: Limited ability to skip phases or implement non-sequential strategies; may require multiple decisions to achieve desired timing; less direct control over final phase durations.
 
-Phase selection with fixed durations provides the most stable learning environment and fastest convergence, making it ideal for proof-of-concept research and initial validation. Incremental control offers the best balance of realism and learnability for practical deployment, as it mirrors how actual traffic controllers operate. Phase + duration control should be reserved for scenarios where timing flexibility is critical and sufficient training time is available to handle the increased complexity.
+Phase selection with fixed durations may provide the most stable learning environment and fastest convergence, making it ideal for proof-of-concept research and initial validation. Incremental control offers the best balance of realism and learnability for practical deployment, as it mirrors how actual traffic controllers operate. Phase + duration control should be reserved for scenarios where timing flexibility is critical and sufficient training time is available to handle the increased complexity.
 
 ### Time Resolution
 
@@ -158,7 +158,7 @@ The decision frequency determines how often the RL agent makes control decisions
 - Pros: Most efficient use of decisions; adaptive timing matching traffic needs; natural alignment with signal constraints; reduces unnecessary decisions during stable periods; realistic operational model.
 - Cons: Variable computational load; requires complex state management; may miss gradual traffic changes; implementation complexity; unpredictable decision timing.
 
-Fixed interval decision-making at 5-10 second intervals provides the optimal balance for most applications, offering stable learning while maintaining reasonable responsiveness. Event-driven approaches are most realistic and efficient but require sophisticated implementation. High-frequency decisions should be avoided except in research scenarios specifically studying fine-grained temporal control, as they introduce instability without corresponding performance benefits in traffic control applications.
+Fixed interval decision-making at 5-10 second intervals may provide the optimal balance for most applications, offering stable learning while maintaining reasonable responsiveness. Event-driven approaches are most realistic and efficient but require sophisticated implementation. High-frequency decisions should be avoided except in research scenarios specifically studying fine-grained temporal control, as they introduce instability without corresponding performance benefits in traffic control applications.
 
 ### Exploration & Constraints
 
