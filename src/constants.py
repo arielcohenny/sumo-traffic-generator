@@ -50,6 +50,60 @@ DEFAULT_REALTIME_ROUTING_PCT = 0
 DEFAULT_FASTEST_ROUTING_PCT = 0
 DEFAULT_ATTRACTIVENESS_ROUTING_PCT = 0
 
+# SUMO Routing Modes (from SUMO documentation)
+SUMO_ROUTING_MODE_DEFAULT = 0  # Default routing
+SUMO_ROUTING_MODE_AGGREGATED = 1  # GPS-like with smoothed travel times
+SUMO_ROUTING_MODE_IGNORE_REROUTERS = 8  # Ignore rerouter changes
+SUMO_ROUTING_MODE_AGGREGATED_IGNORE_REROUTERS = 9  # Combined mode
+
+# TraCI Commands (for reference and validation)
+TRACI_CMD_FIND_ROUTE = 0x86
+TRACI_CMD_FIND_INTERMODAL_ROUTE = 0x87
+
+# Rerouting intervals (seconds)
+REALTIME_REROUTING_INTERVAL_SECONDS = 30
+FASTEST_REROUTING_INTERVAL_SECONDS = 45
+ATTRACTIVENESS_REROUTING_INTERVAL_SECONDS = 60
+
+# Route improvement thresholds (percentages)
+REALTIME_ROUTE_IMPROVEMENT_THRESHOLD_PCT = 10
+FASTEST_ROUTE_IMPROVEMENT_THRESHOLD_PCT = 15
+ATTRACTIVENESS_ROUTE_IMPROVEMENT_THRESHOLD_PCT = 12
+
+# Edge metrics for route quality assessment (from SUMO documentation)
+EDGE_CONGESTION_THRESHOLD_SPEED_MS = 5.0  # m/s, below this is congested
+EDGE_HIGH_DENSITY_VEHICLE_COUNT = 20  # vehicles per edge indicating high density
+EDGE_SIGNIFICANT_WAITING_TIME_SEC = 30  # seconds, significant queue delay
+
+# Route quality and performance
+MAX_ROUTE_CHANGES_PER_VEHICLE = 10
+ROUTE_CACHE_TTL_SECONDS = 300
+ENABLE_ROUTE_PERFORMANCE_TRACKING = True
+ROUTE_PERFORMANCE_LOG_INTERVAL = 100
+
+# SUMO-specific constraints (from documentation)
+SUMO_ROUTE_CHANGE_INTERSECTION_RESTRICTION = "Routes can only be changed if vehicle is not within an intersection"
+SUMO_ROUTE_FIRST_EDGE_REQUIREMENT = "First edge in new route must match vehicle's current location"
+
+# Error handling - Program termination codes
+ROUTING_ERROR_REALTIME_FAILED = "ROUTING_001"
+ROUTING_ERROR_FASTEST_FAILED = "ROUTING_002"
+ROUTING_ERROR_ATTRACTIVENESS_FAILED = "ROUTING_003"
+ROUTING_ERROR_INVALID_ROUTE = "ROUTING_004"
+ROUTING_ERROR_INTERSECTION_RESTRICTION = "ROUTING_005"  # SUMO-specific error
+ROUTING_ERROR_STRATEGY_ASSIGNMENT = "ROUTING_006"
+ROUTING_ERROR_XML_PARSING = "ROUTING_007"
+ROUTING_ERROR_MISSING_DATA = "ROUTING_008"
+ROUTING_ERROR_TRACI_FAILURE = "ROUTING_009"
+
+# Error message templates for stderr output before sys.exit(1)
+ROUTING_ERROR_MSG_TEMPLATE = "FATAL ERROR [{code}]: Routing strategy '{strategy}' failed for vehicle '{vehicle_id}': {reason}"
+ROUTING_VALIDATION_ERROR_MSG = "FATAL ERROR [{code}]: Route validation failed for vehicle '{vehicle_id}': {details}"
+SUMO_CONSTRAINT_ERROR_MSG = "FATAL ERROR [{code}]: SUMO routing constraint violated for vehicle '{vehicle_id}': {constraint}"
+XML_PARSING_ERROR_MSG = "FATAL ERROR [{code}]: Vehicle strategy XML parsing failed: {details}"
+MISSING_DATA_ERROR_MSG = "FATAL ERROR [{code}]: Required routing data missing: {details}"
+TRACI_ERROR_MSG = "FATAL ERROR [{code}]: TraCI command failed for vehicle '{vehicle_id}': {command} - {reason}"
+
 # Vehicle Types
 DEFAULT_VEHICLE_TYPES = 'passenger 90 public 10'
 DEFAULT_PASSENGER_VEHICLE_PCT = 90

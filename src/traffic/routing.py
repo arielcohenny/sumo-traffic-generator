@@ -1,10 +1,22 @@
 # src/traffic/routing.py
 from __future__ import annotations
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, NoReturn
 from abc import ABC, abstractmethod
 import random
+import sys
 
-from src.constants import ATTR_CURRENT_PHASE
+from src.constants import (
+    ATTR_CURRENT_PHASE,
+    ROUTING_ERROR_REALTIME_FAILED,
+    ROUTING_ERROR_FASTEST_FAILED,
+    ROUTING_ERROR_ATTRACTIVENESS_FAILED,
+    ROUTING_ERROR_INVALID_ROUTE,
+    ROUTING_ERROR_MSG_TEMPLATE,
+    ROUTING_SHORTEST,
+    ROUTING_REALTIME,
+    ROUTING_FASTEST,
+    ROUTING_ATTRACTIVENESS
+)
 
 
 class RoutingStrategy(ABC):
@@ -26,18 +38,32 @@ class ShortestPathRoutingStrategy(RoutingStrategy):
         self.net = net  # sumolib.net.Net
 
     def compute_route(self, start_edge: str, end_edge: str) -> List[str]:
-        """Compute shortest path by distance."""
+        """Compute shortest path by distance - TERMINATES ON ERROR."""
         try:
             result = self.net.getShortestPath(
                 self.net.getEdge(start_edge),
                 self.net.getEdge(end_edge)
             )
             if not result or result[0] is None:
-                return []
+                error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                    code=ROUTING_ERROR_INVALID_ROUTE,
+                    strategy=ROUTING_SHORTEST,
+                    vehicle_id="N/A",
+                    reason=f"No path found from {start_edge} to {end_edge}"
+                )
+                print(error_msg, file=sys.stderr)
+                sys.exit(1)
             edge_objs, _ = result
             return [e.getID() for e in edge_objs]
-        except Exception:
-            return []
+        except Exception as e:
+            error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                code=ROUTING_ERROR_INVALID_ROUTE,
+                strategy=ROUTING_SHORTEST,
+                vehicle_id="N/A",
+                reason=f"Route computation failed: {str(e)}"
+            )
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
 
 class RealtimeRoutingStrategy(RoutingStrategy):
@@ -51,29 +77,33 @@ class RealtimeRoutingStrategy(RoutingStrategy):
         self.rerouting_interval = rerouting_interval  # seconds between rerouting checks
 
     def compute_route(self, start_edge: str, end_edge: str) -> List[str]:
-        """Compute initial route - will be updated dynamically via TraCI."""
-        # For initial route, use fastest path if available, otherwise shortest
+        """Compute initial route - will be updated dynamically via TraCI - TERMINATES ON ERROR."""
         try:
-            # Try fastest path first (by travel time)
+            # Use fastest path for realtime strategy initial route
             result = self.net.getFastestPath(
                 self.net.getEdge(start_edge),
                 self.net.getEdge(end_edge)
             )
-            if result and result[0] is not None:
-                edge_objs, _ = result
-                return [e.getID() for e in edge_objs]
-
-            # Fallback to shortest path
-            result = self.net.getShortestPath(
-                self.net.getEdge(start_edge),
-                self.net.getEdge(end_edge)
-            )
             if not result or result[0] is None:
-                return []
+                error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                    code=ROUTING_ERROR_REALTIME_FAILED,
+                    strategy=ROUTING_REALTIME,
+                    vehicle_id="N/A",
+                    reason=f"No fastest path found from {start_edge} to {end_edge}"
+                )
+                print(error_msg, file=sys.stderr)
+                sys.exit(1)
             edge_objs, _ = result
             return [e.getID() for e in edge_objs]
-        except Exception:
-            return []
+        except Exception as e:
+            error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                code=ROUTING_ERROR_REALTIME_FAILED,
+                strategy=ROUTING_REALTIME,
+                vehicle_id="N/A",
+                reason=f"Route computation failed: {str(e)}"
+            )
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
 
 class FastestRoutingStrategy(RoutingStrategy):
@@ -87,28 +117,33 @@ class FastestRoutingStrategy(RoutingStrategy):
         self.rerouting_interval = rerouting_interval  # seconds between rerouting checks
 
     def compute_route(self, start_edge: str, end_edge: str) -> List[str]:
-        """Compute fastest path by travel time."""
+        """Compute fastest path by travel time - TERMINATES ON ERROR."""
         try:
             # Use SUMO's fastest path algorithm
             result = self.net.getFastestPath(
                 self.net.getEdge(start_edge),
                 self.net.getEdge(end_edge)
             )
-            if result and result[0] is not None:
-                edge_objs, _ = result
-                return [e.getID() for e in edge_objs]
-
-            # Fallback to shortest path if fastest fails
-            result = self.net.getShortestPath(
-                self.net.getEdge(start_edge),
-                self.net.getEdge(end_edge)
-            )
             if not result or result[0] is None:
-                return []
+                error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                    code=ROUTING_ERROR_FASTEST_FAILED,
+                    strategy=ROUTING_FASTEST,
+                    vehicle_id="N/A",
+                    reason=f"No fastest path found from {start_edge} to {end_edge}"
+                )
+                print(error_msg, file=sys.stderr)
+                sys.exit(1)
             edge_objs, _ = result
             return [e.getID() for e in edge_objs]
-        except Exception:
-            return []
+        except Exception as e:
+            error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                code=ROUTING_ERROR_FASTEST_FAILED,
+                strategy=ROUTING_FASTEST,
+                vehicle_id="N/A",
+                reason=f"Route computation failed: {str(e)}"
+            )
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
 
 class AttractivenessRoutingStrategy(RoutingStrategy):
@@ -132,7 +167,14 @@ class AttractivenessRoutingStrategy(RoutingStrategy):
             )
 
             if not shortest_result or shortest_result[0] is None:
-                return []
+                error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                    code=ROUTING_ERROR_ATTRACTIVENESS_FAILED,
+                    strategy=ROUTING_ATTRACTIVENESS,
+                    vehicle_id="N/A",
+                    reason=f"No shortest path found from {start_edge} to {end_edge}"
+                )
+                print(error_msg, file=sys.stderr)
+                sys.exit(1)
 
             shortest_edges, shortest_cost = shortest_result
 
@@ -167,8 +209,15 @@ class AttractivenessRoutingStrategy(RoutingStrategy):
             best_route = max(routes_with_scores, key=lambda x: x[1])[0]
             return best_route
 
-        except Exception:
-            return []
+        except Exception as e:
+            error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                code=ROUTING_ERROR_ATTRACTIVENESS_FAILED,
+                strategy=ROUTING_ATTRACTIVENESS,
+                vehicle_id="N/A",
+                reason=f"Route computation failed: {str(e)}"
+            )
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
     def _score_route(self, route_edges: List[str], base_cost: float) -> float:
         """Score a route based on efficiency and attractiveness."""
@@ -256,11 +305,16 @@ class RoutingMixStrategy:
         return chosen_strategy
 
     def compute_route(self, strategy_name: str, start_edge: str, end_edge: str) -> List[str]:
-        """Compute route using the specified strategy."""
+        """Compute route using the specified strategy - TERMINATES ON ERROR."""
         if strategy_name not in self.strategies:
-            # Fallback to shortest path
-            return self.strategies.get('shortest',
-                                       ShortestPathRoutingStrategy(self.net)).compute_route(start_edge, end_edge)
+            error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                code=ROUTING_ERROR_INVALID_ROUTE,
+                strategy=strategy_name,
+                vehicle_id="N/A",
+                reason=f"Unknown routing strategy: {strategy_name}"
+            )
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
         return self.strategies[strategy_name].compute_route(start_edge, end_edge)
 
@@ -288,10 +342,16 @@ def parse_routing_strategy(routing_arg: str) -> Dict[str, float]:
 
     tokens = routing_arg.strip().split()
     if len(tokens) % 2 != 0:
-        raise ValueError(
-            "Routing strategy format: 'strategy1 percentage1 strategy2 percentage2 ...'")
+        error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+            code=ROUTING_ERROR_INVALID_ROUTE,
+            strategy="parsing",
+            vehicle_id="N/A",
+            reason="Invalid format. Expected: 'strategy1 percentage1 strategy2 percentage2 ...'"
+        )
+        print(error_msg, file=sys.stderr)
+        sys.exit(1)
 
-    valid_strategies = {"shortest", "realtime", "fastest", "attractiveness"}
+    valid_strategies = {ROUTING_SHORTEST, ROUTING_REALTIME, ROUTING_FASTEST, ROUTING_ATTRACTIVENESS}
     percentages = {}
 
     for i in range(0, len(tokens), 2):
@@ -299,22 +359,47 @@ def parse_routing_strategy(routing_arg: str) -> Dict[str, float]:
         try:
             percentage = float(tokens[i + 1])
         except ValueError:
-            raise ValueError(f"Invalid percentage value: {tokens[i + 1]}")
+            error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                code=ROUTING_ERROR_INVALID_ROUTE,
+                strategy="parsing",
+                vehicle_id="N/A",
+                reason=f"Invalid percentage value: {tokens[i + 1]}"
+            )
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
         if strategy not in valid_strategies:
-            raise ValueError(
-                f"Unknown routing strategy: {strategy}. Valid options: {valid_strategies}")
+            error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                code=ROUTING_ERROR_INVALID_ROUTE,
+                strategy=strategy,
+                vehicle_id="N/A",
+                reason=f"Unknown routing strategy. Valid options: {valid_strategies}"
+            )
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
         if percentage < 0 or percentage > 100:
-            raise ValueError(
-                f"Percentage must be between 0 and 100, got {percentage}")
+            error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+                code=ROUTING_ERROR_INVALID_ROUTE,
+                strategy=strategy,
+                vehicle_id="N/A",
+                reason=f"Percentage must be between 0 and 100, got {percentage}"
+            )
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
         percentages[strategy] = percentage
 
     # Validate sum
     total = sum(percentages.values())
     if abs(total - 100.0) > 0.01:
-        raise ValueError(
-            f"Routing strategy percentages must sum to 100, got {total}")
+        error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
+            code=ROUTING_ERROR_INVALID_ROUTE,
+            strategy="parsing",
+            vehicle_id="N/A",
+            reason=f"Routing strategy percentages must sum to 100, got {total}"
+        )
+        print(error_msg, file=sys.stderr)
+        sys.exit(1)
 
     return percentages
