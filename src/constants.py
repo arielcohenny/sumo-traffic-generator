@@ -188,6 +188,260 @@ ERROR_LOG_FILE = "sumo_errors.log"
 TRIPINFO_FILE = "sumo_tripinfo.xml"
 
 # =============================================================================
+# PHASE TIME BOUNDARIES & ATTRACTIVENESS CONSTANTS
+# =============================================================================
+
+# Phase Time Boundaries (in hours, 0-24 format)
+PHASE_MORNING_PEAK_START = 6.0
+PHASE_MORNING_PEAK_END = 9.5
+PHASE_MIDDAY_OFFPEAK_START = 9.5
+PHASE_MIDDAY_OFFPEAK_END = 16.0
+PHASE_EVENING_PEAK_START = 16.0
+PHASE_EVENING_PEAK_END = 19.0
+PHASE_NIGHT_LOW_START = 19.0
+PHASE_NIGHT_LOW_END = 6.0  # Wraps to next day
+
+# Alternative Phase Boundaries (used in different contexts)
+PHASE_ALT_MORNING_PEAK_START = 6
+PHASE_ALT_MORNING_PEAK_END = 10
+PHASE_ALT_EVENING_PEAK_START = 16
+PHASE_ALT_EVENING_PEAK_END = 20
+PHASE_ALT_NIGHT_LOW_START = 22
+PHASE_ALT_NIGHT_LOW_END = 6
+
+# Phase Multipliers for Attractiveness
+PHASE_MORNING_PEAK_DEPART_MULTIPLIER = 1.4
+PHASE_MORNING_PEAK_ARRIVE_MULTIPLIER = 0.7
+PHASE_MIDDAY_OFFPEAK_DEPART_MULTIPLIER = 1.0
+PHASE_MIDDAY_OFFPEAK_ARRIVE_MULTIPLIER = 1.0
+PHASE_EVENING_PEAK_DEPART_MULTIPLIER = 0.7
+PHASE_EVENING_PEAK_ARRIVE_MULTIPLIER = 1.5
+PHASE_NIGHT_LOW_DEPART_MULTIPLIER = 0.4
+PHASE_NIGHT_LOW_ARRIVE_MULTIPLIER = 0.4
+
+# Attractiveness Value Range
+MIN_ATTRACTIVENESS_VALUE = 1
+MAX_ATTRACTIVENESS_VALUE = 20
+
+# =============================================================================
+# ROUTE GENERATION CONSTANTS
+# =============================================================================
+
+# Route Generation Limits
+MAX_ROUTE_RETRIES = 20
+
+# Simulation End Factors (fraction of total simulation time to use for departures)
+SIMULATION_END_FACTOR = 0.9  # 90% for general patterns
+SIMULATION_END_FACTOR_SIX_PERIODS = 0.95  # 95% for six periods pattern
+
+# Night Period Distribution
+NIGHT_EVENING_RATIO = 0.25  # 25% in evening part (10pm-12am), 75% early morning
+
+# Six Periods Time Constants (in hours)
+SIX_PERIODS_MORNING_START = 6.0
+SIX_PERIODS_MORNING_END = 12.0
+SIX_PERIODS_MORNING_RUSH_START = 7.5
+SIX_PERIODS_MORNING_RUSH_END = 9.5
+SIX_PERIODS_NOON_START = 12.0
+SIX_PERIODS_NOON_END = 17.0
+SIX_PERIODS_EVENING_RUSH_START = 17.0
+SIX_PERIODS_EVENING_RUSH_END = 19.0
+SIX_PERIODS_EVENING_START = 19.0
+SIX_PERIODS_EVENING_END = 22.0
+SIX_PERIODS_NIGHT_START = 22.0
+SIX_PERIODS_NIGHT_END = 30.0  # Wraps to next day (6am)
+SIX_PERIODS_EARLY_MORNING_END = 6.0
+
+# Six Periods Weights (percentages)
+SIX_PERIODS_MORNING_WEIGHT = 20
+SIX_PERIODS_MORNING_RUSH_WEIGHT = 30
+SIX_PERIODS_NOON_WEIGHT = 25
+SIX_PERIODS_EVENING_RUSH_WEIGHT = 20
+SIX_PERIODS_EVENING_WEIGHT = 4
+SIX_PERIODS_NIGHT_WEIGHT = 1
+
+# =============================================================================
+# GEOMETRY & SPATIAL CONSTANTS
+# =============================================================================
+
+# Distance Thresholds
+GEOMETRY_DISTANCE_THRESHOLD = 50  # Distance threshold for geometry calculations
+ZONE_ADJACENCY_DISTANCE_THRESHOLD = 10  # Distance threshold for zone adjacency
+
+# =============================================================================
+# TRAFFIC GENERATION CONSTANTS (ADDITIONAL)
+# =============================================================================
+
+# Time Conversion Constants
+SECONDS_TO_HOURS_DIVISOR = 3600  # Convert seconds to hours
+HOURS_IN_DAY = 24  # Hours in a day (0-24 format)
+SECONDS_IN_24_HOURS = 86400  # Seconds in 24 hours
+
+# Route Pattern Constants
+ROUTE_PATTERN_PAIRS_COUNT = 8  # Number of pairs in route pattern (4 patterns × 2 values each)
+ROUTE_PATTERN_EXPECTED_PAIRS = 4  # Expected number of pattern pairs
+
+# Vehicle Generation Constants
+INITIAL_VEHICLE_ID_COUNTER = 0  # Starting counter for vehicle IDs
+SINGLE_SAMPLE_COUNT = 1  # Number of samples to take when sampling single edges
+EDGE_SAMPLE_SLICE_LIMIT = 5  # Limit for edge sample display
+PERCENTAGE_TO_DECIMAL_DIVISOR = 100.0  # Convert percentage to decimal
+
+# Default Fallback Values
+DEFAULT_DEPARTURE_TIME_FALLBACK = 0  # Fallback departure time when list is empty
+DEFAULT_ROUTE_WEIGHT = 1.0  # Default weight for uniform route distributions
+DEFAULT_REST_WEIGHT = 10  # Default rest weight for rush hours pattern
+MINIMUM_ROUTE_COUNT = 1  # Minimum routes per pattern
+MINIMUM_VEHICLES_PER_ROUTE = 1.0  # Minimum vehicles per route
+
+# Mathematical Constants
+TEMPORAL_BIAS_INVERSE_FACTOR = 2.0  # Factor for inverse temporal bias calculation
+
+# Array/List Access Constants
+ARRAY_FIRST_ELEMENT_INDEX = 0  # Index for accessing first element in arrays/lists
+RANGE_STEP_INCREMENT = 2  # Step increment for parsing pairs (pattern + percentage)
+SINGLE_INCREMENT = 1  # Single increment for counters
+
+# Route Generation Numerical Constants
+ROUTE_ID_INCREMENT = 1  # Increment for route ID counter
+VEHICLE_INCREMENT = 1  # Increment for vehicle counter
+VEHICLES_FOR_ROUTE_INCREMENT = 1  # Increment for vehicles per route counter
+
+# Default Attribute Values
+DEFAULT_EDGE_ATTRIBUTE_VALUE = 0.0  # Default value for edge attributes when missing
+FALLBACK_ATTRIBUTE_VALUE = 0.0  # Fallback value when attribute is None
+
+# Time Range Constants
+TIME_RANGE_START = 0  # Start time for ranges (0 hours)
+TIME_RANGE_END_24H = 24  # End time for 24-hour ranges
+EXAMPLE_START_TIME_8AM = 8.0  # Example start time (8:00 AM)
+EXAMPLE_TIME_3600_SECONDS = 3600  # Example time (1 hour in seconds)
+EXAMPLE_RESULT_28800 = 28800  # Example result (8:00 AM in seconds)
+EXAMPLE_RESULT_32400 = 32400  # Example result (9:00 AM in seconds)
+
+# Comment Reference Numbers (for documentation)
+ROUTES_MD_LINE_18 = 18  # Reference to ROUTES2.md line 18
+ROUTES_MD_LINE_99 = 99  # Reference to ROUTES2.md line 99
+ATTRACTIVENESS_PHASES_COUNT = 4  # Number of attractiveness time phases
+
+# =============================================================================
+# STRING LITERALS AND IDENTIFIERS
+# =============================================================================
+
+# Phase Names
+PHASE_MORNING_PEAK = "morning_peak"
+PHASE_MIDDAY_OFFPEAK = "midday_offpeak"
+PHASE_EVENING_PEAK = "evening_peak"
+PHASE_NIGHT_LOW = "night_low"
+
+# Route Pattern Names
+PATTERN_IN = "in"
+PATTERN_OUT = "out"
+PATTERN_INNER = "inner"
+PATTERN_PASS = "pass"
+
+# Traffic Direction Names
+DIRECTION_DEPART = "depart"
+DIRECTION_ARRIVE = "arrive"
+
+# Attribute Suffixes and Prefixes
+SUFFIX_ATTRACTIVENESS = "_attractiveness"
+ATTR_PREFIX_PHASE_DEPART = "_depart_attractiveness"
+ATTR_PREFIX_PHASE_ARRIVE = "_arrive_attractiveness"
+
+# Vehicle and Route Identifiers
+VEHICLE_ID_PREFIX = "veh"
+ROUTE_ID_PREFIX = "route"
+
+# Vehicle Types
+VEHICLE_TYPE_PASSENGER = "passenger"
+VEHICLE_TYPE_PUBLIC = "public"
+
+# Routing Strategy Names
+ROUTING_SHORTEST = "shortest"
+ROUTING_REALTIME = "realtime"
+ROUTING_FASTEST = "fastest"
+ROUTING_ATTRACTIVENESS = "attractiveness"
+
+# Departure Pattern Names
+DEPARTURE_PATTERN_UNIFORM = "uniform"
+DEPARTURE_PATTERN_SIX_PERIODS = "six_periods"
+DEPARTURE_PATTERN_RUSH_HOURS = "rush_hours"
+
+# Six Periods Names
+PERIOD_MORNING = "morning"
+PERIOD_MORNING_RUSH = "morning_rush"
+PERIOD_NOON = "noon"
+PERIOD_EVENING_RUSH = "evening_rush"
+PERIOD_EVENING = "evening"
+PERIOD_NIGHT = "night"
+
+# Rush Hours Pattern Components
+RUSH_HOURS_PREFIX = "rush_hours:"
+RUSH_HOURS_REST = "rest"
+RUSH_HOURS_SEPARATOR = ":"
+
+# XML and Data Attribute Names
+ATTR_NAME = "name"
+ATTR_WEIGHT = "weight"
+ATTR_ID = "id"
+ATTR_START = "start"
+ATTR_END = "end"
+ATTR_EDGE = "edge"
+ATTR_DEPART = "depart"
+ATTR_ATTRACTIVENESS = "attractiveness"
+ATTR_CURRENT_PHASE = "current_phase"
+ATTR_TYPE = "type"
+ATTR_FROM_EDGE = "from_edge"
+ATTR_TO_EDGE = "to_edge"
+ATTR_ROUTE_EDGES = "route_edges"
+ATTR_ROUTING_STRATEGY = "routing_strategy"
+
+# Network Function Types
+FUNCTION_INTERNAL = "internal"
+
+# Function/Field Names
+FIELD_PASSENGER_ROUTES = "passenger_routes"
+FIELD_PUBLIC_ROUTES = "public_routes"
+
+# Default Route Pattern Strings
+DEFAULT_PASSENGER_ROUTE_PATTERN = "in 30 out 30 inner 25 pass 15"
+DEFAULT_PUBLIC_ROUTE_PATTERN = "in 25 out 25 inner 35 pass 15"
+
+# Traffic Light and Network Attributes
+ATTR_CURRENT_PHASE = "current_phase"
+
+# Edge Classification Names
+EDGE_TYPE_BOUNDARY = "boundary"
+EDGE_TYPE_INNER = "inner"
+
+# =============================================================================
+# VALIDATION CONSTANTS
+# =============================================================================
+
+# Network Validation Thresholds
+MIN_XML_FILE_SIZE = 100  # Minimum reasonable size for XML files (bytes)
+MIN_PHASE_DURATION = 1  # Minimum traffic light phase duration (seconds)
+MAX_PHASE_DURATION = 120  # Maximum traffic light phase duration (seconds)
+MIN_CYCLE_TIME = 10  # Minimum traffic light cycle time (seconds)
+MAX_CYCLE_TIME = 300  # Maximum traffic light cycle time (seconds)
+MIN_GREEN_TIME_RATIO = 0.2  # Minimum green time as fraction of cycle time
+
+# Argument Validation Limits
+MAX_GRID_DIMENSION_VALIDATION = 20  # Maximum grid dimension for performance
+MIN_BLOCK_SIZE_VALIDATION = 50  # Minimum block size for realism (meters)
+MAX_BLOCK_SIZE_VALIDATION = 1000  # Maximum block size for realism (meters)
+MAX_NUM_VEHICLES_VALIDATION = 10000  # Maximum vehicles for performance
+MIN_STEP_LENGTH_VALIDATION = 0.1  # Minimum step length (seconds)
+MAX_STEP_LENGTH_VALIDATION = 10.0  # Maximum step length (seconds)
+MIN_LANE_COUNT_VALIDATION = 1  # Minimum lane count
+MAX_LANE_COUNT_VALIDATION = 5  # Maximum lane count
+
+# Regular Expression Patterns
+JUNCTION_ID_PATTERN = r"^[A-Z]+\d+$"  # Pattern for junction IDs (e.g., A1, B2, C10)
+EDGE_ID_PATTERN = r"^[A-Z]+\d+[A-Z]+\d+$"  # Pattern for edge IDs (e.g., A1B1, B2C2)
+
+# =============================================================================
 # PROGRESS BAR VALUES
 # =============================================================================
 

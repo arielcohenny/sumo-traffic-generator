@@ -13,6 +13,10 @@ from typing import Optional
 
 from src.config import CONFIG
 from src.validate.errors import ValidationError
+from src.constants import (
+    MIN_XML_FILE_SIZE, MIN_PHASE_DURATION, MAX_PHASE_DURATION,
+    MIN_CYCLE_TIME, MAX_CYCLE_TIME, MIN_GREEN_TIME_RATIO
+)
 
 
 __all__ = [
@@ -240,7 +244,7 @@ def verify_generate_grid_network(
     # 12 ── validate file sizes are reasonable ---------------------------------
     for file_path in required_files:
         file_size = Path(file_path).stat().st_size
-        if file_size < 100:  # Minimum reasonable size for XML files
+        if file_size < MIN_XML_FILE_SIZE:
             raise ValidationError(
                 f"File {file_path} too small ({file_size} bytes), may be empty or corrupt")
 
@@ -266,21 +270,21 @@ def verify_generate_grid_network(
                 if "G" in state or "g" in state:  # Green phases
                     green_time += duration
 
-                # Check reasonable phase duration (1-120 seconds)
-                if duration < 1 or duration > 120:
+                # Check reasonable phase duration
+                if duration < MIN_PHASE_DURATION or duration > MAX_PHASE_DURATION:
                     raise ValidationError(
                         f"Traffic light {tl_id} has unreasonable phase duration: {duration}s")
             except ValueError:
                 raise ValidationError(
                     f"Traffic light {tl_id} has invalid phase duration")
 
-        # Check reasonable cycle time (10-300 seconds)
-        if total_cycle_time < 10 or total_cycle_time > 300:
+        # Check reasonable cycle time
+        if total_cycle_time < MIN_CYCLE_TIME or total_cycle_time > MAX_CYCLE_TIME:
             raise ValidationError(
                 f"Traffic light {tl_id} has unreasonable cycle time: {total_cycle_time}s")
 
-        # Check minimum green time (at least 20% of cycle)
-        if green_time < 0.2 * total_cycle_time:
+        # Check minimum green time
+        if green_time < MIN_GREEN_TIME_RATIO * total_cycle_time:
             raise ValidationError(
                 f"Traffic light {tl_id} has insufficient green time: {green_time}/{total_cycle_time}s")
 

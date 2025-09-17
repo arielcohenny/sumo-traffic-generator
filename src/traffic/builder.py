@@ -7,43 +7,50 @@ from typing import List, Tuple
 from sumolib.net import readNet
 
 from ..config import CONFIG
-from src.constants import (DEFAULT_VEHICLE_TYPES, SECONDS_IN_DAY, DEFAULT_VEHICLES_DAILY_PER_ROUTE,
-                        MORNING_RUSH_START, MORNING_RUSH_END, EVENING_RUSH_START, 
-                        EVENING_RUSH_END, TEMPORAL_BIAS_STRENGTH)
+from src.constants import (
+    DEFAULT_VEHICLE_TYPES, SECONDS_IN_DAY, DEFAULT_VEHICLES_DAILY_PER_ROUTE,
+    MORNING_RUSH_START, MORNING_RUSH_END, EVENING_RUSH_START, 
+    EVENING_RUSH_END, TEMPORAL_BIAS_STRENGTH,
+    MAX_ROUTE_RETRIES, SIMULATION_END_FACTOR, SIMULATION_END_FACTOR_SIX_PERIODS,
+    NIGHT_EVENING_RATIO, SIX_PERIODS_MORNING_START, SIX_PERIODS_MORNING_END,
+    SIX_PERIODS_MORNING_RUSH_START, SIX_PERIODS_MORNING_RUSH_END,
+    SIX_PERIODS_NOON_START, SIX_PERIODS_NOON_END, SIX_PERIODS_EVENING_RUSH_START,
+    SIX_PERIODS_EVENING_RUSH_END, SIX_PERIODS_EVENING_START, SIX_PERIODS_EVENING_END,
+    SIX_PERIODS_NIGHT_START, SIX_PERIODS_NIGHT_END, SIX_PERIODS_EARLY_MORNING_END,
+    SIX_PERIODS_MORNING_WEIGHT, SIX_PERIODS_MORNING_RUSH_WEIGHT, SIX_PERIODS_NOON_WEIGHT,
+    SIX_PERIODS_EVENING_RUSH_WEIGHT, SIX_PERIODS_EVENING_WEIGHT, SIX_PERIODS_NIGHT_WEIGHT,
+    PHASE_ALT_MORNING_PEAK_START, PHASE_ALT_MORNING_PEAK_END, PHASE_ALT_EVENING_PEAK_START,
+    PHASE_ALT_EVENING_PEAK_END, PHASE_ALT_NIGHT_LOW_START, PHASE_ALT_NIGHT_LOW_END,
+    SECONDS_TO_HOURS_DIVISOR, HOURS_IN_DAY, SECONDS_IN_24_HOURS,
+    ROUTE_PATTERN_PAIRS_COUNT, ROUTE_PATTERN_EXPECTED_PAIRS,
+    INITIAL_VEHICLE_ID_COUNTER, SINGLE_SAMPLE_COUNT, EDGE_SAMPLE_SLICE_LIMIT,
+    PERCENTAGE_TO_DECIMAL_DIVISOR, DEFAULT_DEPARTURE_TIME_FALLBACK,
+    DEFAULT_ROUTE_WEIGHT, DEFAULT_REST_WEIGHT, MINIMUM_ROUTE_COUNT,
+    MINIMUM_VEHICLES_PER_ROUTE, TEMPORAL_BIAS_INVERSE_FACTOR,
+    ARRAY_FIRST_ELEMENT_INDEX, RANGE_STEP_INCREMENT, SINGLE_INCREMENT,
+    ROUTE_ID_INCREMENT, VEHICLE_INCREMENT, VEHICLES_FOR_ROUTE_INCREMENT,
+    DEFAULT_EDGE_ATTRIBUTE_VALUE, FALLBACK_ATTRIBUTE_VALUE,
+    TIME_RANGE_START, TIME_RANGE_END_24H, ATTRACTIVENESS_PHASES_COUNT,
+    # String literals
+    PHASE_MORNING_PEAK, PHASE_MIDDAY_OFFPEAK, PHASE_EVENING_PEAK, PHASE_NIGHT_LOW,
+    PATTERN_IN, PATTERN_OUT, PATTERN_INNER, PATTERN_PASS,
+    DIRECTION_DEPART, DIRECTION_ARRIVE, VEHICLE_ID_PREFIX,
+    VEHICLE_TYPE_PASSENGER, VEHICLE_TYPE_PUBLIC, ROUTING_SHORTEST,
+    DEPARTURE_PATTERN_UNIFORM, DEPARTURE_PATTERN_SIX_PERIODS,
+    PERIOD_MORNING, PERIOD_MORNING_RUSH, PERIOD_NOON, PERIOD_EVENING_RUSH,
+    PERIOD_EVENING, PERIOD_NIGHT, ATTR_NAME, ATTR_WEIGHT, ATTR_START, ATTR_END,
+    DEFAULT_PASSENGER_ROUTE_PATTERN, DEFAULT_PUBLIC_ROUTE_PATTERN,
+    RUSH_HOURS_PREFIX, RUSH_HOURS_REST, ATTR_DEPART, ATTR_ATTRACTIVENESS,
+    ATTR_CURRENT_PHASE, FIELD_PASSENGER_ROUTES, FIELD_PUBLIC_ROUTES, ATTR_TYPE,
+    ATTR_FROM_EDGE, ATTR_TO_EDGE, ATTR_ROUTE_EDGES, ATTR_ROUTING_STRATEGY,
+    FUNCTION_INTERNAL, ATTR_ID, SUFFIX_ATTRACTIVENESS
+)
 from .routing import RoutingMixStrategy, parse_routing_strategy
 from .vehicle_types import parse_vehicle_types, get_vehicle_weights
 from .xml_writer import write_routes
 from ..network.generate_grid import classify_edges
 
-# Constants for departure time generation
-MAX_ROUTE_RETRIES = 20
-SIMULATION_END_FACTOR = 0.9  # Use 90% of simulation time for departures
-SIMULATION_END_FACTOR_SIX_PERIODS = 0.95  # Use 95% for six periods pattern
-# 25% in evening part (10pm-12am), 75% early morning
-NIGHT_EVENING_RATIO = 0.25
-
-# Six periods time constants (in hours)
-MORNING_START = 6.0
-MORNING_END = 12.0
-MORNING_RUSH_START = 7.5
-MORNING_RUSH_END = 9.5
-NOON_START = 12.0
-NOON_END = 17.0
-EVENING_RUSH_START = 17.0
-EVENING_RUSH_END = 19.0
-EVENING_START = 19.0
-EVENING_END = 22.0
-NIGHT_START = 22.0
-NIGHT_END = 30.0  # Wraps to next day (6am)
-EARLY_MORNING_END = 6.0
-
-# Six periods weights
-MORNING_WEIGHT = 20
-MORNING_RUSH_WEIGHT = 30
-NOON_WEIGHT = 25
-EVENING_RUSH_WEIGHT = 20
-EVENING_WEIGHT = 4
-NIGHT_WEIGHT = 1
+# Constants for departure time generation - now imported from src.constants
 
 
 def top(x: float) -> int:
@@ -63,7 +70,7 @@ def determine_attractiveness_phase_from_departure_time(departure_time_seconds: i
     """
     Determine attractiveness phase based on departure time for phase-specific edge sampling.
     
-    As specified in ROUTES2.md: "attractiveness has 4 time phases and based on the 
+    As specified in ROUTES2.md: "attractiveness has {ATTRACTIVENESS_PHASES_COUNT} time phases and based on the 
     vehicle's departure time we'll know which one to use"
     
     Args:
@@ -73,21 +80,21 @@ def determine_attractiveness_phase_from_departure_time(departure_time_seconds: i
         Phase name for attractiveness sampling: "morning_peak", "midday_offpeak", "evening_peak", or "night_low"
     """
     # Convert seconds to hours (0-24 format)
-    hour = (departure_time_seconds / 3600) % 24
+    hour = (departure_time_seconds / SECONDS_TO_HOURS_DIVISOR) % HOURS_IN_DAY
     
     # Define phase boundaries based on realistic traffic patterns
     # Morning peak: 6am-10am (rush hour commuting)
-    if 6 <= hour < 10:
-        return "morning_peak"
+    if PHASE_ALT_MORNING_PEAK_START <= hour < PHASE_ALT_MORNING_PEAK_END:
+        return PHASE_MORNING_PEAK
     # Evening peak: 4pm-8pm (evening rush hour)
-    elif 16 <= hour < 20:
-        return "evening_peak"
+    elif PHASE_ALT_EVENING_PEAK_START <= hour < PHASE_ALT_EVENING_PEAK_END:
+        return PHASE_EVENING_PEAK
     # Night low: 10pm-6am (overnight hours)
-    elif hour >= 22 or hour < 6:
-        return "night_low"
+    elif hour >= PHASE_ALT_NIGHT_LOW_START or hour < PHASE_ALT_NIGHT_LOW_END:
+        return PHASE_NIGHT_LOW
     # Midday off-peak: 10am-4pm (daytime non-rush)
     else:
-        return "midday_offpeak"
+        return PHASE_MIDDAY_OFFPEAK
 
 
 # Route Pattern Parsing Functions
@@ -105,13 +112,13 @@ def parse_route_patterns(route_pattern_str: str) -> dict:
         "in 30 out 30 inner 25 pass 15" -> {"in": 30.0, "out": 30.0, "inner": 25.0, "pass": 15.0}
     """
     parts = route_pattern_str.strip().split()
-    if len(parts) != 8:
-        raise ValueError(f"Route pattern must have 4 pairs, got: {route_pattern_str}")
+    if len(parts) != ROUTE_PATTERN_PAIRS_COUNT:
+        raise ValueError(f"Route pattern must have {ROUTE_PATTERN_EXPECTED_PAIRS} pairs, got: {route_pattern_str}")
     
     patterns = {}
-    for i in range(0, len(parts), 2):
+    for i in range(ARRAY_FIRST_ELEMENT_INDEX, len(parts), RANGE_STEP_INCREMENT):
         pattern = parts[i]
-        percentage = float(parts[i + 1])
+        percentage = float(parts[i + SINGLE_INCREMENT])
         patterns[pattern] = percentage
     
     return patterns
@@ -135,7 +142,7 @@ def assign_route_pattern_to_vehicles(num_vehicles: int, route_patterns: dict, rn
     # Assign patterns to vehicles using weighted random selection
     assigned_patterns = []
     for _ in range(num_vehicles):
-        pattern = rng.choices(pattern_names, weights=pattern_weights, k=1)[0]
+        pattern = rng.choices(pattern_names, weights=pattern_weights, k=SINGLE_SAMPLE_COUNT)[ARRAY_FIRST_ELEMENT_INDEX]
         assigned_patterns.append(pattern)
     
     return assigned_patterns
@@ -164,7 +171,7 @@ def assign_route_pattern_with_temporal_bias(departure_times: List[int], route_pa
         biased_weights = _apply_temporal_bias_to_route_patterns(departure_time, route_patterns)
         
         # Assign pattern using temporally biased weights
-        pattern = rng.choices(pattern_names, weights=biased_weights, k=1)[0]
+        pattern = rng.choices(pattern_names, weights=biased_weights, k=SINGLE_SAMPLE_COUNT)[ARRAY_FIRST_ELEMENT_INDEX]
         assigned_patterns.append(pattern)
     
     return assigned_patterns
@@ -182,7 +189,7 @@ def _apply_temporal_bias_to_route_patterns(departure_time_seconds: int, base_pat
         List of biased weights corresponding to pattern order
     """
     # Convert to hour (0-24)
-    hour = (departure_time_seconds / 3600) % 24
+    hour = (departure_time_seconds / SECONDS_TO_HOURS_DIVISOR) % HOURS_IN_DAY
     
     # Start with base weights
     weights = list(base_patterns.values())
@@ -192,18 +199,18 @@ def _apply_temporal_bias_to_route_patterns(departure_time_seconds: int, base_pat
     if MORNING_RUSH_START <= hour < MORNING_RUSH_END:
         # Morning rush: favor in-bound routes (commuting to work/business zones)
         for i, pattern in enumerate(pattern_names):
-            if pattern == "in":
+            if pattern == PATTERN_IN:
                 weights[i] *= TEMPORAL_BIAS_STRENGTH
-            elif pattern == "out":
-                weights[i] *= (2.0 - TEMPORAL_BIAS_STRENGTH)  # Reduce out-bound
+            elif pattern == PATTERN_OUT:
+                weights[i] *= (TEMPORAL_BIAS_INVERSE_FACTOR - TEMPORAL_BIAS_STRENGTH)  # Reduce out-bound
                 
     elif EVENING_RUSH_START <= hour < EVENING_RUSH_END:
         # Evening rush: favor out-bound routes (commuting from work back home)
         for i, pattern in enumerate(pattern_names):
-            if pattern == "out":
+            if pattern == PATTERN_OUT:
                 weights[i] *= TEMPORAL_BIAS_STRENGTH
-            elif pattern == "in":
-                weights[i] *= (2.0 - TEMPORAL_BIAS_STRENGTH)  # Reduce in-bound
+            elif pattern == PATTERN_IN:
+                weights[i] *= (TEMPORAL_BIAS_INVERSE_FACTOR - TEMPORAL_BIAS_STRENGTH)  # Reduce in-bound
     
     # No bias for off-peak hours - use base patterns as-is
     return weights
@@ -267,12 +274,12 @@ class PhaseSpecificEdgeSampler:
         For in-bound and out-bound routes, we want to target business zones (high attractiveness),
         so we need to choose the direction that represents business zone activity.
         """
-        if route_pattern == "in":
+        if route_pattern == PATTERN_IN:
             # In-bound routes: We want to target high-arrival zones (business districts) for END edges
             # Start edges use normal depart logic, end edges target high arrival attractiveness
             return base_direction  # Use the provided direction
             
-        elif route_pattern == "out":
+        elif route_pattern == PATTERN_OUT:
             # Out-bound routes: We want to originate from high-departure zones (business districts) for START edges  
             # Start edges target high departure attractiveness, end edges use normal arrive logic
             return base_direction  # Use the provided direction
@@ -296,18 +303,18 @@ class PhaseSpecificEdgeSampler:
         
         if not use_attractiveness:
             # Return uniform weights when attractiveness is irrelevant (boundary edges)
-            return [1.0] * len(edges)
+            return [DEFAULT_ROUTE_WEIGHT] * len(edges)
         
         # Apply phase-specific attractiveness when relevant (inner edges)
         weights = []
         for edge in edges:
             # Get phase-specific attractiveness attribute  
-            attr_name = f"{phase}_{direction}_attractiveness"
-            weight = float(getattr(edge, attr_name, 0.0) or 0.0)
+            attr_name = f"{phase}_{direction}{SUFFIX_ATTRACTIVENESS}"
+            weight = float(getattr(edge, attr_name, DEFAULT_EDGE_ATTRIBUTE_VALUE) or FALLBACK_ATTRIBUTE_VALUE)
             weights.append(weight)
         
         # Fallback to uniform if all weights are zero
-        return weights if any(weights) else [1.0] * len(edges)
+        return weights if any(weights) else [DEFAULT_ROUTE_WEIGHT] * len(edges)
     
     def _should_use_attractiveness(self, route_pattern: str, direction: str) -> bool:
         """
@@ -316,16 +323,16 @@ class PhaseSpecificEdgeSampler:
         Returns True when sampling inner edges (attractiveness relevant),
         False when sampling boundary edges (attractiveness irrelevant).
         """
-        if route_pattern == "in":
+        if route_pattern == PATTERN_IN:
             # In-bound: start boundary (irrelevant), end inner (relevant)
-            return direction == "arrive"
-        elif route_pattern == "out":
+            return direction == DIRECTION_ARRIVE
+        elif route_pattern == PATTERN_OUT:
             # Out-bound: start inner (relevant), end boundary (irrelevant)
-            return direction == "depart"
-        elif route_pattern == "inner":
+            return direction == DIRECTION_DEPART
+        elif route_pattern == PATTERN_INNER:
             # Inner: both start and end inner (relevant for both)
             return True
-        elif route_pattern == "pass":
+        elif route_pattern == PATTERN_PASS:
             # Pass-through: both start and end boundary (irrelevant for both)
             return False
         else:
@@ -337,12 +344,12 @@ class PhaseSpecificEdgeSampler:
         weights = []
         for edge in edges:
             # Get phase-specific attractiveness attribute
-            attr_name = f"{phase}_{direction}_attractiveness"
-            weight = float(getattr(edge, attr_name, 0.0) or 0.0)
+            attr_name = f"{phase}_{direction}{SUFFIX_ATTRACTIVENESS}"
+            weight = float(getattr(edge, attr_name, DEFAULT_EDGE_ATTRIBUTE_VALUE) or FALLBACK_ATTRIBUTE_VALUE)
             weights.append(weight)
         
         # Fallback to uniform if all weights are zero
-        return weights if any(weights) else [1.0] * len(edges)
+        return weights if any(weights) else [DEFAULT_ROUTE_WEIGHT] * len(edges)
 
 
 def load_attractiveness_attributes_from_xml(edges, net_file_path):
@@ -389,17 +396,17 @@ def map_simulation_time_to_real_time(simulation_time_seconds: int, start_time_ho
     Map simulation time to real time for attractiveness phase determination.
     
     Args:
-        simulation_time_seconds: Time within simulation (0 to end_time)
-        start_time_hour: Real time hour when simulation starts (e.g., 8.0 for 8 AM)
+        simulation_time_seconds: Time within simulation ({TIME_RANGE_START} to end_time)
+        start_time_hour: Real time hour when simulation starts (e.g., {EXAMPLE_START_TIME_8AM} for 8 AM)
         
     Returns:
         Real time in seconds since midnight for attractiveness phase calculations
         
     Example:
-        map_simulation_time_to_real_time(0, 8.0) -> 28800 (8:00 AM)
-        map_simulation_time_to_real_time(3600, 8.0) -> 32400 (9:00 AM)
+        map_simulation_time_to_real_time({TIME_RANGE_START}, {EXAMPLE_START_TIME_8AM}) -> {EXAMPLE_RESULT_28800} (8:00 AM)
+        map_simulation_time_to_real_time({EXAMPLE_TIME_3600_SECONDS}, {EXAMPLE_START_TIME_8AM}) -> {EXAMPLE_RESULT_32400} (9:00 AM)
     """
-    return int(start_time_hour * 3600 + simulation_time_seconds)
+    return int(start_time_hour * SECONDS_TO_HOURS_DIVISOR + simulation_time_seconds)
 
 
 def generate_vehicle_routes(net_file: str | Path,
@@ -418,7 +425,7 @@ def generate_vehicle_routes(net_file: str | Path,
     """
     Orchestrates vehicle creation with route patterns and writes a .rou.xml.
     
-    This is the new route generation system that implements the 4-pattern route system
+    This is the new route generation system that implements the {ROUTE_PATTERN_EXPECTED_PAIRS}-pattern route system
     (in-bound, out-bound, inner, pass-through) with deterministic departure timing and
     separate handling for passenger and public vehicles.
 
@@ -434,12 +441,12 @@ def generate_vehicle_routes(net_file: str | Path,
         public_routes: Public route patterns (e.g., "in 25 out 25 inner 35 pass 15")
         end_time: Total simulation duration in seconds for temporal distribution
         departure_pattern: Departure pattern ("six_periods", "uniform", "rush_hours:...")
-        start_time_hour: Start time in hours (0-24)
+        start_time_hour: Start time in hours ({TIME_RANGE_START}-{TIME_RANGE_END_24H})
         grid_dimension: Grid dimension for edge classification
     """
     # Load network and filter edges
     net = readNet(str(net_file))
-    all_edges = [e for e in net.getEdges() if e.getFunction() != "internal"]
+    all_edges = [e for e in net.getEdges() if e.getFunction() != FUNCTION_INTERNAL]
     
     # Load attractiveness attributes from XML and attach to edge objects
     # (sumolib.net.readNet doesn't automatically parse custom attributes)
@@ -459,8 +466,8 @@ def generate_vehicle_routes(net_file: str | Path,
     print(f"Classified {len(boundary_edge_objs)} boundary edges and {len(inner_edge_objs)} inner edges")
     
     # Debug: Print a few examples of boundary vs inner edges
-    print(f"Sample boundary edges: {[e.getID() for e in boundary_edge_objs[:5]]}")
-    print(f"Sample inner edges: {[e.getID() for e in inner_edge_objs[:5]]}")
+    print(f"Sample boundary edges: {[e.getID() for e in boundary_edge_objs[:EDGE_SAMPLE_SLICE_LIMIT]]}")
+    print(f"Sample inner edges: {[e.getID() for e in inner_edge_objs[:EDGE_SAMPLE_SLICE_LIMIT]]}")
     
     # Parse configurations
     vehicle_distribution = parse_vehicle_types(vehicle_types)
@@ -477,7 +484,7 @@ def generate_vehicle_routes(net_file: str | Path,
     
     # Calculate vehicle counts by type
     vehicle_names, vehicle_weights = get_vehicle_weights(vehicle_distribution)
-    passenger_count = int((vehicle_distribution.get('passenger', 0) / 100.0) * num_vehicles)
+    passenger_count = int((vehicle_distribution.get(VEHICLE_TYPE_PASSENGER, 0) / PERCENTAGE_TO_DECIMAL_DIVISOR) * num_vehicles)
     public_count = num_vehicles - passenger_count
     
     print(f"Generating {passenger_count} passenger vehicles and {public_count} public vehicles")
@@ -488,7 +495,7 @@ def generate_vehicle_routes(net_file: str | Path,
     
     # Generate vehicles
     vehicles = []
-    vehicle_id_counter = 0  # Unified counter for all vehicles to ensure 'veh' prefix compatibility
+    vehicle_id_counter = INITIAL_VEHICLE_ID_COUNTER  # Unified counter for all vehicles to ensure 'veh' prefix compatibility
     
     # ========== PASSENGER VEHICLE GENERATION ==========
     if passenger_count > 0:
@@ -507,7 +514,7 @@ def generate_vehicle_routes(net_file: str | Path,
         vehicles.extend(public_vehicles)
     
     # Sort vehicles by departure time (SUMO requirement)
-    vehicles.sort(key=lambda v: v["depart"])
+    vehicles.sort(key=lambda v: v[ATTR_DEPART])
     
     print(f"Generated {len(vehicles)} total vehicles")
     
@@ -537,10 +544,10 @@ def _generate_passenger_vehicles(passenger_count: int, private_rng: random.Rando
     
     # Generate individual passenger vehicles
     for i in range(passenger_count):
-        vid = f"veh{vehicle_id_counter}"
-        vehicle_id_counter += 1  # Reserve ID immediately to prevent duplicates
+        vid = f"{VEHICLE_ID_PREFIX}{vehicle_id_counter}"
+        vehicle_id_counter += VEHICLE_INCREMENT  # Reserve ID immediately to prevent duplicates
         route_pattern = assigned_patterns[i]
-        departure_time = departure_times[i] if i < len(departure_times) else departure_times[-1]
+        departure_time = departure_times[i] if i < len(departure_times) else (departure_times[-1] if departure_times else DEFAULT_DEPARTURE_TIME_FALLBACK)
         
         # Assign routing strategy (passenger vehicles use configured strategies)
         assigned_strategy = routing_mix.assign_strategy_to_vehicle(vid, private_rng)
@@ -554,18 +561,18 @@ def _generate_passenger_vehicles(passenger_count: int, private_rng: random.Rando
         end_edge = None
         
         for _ in range(MAX_ROUTE_RETRIES):
-            # Use route-pattern-aware attractiveness targeting (ROUTES2.md line 18)
+            # Use route-pattern-aware attractiveness targeting (ROUTES2.md line {ROUTES_MD_LINE_18})
             # "In-bound routes target high-arrival attractiveness inner edges, 
             #  out-bound routes originate from high-departure attractiveness inner edges"
             # Map simulation time to real time for attractiveness phase determination
             real_time = map_simulation_time_to_real_time(departure_time, start_time_hour)
             start_edge_ids = phase_sampler.sample_edges_with_route_pattern_targeting(
-                start_edge_pool, "depart", real_time, route_pattern, 1)
+                start_edge_pool, DIRECTION_DEPART, real_time, route_pattern, SINGLE_SAMPLE_COUNT)
             end_edge_ids = phase_sampler.sample_edges_with_route_pattern_targeting(
-                end_edge_pool, "arrive", real_time, route_pattern, 1)
+                end_edge_pool, DIRECTION_ARRIVE, real_time, route_pattern, SINGLE_SAMPLE_COUNT)
             
-            start_edge = start_edge_ids[0]
-            end_edge = end_edge_ids[0] 
+            start_edge = start_edge_ids[ARRAY_FIRST_ELEMENT_INDEX]
+            end_edge = end_edge_ids[ARRAY_FIRST_ELEMENT_INDEX] 
             if end_edge == start_edge:
                 continue
             route_edges = routing_mix.compute_route(assigned_strategy, start_edge, end_edge)
@@ -580,13 +587,13 @@ def _generate_passenger_vehicles(passenger_count: int, private_rng: random.Rando
             continue
         
         vehicles.append({
-            "id": vid,
-            "type": "passenger",
-            "depart": int(departure_time),
-            "from_edge": start_edge,
-            "to_edge": end_edge,
-            "route_edges": route_edges,
-            "routing_strategy": assigned_strategy,
+            ATTR_ID: vid,
+            ATTR_TYPE: VEHICLE_TYPE_PASSENGER,
+            ATTR_DEPART: int(departure_time),
+            ATTR_FROM_EDGE: start_edge,
+            ATTR_TO_EDGE: end_edge,
+            ATTR_ROUTE_EDGES: route_edges,
+            ATTR_ROUTING_STRATEGY: assigned_strategy,
         })
     
     print(f"Generated {len(vehicles)} passenger vehicles")
@@ -607,7 +614,7 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
     # Calculate route structure for public vehicles using constants from ROUTES2.md specification
     ideal_num_vehicles_per_route = (end_time / SECONDS_IN_DAY) * DEFAULT_VEHICLES_DAILY_PER_ROUTE
     if ideal_num_vehicles_per_route <= 0:
-        ideal_num_vehicles_per_route = 1.0
+        ideal_num_vehicles_per_route = MINIMUM_VEHICLES_PER_ROUTE
     
     num_public_routes = top(public_count / ideal_num_vehicles_per_route)
     base_vehicles_per_route = public_count // num_public_routes
@@ -618,7 +625,7 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
     # Calculate route distribution based on percentages
     route_counts = {}
     for pattern, percentage in route_patterns.items():
-        route_counts[pattern] = max(1, int((percentage / 100.0) * num_public_routes))
+        route_counts[pattern] = max(MINIMUM_ROUTE_COUNT, int((percentage / PERCENTAGE_TO_DECIMAL_DIVISOR) * num_public_routes))
     
     # Handle case where there are not enough vehicles for all route types
     total_planned_routes = sum(route_counts.values())
@@ -629,7 +636,7 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
         print(f"⚠️  Not enough public vehicles for all route types. Using only '{max_pattern}' routes.")
     
     # Create routing strategy for public vehicles (always shortest path)
-    public_routing_strategy = {"shortest": 100.0}
+    public_routing_strategy = {ROUTING_SHORTEST: PERCENTAGE_TO_DECIMAL_DIVISOR}
     routing_mix = RoutingMixStrategy(net, public_routing_strategy)
     phase_sampler = PhaseSpecificEdgeSampler(public_rng)
     
@@ -637,8 +644,8 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
     # This ensures proper temporal spread across the entire simulation time
     all_departure_times = calculate_temporal_departure_times(public_count, departure_pattern, start_time_hour, end_time)
     
-    route_id = 0
-    vehicles_created = 0  # Track how many vehicles we've created locally
+    route_id = INITIAL_VEHICLE_ID_COUNTER
+    vehicles_created = INITIAL_VEHICLE_ID_COUNTER  # Track how many vehicles we've created locally
     
     # Generate routes for each pattern type
     for pattern, route_count in route_counts.items():
@@ -653,21 +660,21 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
             
             for _ in range(MAX_ROUTE_RETRIES):
                 # Use phase-specific attractiveness for public routes based on first departure time
-                # As specified in ROUTES2.md line 99: "For each vehicle, based on the departure time we can use the attractiveness values"
-                first_departure_time = all_departure_times[vehicles_created] if vehicles_created < len(all_departure_times) else 0
+                # As specified in ROUTES2.md line {ROUTES_MD_LINE_99}: "For each vehicle, based on the departure time we can use the attractiveness values"
+                first_departure_time = all_departure_times[vehicles_created] if vehicles_created < len(all_departure_times) else DEFAULT_DEPARTURE_TIME_FALLBACK
                 # Map simulation time to real time for attractiveness phase determination
                 real_first_departure_time = map_simulation_time_to_real_time(first_departure_time, start_time_hour)
                 
                 start_edge_ids = phase_sampler.sample_edges_with_route_pattern_targeting(
-                    start_edge_pool, "depart", real_first_departure_time, pattern, 1)
+                    start_edge_pool, DIRECTION_DEPART, real_first_departure_time, pattern, SINGLE_SAMPLE_COUNT)
                 end_edge_ids = phase_sampler.sample_edges_with_route_pattern_targeting(
-                    end_edge_pool, "arrive", real_first_departure_time, pattern, 1)
+                    end_edge_pool, DIRECTION_ARRIVE, real_first_departure_time, pattern, SINGLE_SAMPLE_COUNT)
                 
-                start_edge = start_edge_ids[0]
-                end_edge = end_edge_ids[0]
+                start_edge = start_edge_ids[ARRAY_FIRST_ELEMENT_INDEX]
+                end_edge = end_edge_ids[ARRAY_FIRST_ELEMENT_INDEX]
                 if end_edge == start_edge:
                     continue
-                route_edges = routing_mix.compute_route("shortest", start_edge, end_edge)
+                route_edges = routing_mix.compute_route(ROUTING_SHORTEST, start_edge, end_edge)
                 if route_edges:
                     break
             else:
@@ -681,7 +688,7 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
             # Generate vehicles for this route - distribute extra vehicles among first routes
             vehicles_for_this_route = base_vehicles_per_route
             if route_id < extra_vehicles:  # First 'extra_vehicles' routes get one extra vehicle
-                vehicles_for_this_route += 1
+                vehicles_for_this_route += VEHICLES_FOR_ROUTE_INCREMENT
             
             actual_vehicles = min(vehicles_for_this_route, len(all_departure_times) - vehicles_created)
             # Safety check to not exceed total vehicle count
@@ -693,22 +700,22 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
                     break
                     
                 departure_time = all_departure_times[vehicles_created]
-                vid = f"veh{vehicle_id_counter}"
+                vid = f"{VEHICLE_ID_PREFIX}{vehicle_id_counter}"
                 
                 vehicles.append({
-                    "id": vid,
-                    "type": "public",
-                    "depart": int(departure_time),
-                    "from_edge": start_edge,
-                    "to_edge": end_edge,
-                    "route_edges": route_edges,
-                    "routing_strategy": "shortest",  # Public always uses shortest
+                    ATTR_ID: vid,
+                    ATTR_TYPE: VEHICLE_TYPE_PUBLIC,
+                    ATTR_DEPART: int(departure_time),
+                    ATTR_FROM_EDGE: start_edge,
+                    ATTR_TO_EDGE: end_edge,
+                    ATTR_ROUTE_EDGES: route_edges,
+                    ATTR_ROUTING_STRATEGY: ROUTING_SHORTEST,  # Public always uses shortest
                 })
                 
-                vehicle_id_counter += 1
-                vehicles_created += 1
+                vehicle_id_counter += VEHICLE_INCREMENT
+                vehicles_created += VEHICLE_INCREMENT
             
-            route_id += 1
+            route_id += ROUTE_ID_INCREMENT
     
     print(f"Generated {len(vehicles)} public vehicles across {route_id} routes")
     return vehicles, vehicle_id_counter
@@ -716,16 +723,16 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
 
 def _get_edge_pools_for_pattern(pattern: str, all_tail_edge_objs, boundary_edge_objs, inner_edge_objs) -> tuple:
     """Get start and end edge pools based on route pattern."""
-    if pattern == "in":
+    if pattern == PATTERN_IN:
         # In-bound: start from boundary, end at inner edges
         return boundary_edge_objs, inner_edge_objs
-    elif pattern == "out":
+    elif pattern == PATTERN_OUT:
         # Out-bound: start from inner edges, end at boundary
         return inner_edge_objs, boundary_edge_objs
-    elif pattern == "inner":
+    elif pattern == PATTERN_INNER:
         # Inner: start and end from inner edges only
         return inner_edge_objs, inner_edge_objs
-    elif pattern == "pass":
+    elif pattern == PATTERN_PASS:
         # Pass-through: start from boundary, end at boundary
         return boundary_edge_objs, boundary_edge_objs
     else:
@@ -745,13 +752,13 @@ def _generate_departure_time(rng, departure_pattern: str, end_time: int) -> int:
     Returns:
         Departure time in seconds
     """
-    if departure_pattern == "uniform":
-        return int(rng.uniform(0, end_time * SIMULATION_END_FACTOR))
+    if departure_pattern == DEPARTURE_PATTERN_UNIFORM:
+        return int(rng.uniform(TIME_RANGE_START, end_time * SIMULATION_END_FACTOR))
 
-    elif departure_pattern == "six_periods":
+    elif departure_pattern == DEPARTURE_PATTERN_SIX_PERIODS:
         return _generate_six_periods_departure(rng, end_time)
 
-    elif departure_pattern.startswith("rush_hours:"):
+    elif departure_pattern.startswith(RUSH_HOURS_PREFIX):
         return _generate_rush_hours_departure(rng, departure_pattern, end_time)
 
 
@@ -772,41 +779,41 @@ def _generate_six_periods_departure(rng, end_time: int) -> int:
     - Evening (7pm-10pm): 4%
     - Night (10pm-6am): 1%
     """
-    # Scale to simulation time (24 hours = 86400 seconds)
-    scale_factor = end_time / 86400
+    # Scale to simulation time
+    scale_factor = end_time / SECONDS_IN_24_HOURS
 
     # Define periods in seconds (24-hour format)
     periods = [
-        {"name": "morning", "start": MORNING_START*3600,
-            "end": MORNING_END*3600, "weight": MORNING_WEIGHT},
-        {"name": "morning_rush", "start": MORNING_RUSH_START*3600,
-            "end": MORNING_RUSH_END*3600, "weight": MORNING_RUSH_WEIGHT},
-        {"name": "noon", "start": NOON_START*3600,
-            "end": NOON_END*3600, "weight": NOON_WEIGHT},
-        {"name": "evening_rush", "start": EVENING_RUSH_START*3600,
-            "end": EVENING_RUSH_END*3600, "weight": EVENING_RUSH_WEIGHT},
-        {"name": "evening", "start": EVENING_START*3600,
-            "end": EVENING_END*3600, "weight": EVENING_WEIGHT},
-        {"name": "night", "start": NIGHT_START*3600,
-            "end": NIGHT_END*3600, "weight": NIGHT_WEIGHT},
+        {ATTR_NAME: PERIOD_MORNING, ATTR_START: SIX_PERIODS_MORNING_START*SECONDS_TO_HOURS_DIVISOR,
+            ATTR_END: SIX_PERIODS_MORNING_END*SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_MORNING_WEIGHT},
+        {ATTR_NAME: PERIOD_MORNING_RUSH, ATTR_START: SIX_PERIODS_MORNING_RUSH_START*SECONDS_TO_HOURS_DIVISOR,
+            ATTR_END: SIX_PERIODS_MORNING_RUSH_END*SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_MORNING_RUSH_WEIGHT},
+        {ATTR_NAME: PERIOD_NOON, ATTR_START: SIX_PERIODS_NOON_START*SECONDS_TO_HOURS_DIVISOR,
+            ATTR_END: SIX_PERIODS_NOON_END*SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_NOON_WEIGHT},
+        {ATTR_NAME: PERIOD_EVENING_RUSH, ATTR_START: SIX_PERIODS_EVENING_RUSH_START*SECONDS_TO_HOURS_DIVISOR,
+            ATTR_END: SIX_PERIODS_EVENING_RUSH_END*SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_EVENING_RUSH_WEIGHT},
+        {ATTR_NAME: PERIOD_EVENING, ATTR_START: SIX_PERIODS_EVENING_START*SECONDS_TO_HOURS_DIVISOR,
+            ATTR_END: SIX_PERIODS_EVENING_END*SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_EVENING_WEIGHT},
+        {ATTR_NAME: PERIOD_NIGHT, ATTR_START: SIX_PERIODS_NIGHT_START*SECONDS_TO_HOURS_DIVISOR,
+            ATTR_END: SIX_PERIODS_NIGHT_END*SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_NIGHT_WEIGHT},
     ]
 
     # Choose period based on weights
-    weights = [p["weight"] for p in periods]
-    chosen_period = rng.choices(periods, weights=weights)[0]
+    weights = [p[ATTR_WEIGHT] for p in periods]
+    chosen_period = rng.choices(periods, weights=weights)[ARRAY_FIRST_ELEMENT_INDEX]
 
     # Generate time within chosen period
-    start_time = chosen_period["start"] * scale_factor
-    end_time_period = chosen_period["end"] * scale_factor
+    start_time = chosen_period[ATTR_START] * scale_factor
+    end_time_period = chosen_period[ATTR_END] * scale_factor
 
     # Handle night period wrapping to next day
-    if chosen_period["name"] == "night":
+    if chosen_period[ATTR_NAME] == PERIOD_NIGHT:
         if rng.random() < NIGHT_EVENING_RATIO:  # 25% in evening part (10pm-12am)
             departure_time = rng.uniform(
-                NIGHT_START*3600*scale_factor, 24*3600*scale_factor)
+                SIX_PERIODS_NIGHT_START*SECONDS_TO_HOURS_DIVISOR*scale_factor, HOURS_IN_DAY*SECONDS_TO_HOURS_DIVISOR*scale_factor)
         else:  # 75% in early morning part (12am-6am)
             departure_time = rng.uniform(
-                0, EARLY_MORNING_END*3600*scale_factor)
+                TIME_RANGE_START, SIX_PERIODS_EARLY_MORNING_END*SECONDS_TO_HOURS_DIVISOR*scale_factor)
     else:
         departure_time = rng.uniform(start_time, end_time_period)
 
@@ -821,37 +828,37 @@ def _generate_rush_hours_departure(rng, pattern: str, end_time: int) -> int:
     # Parse pattern
     parts = pattern.split(":", 1)[1].split(",")
     rush_periods = []
-    rest_weight = 10
+    rest_weight = DEFAULT_REST_WEIGHT
 
     for part in parts:
-        if part.startswith("rest:"):
-            rest_weight = int(part.split(":")[1])
+        if part.startswith(f"{RUSH_HOURS_REST}:"):
+            rest_weight = int(part.split(":")[SINGLE_INCREMENT])
         else:
             time_range, weight = part.split(":")
             start_hour, end_hour = map(float, time_range.split("-"))
             rush_periods.append({
-                "start": start_hour * 3600,
-                "end": end_hour * 3600,
-                "weight": int(weight)
+                ATTR_START: start_hour * SECONDS_TO_HOURS_DIVISOR,
+                ATTR_END: end_hour * SECONDS_TO_HOURS_DIVISOR,
+                ATTR_WEIGHT: int(weight)
             })
 
     # Calculate total weight
-    total_rush_weight = sum(p["weight"] for p in rush_periods)
+    total_rush_weight = sum(p[ATTR_WEIGHT] for p in rush_periods)
     total_weight = total_rush_weight + rest_weight
 
     # Choose rush hour or rest time
     if rng.random() < total_rush_weight / total_weight:
         # Choose rush period
-        weights = [p["weight"] for p in rush_periods]
+        weights = [p[ATTR_WEIGHT] for p in rush_periods]
         chosen_period = rng.choices(rush_periods, weights=weights)[0]
 
-        scale_factor = end_time / 86400
-        start_time = chosen_period["start"] * scale_factor
-        end_time_period = chosen_period["end"] * scale_factor
+        scale_factor = end_time / SECONDS_IN_24_HOURS
+        start_time = chosen_period[ATTR_START] * scale_factor
+        end_time_period = chosen_period[ATTR_END] * scale_factor
         departure_time = rng.uniform(start_time, end_time_period)
     else:
         # Rest time (uniform distribution outside rush hours)
-        departure_time = rng.uniform(0, end_time * SIMULATION_END_FACTOR)
+        departure_time = rng.uniform(TIME_RANGE_START, end_time * SIMULATION_END_FACTOR)
 
     return int(departure_time)
 
@@ -880,7 +887,7 @@ def calculate_temporal_departure_times(num_vehicles: int, departure_pattern: str
     """
     departure_times = []
     
-    if departure_pattern == "uniform":
+    if departure_pattern == DEPARTURE_PATTERN_UNIFORM:
         # Even distribution across simulation duration
         # start_time_hour is used for time window mapping to real time for attractiveness/bias calculations
         if num_vehicles <= 0:
@@ -891,11 +898,11 @@ def calculate_temporal_departure_times(num_vehicles: int, departure_pattern: str
             departure_time = i * interval  # Simulation time (0 to end_time)
             departure_times.append(int(departure_time))
             
-    elif departure_pattern == "six_periods":
+    elif departure_pattern == DEPARTURE_PATTERN_SIX_PERIODS:
         # Research-based 6-period distribution with exact percentages
         departure_times = _calculate_six_periods_deterministic(num_vehicles, end_time)
         
-    elif departure_pattern.startswith("rush_hours:"):
+    elif departure_pattern.startswith(RUSH_HOURS_PREFIX):
         # Custom rush hours pattern with exact percentages
         departure_times = _calculate_rush_hours_deterministic(num_vehicles, departure_pattern, end_time)
         
@@ -911,26 +918,26 @@ def _calculate_six_periods_deterministic(num_vehicles: int, end_time: int) -> Li
     departure_times = []
     
     # Scale to simulation time
-    scale_factor = end_time / 86400  # 24 hours = 86400 seconds
+    scale_factor = end_time / SECONDS_IN_24_HOURS
     
     # Six periods with exact percentages
     periods = [
-        {"name": "morning", "start": MORNING_START * 3600, "end": MORNING_END * 3600, "weight": MORNING_WEIGHT},
-        {"name": "morning_rush", "start": MORNING_RUSH_START * 3600, "end": MORNING_RUSH_END * 3600, "weight": MORNING_RUSH_WEIGHT},
-        {"name": "noon", "start": NOON_START * 3600, "end": NOON_END * 3600, "weight": NOON_WEIGHT},
-        {"name": "evening_rush", "start": EVENING_RUSH_START * 3600, "end": EVENING_RUSH_END * 3600, "weight": EVENING_RUSH_WEIGHT},
-        {"name": "evening", "start": EVENING_START * 3600, "end": EVENING_END * 3600, "weight": EVENING_WEIGHT},
-        {"name": "night", "start": NIGHT_START * 3600, "end": NIGHT_END * 3600, "weight": NIGHT_WEIGHT},
+        {ATTR_NAME: PERIOD_MORNING, ATTR_START: SIX_PERIODS_MORNING_START * SECONDS_TO_HOURS_DIVISOR, ATTR_END: SIX_PERIODS_MORNING_END * SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_MORNING_WEIGHT},
+        {ATTR_NAME: PERIOD_MORNING_RUSH, ATTR_START: SIX_PERIODS_MORNING_RUSH_START * SECONDS_TO_HOURS_DIVISOR, ATTR_END: SIX_PERIODS_MORNING_RUSH_END * SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_MORNING_RUSH_WEIGHT},
+        {ATTR_NAME: PERIOD_NOON, ATTR_START: SIX_PERIODS_NOON_START * SECONDS_TO_HOURS_DIVISOR, ATTR_END: SIX_PERIODS_NOON_END * SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_NOON_WEIGHT},
+        {ATTR_NAME: PERIOD_EVENING_RUSH, ATTR_START: SIX_PERIODS_EVENING_RUSH_START * SECONDS_TO_HOURS_DIVISOR, ATTR_END: SIX_PERIODS_EVENING_RUSH_END * SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_EVENING_RUSH_WEIGHT},
+        {ATTR_NAME: PERIOD_EVENING, ATTR_START: SIX_PERIODS_EVENING_START * SECONDS_TO_HOURS_DIVISOR, ATTR_END: SIX_PERIODS_EVENING_END * SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_EVENING_WEIGHT},
+        {ATTR_NAME: PERIOD_NIGHT, ATTR_START: SIX_PERIODS_NIGHT_START * SECONDS_TO_HOURS_DIVISOR, ATTR_END: SIX_PERIODS_NIGHT_END * SECONDS_TO_HOURS_DIVISOR, ATTR_WEIGHT: SIX_PERIODS_NIGHT_WEIGHT},
     ]
     
-    total_weight = sum(p["weight"] for p in periods)
+    total_weight = sum(p[ATTR_WEIGHT] for p in periods)
     
     for period in periods:
         # Calculate exact number of vehicles for this period
-        period_vehicles = int((period["weight"] / total_weight) * num_vehicles)
+        period_vehicles = int((period[ATTR_WEIGHT] / total_weight) * num_vehicles)
         
         if period_vehicles > 0:
-            if period["name"] == "night":
+            if period[ATTR_NAME] == PERIOD_NIGHT:
                 # Handle night period wrapping (10pm-6am next day)
                 # 25% in evening part (10pm-12am), 75% in early morning (12am-6am)
                 evening_vehicles = int(period_vehicles * NIGHT_EVENING_RATIO)
@@ -938,8 +945,8 @@ def _calculate_six_periods_deterministic(num_vehicles: int, end_time: int) -> Li
                 
                 # Evening part (10pm-12am)
                 if evening_vehicles > 0:
-                    evening_start = NIGHT_START * 3600 * scale_factor
-                    evening_end = 24 * 3600 * scale_factor
+                    evening_start = SIX_PERIODS_NIGHT_START * SECONDS_TO_HOURS_DIVISOR * scale_factor
+                    evening_end = HOURS_IN_DAY * SECONDS_TO_HOURS_DIVISOR * scale_factor
                     evening_interval = (evening_end - evening_start) / evening_vehicles
                     for i in range(evening_vehicles):
                         departure_time = evening_start + i * evening_interval
@@ -947,16 +954,16 @@ def _calculate_six_periods_deterministic(num_vehicles: int, end_time: int) -> Li
                 
                 # Early morning part (12am-6am)
                 if morning_vehicles > 0:
-                    morning_start = 0
-                    morning_end = EARLY_MORNING_END * 3600 * scale_factor
+                    morning_start = TIME_RANGE_START
+                    morning_end = SIX_PERIODS_EARLY_MORNING_END * SECONDS_TO_HOURS_DIVISOR * scale_factor
                     morning_interval = (morning_end - morning_start) / morning_vehicles
                     for i in range(morning_vehicles):
                         departure_time = morning_start + i * morning_interval
                         departure_times.append(int(departure_time))
             else:
                 # Regular period with even distribution
-                period_start = period["start"] * scale_factor
-                period_end = period["end"] * scale_factor
+                period_start = period[ATTR_START] * scale_factor
+                period_end = period[ATTR_END] * scale_factor
                 period_interval = (period_end - period_start) / period_vehicles
                 
                 for i in range(period_vehicles):
@@ -973,32 +980,32 @@ def _calculate_rush_hours_deterministic(num_vehicles: int, pattern: str, end_tim
     # Parse pattern (e.g., "rush_hours:7-9:40,17-19:30,rest:10")
     parts = pattern.split(":", 1)[1].split(",")
     rush_periods = []
-    rest_weight = 10
+    rest_weight = DEFAULT_REST_WEIGHT
     
     for part in parts:
-        if part.startswith("rest:"):
-            rest_weight = int(part.split(":")[1])
+        if part.startswith(f"{RUSH_HOURS_REST}:"):
+            rest_weight = int(part.split(":")[SINGLE_INCREMENT])
         else:
             time_range, weight = part.split(":")
             start_hour, end_hour = map(float, time_range.split("-"))
             rush_periods.append({
-                "start": start_hour * 3600,
-                "end": end_hour * 3600,
-                "weight": int(weight)
+                ATTR_START: start_hour * SECONDS_TO_HOURS_DIVISOR,
+                ATTR_END: end_hour * SECONDS_TO_HOURS_DIVISOR,
+                ATTR_WEIGHT: int(weight)
             })
     
     # Calculate vehicles for each period
-    total_rush_weight = sum(p["weight"] for p in rush_periods)
+    total_rush_weight = sum(p[ATTR_WEIGHT] for p in rush_periods)
     total_weight = total_rush_weight + rest_weight
     
-    scale_factor = end_time / 86400
+    scale_factor = end_time / SECONDS_IN_24_HOURS
     
     # Distribute vehicles to rush hour periods
     for period in rush_periods:
-        period_vehicles = int((period["weight"] / total_weight) * num_vehicles)
+        period_vehicles = int((period[ATTR_WEIGHT] / total_weight) * num_vehicles)
         if period_vehicles > 0:
-            period_start = period["start"] * scale_factor
-            period_end = period["end"] * scale_factor
+            period_start = period[ATTR_START] * scale_factor
+            period_end = period[ATTR_END] * scale_factor
             period_interval = (period_end - period_start) / period_vehicles
             
             for i in range(period_vehicles):
@@ -1028,13 +1035,13 @@ def _calculate_rush_hours_deterministic(num_vehicles: int, pattern: str, end_tim
 
 def _compute_rest_windows(rush_periods: List[dict], end_time: int) -> List[Tuple[float, float]]:
     """Compute time windows outside of rush hour periods."""
-    scale_factor = end_time / 86400
+    scale_factor = end_time / SECONDS_IN_24_HOURS
     
     # Create occupied time ranges from rush periods
     occupied_ranges = []
     for period in rush_periods:
-        start = period["start"] * scale_factor
-        end = period["end"] * scale_factor
+        start = period[ATTR_START] * scale_factor
+        end = period[ATTR_END] * scale_factor
         occupied_ranges.append((start, end))
     
     # Sort by start time
@@ -1042,7 +1049,7 @@ def _compute_rest_windows(rush_periods: List[dict], end_time: int) -> List[Tuple
     
     # Find gaps between occupied ranges
     rest_windows = []
-    simulation_start = 0
+    simulation_start = INITIAL_VEHICLE_ID_COUNTER
     simulation_end = end_time * SIMULATION_END_FACTOR
     
     current_pos = simulation_start
@@ -1077,8 +1084,8 @@ def execute_route_generation(args) -> None:
         public_traffic_seed=get_public_traffic_seed(args),
         routing_strategy=args.routing_strategy,
         vehicle_types=args.vehicle_types,
-        passenger_routes=getattr(args, 'passenger_routes', 'in 30 out 30 inner 25 pass 15'),
-        public_routes=getattr(args, 'public_routes', 'in 25 out 25 inner 35 pass 15'),
+        passenger_routes=getattr(args, FIELD_PASSENGER_ROUTES, DEFAULT_PASSENGER_ROUTE_PATTERN),
+        public_routes=getattr(args, FIELD_PUBLIC_ROUTES, DEFAULT_PUBLIC_ROUTE_PATTERN),
         end_time=args.end_time,
         departure_pattern=args.departure_pattern,
         start_time_hour=args.start_time_hour,

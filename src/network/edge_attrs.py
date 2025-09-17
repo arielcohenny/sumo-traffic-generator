@@ -2,6 +2,16 @@ import xml.etree.ElementTree as ET
 import json
 from pathlib import Path
 from src.config import CONFIG
+from src.constants import (
+    PHASE_MORNING_PEAK_START, PHASE_MORNING_PEAK_END, PHASE_MIDDAY_OFFPEAK_START,
+    PHASE_MIDDAY_OFFPEAK_END, PHASE_EVENING_PEAK_START, PHASE_EVENING_PEAK_END,
+    PHASE_MORNING_PEAK_DEPART_MULTIPLIER, PHASE_MORNING_PEAK_ARRIVE_MULTIPLIER,
+    PHASE_MIDDAY_OFFPEAK_DEPART_MULTIPLIER, PHASE_MIDDAY_OFFPEAK_ARRIVE_MULTIPLIER,
+    PHASE_EVENING_PEAK_DEPART_MULTIPLIER, PHASE_EVENING_PEAK_ARRIVE_MULTIPLIER,
+    PHASE_NIGHT_LOW_DEPART_MULTIPLIER, PHASE_NIGHT_LOW_ARRIVE_MULTIPLIER,
+    MIN_ATTRACTIVENESS_VALUE, MAX_ATTRACTIVENESS_VALUE,
+    GEOMETRY_DISTANCE_THRESHOLD, ZONE_ADJACENCY_DISTANCE_THRESHOLD
+)
 
 try:
     import numpy as np
@@ -46,7 +56,7 @@ def _line_intersects_polygon_fallback(line_coords, polygon_coords):
             dist = ((lx - px)**2 + (ly - py)**2) ** 0.5
             min_dist = min(min_dist, dist)
 
-    return min_dist < 50  # Within 50 units
+    return min_dist < GEOMETRY_DISTANCE_THRESHOLD
 
 
 def load_zones_data():
@@ -132,7 +142,7 @@ def find_adjacent_zones(edge_id: str, zones_data: list, edg_root, block_size_m: 
                 zone_polygon = Polygon(zone_coords)
                 intersects = edge_line.intersects(zone_polygon)
                 distance = edge_line.distance(zone_polygon)
-                is_adjacent = intersects or distance < 10
+                is_adjacent = intersects or distance < ZONE_ADJACENCY_DISTANCE_THRESHOLD
             else:
                 # Use fallback geometry functions
                 is_adjacent = _line_intersects_polygon_fallback(
@@ -184,11 +194,11 @@ def get_current_phase(current_hour: float) -> str:
     - evening_peak: 16:00-19:00 (Extended evening rush, higher volumes)
     - night_low: 19:00-6:00 (Reduced overnight traffic)
     """
-    if 6.0 <= current_hour < 9.5:
+    if PHASE_MORNING_PEAK_START <= current_hour < PHASE_MORNING_PEAK_END:
         return "morning_peak"
-    elif 9.5 <= current_hour < 16.0:
+    elif PHASE_MIDDAY_OFFPEAK_START <= current_hour < PHASE_MIDDAY_OFFPEAK_END:
         return "midday_offpeak"
-    elif 16.0 <= current_hour < 19.0:
+    elif PHASE_EVENING_PEAK_START <= current_hour < PHASE_EVENING_PEAK_END:
         return "evening_peak"
     else:
         return "night_low"
@@ -203,11 +213,11 @@ def get_phase_multipliers(phase: str) -> dict:
     """
     PHASE_MULTIPLIERS = {
         # High outbound (home→work)
-        "morning_peak": {"depart": 1.4, "arrive": 0.7},
-        "midday_offpeak": {"depart": 1.0, "arrive": 1.0},  # Balanced baseline
+        "morning_peak": {"depart": PHASE_MORNING_PEAK_DEPART_MULTIPLIER, "arrive": PHASE_MORNING_PEAK_ARRIVE_MULTIPLIER},
+        "midday_offpeak": {"depart": PHASE_MIDDAY_OFFPEAK_DEPART_MULTIPLIER, "arrive": PHASE_MIDDAY_OFFPEAK_ARRIVE_MULTIPLIER},  # Balanced baseline
         # High inbound (work→home)
-        "evening_peak": {"depart": 0.7, "arrive": 1.5},
-        "night_low": {"depart": 0.4, "arrive": 0.4}        # Minimal activity
+        "evening_peak": {"depart": PHASE_EVENING_PEAK_DEPART_MULTIPLIER, "arrive": PHASE_EVENING_PEAK_ARRIVE_MULTIPLIER},
+        "night_low": {"depart": PHASE_NIGHT_LOW_DEPART_MULTIPLIER, "arrive": PHASE_NIGHT_LOW_ARRIVE_MULTIPLIER}        # Minimal activity
     }
     return PHASE_MULTIPLIERS.get(phase, {"depart": 1.0, "arrive": 1.0})
 
@@ -246,8 +256,8 @@ def calculate_attractiveness_poisson(seed: int, edge_id: str = "") -> dict:
         arrive_raw = np.random.poisson(lam=arrive_lambda)
 
         phases[phase] = {
-            'depart': max(1, min(20, depart_raw)),
-            'arrive': max(1, min(20, arrive_raw))
+            'depart': max(MIN_ATTRACTIVENESS_VALUE, min(MAX_ATTRACTIVENESS_VALUE, depart_raw)),
+            'arrive': max(MIN_ATTRACTIVENESS_VALUE, min(MAX_ATTRACTIVENESS_VALUE, arrive_raw))
         }
 
     return phases
@@ -353,9 +363,9 @@ def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root) 
             avg_depart = land_use_temporal_patterns['Mixed'][phase]['depart']
             avg_arrive = land_use_temporal_patterns['Mixed'][phase]['arrive']
 
-        # Apply edge variation and ensure 1-20 range
-        final_depart = max(1, min(20, int(avg_depart * base_variation)))
-        final_arrive = max(1, min(20, int(avg_arrive * base_variation)))
+        # Apply edge variation and ensure attractiveness value range
+        final_depart = max(MIN_ATTRACTIVENESS_VALUE, min(MAX_ATTRACTIVENESS_VALUE, int(avg_depart * base_variation)))
+        final_arrive = max(MIN_ATTRACTIVENESS_VALUE, min(MAX_ATTRACTIVENESS_VALUE, int(avg_arrive * base_variation)))
 
         phases[phase] = {
             'depart': final_depart,
@@ -400,8 +410,8 @@ def calculate_attractiveness_iac(edge_id: str, zones_data: list, edg_root, netwo
         arrive_iac = values['arrive'] * iac_factor
 
         phases[phase] = {
-            'depart': max(1, min(20, int(depart_iac))),
-            'arrive': max(1, min(20, int(arrive_iac)))
+            'depart': max(MIN_ATTRACTIVENESS_VALUE, min(MAX_ATTRACTIVENESS_VALUE, int(depart_iac))),
+            'arrive': max(MIN_ATTRACTIVENESS_VALUE, min(MAX_ATTRACTIVENESS_VALUE, int(arrive_iac)))
         }
 
     return phases

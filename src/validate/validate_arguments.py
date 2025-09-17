@@ -13,7 +13,11 @@ from src.config import CONFIG
 from src.constants import (
     UNIFORM_DEPARTURE_PATTERN, FIXED_START_TIME_HOUR, FIXED_END_TIME,
     DEFAULT_START_TIME_HOUR, DEFAULT_END_TIME,
-    SENTINEL_START_TIME_HOUR, SENTINEL_END_TIME
+    SENTINEL_START_TIME_HOUR, SENTINEL_END_TIME,
+    MAX_GRID_DIMENSION_VALIDATION, MIN_BLOCK_SIZE_VALIDATION, MAX_BLOCK_SIZE_VALIDATION,
+    MAX_NUM_VEHICLES_VALIDATION, MIN_STEP_LENGTH_VALIDATION, MAX_STEP_LENGTH_VALIDATION,
+    MIN_LANE_COUNT_VALIDATION, MAX_LANE_COUNT_VALIDATION,
+    JUNCTION_ID_PATTERN, EDGE_ID_PATTERN
 )
 from src.utils.logging import get_logger
 from typing import Tuple, List, Dict, Any
@@ -69,33 +73,33 @@ def _validate_numeric_ranges(args) -> None:
     if args.grid_dimension <= 0:
         raise ValidationError(
             f"Grid dimension must be > 0, got {args.grid_dimension}")
-    if args.grid_dimension > 20:
+    if args.grid_dimension > MAX_GRID_DIMENSION_VALIDATION:
         raise ValidationError(
-            f"Grid dimension must be ≤ 20 for performance, got {args.grid_dimension}")
+            f"Grid dimension must be ≤ {MAX_GRID_DIMENSION_VALIDATION} for performance, got {args.grid_dimension}")
 
     # Block size validation
     if args.block_size_m <= 0:
         raise ValidationError(
             f"Block size must be > 0, got {args.block_size_m}")
-    if args.block_size_m < 50 or args.block_size_m > 1000:
+    if args.block_size_m < MIN_BLOCK_SIZE_VALIDATION or args.block_size_m > MAX_BLOCK_SIZE_VALIDATION:
         raise ValidationError(
-            f"Block size should be 50-1000m for realism, got {args.block_size_m}")
+            f"Block size should be {MIN_BLOCK_SIZE_VALIDATION}-{MAX_BLOCK_SIZE_VALIDATION}m for realism, got {args.block_size_m}")
 
     # Number of vehicles validation
     if args.num_vehicles <= 0:
         raise ValidationError(
             f"Number of vehicles must be > 0, got {args.num_vehicles}")
-    if args.num_vehicles > 10000:
+    if args.num_vehicles > MAX_NUM_VEHICLES_VALIDATION:
         raise ValidationError(
-            f"Number of vehicles must be ≤ 10000 for performance, got {args.num_vehicles}")
+            f"Number of vehicles must be ≤ {MAX_NUM_VEHICLES_VALIDATION} for performance, got {args.num_vehicles}")
 
     # Step length validation
     if args.step_length <= 0:
         raise ValidationError(
             f"Step length must be > 0, got {args.step_length}")
-    if args.step_length < 0.1 or args.step_length > 10.0:
+    if args.step_length < MIN_STEP_LENGTH_VALIDATION or args.step_length > MAX_STEP_LENGTH_VALIDATION:
         raise ValidationError(
-            f"Step length should be 0.1-10.0 seconds, got {args.step_length}")
+            f"Step length should be {MIN_STEP_LENGTH_VALIDATION}-{MAX_STEP_LENGTH_VALIDATION} seconds, got {args.step_length}")
 
     # End time validation
     if args.end_time <= 0:
@@ -351,7 +355,7 @@ def _validate_junctions_to_remove(junctions_to_remove: str) -> None:
     # Check if it's comma-separated junction IDs
     if "," in junctions_to_remove:
         junction_ids = [j.strip() for j in junctions_to_remove.split(",")]
-        junction_pattern = re.compile(r"^[A-Z]+\d+$")
+        junction_pattern = re.compile(JUNCTION_ID_PATTERN)
 
         for junction_id in junction_ids:
             if not junction_pattern.match(junction_id):
@@ -359,7 +363,7 @@ def _validate_junctions_to_remove(junctions_to_remove: str) -> None:
                                       f"Must be format like 'A1', 'B2', 'C10', etc.")
     else:
         # Single junction ID
-        junction_pattern = re.compile(r"^[A-Z]+\d+$")
+        junction_pattern = re.compile(JUNCTION_ID_PATTERN)
         if not junction_pattern.match(junctions_to_remove):
             raise ValidationError(f"Invalid junction ID format: {junctions_to_remove}. "
                                   f"Must be format like 'A1', 'B2', 'C10', etc.")
@@ -375,11 +379,11 @@ def _validate_lane_count(lane_count: str) -> None:
     # Check if it's a fixed integer count
     try:
         count = int(lane_count)
-        if count < 1 or count > 5:
-            raise ValidationError(f"Fixed lane count must be 1-5, got {count}")
+        if count < MIN_LANE_COUNT_VALIDATION or count > MAX_LANE_COUNT_VALIDATION:
+            raise ValidationError(f"Fixed lane count must be {MIN_LANE_COUNT_VALIDATION}-{MAX_LANE_COUNT_VALIDATION}, got {count}")
     except ValueError:
         raise ValidationError(f"Invalid lane count: {lane_count}. "
-                              f"Must be 'realistic', 'random', or integer 1-5")
+                              f"Must be 'realistic', 'random', or integer {MIN_LANE_COUNT_VALIDATION}-{MAX_LANE_COUNT_VALIDATION}")
 
 
 def _validate_cross_arguments(args) -> None:
@@ -480,7 +484,7 @@ def _validate_single_edge_config(config: str) -> None:
         specification = specification.strip()
 
         # Validate edge ID format (A1B1, B2C2, etc.)
-        edge_pattern = re.compile(r'^[A-Z]+\d+[A-Z]+\d+$')
+        edge_pattern = re.compile(EDGE_ID_PATTERN)
         if not edge_pattern.match(edge_id):
             raise ValidationError(
                 f"Invalid edge ID format: {edge_id} - Must match pattern A1B1, B2C2, etc.")
@@ -509,9 +513,9 @@ def _validate_single_edge_config(config: str) -> None:
 
             try:
                 tail_lanes = int(tail_value)
-                if tail_lanes < 1 or tail_lanes > 3:
+                if tail_lanes < MIN_LANE_COUNT_VALIDATION or tail_lanes > 3:
                     raise ValidationError(
-                        f"Tail lanes must be 1-3, got {tail_lanes} in: {edge_config}")
+                        f"Tail lanes must be {MIN_LANE_COUNT_VALIDATION}-3, got {tail_lanes} in: {edge_config}")
             except ValueError:
                 raise ValidationError(
                     f"Invalid tail lane count '{tail_value}' in: {edge_config}")
@@ -552,9 +556,9 @@ def _validate_single_edge_config(config: str) -> None:
                     # Validate lane count
                     try:
                         lanes = int(lane_count)
-                        if lanes < 1 or lanes > 3:
+                        if lanes < MIN_LANE_COUNT_VALIDATION or lanes > 3:
                             raise ValidationError(
-                                f"Movement lanes must be 1-3, got {lanes} for {to_edge}")
+                                f"Movement lanes must be {MIN_LANE_COUNT_VALIDATION}-3, got {lanes} for {to_edge}")
                     except ValueError:
                         raise ValidationError(
                             f"Invalid lane count '{lane_count}' for movement {to_edge}")
