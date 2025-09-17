@@ -4,6 +4,9 @@ import random
 from abc import ABC, abstractmethod
 from typing import List
 
+from src.constants import ATTR_CURRENT_PHASE
+
+
 class EdgeSampler(ABC):
     """Abstract interface for edge sampling strategies."""
 
@@ -11,7 +14,7 @@ class EdgeSampler(ABC):
     def sample_start_edges(self, edges: List, n: int) -> List[str]:
         """Sample n start edges from the given edge list."""
         pass
-    
+
     @abstractmethod
     def sample_end_edges(self, edges: List, n: int) -> List[str]:
         """Sample n end edges from the given edge list."""
@@ -33,7 +36,7 @@ class AttractivenessBasedEdgeSampler(EdgeSampler):
     def _get_phase_attr(self, edge, direction: str):
         """Get the appropriate phase-specific attractiveness attribute for an edge."""
         # Get current phase from edge attributes (set during network generation)
-        current_phase = getattr(edge, 'current_phase', 'morning_peak')
+        current_phase = getattr(edge, ATTR_CURRENT_PHASE, 'morning_peak')
         attr_name = f"{current_phase}_{direction}_attractiveness"
         return float(getattr(edge, attr_name, 0.0) or 0.0)
 

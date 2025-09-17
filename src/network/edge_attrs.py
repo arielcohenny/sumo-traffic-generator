@@ -3,8 +3,8 @@ import json
 from pathlib import Path
 from src.config import CONFIG
 from src.constants import (
-    PHASE_MORNING_PEAK_START, PHASE_MORNING_PEAK_END, PHASE_MIDDAY_OFFPEAK_START,
-    PHASE_MIDDAY_OFFPEAK_END, PHASE_EVENING_PEAK_START, PHASE_EVENING_PEAK_END,
+    ATTR_CURRENT_PHASE, RUSH_HOUR_MORNING_START, RUSH_HOUR_MORNING_END,
+    RUSH_HOUR_EVENING_START, RUSH_HOUR_EVENING_END,
     PHASE_MORNING_PEAK_DEPART_MULTIPLIER, PHASE_MORNING_PEAK_ARRIVE_MULTIPLIER,
     PHASE_MIDDAY_OFFPEAK_DEPART_MULTIPLIER, PHASE_MIDDAY_OFFPEAK_ARRIVE_MULTIPLIER,
     PHASE_EVENING_PEAK_DEPART_MULTIPLIER, PHASE_EVENING_PEAK_ARRIVE_MULTIPLIER,
@@ -194,11 +194,11 @@ def get_current_phase(current_hour: float) -> str:
     - evening_peak: 16:00-19:00 (Extended evening rush, higher volumes)
     - night_low: 19:00-6:00 (Reduced overnight traffic)
     """
-    if PHASE_MORNING_PEAK_START <= current_hour < PHASE_MORNING_PEAK_END:
+    if RUSH_HOUR_MORNING_START <= current_hour < RUSH_HOUR_MORNING_END:
         return "morning_peak"
-    elif PHASE_MIDDAY_OFFPEAK_START <= current_hour < PHASE_MIDDAY_OFFPEAK_END:
+    elif RUSH_HOUR_MORNING_END <= current_hour < RUSH_HOUR_EVENING_START:
         return "midday_offpeak"
-    elif PHASE_EVENING_PEAK_START <= current_hour < PHASE_EVENING_PEAK_END:
+    elif RUSH_HOUR_EVENING_START <= current_hour < RUSH_HOUR_EVENING_END:
         return "evening_peak"
     else:
         return "night_low"
@@ -214,10 +214,12 @@ def get_phase_multipliers(phase: str) -> dict:
     PHASE_MULTIPLIERS = {
         # High outbound (home→work)
         "morning_peak": {"depart": PHASE_MORNING_PEAK_DEPART_MULTIPLIER, "arrive": PHASE_MORNING_PEAK_ARRIVE_MULTIPLIER},
-        "midday_offpeak": {"depart": PHASE_MIDDAY_OFFPEAK_DEPART_MULTIPLIER, "arrive": PHASE_MIDDAY_OFFPEAK_ARRIVE_MULTIPLIER},  # Balanced baseline
+        # Balanced baseline
+        "midday_offpeak": {"depart": PHASE_MIDDAY_OFFPEAK_DEPART_MULTIPLIER, "arrive": PHASE_MIDDAY_OFFPEAK_ARRIVE_MULTIPLIER},
         # High inbound (work→home)
         "evening_peak": {"depart": PHASE_EVENING_PEAK_DEPART_MULTIPLIER, "arrive": PHASE_EVENING_PEAK_ARRIVE_MULTIPLIER},
-        "night_low": {"depart": PHASE_NIGHT_LOW_DEPART_MULTIPLIER, "arrive": PHASE_NIGHT_LOW_ARRIVE_MULTIPLIER}        # Minimal activity
+        # Minimal activity
+        "night_low": {"depart": PHASE_NIGHT_LOW_DEPART_MULTIPLIER, "arrive": PHASE_NIGHT_LOW_ARRIVE_MULTIPLIER}
     }
     return PHASE_MULTIPLIERS.get(phase, {"depart": 1.0, "arrive": 1.0})
 
@@ -364,8 +366,10 @@ def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root) 
             avg_arrive = land_use_temporal_patterns['Mixed'][phase]['arrive']
 
         # Apply edge variation and ensure attractiveness value range
-        final_depart = max(MIN_ATTRACTIVENESS_VALUE, min(MAX_ATTRACTIVENESS_VALUE, int(avg_depart * base_variation)))
-        final_arrive = max(MIN_ATTRACTIVENESS_VALUE, min(MAX_ATTRACTIVENESS_VALUE, int(avg_arrive * base_variation)))
+        final_depart = max(MIN_ATTRACTIVENESS_VALUE, min(
+            MAX_ATTRACTIVENESS_VALUE, int(avg_depart * base_variation)))
+        final_arrive = max(MIN_ATTRACTIVENESS_VALUE, min(
+            MAX_ATTRACTIVENESS_VALUE, int(avg_arrive * base_variation)))
 
         phases[phase] = {
             'depart': final_depart,
@@ -486,7 +490,7 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", start_time_ho
             edge.set(f"{phase}_arrive_attractiveness", str(arrive_val))
 
         # Store current phase for dynamic lookup by other components
-        edge.set("current_phase", current_phase)
+        edge.set(ATTR_CURRENT_PHASE, current_phase)
 
     tree.write(net_file, encoding="utf-8")
 

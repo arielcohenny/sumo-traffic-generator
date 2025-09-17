@@ -4,6 +4,8 @@ from typing import List, Dict, Optional
 from abc import ABC, abstractmethod
 import random
 
+from src.constants import ATTR_CURRENT_PHASE
+
 
 class RoutingStrategy(ABC):
     """Abstract base class for routing strategies."""
@@ -184,7 +186,8 @@ class AttractivenessRoutingStrategy(RoutingStrategy):
             try:
                 edge = self.net.getEdge(edge_id)
                 # Get attractiveness from phase-specific attributes if available
-                current_phase = getattr(edge, 'current_phase', 'morning_peak')
+                current_phase = getattr(
+                    edge, ATTR_CURRENT_PHASE, 'morning_peak')
                 arrive_attr_name = f"{current_phase}_arrive_attractiveness"
                 arrive_attr = getattr(edge, arrive_attr_name, None)
                 if arrive_attr is not None:

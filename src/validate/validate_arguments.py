@@ -11,12 +11,12 @@ from pathlib import Path
 
 from src.config import CONFIG
 from src.constants import (
-    UNIFORM_DEPARTURE_PATTERN, FIXED_START_TIME_HOUR, FIXED_END_TIME,
+    DEPARTURE_PATTERN_SIX_PERIODS, DEPARTURE_PATTERN_UNIFORM, UNIFORM_DEPARTURE_PATTERN, FIXED_START_TIME_HOUR, MAX_END_TIME,
     DEFAULT_START_TIME_HOUR, DEFAULT_END_TIME,
     SENTINEL_START_TIME_HOUR, SENTINEL_END_TIME,
-    MAX_GRID_DIMENSION_VALIDATION, MIN_BLOCK_SIZE_VALIDATION, MAX_BLOCK_SIZE_VALIDATION,
-    MAX_NUM_VEHICLES_VALIDATION, MIN_STEP_LENGTH_VALIDATION, MAX_STEP_LENGTH_VALIDATION,
-    MIN_LANE_COUNT_VALIDATION, MAX_LANE_COUNT_VALIDATION,
+    MAX_GRID_DIMENSION, MIN_BLOCK_SIZE_M, MAX_BLOCK_SIZE_VALIDATION,
+    MAX_NUM_VEHICLES_VALIDATION, MIN_STEP_LENGTH, MAX_STEP_LENGTH,
+    MIN_LANE_COUNT, MAX_LANE_COUNT,
     JUNCTION_ID_PATTERN, EDGE_ID_PATTERN
 )
 from src.utils.logging import get_logger
@@ -73,17 +73,17 @@ def _validate_numeric_ranges(args) -> None:
     if args.grid_dimension <= 0:
         raise ValidationError(
             f"Grid dimension must be > 0, got {args.grid_dimension}")
-    if args.grid_dimension > MAX_GRID_DIMENSION_VALIDATION:
+    if args.grid_dimension > MAX_GRID_DIMENSION:
         raise ValidationError(
-            f"Grid dimension must be ≤ {MAX_GRID_DIMENSION_VALIDATION} for performance, got {args.grid_dimension}")
+            f"Grid dimension must be ≤ {MAX_GRID_DIMENSION} for performance, got {args.grid_dimension}")
 
     # Block size validation
     if args.block_size_m <= 0:
         raise ValidationError(
             f"Block size must be > 0, got {args.block_size_m}")
-    if args.block_size_m < MIN_BLOCK_SIZE_VALIDATION or args.block_size_m > MAX_BLOCK_SIZE_VALIDATION:
+    if args.block_size_m < MIN_BLOCK_SIZE_M or args.block_size_m > MAX_BLOCK_SIZE_VALIDATION:
         raise ValidationError(
-            f"Block size should be {MIN_BLOCK_SIZE_VALIDATION}-{MAX_BLOCK_SIZE_VALIDATION}m for realism, got {args.block_size_m}")
+            f"Block size should be {MIN_BLOCK_SIZE_M}-{MAX_BLOCK_SIZE_VALIDATION}m for realism, got {args.block_size_m}")
 
     # Number of vehicles validation
     if args.num_vehicles <= 0:
@@ -97,9 +97,9 @@ def _validate_numeric_ranges(args) -> None:
     if args.step_length <= 0:
         raise ValidationError(
             f"Step length must be > 0, got {args.step_length}")
-    if args.step_length < MIN_STEP_LENGTH_VALIDATION or args.step_length > MAX_STEP_LENGTH_VALIDATION:
+    if args.step_length < MIN_STEP_LENGTH or args.step_length > MAX_STEP_LENGTH:
         raise ValidationError(
-            f"Step length should be {MIN_STEP_LENGTH_VALIDATION}-{MAX_STEP_LENGTH_VALIDATION} seconds, got {args.step_length}")
+            f"Step length should be {MIN_STEP_LENGTH}-{MAX_STEP_LENGTH} seconds, got {args.step_length}")
 
     # End time validation
     if args.end_time <= 0:
@@ -198,29 +198,29 @@ def _validate_vehicle_types(vehicle_types: str) -> None:
 
 def _validate_route_args(args) -> None:
     """Validate route pattern format and percentages for passenger and public vehicles."""
-    
+
     # Note: CLI args with hyphens become underscores in argparse
     # Validate passenger routes
     if hasattr(args, 'passenger_routes') and getattr(args, 'passenger_routes', None):
         _validate_single_route_pattern(args.passenger_routes, "passenger")
-    
-    # Validate public routes  
+
+    # Validate public routes
     if hasattr(args, 'public_routes') and getattr(args, 'public_routes', None):
         _validate_single_route_pattern(args.public_routes, "public")
 
 
 def _validate_single_route_pattern(route_pattern: str, vehicle_type: str) -> None:
     """Validate a single route pattern format and percentages."""
-    
+
     parts = route_pattern.strip().split()
     if len(parts) != 8:
         raise ValidationError(
             f"{vehicle_type} route pattern must be 4 pairs of pattern + percentage, got: {route_pattern}")
-    
+
     valid_patterns = {"in", "out", "inner", "pass"}
     total_percentage = 0.0
     found_patterns = set()
-    
+
     for i in range(0, len(parts), 2):
         pattern = parts[i]
         try:
@@ -228,28 +228,28 @@ def _validate_single_route_pattern(route_pattern: str, vehicle_type: str) -> Non
         except (ValueError, IndexError):
             raise ValidationError(
                 f"Invalid percentage in {vehicle_type} route pattern: {route_pattern}")
-        
+
         if pattern not in valid_patterns:
             raise ValidationError(
                 f"Invalid route pattern '{pattern}'. Valid patterns: {valid_patterns}")
-        
+
         if pattern in found_patterns:
             raise ValidationError(
                 f"Duplicate route pattern '{pattern}' in {vehicle_type} routes: {route_pattern}")
         found_patterns.add(pattern)
-        
+
         if percentage < 0 or percentage > 100:
             raise ValidationError(
                 f"Route pattern percentage must be 0-100, got {percentage} for {pattern}")
-        
+
         total_percentage += percentage
-    
+
     # Check that all 4 patterns are present
     if found_patterns != valid_patterns:
         missing = valid_patterns - found_patterns
         raise ValidationError(
             f"{vehicle_type} route pattern must include all 4 patterns (in, out, inner, pass), missing: {missing}")
-    
+
     if abs(total_percentage - 100.0) > 0.01:
         raise ValidationError(
             f"{vehicle_type} route pattern percentages must sum to 100, got {total_percentage}")
@@ -259,7 +259,7 @@ def _validate_departure_pattern(departure_pattern: str) -> None:
     """Validate departure pattern format."""
 
     # Check for basic patterns
-    if departure_pattern in ["six_periods", "uniform"]:
+    if departure_pattern in [DEPARTURE_PATTERN_SIX_PERIODS, DEPARTURE_PATTERN_UNIFORM]:
         return
 
     # Check for rush_hours pattern
@@ -379,11 +379,12 @@ def _validate_lane_count(lane_count: str) -> None:
     # Check if it's a fixed integer count
     try:
         count = int(lane_count)
-        if count < MIN_LANE_COUNT_VALIDATION or count > MAX_LANE_COUNT_VALIDATION:
-            raise ValidationError(f"Fixed lane count must be {MIN_LANE_COUNT_VALIDATION}-{MAX_LANE_COUNT_VALIDATION}, got {count}")
+        if count < MIN_LANE_COUNT or count > MAX_LANE_COUNT:
+            raise ValidationError(
+                f"Fixed lane count must be {MIN_LANE_COUNT}-{MAX_LANE_COUNT}, got {count}")
     except ValueError:
         raise ValidationError(f"Invalid lane count: {lane_count}. "
-                              f"Must be 'realistic', 'random', or integer {MIN_LANE_COUNT_VALIDATION}-{MAX_LANE_COUNT_VALIDATION}")
+                              f"Must be 'realistic', 'random', or integer {MIN_LANE_COUNT}-{MAX_LANE_COUNT}")
 
 
 def _validate_cross_arguments(args) -> None:
@@ -513,9 +514,9 @@ def _validate_single_edge_config(config: str) -> None:
 
             try:
                 tail_lanes = int(tail_value)
-                if tail_lanes < MIN_LANE_COUNT_VALIDATION or tail_lanes > 3:
+                if tail_lanes < MIN_LANE_COUNT or tail_lanes > 3:
                     raise ValidationError(
-                        f"Tail lanes must be {MIN_LANE_COUNT_VALIDATION}-3, got {tail_lanes} in: {edge_config}")
+                        f"Tail lanes must be {MIN_LANE_COUNT}-3, got {tail_lanes} in: {edge_config}")
             except ValueError:
                 raise ValidationError(
                     f"Invalid tail lane count '{tail_value}' in: {edge_config}")
@@ -556,9 +557,9 @@ def _validate_single_edge_config(config: str) -> None:
                     # Validate lane count
                     try:
                         lanes = int(lane_count)
-                        if lanes < MIN_LANE_COUNT_VALIDATION or lanes > 3:
+                        if lanes < MIN_LANE_COUNT or lanes > 3:
                             raise ValidationError(
-                                f"Movement lanes must be {MIN_LANE_COUNT_VALIDATION}-3, got {lanes} for {to_edge}")
+                                f"Movement lanes must be {MIN_LANE_COUNT}-3, got {lanes} for {to_edge}")
                     except ValueError:
                         raise ValidationError(
                             f"Invalid lane count '{lane_count}' for movement {to_edge}")
@@ -645,13 +646,13 @@ def _smart_fix_departure_pattern_constraints(args) -> None:
         # Handle end_time
         if args.end_time == SENTINEL_END_TIME:
             # User didn't provide this parameter, auto-fix it
-            args.end_time = FIXED_END_TIME
+            args.end_time = MAX_END_TIME
             logger.info(
-                f"Auto-setting end_time to {FIXED_END_TIME} for '{args.departure_pattern}' pattern")
-        elif args.end_time != FIXED_END_TIME:
+                f"Auto-setting end_time to {MAX_END_TIME} for '{args.departure_pattern}' pattern")
+        elif args.end_time != MAX_END_TIME:
             # User explicitly provided wrong value
             raise ValidationError(
-                f"end_time must be {FIXED_END_TIME} seconds (24 hours) for '{args.departure_pattern}' "
+                f"end_time must be {MAX_END_TIME} seconds (24 hours) for '{args.departure_pattern}' "
                 f"departure pattern (got {args.end_time}). "
                 f"Only '{UNIFORM_DEPARTURE_PATTERN}' pattern allows custom durations."
             )

@@ -14,10 +14,10 @@ from src.constants import (
     DEFAULT_NUM_VEHICLES, DEFAULT_SHORTEST_ROUTING_PCT, DEFAULT_REALTIME_ROUTING_PCT,
     DEFAULT_FASTEST_ROUTING_PCT, DEFAULT_ATTRACTIVENESS_ROUTING_PCT,
     DEFAULT_PASSENGER_VEHICLE_PCT, DEFAULT_PUBLIC_VEHICLE_PCT, DEFAULT_PASSENGER_ROUTES,
-    DEFAULT_PUBLIC_ROUTES, DEFAULT_SEED, DEFAULT_STEP_LENGTH, DEFAULT_END_TIME, 
-    DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_START_TIME_HOUR, DEFAULT_BOTTLENECK_DETECTION_INTERVAL, 
+    DEFAULT_PUBLIC_ROUTES, DEFAULT_SEED, DEFAULT_STEP_LENGTH, DEFAULT_END_TIME,
+    DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_START_TIME_HOUR, DEFAULT_BOTTLENECK_DETECTION_INTERVAL,
     DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL, DEFAULT_ATTRACTIVENESS, DEFAULT_LANE_COUNT,
-    DEFAULT_DEPARTURE_PATTERN, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL,
+    DEFAULT_DEPARTURE_PATTERN, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL, DEPARTURE_PATTERN_RUSH_HOURS, DEPARTURE_PATTERN_SIX_PERIODS, DEPARTURE_PATTERN_UNIFORM,
 
     # Min/Max Values
     MIN_GRID_DIMENSION, MAX_GRID_DIMENSION, MIN_BLOCK_SIZE_M, MAX_BLOCK_SIZE_M,
@@ -33,14 +33,14 @@ from src.constants import (
     STEP_LAND_USE_BLOCK_SIZE_M, STEP_START_TIME_HOUR, STEP_TREE_METHOD_INTERVAL,
 
     # Rush Hours Values
-    DEFAULT_MORNING_START, DEFAULT_MORNING_END, DEFAULT_MORNING_PCT,
-    DEFAULT_EVENING_START, DEFAULT_EVENING_END, DEFAULT_EVENING_PCT, DEFAULT_REST_PCT,
+    RUSH_HOUR_MORNING_START, RUSH_HOUR_MORNING_END, DEFAULT_MORNING_PCT,
+    RUSH_HOUR_EVENING_START, RUSH_HOUR_EVENING_END, DEFAULT_EVENING_PCT, DEFAULT_REST_PCT,
 
     # Other Constants
     TEMP_FILE_PREFIX, DEFAULT_WORKSPACE_DIR,
-    
+
     # Departure Pattern Constraints
-    UNIFORM_DEPARTURE_PATTERN, FIXED_START_TIME_HOUR, FIXED_END_TIME
+    UNIFORM_DEPARTURE_PATTERN, FIXED_START_TIME_HOUR
 )
 
 
@@ -216,87 +216,92 @@ class ParameterWidgets:
         # Route Pattern Configuration
         st.write("**🚗 Route Pattern Configuration**")
         st.write("Configure spatial route patterns for different vehicle types")
-        
+
         # Passenger Route Patterns (show only if passenger percentage > 0)
         if passenger_pct > 0:
             st.write("*Passenger Vehicle Route Patterns*")
             pass_col1, pass_col2, pass_col3, pass_col4 = st.columns(4)
-            
+
             with pass_col1:
                 passenger_in_pct = st.number_input(
-                    "In-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    "In-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
                     value=30, key="passenger_in",
                     help="Start at network boundary, end inside network (external arrivals)")
             with pass_col2:
                 passenger_out_pct = st.number_input(
-                    "Out-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    "Out-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
                     value=30, key="passenger_out",
                     help="Start inside network, end at boundary (departures to external)")
             with pass_col3:
                 passenger_inner_pct = st.number_input(
-                    "Inner %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    "Inner %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
                     value=25, key="passenger_inner",
                     help="Both start and end inside the network (local trips)")
             with pass_col4:
                 passenger_pass_pct = st.number_input(
-                    "Pass-through %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    "Pass-through %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
                     value=15, key="passenger_pass",
                     help="Start at boundary, end at different boundary (transit through area)")
-                    
-            total_passenger_routes = passenger_in_pct + passenger_out_pct + passenger_inner_pct + passenger_pass_pct
+
+            total_passenger_routes = passenger_in_pct + \
+                passenger_out_pct + passenger_inner_pct + passenger_pass_pct
             if total_passenger_routes != MAX_PERCENTAGE:
-                st.error(f"Passenger route percentages must sum to {MAX_PERCENTAGE}% (current: {total_passenger_routes}%)")
-            
+                st.error(
+                    f"Passenger route percentages must sum to {MAX_PERCENTAGE}% (current: {total_passenger_routes}%)")
+
             params["passenger_routes"] = f"in {passenger_in_pct} out {passenger_out_pct} inner {passenger_inner_pct} pass {passenger_pass_pct}"
         else:
             params["passenger_routes"] = DEFAULT_PASSENGER_ROUTES
 
-        # Public Route Patterns (show only if public percentage > 0)  
+        # Public Route Patterns (show only if public percentage > 0)
         if public_pct > 0:
             st.write("*Public Vehicle Route Patterns*")
             pub_col1, pub_col2, pub_col3, pub_col4 = st.columns(4)
-            
+
             with pub_col1:
                 public_in_pct = st.number_input(
-                    "In-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    "In-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
                     value=25, key="public_in",
                     help="Transit routes bringing people into the urban area")
             with pub_col2:
                 public_out_pct = st.number_input(
-                    "Out-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    "Out-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
                     value=25, key="public_out",
                     help="Transit routes taking people out of the urban area")
             with pub_col3:
                 public_inner_pct = st.number_input(
-                    "Inner %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    "Inner %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
                     value=35, key="public_inner",
                     help="Internal transit routes within the urban area")
             with pub_col4:
                 public_pass_pct = st.number_input(
-                    "Pass-through %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    "Pass-through %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE,
                     value=15, key="public_pass",
                     help="Transit routes passing through the area")
-                    
-            total_public_routes = public_in_pct + public_out_pct + public_inner_pct + public_pass_pct
+
+            total_public_routes = public_in_pct + \
+                public_out_pct + public_inner_pct + public_pass_pct
             if total_public_routes != MAX_PERCENTAGE:
-                st.error(f"Public route percentages must sum to {MAX_PERCENTAGE}% (current: {total_public_routes}%)")
-            
+                st.error(
+                    f"Public route percentages must sum to {MAX_PERCENTAGE}% (current: {total_public_routes}%)")
+
             params["public_routes"] = f"in {public_in_pct} out {public_out_pct} inner {public_inner_pct} pass {public_pass_pct}"
         else:
             params["public_routes"] = DEFAULT_PUBLIC_ROUTES
 
         # Departure pattern with session state for cross-section coordination
-        departure_options = ["six_periods", "uniform", "rush_hours"]
+        departure_options = [DEPARTURE_PATTERN_SIX_PERIODS,
+                             DEPARTURE_PATTERN_UNIFORM, DEPARTURE_PATTERN_RUSH_HOURS]
         departure_pattern = st.selectbox(
             "Departure Pattern",
             departure_options,
             index=departure_options.index(DEFAULT_DEPARTURE_PATTERN),
             help="How vehicles are distributed over time"
         )
-        
+
         # Store in session state for other sections to access
         st.session_state.departure_pattern = departure_pattern
-        
+
         # Show constraint info for non-uniform patterns
         if departure_pattern != UNIFORM_DEPARTURE_PATTERN:
             st.info("ℹ️ **Time constraints**: Non-uniform patterns require midnight start (0.0h) and 24-hour duration (86400s) for realistic daily cycles.")
@@ -304,16 +309,16 @@ class ParameterWidgets:
         if departure_pattern == "rush_hours":
             st.write("Custom Rush Hours Pattern:")
             morning_start = st.number_input(
-                "Morning Start", min_value=MIN_PERCENTAGE, max_value=23, value=DEFAULT_MORNING_START, key="morning_start")
+                "Morning Start", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_MORNING_START, key="morning_start")
             morning_end = st.number_input(
-                "Morning End", min_value=MIN_PERCENTAGE, max_value=23, value=DEFAULT_MORNING_END, key="morning_end")
+                "Morning End", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_MORNING_END, key="morning_end")
             morning_pct = st.number_input(
                 "Morning %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_MORNING_PCT, key="morning_pct")
 
             evening_start = st.number_input(
-                "Evening Start", min_value=MIN_PERCENTAGE, max_value=23, value=DEFAULT_EVENING_START, key="evening_start")
+                "Evening Start", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_EVENING_START, key="evening_start")
             evening_end = st.number_input(
-                "Evening End", min_value=MIN_PERCENTAGE, max_value=23, value=DEFAULT_EVENING_END, key="evening_end")
+                "Evening End", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_EVENING_END, key="evening_end")
             evening_pct = st.number_input(
                 "Evening %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_EVENING_PCT, key="evening_pct")
 
@@ -442,9 +447,10 @@ class ParameterWidgets:
         )
 
         # Time input with departure pattern constraints
-        departure_pattern = st.session_state.get('departure_pattern', DEFAULT_DEPARTURE_PATTERN)
+        departure_pattern = st.session_state.get(
+            'departure_pattern', DEFAULT_DEPARTURE_PATTERN)
         is_uniform_pattern = departure_pattern == UNIFORM_DEPARTURE_PATTERN
-        
+
         if is_uniform_pattern:
             # Show normal end_time control for uniform pattern
             params["end_time"] = st.number_input(
@@ -457,8 +463,9 @@ class ParameterWidgets:
             )
         else:
             # Fixed duration for non-uniform patterns
-            params["end_time"] = FIXED_END_TIME
-            st.info(f"🕐 **Fixed Duration**: {FIXED_END_TIME:,} seconds (24 hours) - required for '{departure_pattern}' pattern")
+            params["end_time"] = MAX_END_TIME
+            st.info(
+                f"🕐 **Fixed Duration**: {MAX_END_TIME:,} seconds (24 hours) - required for '{departure_pattern}' pattern")
 
         # Start time with departure pattern constraints
         if is_uniform_pattern:
@@ -474,7 +481,8 @@ class ParameterWidgets:
         else:
             # Fixed start time for non-uniform patterns
             params["start_time_hour"] = FIXED_START_TIME_HOUR
-            st.info(f"🌙 **Fixed Start Time**: {FIXED_START_TIME_HOUR} hours (midnight) - required for '{departure_pattern}' pattern")
+            st.info(
+                f"🌙 **Fixed Start Time**: {FIXED_START_TIME_HOUR} hours (midnight) - required for '{departure_pattern}' pattern")
 
         params["gui"] = st.checkbox(
             "Launch SUMO GUI",
@@ -513,7 +521,6 @@ class ParameterWidgets:
             index=attractiveness_options.index(DEFAULT_ATTRACTIVENESS),
             help="Algorithm for calculating edge attractiveness"
         )
-
 
         return params
 
