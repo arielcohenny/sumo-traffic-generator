@@ -13,10 +13,10 @@ from src.constants import (
     DEFAULT_GRID_DIMENSION, DEFAULT_BLOCK_SIZE_M, DEFAULT_FIXED_LANE_COUNT,
     DEFAULT_NUM_VEHICLES, DEFAULT_SHORTEST_ROUTING_PCT, DEFAULT_REALTIME_ROUTING_PCT,
     DEFAULT_FASTEST_ROUTING_PCT, DEFAULT_ATTRACTIVENESS_ROUTING_PCT,
-    DEFAULT_PASSENGER_VEHICLE_PCT, DEFAULT_PUBLIC_VEHICLE_PCT,
-    DEFAULT_SEED, DEFAULT_STEP_LENGTH, DEFAULT_END_TIME, DEFAULT_LAND_USE_BLOCK_SIZE_M,
-    DEFAULT_START_TIME_HOUR, DEFAULT_BOTTLENECK_DETECTION_INTERVAL, DEFAULT_ATLCS_INTERVAL,
-    DEFAULT_TREE_METHOD_INTERVAL, DEFAULT_ATTRACTIVENESS, DEFAULT_LANE_COUNT,
+    DEFAULT_PASSENGER_VEHICLE_PCT, DEFAULT_PUBLIC_VEHICLE_PCT, DEFAULT_PASSENGER_ROUTES,
+    DEFAULT_PUBLIC_ROUTES, DEFAULT_SEED, DEFAULT_STEP_LENGTH, DEFAULT_END_TIME, 
+    DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_START_TIME_HOUR, DEFAULT_BOTTLENECK_DETECTION_INTERVAL, 
+    DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL, DEFAULT_ATTRACTIVENESS, DEFAULT_LANE_COUNT,
     DEFAULT_DEPARTURE_PATTERN, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL,
 
     # Min/Max Values
@@ -212,6 +212,78 @@ class ParameterWidgets:
                 f"Vehicle type percentages must sum to {MAX_PERCENTAGE}% (current: {total_vehicles}%)")
 
         params["vehicle_types"] = f"passenger {passenger_pct} public {public_pct}"
+
+        # Route Pattern Configuration
+        st.write("**🚗 Route Pattern Configuration**")
+        st.write("Configure spatial route patterns for different vehicle types")
+        
+        # Passenger Route Patterns (show only if passenger percentage > 0)
+        if passenger_pct > 0:
+            st.write("*Passenger Vehicle Route Patterns*")
+            pass_col1, pass_col2, pass_col3, pass_col4 = st.columns(4)
+            
+            with pass_col1:
+                passenger_in_pct = st.number_input(
+                    "In-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    value=30, key="passenger_in",
+                    help="Start at network boundary, end inside network (external arrivals)")
+            with pass_col2:
+                passenger_out_pct = st.number_input(
+                    "Out-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    value=30, key="passenger_out",
+                    help="Start inside network, end at boundary (departures to external)")
+            with pass_col3:
+                passenger_inner_pct = st.number_input(
+                    "Inner %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    value=25, key="passenger_inner",
+                    help="Both start and end inside the network (local trips)")
+            with pass_col4:
+                passenger_pass_pct = st.number_input(
+                    "Pass-through %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    value=15, key="passenger_pass",
+                    help="Start at boundary, end at different boundary (transit through area)")
+                    
+            total_passenger_routes = passenger_in_pct + passenger_out_pct + passenger_inner_pct + passenger_pass_pct
+            if total_passenger_routes != MAX_PERCENTAGE:
+                st.error(f"Passenger route percentages must sum to {MAX_PERCENTAGE}% (current: {total_passenger_routes}%)")
+            
+            params["passenger_routes"] = f"in {passenger_in_pct} out {passenger_out_pct} inner {passenger_inner_pct} pass {passenger_pass_pct}"
+        else:
+            params["passenger_routes"] = DEFAULT_PASSENGER_ROUTES
+
+        # Public Route Patterns (show only if public percentage > 0)  
+        if public_pct > 0:
+            st.write("*Public Vehicle Route Patterns*")
+            pub_col1, pub_col2, pub_col3, pub_col4 = st.columns(4)
+            
+            with pub_col1:
+                public_in_pct = st.number_input(
+                    "In-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    value=25, key="public_in",
+                    help="Transit routes bringing people into the urban area")
+            with pub_col2:
+                public_out_pct = st.number_input(
+                    "Out-bound %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    value=25, key="public_out",
+                    help="Transit routes taking people out of the urban area")
+            with pub_col3:
+                public_inner_pct = st.number_input(
+                    "Inner %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    value=35, key="public_inner",
+                    help="Internal transit routes within the urban area")
+            with pub_col4:
+                public_pass_pct = st.number_input(
+                    "Pass-through %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, 
+                    value=15, key="public_pass",
+                    help="Transit routes passing through the area")
+                    
+            total_public_routes = public_in_pct + public_out_pct + public_inner_pct + public_pass_pct
+            if total_public_routes != MAX_PERCENTAGE:
+                st.error(f"Public route percentages must sum to {MAX_PERCENTAGE}% (current: {total_public_routes}%)")
+            
+            params["public_routes"] = f"in {public_in_pct} out {public_out_pct} inner {public_inner_pct} pass {public_pass_pct}"
+        else:
+            params["public_routes"] = DEFAULT_PUBLIC_ROUTES
 
         # Departure pattern with session state for cross-section coordination
         departure_options = ["six_periods", "uniform", "rush_hours"]

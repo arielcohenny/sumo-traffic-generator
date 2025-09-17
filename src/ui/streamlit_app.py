@@ -8,7 +8,8 @@ from src.constants import (
     # Default Parameter Values
     DEFAULT_GRID_DIMENSION, DEFAULT_BLOCK_SIZE_M, DEFAULT_JUNCTIONS_TO_REMOVE,
     DEFAULT_LANE_COUNT, DEFAULT_NUM_VEHICLES, DEFAULT_ROUTING_STRATEGY,
-    DEFAULT_VEHICLE_TYPES, DEFAULT_DEPARTURE_PATTERN, DEFAULT_STEP_LENGTH,
+    DEFAULT_VEHICLE_TYPES, DEFAULT_PASSENGER_ROUTES, DEFAULT_PUBLIC_ROUTES,
+    DEFAULT_DEPARTURE_PATTERN, DEFAULT_STEP_LENGTH,
     DEFAULT_END_TIME, DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_ATTRACTIVENESS,
     DEFAULT_START_TIME_HOUR, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL,
     DEFAULT_BOTTLENECK_DETECTION_INTERVAL, DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL,
@@ -71,6 +72,16 @@ def generate_command_line(params: Dict[str, Any]) -> str:
         f"--routing_strategy \"{params.get('routing_strategy', DEFAULT_ROUTING_STRATEGY)}\"")
     cmd_parts.append(
         f"--vehicle_types \"{params.get('vehicle_types', DEFAULT_VEHICLE_TYPES)}\"")
+    
+    # Route patterns (only add if not default values)
+    passenger_routes = params.get('passenger_routes', DEFAULT_PASSENGER_ROUTES)
+    if passenger_routes != DEFAULT_PASSENGER_ROUTES:
+        cmd_parts.append(f"--passenger-routes \"{passenger_routes}\"")
+    
+    public_routes = params.get('public_routes', DEFAULT_PUBLIC_ROUTES)
+    if public_routes != DEFAULT_PUBLIC_ROUTES:
+        cmd_parts.append(f"--public-routes \"{public_routes}\"")
+    
     cmd_parts.append(
         f"--departure_pattern {params.get('departure_pattern', DEFAULT_DEPARTURE_PATTERN)}")
 

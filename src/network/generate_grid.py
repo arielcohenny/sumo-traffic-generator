@@ -383,3 +383,81 @@ def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_inp
     if not os.path.exists(CONFIG.network_file):
         raise Exception(
             f"Error: Network file '{CONFIG.network_file}' was not created.")
+
+
+def classify_edges(dimension: int) -> Tuple[List[str], List[str]]:
+    """
+    Classify edges into boundary and inner edges for route pattern generation.
+    
+    Args:
+        dimension: Grid dimension (e.g., 5 for 5x5 grid)
+        
+    Returns:
+        Tuple of (boundary_edges, inner_edges) containing edge IDs
+        
+    Note:
+        Only examines tail edges (without _H_s or _H_node suffixes)
+        Boundary edges require BOTH endpoints to be on grid boundary
+        
+    Example for 5x5 grid:
+        - Boundary edges: A0A1, A1A0, A0B0, B0A0, E0E1, E1E0, A4B4, B4A4, E3E4, E4E3, etc.
+        - Inner edges: B1B2, B2B1, B1C1, C1B1, E2D2, D2E2, B1A1, A1B1, etc.
+    """
+    boundary_edges = []
+    inner_edges = []
+    
+    # Generate row and column labels
+    row_labels = [chr(ord('A') + i) for i in range(dimension)]
+    
+    # Define boundary detection patterns
+    # For a dimension x dimension grid (0-indexed):
+    # - First row: A (index 0)
+    # - Last row: dimension-1 (e.g., E for 5x5)
+    # - First column: 0
+    # - Last column: dimension-1
+    
+    first_row = row_labels[0]  # 'A'
+    last_row = row_labels[dimension - 1]  # e.g., 'E' for 5x5
+    first_col = 0
+    last_col = dimension - 1
+    
+    # Generate all possible edge IDs and classify them
+    for from_row in range(dimension):
+        for from_col in range(dimension):
+            from_node = f"{row_labels[from_row]}{from_col}"
+            
+            # Check all possible connections (horizontal and vertical)
+            directions = [
+                (0, 1),   # right
+                (0, -1),  # left
+                (1, 0),   # down
+                (-1, 0)   # up
+            ]
+            
+            for dr, dc in directions:
+                to_row = from_row + dr
+                to_col = from_col + dc
+                
+                # Check if destination is within grid bounds
+                if 0 <= to_row < dimension and 0 <= to_col < dimension:
+                    to_node = f"{row_labels[to_row]}{to_col}"
+                    edge_id = f"{from_node}{to_node}"
+                    
+                    # Classify as boundary or inner edge
+                    # An edge is boundary if BOTH endpoints are on the grid boundary
+                    # This ensures pass-through routes truly connect boundary-to-boundary
+                    from_is_boundary = (from_row == 0 or from_row == dimension - 1 or 
+                                      from_col == 0 or from_col == dimension - 1)
+                    to_is_boundary = (to_row == 0 or to_row == dimension - 1 or 
+                                    to_col == 0 or to_col == dimension - 1)
+                    
+                    if from_is_boundary and to_is_boundary:
+                        boundary_edges.append(edge_id)
+                    else:
+                        inner_edges.append(edge_id)
+    
+    # Remove duplicates and sort for consistency
+    boundary_edges = sorted(list(set(boundary_edges)))
+    inner_edges = sorted(list(set(inner_edges)))
+    
+    return boundary_edges, inner_edges

@@ -45,6 +45,7 @@ def validate_arguments(args) -> None:
     _validate_numeric_ranges(args)
     _validate_routing_strategy(args.routing_strategy)
     _validate_vehicle_types(args.vehicle_types)
+    _validate_route_args(args)
     _validate_departure_pattern(args.departure_pattern)
     _validate_junctions_to_remove(args.junctions_to_remove)
     _validate_lane_count(args.lane_count)
@@ -189,6 +190,65 @@ def _validate_vehicle_types(vehicle_types: str) -> None:
     if abs(total_percentage - 100.0) > 0.01:
         raise ValidationError(
             f"Vehicle type percentages must sum to 100, got {total_percentage}")
+
+
+def _validate_route_args(args) -> None:
+    """Validate route pattern format and percentages for passenger and public vehicles."""
+    
+    # Note: CLI args with hyphens become underscores in argparse
+    # Validate passenger routes
+    if hasattr(args, 'passenger_routes') and getattr(args, 'passenger_routes', None):
+        _validate_single_route_pattern(args.passenger_routes, "passenger")
+    
+    # Validate public routes  
+    if hasattr(args, 'public_routes') and getattr(args, 'public_routes', None):
+        _validate_single_route_pattern(args.public_routes, "public")
+
+
+def _validate_single_route_pattern(route_pattern: str, vehicle_type: str) -> None:
+    """Validate a single route pattern format and percentages."""
+    
+    parts = route_pattern.strip().split()
+    if len(parts) != 8:
+        raise ValidationError(
+            f"{vehicle_type} route pattern must be 4 pairs of pattern + percentage, got: {route_pattern}")
+    
+    valid_patterns = {"in", "out", "inner", "pass"}
+    total_percentage = 0.0
+    found_patterns = set()
+    
+    for i in range(0, len(parts), 2):
+        pattern = parts[i]
+        try:
+            percentage = float(parts[i + 1])
+        except (ValueError, IndexError):
+            raise ValidationError(
+                f"Invalid percentage in {vehicle_type} route pattern: {route_pattern}")
+        
+        if pattern not in valid_patterns:
+            raise ValidationError(
+                f"Invalid route pattern '{pattern}'. Valid patterns: {valid_patterns}")
+        
+        if pattern in found_patterns:
+            raise ValidationError(
+                f"Duplicate route pattern '{pattern}' in {vehicle_type} routes: {route_pattern}")
+        found_patterns.add(pattern)
+        
+        if percentage < 0 or percentage > 100:
+            raise ValidationError(
+                f"Route pattern percentage must be 0-100, got {percentage} for {pattern}")
+        
+        total_percentage += percentage
+    
+    # Check that all 4 patterns are present
+    if found_patterns != valid_patterns:
+        missing = valid_patterns - found_patterns
+        raise ValidationError(
+            f"{vehicle_type} route pattern must include all 4 patterns (in, out, inner, pass), missing: {missing}")
+    
+    if abs(total_percentage - 100.0) > 0.01:
+        raise ValidationError(
+            f"{vehicle_type} route pattern percentages must sum to 100, got {total_percentage}")
 
 
 def _validate_departure_pattern(departure_pattern: str) -> None:

@@ -10,7 +10,8 @@ from src.config import CONFIG
 from src.constants import (
     DEFAULT_GRID_DIMENSION, DEFAULT_BLOCK_SIZE_M, DEFAULT_JUNCTIONS_TO_REMOVE,
     DEFAULT_LANE_COUNT, DEFAULT_NUM_VEHICLES, DEFAULT_ROUTING_STRATEGY,
-    DEFAULT_VEHICLE_TYPES, DEFAULT_DEPARTURE_PATTERN, DEFAULT_STEP_LENGTH,
+    DEFAULT_VEHICLE_TYPES, DEFAULT_PASSENGER_ROUTES, DEFAULT_PUBLIC_ROUTES,
+    DEFAULT_DEPARTURE_PATTERN, DEFAULT_STEP_LENGTH,
     DEFAULT_END_TIME, DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_ATTRACTIVENESS,
     DEFAULT_START_TIME_HOUR, DEFAULT_TRAFFIC_LIGHT_STRATEGY, 
     DEFAULT_TRAFFIC_CONTROL, DEFAULT_BOTTLENECK_DETECTION_INTERVAL,
@@ -114,6 +115,18 @@ def _add_traffic_arguments(parser: argparse.ArgumentParser) -> None:
         type=str,
         default=DEFAULT_DEPARTURE_PATTERN,
         help=f"Vehicle departure pattern: '{DEFAULT_DEPARTURE_PATTERN}' (default, even distribution), 'six_periods' (research-based), 'rush_hours:7-9:40,17-19:30,rest:10'"
+    )
+    parser.add_argument(
+        "--passenger-routes",
+        type=str,
+        default=DEFAULT_PASSENGER_ROUTES,
+        help=f"Passenger vehicle route patterns with percentages (e.g., 'in 30 out 30 inner 25 pass 15'). Default: '{DEFAULT_PASSENGER_ROUTES}'"
+    )
+    parser.add_argument(
+        "--public-routes",
+        type=str,
+        default=DEFAULT_PUBLIC_ROUTES,
+        help=f"Public vehicle route patterns with percentages (e.g., 'in 25 out 25 inner 35 pass 15'). Default: '{DEFAULT_PUBLIC_ROUTES}'"
     )
 
 

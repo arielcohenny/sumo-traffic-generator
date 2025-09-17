@@ -500,23 +500,24 @@ def verify_assign_edge_attractiveness(
             continue
 
         # Check for phase-specific attractiveness attributes
-        phases = ["morning_peak", "midday_offpeak", "evening_peak", "night_low"]
-        
+        phases = ["morning_peak", "midday_offpeak",
+                  "evening_peak", "night_low"]
+
         # Collect all temporal attractiveness values for this edge
         edge_depart_values = []
         edge_arrive_values = []
-        
+
         for phase in phases:
             depart_attr = edge_elem.get(f"{phase}_depart_attractiveness")
             arrive_attr = edge_elem.get(f"{phase}_arrive_attractiveness")
-            
+
             if depart_attr is None:
                 raise ValidationError(
                     f"Edge {edge_id} missing {phase}_depart_attractiveness")
             if arrive_attr is None:
                 raise ValidationError(
                     f"Edge {edge_id} missing {phase}_arrive_attractiveness")
-            
+
             # Parse values (may be wrapped in brackets)
             try:
                 depart_val = _to_float(depart_attr.strip("[]"))
@@ -524,7 +525,7 @@ def verify_assign_edge_attractiveness(
             except ValueError:
                 raise ValidationError(
                     f"Edge {edge_id} has invalid attractiveness values for phase {phase}")
-            
+
             # Check non-negative
             if depart_val < 0:
                 raise ValidationError(
@@ -532,10 +533,10 @@ def verify_assign_edge_attractiveness(
             if arrive_val < 0:
                 raise ValidationError(
                     f"Edge {edge_id} has negative {phase}_arrive_attractiveness: {arrive_val}")
-            
+
             edge_depart_values.append(depart_val)
             edge_arrive_values.append(arrive_val)
-        
+
         # Add all temporal values to the global collections for statistical validation
         depart_attrs.extend(edge_depart_values)
         arrive_attrs.extend(edge_arrive_values)
@@ -593,10 +594,6 @@ def verify_assign_edge_attractiveness(
         unique_arrive = len(set(arrive_attrs))
         # More lenient: at most 5, at least 2
         min_required = max(2, min(5, len(depart_attrs) // 20))
-
-        print(f"depart_attrs {depart_attrs} arrive_attrs {arrive_attrs}")
-        print(
-            f"Unique depart: {unique_depart}, Unique arrive: {unique_arrive}, Min required: {min_required}")
 
         if unique_depart < min_required and unique_arrive < min_required:
             raise ValidationError(

@@ -55,6 +55,21 @@ DEFAULT_VEHICLE_TYPES = 'passenger 90 public 10'
 DEFAULT_PASSENGER_VEHICLE_PCT = 90
 DEFAULT_PUBLIC_VEHICLE_PCT = 10
 
+# Route Patterns
+DEFAULT_PASSENGER_ROUTES = 'in 30 out 30 inner 25 pass 15'
+DEFAULT_PUBLIC_ROUTES = 'in 25 out 25 inner 35 pass 15'
+
+# Public Transit Constants
+SECONDS_IN_DAY = 86400
+DEFAULT_VEHICLES_DAILY_PER_ROUTE = 124
+
+# Temporal Route Pattern Bias Constants
+MORNING_RUSH_START = 6.0   # 6 AM - Start of morning rush hour
+MORNING_RUSH_END = 10.0    # 10 AM - End of morning rush hour  
+EVENING_RUSH_START = 16.0  # 4 PM - Start of evening rush hour
+EVENING_RUSH_END = 20.0    # 8 PM - End of evening rush hour
+TEMPORAL_BIAS_STRENGTH = 1.5  # How much to amplify preferred patterns during rush hours
+
 # Percentage Constraints
 MIN_PERCENTAGE = 0
 MAX_PERCENTAGE = 100
