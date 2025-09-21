@@ -230,7 +230,7 @@ class TrafficControllerFactory:
         """Create traffic controller based on type.
 
         Args:
-            traffic_control: Type of traffic control ('tree_method', 'atlcs', 'actuated', 'fixed')
+            traffic_control: Type of traffic control ('tree_method', 'atlcs', 'actuated', 'fixed', 'rl')
             args: Command line arguments
 
         Returns:
@@ -249,6 +249,9 @@ class TrafficControllerFactory:
             return ActuatedController(args)
         elif traffic_control == 'fixed':
             return FixedController(args)
+        elif traffic_control == 'rl':
+            from src.rl.controller import RLController
+            return RLController(args)
         else:
             raise ValueError(
                 f"Unsupported traffic control type: {traffic_control}")

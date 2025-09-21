@@ -217,8 +217,13 @@ def _add_traffic_control_arguments(parser: argparse.ArgumentParser) -> None:
         "--traffic_control",
         type=str,
         default=DEFAULT_TRAFFIC_CONTROL,
-        choices=["tree_method", "atlcs", "actuated", "fixed"],
-        help=f"Traffic control method: '{DEFAULT_TRAFFIC_CONTROL}' (default, Tree Method algorithm), 'atlcs' (Adaptive Traffic Light Control System with enhanced bottleneck detection and ATLCS), 'actuated' (SUMO gap-based), or 'fixed' (static timing)."
+        choices=["tree_method", "atlcs", "actuated", "fixed", "rl"],
+        help=f"Traffic control method: '{DEFAULT_TRAFFIC_CONTROL}' (default, Tree Method algorithm), 'atlcs' (Adaptive Traffic Light Control System with enhanced bottleneck detection and ATLCS), 'actuated' (SUMO gap-based), 'fixed' (static timing), or 'rl' (reinforcement learning)."
+    )
+    parser.add_argument(
+        "--rl_model_path",
+        type=str,
+        help="Path to trained RL model for inference. If not provided, RL controller runs in training mode with random actions."
     )
     parser.add_argument(
         "--bottleneck-detection-interval",
