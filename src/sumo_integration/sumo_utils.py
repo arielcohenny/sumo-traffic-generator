@@ -22,7 +22,7 @@ def rebuild_network() -> None:
     try:
         result = subprocess.run(basic_cmd, check=True,
                                 capture_output=True, text=True)
-        print("Network conversion completed successfully.")
+        # print("Network conversion completed successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Network conversion failed: {e.stderr}")
         raise
@@ -56,7 +56,7 @@ def generate_sumo_conf_file(
     :param network_file: Path to the network .net.xml file
     :param route_file: Optional path to the route .xml file
     """
-    print("Creating SUMO configuration file.")
+    # print("Creating SUMO configuration file.")
     try:
         net_name = Path(network_file).name
         route_name = Path(route_file).name if route_file else None
@@ -71,11 +71,11 @@ def generate_sumo_conf_file(
         if zones_name:
             config_content += f"        <additional-files value=\"{zones_name}\"/>\n"
 
-        config_content += "    </input>\n    <time>\n        <begin value=\"0\"/>\n        <end value=\"3600\"/>\n    </time>\n    <output>\n        <tripinfo-output value=\"tripinfo.xml\"/>\n        <summary-output value=\"summary.xml\"/>\n        <log value=\"simulation.log\"/>\n    </output>\n</configuration>"
+        config_content += "    </input>\n    <time>\n        <begin value=\"0\"/>\n        <end value=\"3600\"/>\n    </time>\n    <output>\n        <tripinfo-output value=\"tripinfo.xml\"/>\n        <summary-output value=\"summary.xml\"/>\n        <statistics-output value=\"sumo_statistics.xml\"/>\n        <log value=\"simulation.log\"/>\n    </output>\n</configuration>"
 
         with open(config_file, "w") as f:
             f.write(config_content)
-        print("SUMO configuration file created successfully.")
+        # print("SUMO configuration file created successfully.")
         return str(config_file)
     except Exception as e:
         print(f"Error creating SUMO configuration file: {e}")

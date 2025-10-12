@@ -37,7 +37,7 @@ def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int,
     # Initialize random number generator
     rng = random.Random(seed)
 
-    print("Starting integrated edge splitting with flow-based lane assignment...")
+    # print("Starting integrated edge splitting with flow-based lane assignment...")
 
     # Step 1: Parse existing network files
     nod_tree = ET.parse(CONFIG.network_nod_file)
@@ -69,7 +69,7 @@ def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int,
     # Step 6: Write updated files
     write_xml_files(nod_tree, edg_tree, con_tree, tll_tree)
 
-    print("Completed integrated edge splitting with flow-based lane assignment.")
+    # print("Completed integrated edge splitting with flow-based lane assignment.")
 
 
 def analyze_movements_from_connections(con_root) -> Dict[str, Dict]:
@@ -601,8 +601,8 @@ def execute_edge_splitting(args) -> None:
             algorithm=args.lane_count,
             block_size_m=args.block_size_m
         )
-        logger.info(
-            "Successfully completed integrated edge splitting with lane assignment")
+        # logger.info(
+        #     "Successfully completed integrated edge splitting with lane assignment")
 
         # Validate the split edges
         try:

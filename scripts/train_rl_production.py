@@ -6,10 +6,21 @@ This script provides production-scale RL training with proper workspace isolatio
 parallel environment support, and independent execution capabilities.
 """
 
+# Fix NumPy + Python 3.13 multiprocessing compatibility issue
+# Must be set before any imports that use NumPy/PyTorch
+import os
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['NUMBA_NUM_THREADS'] = '1'
+# Alternative fix for NumPy 2.3.1 multiprocessing recursion bug
+os.environ['NUMPY_DISABLE_THREADING'] = '1'
+# Critical fix for NumPy 2.3.1 + Python 3.13 longdouble multiprocessing error
+os.environ['NPY_DISABLE_LONGDOUBLE_FPFFLAGS'] = '1'
+
 import argparse
 import logging
 import sys
-import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -18,7 +29,6 @@ from pathlib import Path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.rl.training import train_rl_policy
-from src.rl.config import get_rl_config
 from src.rl.constants import (
     DEFAULT_TOTAL_TIMESTEPS, DEFAULT_MODEL_SAVE_PATH, DEFAULT_CHECKPOINT_FREQ,
     DEFAULT_N_PARALLEL_ENVS, MIN_PARALLEL_ENVS, MAX_PARALLEL_ENVS,
@@ -43,6 +53,15 @@ def setup_logging(log_level: str = "INFO", log_file: str = None):
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=handlers
     )
+
+    # Suppress verbose RL logging for cleaner production output
+    # Set RL modules to WARNING level (only show important messages)
+    logging.getLogger('src.rl.controller').setLevel(logging.WARNING)
+    logging.getLogger('src.rl.environment').setLevel(logging.WARNING)
+    logging.getLogger('TrafficControlEnv').setLevel(logging.WARNING)
+
+    # Keep training.py at INFO level for progress monitoring
+    logging.getLogger('src.rl.training').setLevel(logging.INFO)
 
 
 def create_unique_workspace(base_name: str = "rl_production") -> str:
@@ -96,19 +115,19 @@ def create_argument_parser() -> argparse.ArgumentParser:
         '--resume-from', type=str,
         help="Path to model to resume training from"
     )
+    parser.add_argument(
+        '--pretrain-from', type=str,
+        help="Path to pre-trained model (from imitation learning) to initialize from"
+    )
 
     # Logging and monitoring
     parser.add_argument(
         '--log-level', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
-        default='INFO', help="Logging level"
-    )
-    parser.add_argument(
-        '--log-file', type=str,
-        help="Optional log file (if not specified, uses auto-generated name)"
+        default='INFO', help="Console logging level (file logs always in model directory)"
     )
     parser.add_argument(
         '--quiet', action='store_true',
-        help="Minimal output (overrides log-level)"
+        help="Minimal console output (overrides log-level)"
     )
 
     # Advanced training options
@@ -119,6 +138,12 @@ def create_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         '--save-every', type=int, default=50000,
         help="Save model every N timesteps"
+    )
+
+    # Environment parameters (REQUIRED)
+    parser.add_argument(
+        '--env-params', type=str, required=True,
+        help='Environment parameters string (e.g., "--network-seed 42 --grid_dimension 5 --num_vehicles 4500 ...")'
     )
 
     return parser
@@ -157,33 +182,23 @@ def main():
     parser = create_argument_parser()
     args = parser.parse_args()
 
-    # Setup unique workspace and logging
-    workspace = create_unique_workspace(args.workspace_base)
-
-    if args.log_file is None:
-        args.log_file = f"logs/rl_training_{workspace}.log"
-
+    # Setup console-only logging (all file logs go to model directory)
     if args.quiet:
         args.log_level = "WARNING"
 
-    setup_logging(args.log_level, args.log_file)
+    setup_logging(args.log_level, log_file=None)  # Console only
     logger = logging.getLogger(__name__)
 
     logger.info("=== PRODUCTION RL TRAINING STARTED ===")
-    logger.info(f"Workspace: {workspace}")
     logger.info(f"Training timesteps: {args.timesteps:,}")
     logger.info(f"Parallel environments: {args.parallel_envs}")
-    logger.info(f"Log file: {args.log_file}")
+    logger.info("All logs and files will be organized in models/rl_YYYYMMDD_HHMMSS/")
 
     try:
         # Validate environment
         if not validate_training_environment():
             logger.error("Training environment validation failed")
             return 1
-
-        # Get RL configuration
-        config = get_rl_config()
-        logger.info(f"RL config: {config.grid_dimension}×{config.grid_dimension} grid, {config.num_vehicles} vehicles")
 
         # Configure parallel environments
         if args.single_env:
@@ -195,12 +210,21 @@ def main():
             use_parallel = True
             logger.info(f"Parallel training with {args.parallel_envs} environments")
 
-        # Create model save path with unique naming
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        model_save_path = os.path.join(args.models_dir, f"{args.model_name}_{timestamp}")
+        # Validate --pretrain-from and --resume-from are mutually exclusive
+        if args.pretrain_from and args.resume_from:
+            logger.error("--pretrain-from and --resume-from are mutually exclusive")
+            logger.error("  --pretrain-from: Start from imitation learning pre-trained model")
+            logger.error("  --resume-from: Continue training existing model")
+            return 1
+
+        if args.pretrain_from:
+            if not os.path.exists(args.pretrain_from):
+                logger.error(f"Pre-trained model not found: {args.pretrain_from}")
+                return 1
+            logger.info(f"Starting from pre-trained model: {args.pretrain_from}")
 
         # Calculate estimated training time
-        estimated_time_minutes = (args.timesteps / 1000) * 0.5  # Rough estimate
+        estimated_time_minutes = (args.timesteps / 1000) * 2.1  # Based on actual measurements
         logger.info(f"Estimated training time: ~{estimated_time_minutes:.1f} minutes")
 
         # Start training with robustness features
@@ -209,14 +233,15 @@ def main():
 
         try:
             model = train_rl_policy(
-                config=config,
+                env_params_string=args.env_params,
                 total_timesteps=args.timesteps,
-                model_save_path=model_save_path,
+                model_save_path=None,  # Now auto-generated in model directory
                 checkpoint_freq=args.checkpoint_freq,
-                base_workspace=workspace,
+                base_workspace=None,  # Now auto-generated in model directory
                 use_parallel=use_parallel,
                 n_envs=args.parallel_envs,
-                resume_from_model=args.resume_from
+                resume_from_model=args.resume_from,
+                pretrain_from_model=args.pretrain_from
             )
         except (BrokenPipeError, ConnectionError, OSError) as e:
             logger.warning(f"SUMO connection error during training: {e}")
@@ -225,14 +250,15 @@ def main():
             if use_parallel and args.parallel_envs > 1:
                 logger.info("Retrying with single environment for stability...")
                 model = train_rl_policy(
-                    config=config,
+                    env_params_string=args.env_params,
                     total_timesteps=args.timesteps,
-                    model_save_path=model_save_path,
+                    model_save_path=None,
                     checkpoint_freq=args.checkpoint_freq,
-                    base_workspace=workspace + "_recovery",
+                    base_workspace=None,
                     use_parallel=False,
                     n_envs=1,
-                    resume_from_model=args.resume_from
+                    resume_from_model=args.resume_from,
+                    pretrain_from_model=args.pretrain_from
                 )
             else:
                 raise
@@ -241,26 +267,8 @@ def main():
         logger.info("=== PRODUCTION TRAINING COMPLETED ===")
         logger.info(f"Training time: {training_time:.1f} seconds ({training_time/60:.1f} minutes)")
         logger.info(f"Training speed: {args.timesteps/training_time:.1f} timesteps/second")
-        logger.info(f"Model saved: {model_save_path}.zip")
-        logger.info(f"Workspace: {workspace}")
-        logger.info(f"Log file: {args.log_file}")
+        logger.info("All model files are organized in the model directory (see training logs above)")
 
-        # Save training summary
-        summary_file = f"logs/training_summary_{workspace}.txt"
-        with open(summary_file, 'w') as f:
-            f.write(f"Production RL Training Summary\n")
-            f.write(f"============================\n\n")
-            f.write(f"Start time: {datetime.fromtimestamp(start_time)}\n")
-            f.write(f"End time: {datetime.now()}\n")
-            f.write(f"Training duration: {training_time:.1f} seconds\n")
-            f.write(f"Total timesteps: {args.timesteps:,}\n")
-            f.write(f"Parallel environments: {args.parallel_envs}\n")
-            f.write(f"Training speed: {args.timesteps/training_time:.1f} timesteps/second\n")
-            f.write(f"Model saved: {model_save_path}.zip\n")
-            f.write(f"Workspace: {workspace}\n")
-            f.write(f"Config: {config.grid_dimension}×{config.grid_dimension} grid, {config.num_vehicles} vehicles\n")
-
-        logger.info(f"Training summary saved: {summary_file}")
         return 0
 
     except KeyboardInterrupt:

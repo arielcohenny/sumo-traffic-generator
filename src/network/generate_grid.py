@@ -11,7 +11,7 @@ from src.config import CONFIG
 # --- Function Definitions ---
 # Generate a full grid network using netgenerate
 
-def generate_full_grid_network(dimension, block_size_m, lane_count_arg, traffic_light_strategy="opposites"):
+def generate_full_grid_network(dimension, block_size_m, lane_count_arg, traffic_light_strategy="opposites", traffic_control=None):
     # Run netgenerate to create the grid network
     netgenerate_cmd = [
         "netgenerate", "--grid",
@@ -26,7 +26,7 @@ def generate_full_grid_network(dimension, block_size_m, lane_count_arg, traffic_
         # By default netgenerate uses a radius of 4m; raising it eliminates those conflicts
         f"--default.junctions.radius={CONFIG.DEFAULT_JUNCTION_RADIUS}",
         # Always use opposites for netgenerate (incoming will be post-processed)
-        "--tls.layout=opposites",
+        f"--tls.layout={traffic_light_strategy}",
         # aggregate-warnings: aggregates warnings of the same type whenever more than 1 occur
         # warnings can be removed completely by using --no-warnings=true
         # "--aggregate-warnings=1",
@@ -51,6 +51,13 @@ def generate_full_grid_network(dimension, block_size_m, lane_count_arg, traffic_
         subprocess.run(netconvert_cmd, check=True)
     except subprocess.CalledProcessError as e:
         raise Exception(f"Error during netconvert execution:", e.stderr)
+
+    # Fix traffic lights for RL control only
+    if traffic_control == 'rl':
+        fix_traffic_lights_for_rl_control()
+    else:
+        print(
+            f"Skipping RL traffic light fix - using traffic control method: {traffic_control}")
 
 
 def pick_random_junction_ids(seed: int, num_junctions_to_remove: int, dimension: int) -> List[str]:
@@ -349,7 +356,7 @@ def convert_to_incoming_strategy():
     )
 
 
-def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_input, lane_count_arg, traffic_light_strategy="opposites"):
+def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_input, lane_count_arg, traffic_light_strategy="opposites", traffic_control=None):
     try:
         is_list, junction_ids, count = parse_junctions_to_remove(
             junctions_to_remove_input)
@@ -357,7 +364,7 @@ def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_inp
         if count > 0:
             # generate the full grid network first
             generate_full_grid_network(
-                dimension, block_size_m, lane_count_arg, "opposites")
+                dimension, block_size_m, lane_count_arg, "opposites", traffic_control)
 
             if is_list:
                 # use the provided list of junction IDs
@@ -371,7 +378,7 @@ def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_inp
             wipe_crossing(junctions_to_remove)
         else:
             generate_full_grid_network(
-                dimension, block_size_m, lane_count_arg, "opposites")
+                dimension, block_size_m, lane_count_arg, "opposites", traffic_control)
 
         # Post-process traffic lights for incoming strategy
         if traffic_light_strategy == "incoming":
@@ -388,44 +395,44 @@ def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_inp
 def classify_edges(dimension: int) -> Tuple[List[str], List[str]]:
     """
     Classify edges into boundary and inner edges for route pattern generation.
-    
+
     Args:
         dimension: Grid dimension (e.g., 5 for 5x5 grid)
-        
+
     Returns:
         Tuple of (boundary_edges, inner_edges) containing edge IDs
-        
+
     Note:
         Only examines tail edges (without _H_s or _H_node suffixes)
         Boundary edges require BOTH endpoints to be on grid boundary
-        
+
     Example for 5x5 grid:
         - Boundary edges: A0A1, A1A0, A0B0, B0A0, E0E1, E1E0, A4B4, B4A4, E3E4, E4E3, etc.
         - Inner edges: B1B2, B2B1, B1C1, C1B1, E2D2, D2E2, B1A1, A1B1, etc.
     """
     boundary_edges = []
     inner_edges = []
-    
+
     # Generate row and column labels
     row_labels = [chr(ord('A') + i) for i in range(dimension)]
-    
+
     # Define boundary detection patterns
     # For a dimension x dimension grid (0-indexed):
     # - First row: A (index 0)
     # - Last row: dimension-1 (e.g., E for 5x5)
     # - First column: 0
     # - Last column: dimension-1
-    
+
     first_row = row_labels[0]  # 'A'
     last_row = row_labels[dimension - 1]  # e.g., 'E' for 5x5
     first_col = 0
     last_col = dimension - 1
-    
+
     # Generate all possible edge IDs and classify them
     for from_row in range(dimension):
         for from_col in range(dimension):
             from_node = f"{row_labels[from_row]}{from_col}"
-            
+
             # Check all possible connections (horizontal and vertical)
             directions = [
                 (0, 1),   # right
@@ -433,31 +440,74 @@ def classify_edges(dimension: int) -> Tuple[List[str], List[str]]:
                 (1, 0),   # down
                 (-1, 0)   # up
             ]
-            
+
             for dr, dc in directions:
                 to_row = from_row + dr
                 to_col = from_col + dc
-                
+
                 # Check if destination is within grid bounds
                 if 0 <= to_row < dimension and 0 <= to_col < dimension:
                     to_node = f"{row_labels[to_row]}{to_col}"
                     edge_id = f"{from_node}{to_node}"
-                    
+
                     # Classify as boundary or inner edge
                     # An edge is boundary if BOTH endpoints are on the grid boundary
                     # This ensures pass-through routes truly connect boundary-to-boundary
-                    from_is_boundary = (from_row == 0 or from_row == dimension - 1 or 
-                                      from_col == 0 or from_col == dimension - 1)
-                    to_is_boundary = (to_row == 0 or to_row == dimension - 1 or 
-                                    to_col == 0 or to_col == dimension - 1)
-                    
+                    from_is_boundary = (from_row == 0 or from_row == dimension - 1 or
+                                        from_col == 0 or from_col == dimension - 1)
+                    to_is_boundary = (to_row == 0 or to_row == dimension - 1 or
+                                      to_col == 0 or to_col == dimension - 1)
+
                     if from_is_boundary and to_is_boundary:
                         boundary_edges.append(edge_id)
                     else:
                         inner_edges.append(edge_id)
-    
+
     # Remove duplicates and sort for consistency
     boundary_edges = sorted(list(set(boundary_edges)))
     inner_edges = sorted(list(set(inner_edges)))
-    
+
     return boundary_edges, inner_edges
+
+
+def fix_traffic_lights_for_rl_control() -> None:
+    """
+    Fix traffic light configuration to enable RL control.
+
+    Changes all traffic lights from 'static' type to 'actuated' type and
+    sets long durations that RL agent can override via TraCI commands.
+    This is required for proper RL traffic signal control.
+    """
+    tll_file = CONFIG.network_tll_file
+
+    if not tll_file.exists():
+        print(f"Traffic light file {tll_file} not found, skipping RL fix")
+        return
+
+    # print("Fixing traffic light configuration for RL control...")
+
+    try:
+        tree = ET.parse(tll_file)
+        root = tree.getroot()
+
+        # Fix all traffic light logics
+        for tl_logic in root.findall("tlLogic"):
+            # Keep type as "static" but with minimal durations for RL override
+            # Static type allows setPhaseDuration() to work when called before phase starts
+            tl_logic.set("type", "static")
+
+            # Fix all phase durations to be very short so RL can take control immediately
+            for phase in tl_logic.findall("phase"):
+                # Set very short duration (1 second) - RL will override before phase completes
+                # This allows RL to take control at the start of each phase
+                phase.set("duration", "1")
+
+        # Save the modified file
+        tree.write(tll_file, encoding="UTF-8", xml_declaration=True)
+        # print("✅ Traffic light configuration fixed for RL control")
+        # print("   - Type: 'static' (compatible with setPhaseDuration)")
+        # print("   - Changed durations: hardcoded → 1s (RL takes control immediately)")
+
+    except Exception as e:
+        print(f"❌ Error fixing traffic lights for RL control: {e}")
+        raise

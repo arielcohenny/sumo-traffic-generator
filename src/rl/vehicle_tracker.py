@@ -13,7 +13,12 @@ from .constants import (
     WAITING_TIME_PENALTY_FACTOR, MIN_WAITING_TIME_THRESHOLD,
     COMPLETION_BONUS_PER_VEHICLE, VEHICLE_PENALTY_WEIGHT, THROUGHPUT_BONUS_WEIGHT,
     MAX_TRACKED_VEHICLES, MAX_DECISION_HISTORY, DECISION_CLEANUP_INTERVAL,
-    STATISTICS_UPDATE_INTERVAL, DEFAULT_INITIAL_TIME, DEFAULT_INITIAL_PENALTY
+    STATISTICS_UPDATE_INTERVAL, DEFAULT_INITIAL_TIME, DEFAULT_INITIAL_PENALTY,
+    PROGRESSIVE_BONUS_ENABLED, IMMEDIATE_THROUGHPUT_BONUS_WEIGHT,
+    PERFORMANCE_STREAK_BASE_BONUS, PERFORMANCE_STREAK_MULTIPLIER, PERFORMANCE_STREAK_THRESHOLD,
+    SPEED_IMPROVEMENT_BONUS_FACTOR, CONGESTION_REDUCTION_BONUS, MILESTONE_COMPLETION_BONUSES,
+    PERFORMANCE_STREAK_WINDOW_SIZE, SPEED_HISTORY_WINDOW_SIZE, CONGESTION_HISTORY_WINDOW_SIZE,
+    MILESTONE_COMPLETION_THRESHOLDS
 )
 
 
@@ -40,6 +45,22 @@ class VehicleTracker:
         # Performance metrics
         self.completed_vehicles: Set[str] = set()
         self.total_penalties: float = DEFAULT_INITIAL_PENALTY
+
+        # Progressive bonus tracking
+        self.progressive_bonus_enabled = PROGRESSIVE_BONUS_ENABLED
+        if self.progressive_bonus_enabled:
+            # Performance streak tracking
+            self.performance_history: List[float] = []  # Recent average waiting times
+            self.current_streak: int = 0
+            self.milestone_achieved: Set[float] = set()  # Achieved completion milestones
+
+            # Network performance tracking
+            self.speed_history: List[float] = []  # Recent average speeds
+            self.congestion_history: List[int] = []  # Recent bottleneck counts
+
+            # Completion tracking for immediate bonuses
+            self.vehicles_completed_this_step: int = 0
+            self.total_vehicles_expected: int = 0  # Will be set from config
 
     def update_vehicles(self, current_time: int):
         """Update vehicle states and compute penalties for increased waiting times.
@@ -94,6 +115,9 @@ class VehicleTracker:
                 for vehicle_id in arrived_vehicles:
                     if vehicle_id in self.vehicle_histories:
                         self.completed_vehicles.add(vehicle_id)
+                        # Count vehicles completed this step for progressive bonuses
+                        if self.progressive_bonus_enabled:
+                            self.vehicles_completed_this_step += 1
                         # Keep history for episode reward calculation
             except Exception:
                 pass
@@ -144,6 +168,168 @@ class VehicleTracker:
         # R_episode = α × total_completed_vehicles
         throughput_bonus = len(self.completed_vehicles) * COMPLETION_BONUS_PER_VEHICLE * THROUGHPUT_BONUS_WEIGHT
         return throughput_bonus
+
+    def set_total_vehicles_expected(self, total_vehicles: int):
+        """Set the total number of vehicles expected for milestone calculations.
+
+        Args:
+            total_vehicles: Total number of vehicles in the simulation
+        """
+        if self.progressive_bonus_enabled:
+            self.total_vehicles_expected = total_vehicles
+
+    def update_network_performance(self, avg_speed: float, bottleneck_count: int):
+        """Update network performance metrics for progressive bonuses.
+
+        Args:
+            avg_speed: Current average network speed in km/h
+            bottleneck_count: Current number of detected bottlenecks
+        """
+        if not self.progressive_bonus_enabled:
+            return
+
+        # Update speed history
+        self.speed_history.append(avg_speed)
+        if len(self.speed_history) > SPEED_HISTORY_WINDOW_SIZE:
+            self.speed_history.pop(0)
+
+        # Update congestion history
+        self.congestion_history.append(bottleneck_count)
+        if len(self.congestion_history) > CONGESTION_HISTORY_WINDOW_SIZE:
+            self.congestion_history.pop(0)
+
+    def compute_progressive_bonuses(self, current_avg_waiting_time: float = 0.0) -> float:
+        """Compute progressive bonuses for the current step.
+
+        Args:
+            current_avg_waiting_time: Current average waiting time across all vehicles
+
+        Returns:
+            float: Total progressive bonus for this step
+        """
+        if not self.progressive_bonus_enabled:
+            return 0.0
+
+        total_bonus = 0.0
+
+        # 1. Immediate throughput bonuses (vehicles completed this step)
+        immediate_bonus = self.vehicles_completed_this_step * IMMEDIATE_THROUGHPUT_BONUS_WEIGHT
+        total_bonus += immediate_bonus
+
+        # 2. Performance streak bonuses
+        streak_bonus = self._compute_performance_streak_bonus(current_avg_waiting_time)
+        total_bonus += streak_bonus
+
+        # 3. Speed improvement bonuses
+        speed_bonus = self._compute_speed_improvement_bonus()
+        total_bonus += speed_bonus
+
+        # 4. Congestion reduction bonuses
+        congestion_bonus = self._compute_congestion_reduction_bonus()
+        total_bonus += congestion_bonus
+
+        # 5. Milestone achievement bonuses
+        milestone_bonus = self._compute_milestone_bonuses()
+        total_bonus += milestone_bonus
+
+        # Reset step counters
+        self.vehicles_completed_this_step = 0
+
+        if total_bonus > 0 and hasattr(self, 'logger'):
+            self.logger.debug(f"Progressive bonuses: immediate={immediate_bonus:.2f}, "
+                             f"streak={streak_bonus:.2f}, speed={speed_bonus:.2f}, "
+                             f"congestion={congestion_bonus:.2f}, milestone={milestone_bonus:.2f}, "
+                             f"total={total_bonus:.2f}")
+
+        return total_bonus
+
+    def _compute_performance_streak_bonus(self, current_avg_waiting_time: float) -> float:
+        """Compute bonus for sustained good performance.
+
+        Args:
+            current_avg_waiting_time: Current average waiting time
+
+        Returns:
+            float: Performance streak bonus
+        """
+        # Update performance history
+        self.performance_history.append(current_avg_waiting_time)
+        if len(self.performance_history) > PERFORMANCE_STREAK_WINDOW_SIZE:
+            self.performance_history.pop(0)
+
+        # Check if current performance is good (below threshold)
+        if current_avg_waiting_time <= PERFORMANCE_STREAK_THRESHOLD:
+            self.current_streak += 1
+        else:
+            self.current_streak = 0
+
+        # Compute streak bonus with exponential scaling
+        if self.current_streak > 0:
+            return PERFORMANCE_STREAK_BASE_BONUS * (PERFORMANCE_STREAK_MULTIPLIER ** self.current_streak)
+
+        return 0.0
+
+    def _compute_speed_improvement_bonus(self) -> float:
+        """Compute bonus for improving average network speeds.
+
+        Returns:
+            float: Speed improvement bonus
+        """
+        if len(self.speed_history) < 2:
+            return 0.0
+
+        # Compare current speed to recent average
+        current_speed = self.speed_history[-1]
+        recent_avg = sum(self.speed_history[:-1]) / len(self.speed_history[:-1])
+
+        speed_improvement = current_speed - recent_avg
+        if speed_improvement > 0:
+            return speed_improvement * SPEED_IMPROVEMENT_BONUS_FACTOR
+
+        return 0.0
+
+    def _compute_congestion_reduction_bonus(self) -> float:
+        """Compute bonus for reducing network congestion.
+
+        Returns:
+            float: Congestion reduction bonus
+        """
+        if len(self.congestion_history) < 2:
+            return 0.0
+
+        # Compare current congestion to recent average
+        current_congestion = self.congestion_history[-1]
+        recent_avg = sum(self.congestion_history[:-1]) / len(self.congestion_history[:-1])
+
+        congestion_reduction = recent_avg - current_congestion
+        if congestion_reduction > 0:
+            return congestion_reduction * CONGESTION_REDUCTION_BONUS
+
+        return 0.0
+
+    def _compute_milestone_bonuses(self) -> float:
+        """Compute bonuses for reaching completion milestones.
+
+        Returns:
+            float: Milestone achievement bonus
+        """
+        if self.total_vehicles_expected == 0:
+            return 0.0
+
+        completion_rate = len(self.completed_vehicles) / self.total_vehicles_expected
+        bonus = 0.0
+
+        # Check each milestone threshold
+        for i, threshold in enumerate(MILESTONE_COMPLETION_THRESHOLDS):
+            if completion_rate >= threshold and threshold not in self.milestone_achieved:
+                bonus += MILESTONE_COMPLETION_BONUSES[i]
+                self.milestone_achieved.add(threshold)
+                if hasattr(self, 'logger'):
+                    self.logger.info(f"Milestone achieved: {threshold*100:.0f}% completion "
+                                   f"({len(self.completed_vehicles)}/{self.total_vehicles_expected} vehicles), "
+                                   f"bonus: {MILESTONE_COMPLETION_BONUSES[i]:.1f}")
+
+        return bonus
 
     def get_vehicle_statistics(self) -> Dict:
         """Get summary statistics about tracked vehicles.

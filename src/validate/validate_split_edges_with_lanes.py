@@ -32,7 +32,7 @@ def verify_split_edges_with_flow_based_lanes(
         edges_file: Path to edges file (.edg.xml)
         nodes_file: Path to nodes file (.nod.xml)
     """
-    print("Starting comprehensive split edges validation...")
+    # print("Starting comprehensive split edges validation...")
 
     # Load and parse all required files
     edge_lanes = _parse_edge_lanes_from_xml(edges_file)

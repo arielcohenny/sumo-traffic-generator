@@ -72,13 +72,13 @@ class ActuatedController(TrafficController):
     def cleanup(self) -> None:
         """Clean up actuated controller resources and report Actuated statistics."""
         try:
-            self.logger.info("=== ACTUATED CLEANUP STARTED ===")
+            # self.logger.info("=== ACTUATED CLEANUP STARTED ===")
             if hasattr(self, 'graph') and self.graph:
-                self.logger.info(f"Graph object exists: {type(self.graph)}")
-                self.logger.info(
-                    f"Ended vehicles count: {getattr(self.graph, 'ended_vehicles_count', 'N/A')}")
-                self.logger.info(
-                    f"Vehicle total time: {getattr(self.graph, 'vehicle_total_time', 'N/A')}")
+                # self.logger.info(f"Graph object exists: {type(self.graph)}")
+                # self.logger.info(
+                #     f"Ended vehicles count: {getattr(self.graph, 'ended_vehicles_count', 'N/A')}")
+                # self.logger.info(
+                #     f"Vehicle total time: {getattr(self.graph, 'vehicle_total_time', 'N/A')}")
 
                 # Report Actuated method's duration statistics using same calculation as Tree Method
                 if hasattr(self.graph, 'ended_vehicles_count') and self.graph.ended_vehicles_count > 0:
@@ -188,13 +188,13 @@ class FixedController(TrafficController):
     def cleanup(self) -> None:
         """Clean up fixed controller resources and report Fixed statistics."""
         try:
-            self.logger.info("=== FIXED CLEANUP STARTED ===")
+            # self.logger.info("=== FIXED CLEANUP STARTED ===")
             if hasattr(self, 'graph') and self.graph:
-                self.logger.info(f"Graph object exists: {type(self.graph)}")
-                self.logger.info(
-                    f"Ended vehicles count: {getattr(self.graph, 'ended_vehicles_count', 'N/A')}")
-                self.logger.info(
-                    f"Vehicle total time: {getattr(self.graph, 'vehicle_total_time', 'N/A')}")
+                # self.logger.info(f"Graph object exists: {type(self.graph)}")
+                # self.logger.info(
+                #     f"Ended vehicles count: {getattr(self.graph, 'ended_vehicles_count', 'N/A')}")
+                # self.logger.info(
+                #     f"Vehicle total time: {getattr(self.graph, 'vehicle_total_time', 'N/A')}")
 
                 # Report Fixed method's duration statistics using same calculation as Tree Method
                 if hasattr(self.graph, 'ended_vehicles_count') and self.graph.ended_vehicles_count > 0:

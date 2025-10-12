@@ -50,13 +50,14 @@ class TrafficSimulator:
             final_step = self._run_simulation_loop()
         finally:
             self._cleanup_simulation()
-        
-        # Calculate final metrics after cleanup (when statistics file is written)
-        return self._calculate_final_metrics(final_step)
+
+        # Calculate final metrics after cleanup (statistics file is written after traci.close())
+        metrics = self._calculate_final_metrics(final_step)
+        return metrics
 
     def _initialize_simulation(self) -> None:
         """Initialize simulation components."""
-        self.logger.info("Initializing traffic simulation...")
+        # self.logger.info("Initializing traffic simulation...")
 
         # Choose SUMO binary based on GUI flag
         if self.args.gui:
@@ -65,8 +66,9 @@ class TrafficSimulator:
             sumo_binary = sumolib.checkBinary('sumo')
 
         # Start TraCI FIRST
-        self.logger.info("Starting SUMO simulation with TraCI...")
-        traci.start([sumo_binary, '-c', str(CONFIG.config_file), '--statistic-output', 'workspace/sumo_statistics.xml', '--tripinfo-output.write-unfinished', 'true', '--error-log', 'workspace/sumo_errors.log', '--no-step-log'])
+        # self.logger.info("Starting SUMO simulation with TraCI...")
+        traci.start(
+            [sumo_binary, '-c', str(CONFIG.config_file), '--no-step-log'])
 
         # Initialize traffic controller AFTER TraCI is connected
         self.traffic_controller.initialize()
@@ -136,10 +138,11 @@ class TrafficSimulator:
             Dict containing simulation metrics
         """
         # Parse SUMO statistics file for comprehensive metrics
+        # Note: This is called AFTER traci.close() so the statistics file is complete
         stats = parse_sumo_statistics_file('workspace/sumo_statistics.xml')
-        
+
+        # Build metrics dictionary
         if stats:
-            # Use parsed statistics from SUMO
             metrics = {
                 'total_simulation_steps': final_step,
                 'vehicles_loaded': stats['loaded'],
@@ -151,21 +154,19 @@ class TrafficSimulator:
                 'traffic_control_method': self.args.traffic_control
             }
         else:
-            # Fallback to TraCI if statistics file is not available
-            vehicles_running = len(traci.vehicle.getIDList())
+            # Minimal metrics if statistics file is not available
             metrics = {
                 'total_simulation_steps': final_step,
-                'vehicles_still_running': vehicles_running,
                 'traffic_control_method': self.args.traffic_control
             }
 
         # Log formatted statistics using shared formatter
         log_messages = format_cli_statistics_output(
-            stats, 
-            self.args.traffic_control, 
+            stats,
+            self.args.traffic_control,
             final_step
         )
-        
+
         for message in log_messages:
             self.logger.info(message)
 
@@ -199,16 +200,17 @@ def execute_standard_simulation(args) -> None:
     """Execute standard dynamic simulation."""
     import logging
     from .traffic_controller import TrafficControllerFactory
-    
+
     logger = logging.getLogger(__name__)
-    
+
     # Create traffic controller
-    traffic_controller = TrafficControllerFactory.create(args.traffic_control, args)
-    
+    traffic_controller = TrafficControllerFactory.create(
+        args.traffic_control, args)
+
     # Create and run simulator
     simulator = TrafficSimulator(args, traffic_controller)
     metrics = simulator.run()
-    
+
     # Final metrics are logged by the simulator's unified statistics system
 
 
@@ -216,20 +218,21 @@ def execute_sample_simulation(args) -> None:
     """Execute sample dynamic simulation using pre-built sample network."""
     import logging
     from .traffic_controller import TrafficControllerFactory
-    
+
     logger = logging.getLogger(__name__)
-    
+
     # Validate traffic control compatibility
     if args.traffic_control and args.traffic_control != 'tree_method':
         logger.warning("Tree Method samples optimized for tree_method control")
         logger.warning(f"Proceeding with: {args.traffic_control}")
-    
+
     # Create traffic controller
-    traffic_controller = TrafficControllerFactory.create(args.traffic_control, args)
-    
+    traffic_controller = TrafficControllerFactory.create(
+        args.traffic_control, args)
+
     # Create and run simulator
     simulator = TrafficSimulator(args, traffic_controller)
     metrics = simulator.run()
-    
+
     # Final metrics are provided by SUMO's automatic statistics output
     logger.info("=== SAMPLE SIMULATION COMPLETED ===")

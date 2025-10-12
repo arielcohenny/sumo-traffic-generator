@@ -26,10 +26,10 @@ from .constants import (
     DEFAULT_FALLBACK_VALUE, DEFAULT_INITIAL_TIME, NUM_TRAFFIC_LIGHT_PHASES,
     RL_MODEL_LOAD_RETRY_DELAY, TRAFFIC_LIGHT_DEFINITION_INDEX,
     RL_INFERENCE_TIME_MAX_HISTORY, RL_INFERENCE_TIME_KEEP_RECENT,
-    RL_ACTION_DISTRIBUTION_LOG_INTERVAL
+    RL_ACTION_DISTRIBUTION_LOG_INTERVAL, DECISION_INTERVAL_SECONDS,
+    RL_PHASE_ONLY_MODE, RL_FIXED_PHASE_DURATION
 )
 from .environment import TrafficControlEnv
-from .config import get_rl_config
 
 
 class RLController(TrafficController):
@@ -66,15 +66,21 @@ class RLController(TrafficController):
         self.traffic_lights = {}
         self.last_action_time = DEFAULT_INITIAL_TIME
 
-        self.logger.info(f"=== RL CONTROLLER INITIALIZATION ===")
-        self.logger.info(f"Mode: {self.mode}")
-        self.logger.info(f"Model path: {self.model_path}")
+        # Verify mode setting logic
+        if self.model_path:
+            expected_mode = RL_INFERENCE_MODE
+            if self.mode != expected_mode:
+                self.logger.error(
+                    f"MODE MISMATCH: Expected '{expected_mode}' but got '{self.mode}'")
+        else:
+            expected_mode = RL_DEFAULT_MODE
+            if self.mode != expected_mode:
+                self.logger.error(
+                    f"MODE MISMATCH: Expected '{expected_mode}' but got '{self.mode}'")
 
     def initialize(self) -> None:
         """Initialize RL controller with model loading and environment setup."""
         try:
-            self.logger.info(f"=== {RL_CONTROLLER_DISPLAY_NAME.upper()} INITIALIZATION ===")
-
             # Initialize Graph object for vehicle tracking (same as other controllers)
             from src.traffic_control.decentralized_traffic_bottlenecks.shared.classes.graph import Graph
             self.graph = Graph(self.args.end_time)
@@ -93,17 +99,15 @@ class RLController(TrafficController):
             if RL_ACTION_DISTRIBUTION_TRACKING:
                 self._initialize_action_tracking()
 
-            self.logger.info(f"RL Controller initialization completed successfully")
-
         except Exception as e:
-            self.logger.error(f"{RL_CONTROLLER_ERROR_PREFIX} initialization failed: {e}")
+            self.logger.error(
+                f"{RL_CONTROLLER_ERROR_PREFIX} initialization failed: {e}")
             if not RL_GRACEFUL_DEGRADATION:
                 raise
 
     def _load_rl_model(self) -> None:
         """Load trained RL model for inference."""
         if not self.model_path:
-            self.logger.info("No model path provided - running in training mode")
             return
 
         try:
@@ -111,26 +115,25 @@ class RLController(TrafficController):
 
             # Validate model path
             if not os.path.exists(self.model_path):
-                raise FileNotFoundError(f"RL model not found: {self.model_path}")
+                raise FileNotFoundError(
+                    f"RL model not found: {self.model_path}")
 
             # Load model with retries
             for attempt in range(RL_MODEL_LOAD_RETRIES):
                 try:
-                    self.logger.info(f"Loading RL model from: {self.model_path} (attempt {attempt + 1})")
                     self.model = PPO.load(self.model_path)
 
                     # Validate model compatibility if enabled
                     if RL_MODEL_COMPATIBILITY_CHECK:
                         self._validate_model_compatibility()
 
-                    self.logger.info("RL model loaded successfully")
                     return
 
                 except Exception as e:
-                    self.logger.warning(f"Model loading attempt {attempt + 1} failed: {e}")
                     if attempt == RL_MODEL_LOAD_RETRIES - 1:
                         raise
-                    time.sleep(RL_MODEL_LOAD_RETRY_DELAY)  # Brief pause before retry
+                    # Brief pause before retry
+                    time.sleep(RL_MODEL_LOAD_RETRY_DELAY)
 
         except Exception as e:
             self.logger.error(f"Failed to load RL model: {e}")
@@ -148,35 +151,87 @@ class RLController(TrafficController):
             env_obs_space = self.rl_env.observation_space
 
             if model_obs_space.shape != env_obs_space.shape:
-                raise ValueError(f"Observation space mismatch: model={model_obs_space.shape}, env={env_obs_space.shape}")
+                self.logger.error(f"OBSERVATION SPACE MISMATCH DETECTED!")
+                self.logger.error(f"  Model expects: {model_obs_space.shape}")
+                self.logger.error(
+                    f"  Environment provides: {env_obs_space.shape}")
+                raise ValueError(
+                    f"Observation space mismatch: model={model_obs_space.shape}, env={env_obs_space.shape}")
+
+            # Check observation bounds compatibility
+            if hasattr(model_obs_space, 'low') and hasattr(env_obs_space, 'low'):
+                model_low = model_obs_space.low
+                env_low = env_obs_space.low
+                model_high = model_obs_space.high
+                env_high = env_obs_space.high
+
+                self.logger.info(
+                    f"Model bounds: low={model_low[0]:.3f} to {model_low[-1]:.3f}, high={model_high[0]:.3f} to {model_high[-1]:.3f}")
+                self.logger.info(
+                    f"Environment bounds: low={env_low[0]:.3f} to {env_low[-1]:.3f}, high={env_high[0]:.3f} to {env_high[-1]:.3f}")
+
+                # Check if bounds are approximately equal (allow some tolerance)
+                low_diff = np.abs(model_low - env_low).max()
+                high_diff = np.abs(model_high - env_high).max()
+                self.logger.info(
+                    f"Bounds differences: low_diff={low_diff:.6f}, high_diff={high_diff:.6f}")
+
+                if low_diff > 0.1 or high_diff > 0.1:
+                    self.logger.warning(
+                        f"Observation bounds mismatch (but within tolerance)")
 
             # Check action space compatibility
             model_action_space = self.model.action_space
             env_action_space = self.rl_env.action_space
 
-            if hasattr(model_action_space, 'nvec') and hasattr(env_action_space, 'nvec'):
-                if not np.array_equal(model_action_space.nvec, env_action_space.nvec):
-                    raise ValueError(f"Action space mismatch: model={model_action_space.nvec}, env={env_action_space.nvec}")
+            self.logger.info(f"Model action space: {model_action_space}")
+            self.logger.info(f"Environment action space: {env_action_space}")
 
-            self.logger.info("Model compatibility validation passed")
+            if hasattr(model_action_space, 'nvec') and hasattr(env_action_space, 'nvec'):
+                self.logger.info(
+                    f"Model action nvec: {model_action_space.nvec}")
+                self.logger.info(
+                    f"Environment action nvec: {env_action_space.nvec}")
+
+                if not np.array_equal(model_action_space.nvec, env_action_space.nvec):
+                    self.logger.error(f"ACTION SPACE MISMATCH DETECTED!")
+                    self.logger.error(
+                        f"  Model expects: {model_action_space.nvec}")
+                    self.logger.error(
+                        f"  Environment provides: {env_action_space.nvec}")
+                    raise ValueError(
+                        f"Action space mismatch: model={model_action_space.nvec}, env={env_action_space.nvec}")
+
+            self.logger.info("=== MODEL COMPATIBILITY VALIDATION: SUCCESS ===")
 
         except Exception as e:
+            self.logger.error(
+                f"=== MODEL COMPATIBILITY VALIDATION: FAILED ===")
             self.logger.error(f"Model compatibility validation failed: {e}")
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
     def _initialize_rl_environment(self) -> None:
         """Initialize RL environment for state collection."""
         try:
-            # Get RL configuration
-            rl_config = get_rl_config()
+            # Create minimal environment for inference (no pipeline execution)
+            # This avoids re-parsing arguments and running the full simulation pipeline
+            self.rl_env = TrafficControlEnv.from_namespace(
+                self.args, minimal=True)
 
-            # Create RL environment in inference mode (no reset/step needed)
-            # Just used for state collection and action space definitions
-            self.rl_env = TrafficControlEnv(rl_config)
+            # Enable enhanced debugging for inference mode
+            # if self.mode == RL_INFERENCE_MODE:
+            #     self.logger.info(
+            #         f"=== ENABLING ENHANCED DEBUGGING FOR INFERENCE MODE ===")
+            #     self.rl_env._debug_state = True
+            #     self.logger.info(
+            #         f"Enhanced debugging enabled on RL environment")
 
-            self.logger.info(f"RL environment initialized")
-            self.logger.info(f"Observation space: {self.rl_env.observation_space}")
-            self.logger.info(f"Action space: {self.rl_env.action_space}")
+            # self.logger.info(f"RL environment initialized")
+            # self.logger.info(
+            #     f"Observation space: {self.rl_env.observation_space}")
+            # self.logger.info(f"Action space: {self.rl_env.action_space}")
 
         except Exception as e:
             self.logger.error(f"Failed to initialize RL environment: {e}")
@@ -189,7 +244,8 @@ class RLController(TrafficController):
 
             for tl_id in traffic_lights:
                 # Get phase information
-                complete_def = traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[TRAFFIC_LIGHT_DEFINITION_INDEX]
+                complete_def = traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[
+                    TRAFFIC_LIGHT_DEFINITION_INDEX]
                 phases = complete_def.phases
 
                 self.traffic_lights[tl_id] = {
@@ -199,7 +255,8 @@ class RLController(TrafficController):
                     'phase_start_time': DEFAULT_INITIAL_TIME
                 }
 
-            self.logger.info(f"Initialized tracking for {len(self.traffic_lights)} traffic lights")
+            # self.logger.info(
+            #     f"Initialized tracking for {len(self.traffic_lights)} traffic lights")
 
         except Exception as e:
             self.logger.error(f"Failed to initialize traffic lights: {e}")
@@ -210,11 +267,17 @@ class RLController(TrafficController):
         if not RL_ACTION_DISTRIBUTION_TRACKING:
             return
 
-        # Initialize counters for each possible action
-        for phase in range(NUM_TRAFFIC_LIGHT_PHASES):
-            for duration_idx in range(len(PHASE_DURATION_OPTIONS)):
-                action_key = f"phase_{phase}_duration_{duration_idx}"
+        if RL_PHASE_ONLY_MODE:
+            # Initialize counters for phase-only actions
+            for phase in range(NUM_TRAFFIC_LIGHT_PHASES):
+                action_key = f"phase_{phase}"
                 self.action_counts[action_key] = DEFAULT_INITIAL_TIME
+        else:
+            # Initialize counters for phase+duration actions
+            for phase in range(NUM_TRAFFIC_LIGHT_PHASES):
+                for duration_idx in range(len(PHASE_DURATION_OPTIONS)):
+                    action_key = f"phase_{phase}_duration_{duration_idx}"
+                    self.action_counts[action_key] = DEFAULT_INITIAL_TIME
 
     def update(self, step: int) -> None:
         """Update RL control at given simulation step.
@@ -228,23 +291,98 @@ class RLController(TrafficController):
                 self.graph.add_vehicles_to_step()
                 self.graph.close_prev_vehicle_step(step)
         except Exception as e:
-            self.logger.warning(f"RL vehicle tracking failed at step {step}: {e}")
+            self.logger.warning(
+                f"RL vehicle tracking failed at step {step}: {e}")
 
-        # RL control logic
+        # RL control logic - only make decisions at specified intervals
         try:
-            # Collect current state
-            if self.rl_env:
-                self.current_observation = self.rl_env._get_observation()
+            # Only make RL decisions every DECISION_INTERVAL_SECONDS
+            if step % DECISION_INTERVAL_SECONDS == 0:
+                # self.logger.info(
+                #     f"=== RL DECISION STEP {step} (DECISION INTERVAL: {DECISION_INTERVAL_SECONDS}) ===")
+                # self.logger.info(
+                #     f"Mode: {self.mode}, Model available: {self.model is not None}")
 
-            # Generate RL action
-            if self.mode == RL_INFERENCE_MODE and self.model:
-                action = self._get_rl_action()
-            else:
-                # Training mode or no model - use default/random actions
-                action = self._get_default_action()
+                # Collect current state
+                if self.rl_env:
+                    try:
+                        self.current_observation = self.rl_env._get_observation()
+                        # self.logger.info(
+                        #     f"Observation collected - shape: {self.current_observation.shape if self.current_observation is not None else 'None'}")
 
-            # Execute traffic signal actions
-            self._execute_actions(action, step)
+                        # # DEBUG: Log observation stats
+                        # if self.current_observation is not None:
+                        #     obs_min = np.min(self.current_observation)
+                        #     obs_max = np.max(self.current_observation)
+                        #     obs_mean = np.mean(self.current_observation)
+                        #     obs_std = np.std(self.current_observation)
+                        #     zero_count = np.sum(self.current_observation == 0)
+                        #     non_zero_count = np.sum(
+                        #         self.current_observation != 0)
+
+                        #     # self.logger.info(
+                        #     #     f"Observation stats - min: {obs_min:.3f}, max: {obs_max:.3f}, mean: {obs_mean:.3f}, std: {obs_std:.3f}")
+                        #     # self.logger.info(
+                        #     #     f"Observation features - zero: {zero_count}, non-zero: {non_zero_count}, total: {len(self.current_observation)}")
+
+                        #     # Check if observation is within expected bounds
+                        #     if self.model and hasattr(self.model, 'observation_space'):
+                        #         obs_space = self.model.observation_space
+                        #         if hasattr(obs_space, 'low') and hasattr(obs_space, 'high'):
+                        #             out_of_bounds_low = np.sum(
+                        #                 self.current_observation < obs_space.low)
+                        #             out_of_bounds_high = np.sum(
+                        #                 self.current_observation > obs_space.high)
+                        #             if out_of_bounds_low > 0 or out_of_bounds_high > 0:
+                        #                 self.logger.warning(
+                        #                     f"Observation out of bounds: {out_of_bounds_low} below min, {out_of_bounds_high} above max")
+                        #             else:
+                        #                 self.logger.info(
+                        #                     "Observation within expected bounds")
+
+                        # Log first few and last few observation values for pattern analysis
+                        # if len(self.current_observation) > 10:
+                        #     first_5 = self.current_observation[:5]
+                        #     last_5 = self.current_observation[-5:]
+                        #     self.logger.info(
+                        #         f"Observation sample - first 5: {first_5}, last 5: {last_5}")
+                    except Exception as e:
+                        self.logger.error(
+                            f"Failed to collect observation: {e}")
+                        import traceback
+                        self.logger.error(
+                            f"Traceback: {traceback.format_exc()}")
+                        self.current_observation = None
+                else:
+                    self.logger.warning(
+                        "No RL environment available for observation collection")
+
+                # Generate RL action
+                action_source = "UNKNOWN"
+                if self.mode == RL_INFERENCE_MODE and self.model:
+                    # self.logger.info("Using INFERENCE MODE with trained model")
+                    action = self._get_rl_action()
+                    action_source = "RL_MODEL"
+                else:
+                    # Training mode or no model - use default/random actions
+                    # self.logger.info(
+                    #     f"Using DEFAULT MODE (mode: {self.mode}, model: {self.model is not None})")
+                    action = self._get_default_action()
+                    action_source = "DEFAULT"
+
+                # self.logger.info(
+                #     f"Action source: {action_source}, Action shape: {action.shape if action is not None else 'None'}")
+                # if action is not None:
+                #     self.logger.info(f"Action values: {action}")
+
+                # Execute traffic signal actions
+                self._execute_actions(action, step)
+            # else:
+            #     # Skip non-decision steps - only log occasionally to avoid spam
+            #     # Log every 10 decision intervals
+            #     if step % (DECISION_INTERVAL_SECONDS * 10) == 0:
+            #         self.logger.debug(
+            #             f"Step {step}: Skipping non-decision step (next decision at step {((step // DECISION_INTERVAL_SECONDS) + 1) * DECISION_INTERVAL_SECONDS})")
 
             # Update statistics
             if step % RL_STATISTICS_COLLECTION_INTERVAL == 0:
@@ -257,40 +395,84 @@ class RLController(TrafficController):
 
     def _get_rl_action(self) -> np.ndarray:
         """Get action from trained RL model."""
-        if not self.model or self.current_observation is None:
+        # self.logger.info(f"=== RL MODEL INFERENCE START ===")
+        # self.logger.info(f"Model available: {self.model is not None}")
+        # self.logger.info(f"Observation available: {self.current_observation is not None}")
+
+        if not self.model:
+            self.logger.warning(
+                "No model available - falling back to default action")
+            return self._get_default_action()
+
+        if self.current_observation is None:
+            self.logger.warning(
+                "No observation available - falling back to default action")
             return self._get_default_action()
 
         try:
             # Track inference time if enabled
             start_time = time.time() if RL_INFERENCE_TIME_TRACKING else None
 
+            # self.logger.info(f"Calling model.predict() with observation shape: {self.current_observation.shape}")
+
             # Get action from model
-            action, _ = self.model.predict(self.current_observation, deterministic=True)
+            action, _ = self.model.predict(
+                self.current_observation, deterministic=True)
+
+            # self.logger.info(f"Model prediction successful - action type: {type(action)}, shape: {action.shape}")
+            # self.logger.info(f"Predicted action values: {action}")
 
             # Record inference time
             if RL_INFERENCE_TIME_TRACKING and start_time:
                 inference_time = time.time() - start_time
                 self.inference_times.append(inference_time)
+                self.logger.info(f"Inference time: {inference_time:.4f}s")
 
             # Track action distribution
             if RL_ACTION_DISTRIBUTION_TRACKING:
                 self._track_action(action)
 
+            # self.logger.info(f"=== RL MODEL INFERENCE SUCCESS ===")
             return action
 
         except Exception as e:
+            self.logger.error(f"=== RL MODEL INFERENCE FAILED ===")
             self.logger.error(f"RL model inference failed: {e}")
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
+            self.logger.error(f"Falling back to default action")
             return self._get_default_action()
 
     def _get_default_action(self) -> np.ndarray:
         """Get default action when model is not available."""
+        self.logger.info(f"=== GENERATING DEFAULT ACTION ===")
+        self.logger.info(
+            f"RL environment available: {self.rl_env is not None}")
+        self.logger.info(f"Traffic lights count: {len(self.traffic_lights)}")
+
         if not self.rl_env:
             # Fallback: simple fixed action
             num_intersections = len(self.traffic_lights)
-            return np.zeros(num_intersections * 2, dtype=np.int32)
+            self.logger.info(
+                f"No RL environment - using fixed action for {num_intersections} intersections")
+
+            if RL_PHASE_ONLY_MODE:
+                action = np.zeros(num_intersections,
+                                  dtype=np.int32)  # Phase-only
+                self.logger.info(f"Fixed action (phase-only): {action}")
+                return action
+            else:
+                action = np.zeros(num_intersections * 2,
+                                  dtype=np.int32)  # Phase + duration
+                self.logger.info(f"Fixed action (phase+duration): {action}")
+                return action
 
         # Sample random action from action space
-        return self.rl_env.action_space.sample()
+        self.logger.info(
+            f"Using RL environment action space: {self.rl_env.action_space}")
+        action = self.rl_env.action_space.sample()
+        self.logger.info(f"Random action sampled: {action}")
+        return action
 
     def _execute_actions(self, action: np.ndarray, step: int) -> None:
         """Execute RL actions on traffic signals.
@@ -299,44 +481,175 @@ class RLController(TrafficController):
             action: RL action array
             step: Current simulation step
         """
+
+        # Utility function to convert lane ID to edge ID
+        def lane_id_to_edge_id(lane_id):
+            """Convert lane ID (e.g., 'A1A0_H_s_0') to edge ID (e.g., 'A1A0_H_s')"""
+            if '_' in lane_id:
+                # Remove the last part after underscore (lane index)
+                return '_'.join(lane_id.split('_')[:-1])
+            return lane_id
+
         try:
+
             if not self.rl_env or len(self.traffic_lights) == 0:
+                self.logger.warning(
+                    f"Cannot execute actions - RL env: {self.rl_env is not None}, Traffic lights: {len(self.traffic_lights)}")
                 return
 
-            # Reshape action to (num_intersections, 2) format
             num_intersections = len(self.traffic_lights)
-            action_pairs = action.reshape(num_intersections, 2)
-
             traffic_light_ids = list(self.traffic_lights.keys())
+            # self.logger.info(
+            #     f"Executing actions for {num_intersections} intersections: {traffic_light_ids}")
 
-            for i, tl_id in enumerate(traffic_light_ids):
-                if i >= len(action_pairs):
-                    break
+            if RL_PHASE_ONLY_MODE:
+                # self.logger.info("Using PHASE-ONLY mode")
+                # Phase-only mode: action is flat array of phase indices
+                # Ensure correct length
+                phase_actions = action.flatten()[:num_intersections]
+                # self.logger.info(f"Phase actions extracted: {phase_actions}")
 
-                phase_idx, duration_idx = action_pairs[i]
+                # Apply safety constraints and execute actions
+                for i, tl_id in enumerate(traffic_light_ids):
+                    if i >= len(phase_actions):
+                        self.logger.warning(
+                            f"Action index {i} exceeds phase_actions length {len(phase_actions)}")
+                        break
 
-                # Apply safety constraints if enabled
-                if RL_SAFETY_CHECK_ENABLED:
-                    phase_idx, duration_idx = self._apply_safety_constraints(
-                        tl_id, int(phase_idx), int(duration_idx), step)
+                    phase_idx = int(phase_actions[i])
+                    original_phase = phase_idx
 
-                # Convert duration index to actual duration
-                duration = PHASE_DURATION_OPTIONS[int(duration_idx)]
+                    # Apply safety constraints if enabled
+                    if RL_SAFETY_CHECK_ENABLED:
+                        phase_idx = self._apply_phase_safety_constraints(
+                            tl_id, phase_idx, step)
+                        if phase_idx != original_phase:
+                            self.logger.info(
+                                f"  Safety constraint applied: {original_phase} -> {phase_idx}")
 
-                # Execute TraCI commands (same as other controllers)
-                traci.trafficlight.setPhase(tl_id, int(phase_idx))
-                traci.trafficlight.setPhaseDuration(tl_id, duration)
+                    # Apply the RL decision with fixed duration
+                    try:
+                        traci.trafficlight.setPhase(tl_id, phase_idx)
+                        traci.trafficlight.setPhaseDuration(
+                            tl_id, RL_FIXED_PHASE_DURATION)
 
-                # Update tracking
-                self.traffic_lights[tl_id]['last_phase'] = int(phase_idx)
-                self.traffic_lights[tl_id]['last_duration'] = duration
-                self.traffic_lights[tl_id]['phase_start_time'] = step
+                    except Exception as e:
+                        self.logger.error(
+                            f"  Failed to apply RL action to {tl_id}: {e}")
+                        import traceback
+                        self.logger.error(
+                            f"  Traceback: {traceback.format_exc()}")
+
+                    # Update tracking
+                    self.traffic_lights[tl_id]['last_phase'] = phase_idx
+                    self.traffic_lights[tl_id]['last_duration'] = RL_FIXED_PHASE_DURATION
+                    self.traffic_lights[tl_id]['phase_start_time'] = step
+
+            else:
+                self.logger.info("Using PHASE+DURATION mode")
+                # Legacy phase+duration mode: reshape to (num_intersections, 2) format
+                action_pairs = action.reshape(num_intersections, 2)
+                self.logger.info(f"Action pairs: {action_pairs}")
+
+                # Apply safety constraints and execute actions
+                for i, tl_id in enumerate(traffic_light_ids):
+                    if i >= len(action_pairs):
+                        self.logger.warning(
+                            f"Action index {i} exceeds action_pairs length {len(action_pairs)}")
+                        break
+
+                    phase_idx, duration_idx = action_pairs[i]
+                    original_phase = int(phase_idx)
+                    original_duration_idx = int(duration_idx)
+                    self.logger.info(
+                        f"Traffic light {tl_id} (index {i}): Requested phase {phase_idx}, duration_idx {duration_idx}")
+
+                    # Get current phase before change
+                    try:
+                        current_phase = traci.trafficlight.getPhase(tl_id)
+                        current_duration = traci.trafficlight.getPhaseDuration(
+                            tl_id)
+                        self.logger.info(
+                            f"  Current state: phase {current_phase}, duration {current_duration}")
+                    except Exception as e:
+                        self.logger.warning(
+                            f"  Could not get current state: {e}")
+
+                    # Apply safety constraints if enabled
+                    if RL_SAFETY_CHECK_ENABLED:
+                        phase_idx, duration_idx = self._apply_safety_constraints(
+                            tl_id, int(phase_idx), int(duration_idx), step)
+                        if phase_idx != original_phase or duration_idx != original_duration_idx:
+                            self.logger.info(
+                                f"  Safety constraint applied: phase {original_phase} -> {phase_idx}, duration_idx {original_duration_idx} -> {duration_idx}")
+
+                    duration = PHASE_DURATION_OPTIONS[int(duration_idx)]
+                    self.logger.info(
+                        f"  Final values: phase {phase_idx}, duration {duration}")
+
+                    # Apply the RL decision
+                    try:
+                        self.logger.info(
+                            f"  Setting phase to {phase_idx} with duration {duration}")
+                        traci.trafficlight.setPhase(tl_id, int(phase_idx))
+                        traci.trafficlight.setPhaseDuration(tl_id, duration)
+
+                        # Verify the change was applied
+                        new_phase = traci.trafficlight.getPhase(tl_id)
+                        new_duration = traci.trafficlight.getPhaseDuration(
+                            tl_id)
+                        self.logger.info(
+                            f"  Verification: phase {new_phase}, duration {new_duration}")
+
+                        if new_phase != int(phase_idx):
+                            self.logger.error(
+                                f"  PHASE MISMATCH: Requested {phase_idx}, got {new_phase}")
+                        # Allow small floating point differences
+                        if abs(new_duration - duration) > 1:
+                            self.logger.error(
+                                f"  DURATION MISMATCH: Requested {duration}, got {new_duration}")
+
+                    except Exception as e:
+                        self.logger.error(
+                            f"  Failed to apply RL action to {tl_id}: {e}")
+                        import traceback
+                        self.logger.error(
+                            f"  Traceback: {traceback.format_exc()}")
+
+                    # Update tracking
+                    self.traffic_lights[tl_id]['last_phase'] = int(phase_idx)
+                    self.traffic_lights[tl_id]['last_duration'] = duration
+                    self.traffic_lights[tl_id]['phase_start_time'] = step
 
             self.last_action_time = step
+            # self.logger.info(
+            #     f"=== ACTION EXECUTION COMPLETED AT STEP {step} ===")
 
         except Exception as e:
+            self.logger.error(
+                f"=== ACTION EXECUTION FAILED AT STEP {step} ===")
             self.logger.error(f"Action execution failed at step {step}: {e}")
+            import traceback
+            self.logger.error(f"Full traceback: {traceback.format_exc()}")
             raise
+
+    def _apply_phase_safety_constraints(self, tl_id: str, phase_idx: int, step: int) -> int:
+        """Apply safety constraints to phase-only RL actions.
+
+        Args:
+            tl_id: Traffic light ID
+            phase_idx: Requested phase index
+            step: Current step
+
+        Returns:
+            int: Validated phase index
+        """
+        # Constrain phase to valid range
+        tl_info = self.traffic_lights.get(tl_id, {})
+        max_phase = tl_info.get('phase_count', NUM_TRAFFIC_LIGHT_PHASES) - 1
+        validated_phase = max(0, min(phase_idx, max_phase))
+
+        return validated_phase
 
     def _apply_safety_constraints(self, tl_id: str, phase_idx: int, duration_idx: int, step: int) -> tuple:
         """Apply safety constraints to RL actions.
@@ -388,12 +701,22 @@ class RLController(TrafficController):
 
         try:
             num_intersections = len(self.traffic_lights)
-            action_pairs = action.reshape(num_intersections, 2)
 
-            for phase_idx, duration_idx in action_pairs:
-                action_key = f"phase_{int(phase_idx)}_duration_{int(duration_idx)}"
-                if action_key in self.action_counts:
+            if RL_PHASE_ONLY_MODE:
+                # Phase-only mode: track phase indices only
+                phase_actions = action.flatten()[:num_intersections]
+                for phase_idx in phase_actions:
+                    action_key = f"phase_{int(phase_idx)}"
+                    if action_key not in self.action_counts:
+                        self.action_counts[action_key] = 0
                     self.action_counts[action_key] += 1
+            else:
+                # Legacy phase+duration mode
+                action_pairs = action.reshape(num_intersections, 2)
+                for phase_idx, duration_idx in action_pairs:
+                    action_key = f"phase_{int(phase_idx)}_duration_{int(duration_idx)}"
+                    if action_key in self.action_counts:
+                        self.action_counts[action_key] += 1
 
         except Exception as e:
             self.logger.warning(f"Action tracking failed: {e}")
@@ -410,7 +733,8 @@ class RLController(TrafficController):
             if RL_INFERENCE_TIME_TRACKING and self.inference_times:
                 avg_inference_time = np.mean(self.inference_times)
                 max_inference_time = np.max(self.inference_times)
-                self.logger.debug(f"RL inference time - avg: {avg_inference_time:.4f}s, max: {max_inference_time:.4f}s")
+                self.logger.debug(
+                    f"RL inference time - avg: {avg_inference_time:.4f}s, max: {max_inference_time:.4f}s")
 
                 # Clear old times to prevent memory buildup
                 if len(self.inference_times) > RL_INFERENCE_TIME_MAX_HISTORY:
@@ -440,28 +764,38 @@ class RLController(TrafficController):
     def cleanup(self) -> None:
         """Clean up RL controller resources and report statistics."""
         try:
-            self.logger.info(f"=== {RL_CONTROLLER_DISPLAY_NAME.upper()} CLEANUP STARTED ===")
+            # self.logger.info(
+            #     f"=== {RL_CONTROLLER_DISPLAY_NAME.upper()} CLEANUP STARTED ===")
 
             # Report vehicle statistics using Graph object (same as other controllers)
-            if hasattr(self, 'graph') and self.graph:
-                self.logger.info(f"Graph object exists: {type(self.graph)}")
-                self.logger.info(f"Ended vehicles count: {getattr(self.graph, 'ended_vehicles_count', 'N/A')}")
-                self.logger.info(f"Vehicle total time: {getattr(self.graph, 'vehicle_total_time', 'N/A')}")
+            # if hasattr(self, 'graph') and self.graph:
+            #     self.logger.info(f"Graph object exists: {type(self.graph)}")
+            #     self.logger.info(
+            #         f"Ended vehicles count: {getattr(self.graph, 'ended_vehicles_count', 'N/A')}")
+            #     self.logger.info(
+            #         f"Vehicle total time: {getattr(self.graph, 'vehicle_total_time', 'N/A')}")
 
-                # Report RL statistics using same calculation as other methods
-                if hasattr(self.graph, 'ended_vehicles_count') and self.graph.ended_vehicles_count > 0:
-                    rl_avg_duration = self.graph.vehicle_total_time / self.graph.ended_vehicles_count
-                    self.logger.info(f"=== {RL_CONTROLLER_DISPLAY_NAME.upper()} STATISTICS ===")
-                    self.logger.info(f"RL - Vehicles completed: {self.graph.ended_vehicles_count}")
-                    self.logger.info(f"RL - Total driving time: {self.graph.vehicle_total_time}")
-                    self.logger.info(f"RL - Average duration: {rl_avg_duration:.2f} steps")
-                    if hasattr(self.graph, 'driving_Time_seconds'):
-                        self.logger.info(f"RL - Individual durations collected: {len(self.graph.driving_Time_seconds)}")
-                else:
-                    self.logger.info(f"=== {RL_CONTROLLER_DISPLAY_NAME.upper()} STATISTICS ===")
-                    self.logger.info("RL - No completed vehicles found or graph not properly initialized")
-            else:
-                self.logger.info("Graph object not found or not initialized")
+            #     # Report RL statistics using same calculation as other methods
+            #     if hasattr(self.graph, 'ended_vehicles_count') and self.graph.ended_vehicles_count > 0:
+            #         rl_avg_duration = self.graph.vehicle_total_time / self.graph.ended_vehicles_count
+            #         self.logger.info(
+            #             f"=== {RL_CONTROLLER_DISPLAY_NAME.upper()} STATISTICS ===")
+            #         self.logger.info(
+            #             f"RL - Vehicles completed: {self.graph.ended_vehicles_count}")
+            #         self.logger.info(
+            #             f"RL - Total driving time: {self.graph.vehicle_total_time}")
+            #         self.logger.info(
+            #             f"RL - Average duration: {rl_avg_duration:.2f} steps")
+            #         if hasattr(self.graph, 'driving_Time_seconds'):
+            #             self.logger.info(
+            #                 f"RL - Individual durations collected: {len(self.graph.driving_Time_seconds)}")
+            #     else:
+            #         self.logger.info(
+            #             f"=== {RL_CONTROLLER_DISPLAY_NAME.upper()} STATISTICS ===")
+            #         self.logger.info(
+            #             "RL - No completed vehicles found or graph not properly initialized")
+            # else:
+            #     self.logger.info("Graph object not found or not initialized")
 
             # Report RL-specific statistics
             self._report_rl_statistics()
@@ -480,8 +814,12 @@ class RLController(TrafficController):
 
     def _report_rl_statistics(self) -> None:
         """Report RL-specific performance statistics."""
+        if not RL_PERFORMANCE_LOGGING_ENABLED:
+            return
+
         try:
-            self.logger.info(f"=== {RL_CONTROLLER_DISPLAY_NAME.upper()} PERFORMANCE STATISTICS ===")
+            self.logger.info(
+                f"=== {RL_CONTROLLER_DISPLAY_NAME.upper()} PERFORMANCE STATISTICS ===")
             self.logger.info(f"Mode: {self.mode}")
             self.logger.info(f"Model path: {self.model_path}")
 
@@ -505,11 +843,14 @@ class RLController(TrafficController):
                 self.logger.info(f"  Total actions: {total_actions}")
 
                 # Most common actions
-                sorted_actions = sorted(self.action_counts.items(), key=lambda x: x[1], reverse=True)
+                sorted_actions = sorted(
+                    self.action_counts.items(), key=lambda x: x[1], reverse=True)
                 self.logger.info("  Top 5 most common actions:")
                 for i, (action_key, count) in enumerate(sorted_actions[:5]):
-                    percentage = (count / total_actions) * 100 if total_actions > 0 else 0
-                    self.logger.info(f"    {i+1}. {action_key}: {count} ({percentage:.1f}%)")
+                    percentage = (count / total_actions) * \
+                        100 if total_actions > 0 else 0
+                    self.logger.info(
+                        f"    {i+1}. {action_key}: {count} ({percentage:.1f}%)")
 
         except Exception as e:
             self.logger.warning(f"RL statistics reporting failed: {e}")
