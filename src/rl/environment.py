@@ -15,12 +15,13 @@ import numpy as np
 from typing import Dict, Tuple, Any
 from pathlib import Path
 
+from .reward import RewardCalculator
 from .constants import (
     STATE_NORMALIZATION_MIN, STATE_NORMALIZATION_MAX,
     EDGE_FEATURES_COUNT, JUNCTION_FEATURES_COUNT,
     ACTIONS_PER_INTERSECTION, PHASE_DURATION_OPTIONS,
     MIN_PHASE_DURATION, MAX_PHASE_DURATION, MIN_GREEN_TIME, MAX_GREEN_TIME,
-    DECISION_INTERVAL_SECONDS, MEASUREMENT_INTERVAL_STEPS,
+    MEASUREMENT_INTERVAL_STEPS,
     MAX_DENSITY_VEHICLES_PER_METER, MAX_FLOW_VEHICLES_PER_SECOND,
     CONGESTION_WAITING_TIME_THRESHOLD, NUM_TRAFFIC_LIGHT_PHASES, NUM_PHASE_DURATION_OPTIONS,
     DEFAULT_INITIAL_STEP, DEFAULT_INITIAL_TIME, DEFAULT_FALLBACK_VALUE, DEFAULT_OBSERVATION_PADDING,
@@ -115,16 +116,27 @@ class TrafficControlEnv(gym.Env):
         instance.workspace = getattr(args, 'workspace', 'workspace')
         instance.cli_args = vars(args)
 
+        # Cycle length management
+        from .constants import DEFAULT_CYCLE_LENGTH, MIN_PHASE_DURATION, MAX_CYCLE_LENGTH
+        instance.cycle_lengths = getattr(args, 'rl_cycle_lengths', [DEFAULT_CYCLE_LENGTH])
+        instance.cycle_strategy = getattr(args, 'rl_cycle_strategy', 'fixed')
+        instance.current_cycle_length = instance.cycle_lengths[0]
+        instance.min_phase_time = MIN_PHASE_DURATION
+        instance.decision_count = 0
+        instance.current_schedules = {}
+        instance.cycle_start_step = 0
+
         # Calculate state vector size dynamically
         estimated_num_edges = 2 * 2 * \
             (2 * grid_dimension * (grid_dimension - 1))
         from .constants import (
             RL_DYNAMIC_EDGE_FEATURES_COUNT, RL_DYNAMIC_JUNCTION_FEATURES_COUNT,
-            RL_DYNAMIC_NETWORK_FEATURES_COUNT
+            RL_DYNAMIC_NETWORK_FEATURES_COUNT, RL_USE_CONTINUOUS_ACTIONS, RL_ACTIONS_PER_JUNCTION
         )
         instance.state_vector_size = (estimated_num_edges * RL_DYNAMIC_EDGE_FEATURES_COUNT +
                                       instance.num_intersections * RL_DYNAMIC_JUNCTION_FEATURES_COUNT +
-                                      RL_DYNAMIC_NETWORK_FEATURES_COUNT)
+                                      RL_DYNAMIC_NETWORK_FEATURES_COUNT +
+                                      1)  # +1 for normalized cycle_length
 
         # Define observation space
         instance.observation_space = gym.spaces.Box(
@@ -135,7 +147,17 @@ class TrafficControlEnv(gym.Env):
         )
 
         # Define action space
-        if RL_PHASE_ONLY_MODE:
+        if RL_USE_CONTINUOUS_ACTIONS:
+            # Use finite bounds for PPO compatibility
+            # Actions are logits that get normalized via softmax
+            # Range of -10 to +10 covers practical spectrum (exp(-10) ≈ 0%, exp(+10) ≈ 100%)
+            instance.action_space = gym.spaces.Box(
+                low=-10.0,
+                high=10.0,
+                shape=(instance.num_intersections * RL_ACTIONS_PER_JUNCTION,),
+                dtype=np.float32
+            )
+        elif RL_PHASE_ONLY_MODE:
             instance.action_space = gym.spaces.MultiDiscrete(
                 [NUM_TRAFFIC_LIGHT_PHASES] * instance.num_intersections)
         else:
@@ -166,15 +188,19 @@ class TrafficControlEnv(gym.Env):
 
         return instance
 
-    def __init__(self, env_params_string: str, episode_number: int = 0):
+    def __init__(self, env_params_string: str, episode_number: int = 0,
+                 cycle_lengths: list = None, cycle_strategy: str = 'fixed'):
         """Initialize the traffic control environment.
 
         Args:
             env_params_string: Raw parameter string for environment (e.g., "--network-seed 42 --grid_dimension 5 ...")
             episode_number: Episode number for reward logging (0 = auto-increment)
+            cycle_lengths: List of cycle lengths in seconds (default: [90])
+            cycle_strategy: How to select cycle length ('fixed', 'random', 'sequential', 'adaptive')
         """
         super().__init__()
         import shlex
+        from .constants import DEFAULT_CYCLE_LENGTH, MIN_PHASE_DURATION
 
         # Parse parameter string into CLI args
         parser = create_argument_parser()
@@ -188,8 +214,17 @@ class TrafficControlEnv(gym.Env):
         self.end_time = self.cli_args['end_time']
         self.workspace = self.cli_args.get('workspace', 'workspace')
 
+        # Cycle length management for variable duration control
+        self.cycle_lengths = cycle_lengths if cycle_lengths else [DEFAULT_CYCLE_LENGTH]
+        self.cycle_strategy = cycle_strategy
+        self.current_cycle_length = self.cycle_lengths[0]
+        self.min_phase_time = MIN_PHASE_DURATION
+        self.decision_count = 0  # Track number of decisions for sequential strategy
+        self.current_schedules = {}  # Store phase schedules for current cycle
+        self.cycle_start_step = 0  # Track when current cycle started
+
         # Calculate state vector size dynamically
-        # Formula: E×6 + J×2 + 5 (edges×features + junctions×features + network_features)
+        # Formula: E×6 + J×2 + 5 + 1 (edges×features + junctions×features + network_features + cycle_length)
         estimated_num_edges = 2 * 2 * \
             (2 * grid_dimension * (grid_dimension - 1))
         from .constants import (
@@ -198,10 +233,11 @@ class TrafficControlEnv(gym.Env):
         )
         self.state_vector_size = (estimated_num_edges * RL_DYNAMIC_EDGE_FEATURES_COUNT +
                                   self.num_intersections * RL_DYNAMIC_JUNCTION_FEATURES_COUNT +
-                                  RL_DYNAMIC_NETWORK_FEATURES_COUNT)
+                                  RL_DYNAMIC_NETWORK_FEATURES_COUNT +
+                                  1)  # +1 for normalized cycle_length
 
         # Define observation space: normalized state vector [0, 1]
-        # State includes traffic features (edges) + signal features (junctions)
+        # State includes traffic features (edges) + signal features (junctions) + cycle_length
         state_size = self.state_vector_size
         self.observation_space = gym.spaces.Box(
             low=STATE_NORMALIZATION_MIN,
@@ -212,8 +248,21 @@ class TrafficControlEnv(gym.Env):
         )
 
         # Define action space based on control mode
-        # Note: Final action space will be set after SUMO is started and we can read actual traffic light phases
-        if RL_PHASE_ONLY_MODE:
+        from .constants import RL_USE_CONTINUOUS_ACTIONS, RL_ACTIONS_PER_JUNCTION
+
+        if RL_USE_CONTINUOUS_ACTIONS:
+            # Duration-based control: continuous actions for phase duration proportions
+            # Each intersection outputs 4 values (one per phase) that will be converted to durations via softmax
+            # Shape: (num_intersections * 4,) - continuous values from neural network
+            # Use finite bounds for PPO compatibility
+            # Range of -10 to +10 covers practical spectrum (exp(-10) ≈ 0%, exp(+10) ≈ 100%)
+            self.action_space = gym.spaces.Box(
+                low=-10.0,
+                high=10.0,
+                shape=(self.num_intersections * RL_ACTIONS_PER_JUNCTION,),
+                dtype=np.float32
+            )
+        elif RL_PHASE_ONLY_MODE:
             # Phase-only control: discrete actions for phase selection per intersection
             # Each intersection: [phase_id] only
             # Temporarily use default, will be updated in _start_sumo_simulation
@@ -242,17 +291,30 @@ class TrafficControlEnv(gym.Env):
         self.traffic_analyzer = None
 
         # Reward analysis logging
-        self.reward_log_file = None
-        self.reward_log_writer = None
+        self.reward_calculator = None
         self.episode_number = episode_number  # Track episode for log filenames
 
     def reset(self, seed=None, options=None):
         """Reset the environment to start a new episode.
 
+        Args:
+            seed: Random seed for episode generation (CRITICAL for RL training diversity)
+
         Returns:
             observation: Initial state observation
             info: Additional information dictionary
         """
+        # CRITICAL: Use the seed to create episode variation
+        # Without this, all episodes are identical → all rewards are identical → no learning!
+        if seed is not None:
+            self.episode_seed = seed
+            # Set numpy random seed for reproducibility
+            np.random.seed(seed)
+        else:
+            # Generate random seed if not provided
+            self.episode_seed = np.random.randint(0, 2**31 - 1)
+            np.random.seed(self.episode_seed)
+
         # Close any existing TraCI connection
         if self.traci_connected:
             try:
@@ -290,9 +352,15 @@ class TrafficControlEnv(gym.Env):
         self.current_step = DEFAULT_INITIAL_STEP
         self.episode_start_time = DEFAULT_INITIAL_TIME
 
-        # Initialize reward analysis CSV logging (only if episode_number was provided)
-        if self.episode_number > 0:
-            self._initialize_reward_logging()
+        # Initialize reward analysis CSV logging
+        # Always initialize for demonstration collection tracking
+        # Initialize reward calculator with CSV logging
+        log_filename = f"reward_analysis_episode_{self.episode_number}.csv"
+        self.reward_calculator = RewardCalculator(log_file_path=log_filename)
+
+        import logging
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info(f"Initialized reward analysis logging: {log_filename}")
 
         # Get initial observation
         observation = self._get_observation()
@@ -304,7 +372,8 @@ class TrafficControlEnv(gym.Env):
         """Execute one simulation step with the given action.
 
         Args:
-            action: RL agent's action (phase + duration for all intersections)
+            action: RL agent's action (duration proportions for all intersections if continuous,
+                    or phase indices if discrete)
 
         Returns:
             observation: New state after action execution
@@ -316,19 +385,40 @@ class TrafficControlEnv(gym.Env):
         if not self.traci_connected:
             raise RuntimeError("SUMO simulation not connected")
 
-        # Apply traffic light actions immediately
+        # Apply traffic light actions (sets schedule for continuous, or applies phase for discrete)
         self._apply_traffic_light_actions(action)
 
-        # Advance simulation by decision interval
-        for _ in range(DECISION_INTERVAL_SECONDS):
-            if self.traci_connected:
-                # Advance SUMO simulation
-                traci.simulationStep()
-                self.current_step += 1
+        # Advance simulation by current cycle length
+        from .constants import RL_USE_CONTINUOUS_ACTIONS, MEASUREMENT_INTERVAL_STEPS
 
-                # Update vehicle tracker every measurement interval
-                if self.current_step % MEASUREMENT_INTERVAL_STEPS == 0:
-                    self.vehicle_tracker.update_vehicles(self.current_step)
+        if RL_USE_CONTINUOUS_ACTIONS:
+            # Duration-based control: apply scheduled phases throughout cycle
+            for t in range(self.current_cycle_length):
+                if self.traci_connected:
+                    # Apply correct phase based on schedule and time within cycle
+                    self._apply_scheduled_phases(t)
+
+                    # Advance SUMO simulation
+                    traci.simulationStep()
+                    self.current_step += 1
+
+                    # Update vehicle tracker every measurement interval
+                    if self.current_step % MEASUREMENT_INTERVAL_STEPS == 0:
+                        self.vehicle_tracker.update_vehicles(self.current_step)
+        else:
+            # Phase-only or legacy control: advance by current cycle length
+            for _ in range(self.current_cycle_length):
+                if self.traci_connected:
+                    traci.simulationStep()
+                    self.current_step += 1
+
+                    if self.current_step % MEASUREMENT_INTERVAL_STEPS == 0:
+                        self.vehicle_tracker.update_vehicles(self.current_step)
+
+        # Select next cycle length for next decision
+        if RL_USE_CONTINUOUS_ACTIONS:
+            self._select_next_cycle_length()
+            self.decision_count += 1
 
         # Get new observation
         observation = self._get_observation()
@@ -378,8 +468,11 @@ class TrafficControlEnv(gym.Env):
         if self.traffic_analyzer is None:
             from .traffic_analysis import RLTrafficAnalyzer
             debug_mode = hasattr(self, '_debug_state') and self._debug_state
+            # Get m and l parameters from CLI args
+            m = self.cli_args.get('tree_method_m', 0.8)
+            l = self.cli_args.get('tree_method_l', 2.8)
             self.traffic_analyzer = RLTrafficAnalyzer(
-                self.edge_ids, debug=debug_mode)
+                self.edge_ids, m, l, debug=debug_mode)
 
         observation = []
 
@@ -408,6 +501,11 @@ class TrafficControlEnv(gym.Env):
         # Network-level features (5 features)
         network_features = self.traffic_analyzer.get_network_level_features()
         observation.extend(network_features)
+
+        # Cycle length feature (1 feature) - normalized to [0, 1] range
+        from .constants import MAX_CYCLE_LENGTH
+        normalized_cycle_length = self.current_cycle_length / MAX_CYCLE_LENGTH
+        observation.append(normalized_cycle_length)
 
         # Debug logging for feature construction (only when debug mode is enabled)
         if hasattr(self, '_debug_state') and self._debug_state and self.current_step % 10 == 0:  # Log every 10 steps
@@ -461,78 +559,75 @@ class TrafficControlEnv(gym.Env):
             return DEFAULT_FALLBACK_VALUE
 
         # ═══════════════════════════════════════════════════════════
-        # 1. THROUGHPUT REWARDS (Primary Goal)
+        # STEP 1: Fetch all required metrics from environment/TraCI
         # ═══════════════════════════════════════════════════════════
-        # Immediate reward for every vehicle that completes this step
-        vehicles_completed_this_step = self.vehicle_tracker.vehicles_completed_this_step
-        throughput_reward = vehicles_completed_this_step * REWARD_THROUGHPUT_PER_VEHICLE
 
-        # ═══════════════════════════════════════════════════════════
-        # 2. WAITING TIME PENALTIES (Reduce Congestion)
-        # ═══════════════════════════════════════════════════════════
-        # Penalize increases in individual vehicle waiting times
+        # Throughput data
+        vehicles_completed = self.vehicle_tracker.vehicles_completed_this_step
+
+        # Waiting time penalty (pre-computed by vehicle tracker)
         waiting_penalty = self.vehicle_tracker.compute_intermediate_rewards()
 
-        # Additional penalty for vehicles with excessive waiting (>5 minutes)
-        excessive_waiting_penalty = 0.0
-        try:
-            active_vehicles = traci.vehicle.getIDList()
-            for vehicle_id in active_vehicles:
-                waiting_time = traci.vehicle.getWaitingTime(vehicle_id)
-                if waiting_time > REWARD_EXCESSIVE_WAITING_THRESHOLD:
-                    excessive_waiting_penalty -= REWARD_EXCESSIVE_WAITING_PENALTY
-        except:
-            pass
-
-        # ═══════════════════════════════════════════════════════════
-        # 3. NETWORK FLOW EFFICIENCY (Keep traffic moving)
-        # ═══════════════════════════════════════════════════════════
+        # Network performance metrics
         avg_speed, bottleneck_count = self._get_network_performance_metrics()
 
-        # Reward for maintaining good average speed
-        speed_reward = (avg_speed / REWARD_SPEED_NORMALIZATION) * \
-            REWARD_SPEED_REWARD_FACTOR
+        # Active vehicle waiting times for excessive waiting penalty
+        active_vehicle_waiting_times = []
+        waiting_to_insert = 0
+        active_vehicles_count = 0
+        vehicles_with_excessive_waiting = 0
 
-        # Penalty for bottlenecks (edges with congestion)
-        bottleneck_penalty = -bottleneck_count * REWARD_BOTTLENECK_PENALTY_PER_EDGE
-
-        # ═══════════════════════════════════════════════════════════
-        # 4. INSERTION RATE BONUS (Get vehicles into network)
-        # ═══════════════════════════════════════════════════════════
-        insertion_bonus = 0.0
         try:
+            active_vehicles = traci.vehicle.getIDList()
+            active_vehicles_count = len(active_vehicles)
+
+            for vehicle_id in active_vehicles:
+                try:
+                    waiting_time = traci.vehicle.getWaitingTime(vehicle_id)
+                    active_vehicle_waiting_times.append(waiting_time)
+                    if waiting_time > REWARD_EXCESSIVE_WAITING_THRESHOLD:
+                        vehicles_with_excessive_waiting += 1
+                except:
+                    pass
+
+            # Insertion queue metrics
             loaded_count = traci.simulation.getLoadedNumber()
             departed_count = traci.simulation.getDepartedNumber()
             waiting_to_insert = loaded_count - departed_count
-            if waiting_to_insert < REWARD_INSERTION_THRESHOLD:
-                insertion_bonus = REWARD_INSERTION_BONUS
         except:
             pass
 
         # ═══════════════════════════════════════════════════════════
-        # TOTAL REWARD
+        # STEP 2: Compute reward using RewardCalculator
         # ═══════════════════════════════════════════════════════════
-        total_reward = (
-            throughput_reward +           # +10 per completed vehicle (PRIMARY)
-            waiting_penalty +              # Negative (from vehicle tracker)
-            excessive_waiting_penalty +    # Extra penalty for long waits
-            speed_reward +                 # Reward for good network speed
-            bottleneck_penalty +           # Penalty for congested edges
-            insertion_bonus                # Bonus for clearing insertion queue
+        total_reward = self.reward_calculator.compute_reward(
+            vehicles_completed=vehicles_completed,
+            waiting_penalty=waiting_penalty,
+            avg_speed=avg_speed,
+            bottleneck_count=bottleneck_count,
+            active_vehicle_waiting_times=active_vehicle_waiting_times,
+            waiting_to_insert=waiting_to_insert
         )
 
-        # CSV logging for reward validation (only when episode_number > 0)
-        if self.episode_number > 0 and self.current_step % 100 == 0:
-            self._log_reward_data(
+        # ═══════════════════════════════════════════════════════════
+        # STEP 3: Log reward components (every 100 steps)
+        # ═══════════════════════════════════════════════════════════
+        if self.current_step % 100 == 0:
+            # Recompute individual components for logging
+            throughput_reward = vehicles_completed * REWARD_THROUGHPUT_PER_VEHICLE
+            excessive_waiting_penalty = -vehicles_with_excessive_waiting * REWARD_EXCESSIVE_WAITING_PENALTY
+            speed_reward = (avg_speed / REWARD_SPEED_NORMALIZATION) * REWARD_SPEED_REWARD_FACTOR
+            bottleneck_penalty = -bottleneck_count * REWARD_BOTTLENECK_PENALTY_PER_EDGE
+            insertion_bonus = REWARD_INSERTION_BONUS if waiting_to_insert < REWARD_INSERTION_THRESHOLD else 0.0
+
+            self.reward_calculator.log_reward_components(
                 step=self.current_step,
                 avg_speed=avg_speed,
                 bottleneck_count=bottleneck_count,
-                active_vehicles=len(traci.vehicle.getIDList()
-                                    ) if self.traci_connected else 0,
-                waiting_to_insert=waiting_to_insert if 'waiting_to_insert' in locals() else 0,
-                vehicles_with_excessive_waiting=sum(1 for vid in traci.vehicle.getIDList()
-                                                    if traci.vehicle.getWaitingTime(vid) > REWARD_EXCESSIVE_WAITING_THRESHOLD) if self.traci_connected else 0,
-                vehicles_completed_this_step=vehicles_completed_this_step,
+                active_vehicles=active_vehicles_count,
+                waiting_to_insert=waiting_to_insert,
+                vehicles_with_excessive_waiting=vehicles_with_excessive_waiting,
+                vehicles_completed_this_step=vehicles_completed,
                 throughput_reward=throughput_reward,
                 waiting_penalty=waiting_penalty,
                 excessive_waiting_penalty=excessive_waiting_penalty,
@@ -684,63 +779,13 @@ class TrafficControlEnv(gym.Env):
 
         return stats
 
-    def _initialize_reward_logging(self):
-        """Initialize CSV file for reward analysis logging."""
-        import csv
-
-        # Close previous log file if exists
-        if self.reward_log_file:
-            try:
-                self.reward_log_file.close()
-            except:
-                pass
-
-        # Create new log file for this episode
-        log_filename = f"reward_analysis_episode_{self.episode_number}.csv"
-        self.reward_log_file = open(log_filename, 'w', newline='')
-        self.reward_log_writer = csv.writer(self.reward_log_file)
-
-        # Write header
-        self.reward_log_writer.writerow([
-            'step', 'avg_speed', 'bottleneck_count', 'active_vehicles',
-            'waiting_to_insert', 'vehicles_with_excessive_waiting', 'vehicles_completed_this_step',
-            'throughput_reward', 'waiting_penalty', 'excessive_waiting_penalty',
-            'speed_reward', 'bottleneck_penalty', 'insertion_bonus', 'total_reward'
-        ])
-        self.reward_log_file.flush()
-
-        import logging
-        logger = logging.getLogger(self.__class__.__name__)
-        logger.info(f"Initialized reward analysis logging: {log_filename}")
-
-    def _log_reward_data(self, **kwargs):
-        """Log reward components and state to CSV."""
-        if self.reward_log_writer:
-            # Write row in same order as header
-            self.reward_log_writer.writerow([
-                kwargs['step'],
-                kwargs['avg_speed'],
-                kwargs['bottleneck_count'],
-                kwargs['active_vehicles'],
-                kwargs['waiting_to_insert'],
-                kwargs['vehicles_with_excessive_waiting'],
-                kwargs['vehicles_completed_this_step'],
-                kwargs['throughput_reward'],
-                kwargs['waiting_penalty'],
-                kwargs['excessive_waiting_penalty'],
-                kwargs['speed_reward'],
-                kwargs['bottleneck_penalty'],
-                kwargs['insertion_bonus'],
-                kwargs['total_reward']
-            ])
-            self.reward_log_file.flush()
 
     def close(self):
         """Clean up environment resources."""
-        # Close reward log file
-        if self.reward_log_file:
+        # Close reward calculator (which closes the log file)
+        if self.reward_calculator:
             try:
-                self.reward_log_file.close()
+                self.reward_calculator.close()
                 import logging
                 logger = logging.getLogger(self.__class__.__name__)
                 logger.info(
@@ -773,6 +818,25 @@ class TrafficControlEnv(gym.Env):
         # Convert dict to Namespace object
         import argparse
         args = argparse.Namespace(**self.cli_args)
+
+        # CRITICAL FIX: Override seeds with episode seed for episode variation
+        # Each episode needs different traffic patterns for meaningful learning!
+        # However, respect explicitly set seeds from CLI (for demonstration collection)
+        if hasattr(self, 'episode_seed'):
+            # Use episode seed to generate deterministic but varied traffic per episode
+            # Offset each seed type so network/private/public traffic vary independently
+            # ONLY override if seeds were not explicitly set (None means not set)
+            if getattr(args, 'network_seed', None) is None:
+                args.network_seed = self.episode_seed
+            if getattr(args, 'private_traffic_seed', None) is None:
+                args.private_traffic_seed = self.episode_seed + 1000
+            if getattr(args, 'public_traffic_seed', None) is None:
+                args.public_traffic_seed = self.episode_seed + 2000
+
+        # DEBUG: Log actual seeds being used
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"🔧 SEED DEBUG: network={getattr(args, 'network_seed', 'None')}, private={getattr(args, 'private_traffic_seed', 'None')}, public={getattr(args, 'public_traffic_seed', 'None')}")
 
         # Execute pipeline to generate SUMO files (Steps 1-7 only, skip simulation)
         # RL environment manages its own SUMO simulation via TraCI
@@ -817,6 +881,15 @@ class TrafficControlEnv(gym.Env):
             '--start',
             '--quit-on-end',
         ]
+
+        # Add SUMO random seed if episode_seed is set
+        # This ensures vehicle behavior (lane changing, speed variation) differs between episodes
+        if hasattr(self, 'episode_seed') and self.episode_seed is not None:
+            sumo_cmd.extend(['--seed', str(self.episode_seed)])
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"🎲 SUMO random seed set to: {self.episode_seed}")
+
         traci.start(sumo_cmd, port=self.traci_port)
         self.traci_connected = True
 
@@ -831,53 +904,182 @@ class TrafficControlEnv(gym.Env):
         self._update_observation_space_from_sumo()
 
     def _apply_traffic_light_actions(self, actions):
-        """Apply RL actions immediately to traffic lights."""
+        """Apply RL actions to traffic lights.
+
+        For continuous actions: converts duration proportions to schedules
+        For discrete actions: applies phase immediately
+        """
         if not self.traci_connected:
             return
+
+        from .constants import RL_USE_CONTINUOUS_ACTIONS, RL_ACTIONS_PER_JUNCTION
+
+        # Debug: Log action shape for troubleshooting
+        expected_size = len(self.junction_ids) * RL_ACTIONS_PER_JUNCTION
+        if len(actions) != expected_size:
+            raise ValueError(
+                f"Action size mismatch! "
+                f"Received: {len(actions)}, Expected: {expected_size} "
+                f"(junctions: {len(self.junction_ids)}, actions_per_junction: {RL_ACTIONS_PER_JUNCTION}). "
+                f"This indicates the action space was not properly initialized."
+            )
 
         # Record actions for vehicle tracking
         action_dict = {}
 
-        if RL_PHASE_ONLY_MODE:
-            # Phase-only mode: actions is a flat array: [phase0, phase1, phase2, ...]
-            # Each element is a phase index for the corresponding intersection
+        if RL_USE_CONTINUOUS_ACTIONS:
+            # Duration-based control: convert raw actions to duration schedules
+            junction_schedules = {}
+
+            for i, junction_id in enumerate(self.junction_ids):
+                # Extract 4 values for this junction
+                start_idx = i * RL_ACTIONS_PER_JUNCTION
+                end_idx = start_idx + RL_ACTIONS_PER_JUNCTION
+                raw_outputs = actions[start_idx:end_idx]
+
+                # Apply softmax to get proportions
+                proportions = self._softmax(raw_outputs)
+
+                # Convert to durations summing to current_cycle_length
+                durations = self._proportions_to_durations(
+                    proportions,
+                    self.current_cycle_length,
+                    self.min_phase_time
+                )
+
+                junction_schedules[junction_id] = durations
+
+                # Record first phase for vehicle tracking
+                action_dict[junction_id] = (0, durations[0])
+
+            # Store schedule for application during cycle
+            self.current_schedules = junction_schedules
+            self.cycle_start_step = self.current_step
+
+        elif RL_PHASE_ONLY_MODE:
+            # Phase-only mode: discrete phase selection
             for i, junction_id in enumerate(self.junction_ids):
                 if i < len(actions):
                     phase_idx = int(actions[i])
                     duration = RL_FIXED_PHASE_DURATION
 
-                    # Apply the RL decision (phase-only with fixed duration)
                     try:
                         traci.trafficlight.setPhase(junction_id, phase_idx)
                         traci.trafficlight.setPhaseDuration(
                             junction_id, duration)
-                    except Exception as e:
-                        # Log error but continue with other intersections
+                    except Exception:
                         pass
 
                     action_dict[junction_id] = (phase_idx, duration)
         else:
-            # Legacy mode: actions is a flat array: [phase0, duration0, phase1, duration1, ...]
+            # Legacy mode: phase + duration pairs
             action_pairs = actions.reshape(
                 self.num_intersections, ACTIONS_PER_INTERSECTION)
 
-            # Apply RL actions to traffic signals
             for i, junction_id in enumerate(self.junction_ids):
                 phase_idx, duration_idx = action_pairs[i]
                 duration = PHASE_DURATION_OPTIONS[int(duration_idx)]
 
-                # Apply the RL decision
                 try:
                     traci.trafficlight.setPhase(junction_id, int(phase_idx))
                     traci.trafficlight.setPhaseDuration(junction_id, duration)
-                except Exception as e:
-                    # Log error but continue with other intersections
+                except Exception:
                     pass
 
                 action_dict[junction_id] = (int(phase_idx), duration)
 
         # Record decision for vehicle tracking
         self.vehicle_tracker.record_decision(self.current_step, action_dict)
+
+    def _softmax(self, x):
+        """Numerically stable softmax.
+
+        Args:
+            x: Array of raw values
+
+        Returns:
+            Array of probabilities summing to 1.0
+        """
+        # Handle empty array case (should not happen in normal operation)
+        if len(x) == 0:
+            raise ValueError(
+                f"Cannot apply softmax to empty array. "
+                f"Action shape: {len(x)}, Expected: {len(self.junction_ids) * 4}. "
+                f"This indicates an action space dimension mismatch."
+            )
+
+        exp_x = np.exp(x - np.max(x))
+        return exp_x / exp_x.sum()
+
+    def _proportions_to_durations(self, proportions, cycle_length, min_phase_time):
+        """Convert proportions to integer durations with constraints.
+
+        Args:
+            proportions: Array of 4 proportions summing to 1.0 (e.g., [0.25, 0.15, 0.40, 0.20])
+            cycle_length: Total cycle time in seconds (e.g., 90)
+            min_phase_time: Minimum duration per phase in seconds (e.g., 10)
+
+        Returns:
+            List of 4 integer durations summing exactly to cycle_length
+        """
+        num_phases = len(proportions)
+        available_time = cycle_length - (num_phases * min_phase_time)
+
+        # Calculate durations
+        durations = [min_phase_time + (p * available_time) for p in proportions]
+
+        # Round to integers
+        durations = [int(round(d)) for d in durations]
+
+        # Ensure exact sum (adjust largest phase if needed)
+        diff = cycle_length - sum(durations)
+        if diff != 0:
+            max_idx = np.argmax(durations)
+            durations[max_idx] += diff
+
+        return durations
+
+    def _apply_scheduled_phases(self, time_in_cycle):
+        """Apply correct phase based on schedule and time within cycle.
+
+        Args:
+            time_in_cycle: Time elapsed since start of cycle (0 to cycle_length-1)
+        """
+        if not self.current_schedules:
+            return
+
+        for junction_id, durations in self.current_schedules.items():
+            # Find which phase should be active at this time
+            elapsed = 0
+            for phase_idx, duration in enumerate(durations):
+                if time_in_cycle < elapsed + duration:
+                    # This is the active phase - apply it
+                    try:
+                        traci.trafficlight.setPhase(junction_id, phase_idx)
+                        traci.trafficlight.setPhaseDuration(junction_id, duration)
+                    except Exception:
+                        pass
+                    break
+                elapsed += duration
+
+    def _select_next_cycle_length(self):
+        """Select cycle length for next decision based on strategy."""
+        if len(self.cycle_lengths) == 1:
+            # Fixed cycle length
+            return
+
+        import random
+
+        if self.cycle_strategy == 'random':
+            self.current_cycle_length = random.choice(self.cycle_lengths)
+        elif self.cycle_strategy == 'sequential':
+            idx = self.decision_count % len(self.cycle_lengths)
+            self.current_cycle_length = self.cycle_lengths[idx]
+        elif self.cycle_strategy == 'adaptive':
+            # Future enhancement: adapt based on traffic conditions
+            # For now, use random
+            self.current_cycle_length = random.choice(self.cycle_lengths)
+        # else: 'fixed' - do nothing, keep current
 
     def _get_current_avg_waiting_time(self) -> float:
         """Get current average waiting time across all vehicles.
@@ -974,6 +1176,12 @@ class TrafficControlEnv(gym.Env):
         if not self.traci_connected:
             return
 
+        # Skip action space update for continuous actions (duration-based control)
+        # Continuous actions use fixed shape (num_junctions * 4) regardless of actual phases
+        from .constants import RL_USE_CONTINUOUS_ACTIONS
+        if RL_USE_CONTINUOUS_ACTIONS:
+            return
+
         import logging
         logger = logging.getLogger(self.__class__.__name__)
 
@@ -1061,7 +1269,8 @@ class TrafficControlEnv(gym.Env):
             actual_state_size = (
                 actual_edge_count * RL_DYNAMIC_EDGE_FEATURES_COUNT +
                 actual_junction_count * RL_DYNAMIC_JUNCTION_FEATURES_COUNT +
-                RL_DYNAMIC_NETWORK_FEATURES_COUNT
+                RL_DYNAMIC_NETWORK_FEATURES_COUNT +
+                1  # +1 for normalized cycle_length feature
             )
 
             # Update observation space with actual dimensions
@@ -1082,6 +1291,8 @@ class TrafficControlEnv(gym.Env):
                 f"  Junction features: {actual_junction_count} × {RL_DYNAMIC_JUNCTION_FEATURES_COUNT} = {actual_junction_count * RL_DYNAMIC_JUNCTION_FEATURES_COUNT}")
             logger.info(
                 f"  Network features: {RL_DYNAMIC_NETWORK_FEATURES_COUNT}")
+            logger.info(
+                f"  Cycle length feature: 1")
 
         except Exception as e:
             logger.error(f"Failed to update observation space from SUMO: {e}")

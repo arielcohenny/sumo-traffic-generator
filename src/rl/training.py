@@ -301,6 +301,8 @@ def get_entropy_coef_schedule(initial_coef: float, final_coef: float, decay_step
     return entropy_schedule
 
 
+
+
 class TrafficMetricsCallback(BaseCallback):
     """Custom callback for tracking traffic-specific metrics during training."""
 
@@ -376,7 +378,8 @@ class TrafficMetricsCallback(BaseCallback):
                     'traffic/recent_std_length', np.std(recent_lengths))
 
 
-def make_env(env_params_string: str, env_index: int, base_workspace: str = PARALLEL_WORKSPACE_PREFIX):
+def make_env(env_params_string: str, env_index: int, base_workspace: str = PARALLEL_WORKSPACE_PREFIX,
+             cycle_lengths: list = None, cycle_strategy: str = 'fixed'):
     """
     Create a single environment for vectorization.
 
@@ -384,6 +387,8 @@ def make_env(env_params_string: str, env_index: int, base_workspace: str = PARAL
         env_params_string: Raw parameter string for environment
         env_index: Environment index for unique workspace
         base_workspace: Base workspace directory name
+        cycle_lengths: List of cycle lengths for RL control
+        cycle_strategy: Strategy for cycle selection
 
     Returns:
         callable: Environment creation function
@@ -395,14 +400,20 @@ def make_env(env_params_string: str, env_index: int, base_workspace: str = PARAL
         # Append workspace to parameter string
         env_params_with_workspace = f"{env_params_string} --workspace {env_workspace}"
 
-        # Create environment with unique workspace
-        env = TrafficControlEnv(env_params_with_workspace)
+        # Create environment with unique workspace and cycle parameters
+        env = TrafficControlEnv(
+            env_params_string=env_params_with_workspace,
+            episode_number=env_index,
+            cycle_lengths=cycle_lengths,
+            cycle_strategy=cycle_strategy
+        )
         return env
 
     return _init
 
 
-def create_vectorized_env(env_params_string: str, n_envs: int = None, base_workspace: str = PARALLEL_WORKSPACE_PREFIX):
+def create_vectorized_env(env_params_string: str, n_envs: int = None, base_workspace: str = PARALLEL_WORKSPACE_PREFIX,
+                         cycle_lengths: list = None, cycle_strategy: str = 'fixed'):
     """
     Create vectorized environment for parallel training.
 
@@ -410,6 +421,8 @@ def create_vectorized_env(env_params_string: str, n_envs: int = None, base_works
         env_params_string: Raw parameter string for environment creation
         n_envs: Number of parallel environments
         base_workspace: Base workspace directory name
+        cycle_lengths: List of cycle lengths for RL control
+        cycle_strategy: Strategy for cycle selection
 
     Returns:
         VecEnv: Vectorized environment for parallel training
@@ -419,8 +432,8 @@ def create_vectorized_env(env_params_string: str, n_envs: int = None, base_works
     if n_envs is None:
         n_envs = DEFAULT_N_PARALLEL_ENVS
 
-    # Create list of environment creation functions
-    env_fns = [make_env(env_params_string, i, base_workspace)
+    # Create list of environment creation functions with cycle parameters
+    env_fns = [make_env(env_params_string, i, base_workspace, cycle_lengths, cycle_strategy)
                for i in range(n_envs)]
 
     # Use SubprocVecEnv for true parallel execution, DummyVecEnv for single environment
@@ -440,7 +453,9 @@ def train_rl_policy(env_params_string: str,
                     use_parallel: bool = True,
                     n_envs: int = None,
                     resume_from_model: str = None,
-                    pretrain_from_model: str = None) -> PPO:
+                    pretrain_from_model: str = None,
+                    cycle_lengths: list = None,
+                    cycle_strategy: str = 'fixed') -> PPO:
     """
     Train PPO policy for traffic signal control.
 
@@ -454,6 +469,8 @@ def train_rl_policy(env_params_string: str,
         n_envs: Number of parallel environments (if None, defaults to 1)
         resume_from_model: Path to existing model to resume training from (if None, creates new model)
         pretrain_from_model: Path to pre-trained model from imitation learning to initialize from (if None, creates new model from scratch)
+        cycle_lengths: List of cycle lengths in seconds (e.g., [90] for fixed, [60, 90, 120] for variable)
+        cycle_strategy: Strategy for cycle selection ('fixed', 'random', 'sequential')
 
     Returns:
         PPO: Trained PPO model
@@ -514,13 +531,19 @@ def train_rl_policy(env_params_string: str,
     # Create environment (vectorized or single)
     if use_parallel and n_envs > SINGLE_ENV_THRESHOLD:
         env = create_vectorized_env(
-            env_params_string, n_envs=n_envs, base_workspace=base_workspace)
+            env_params_string, n_envs=n_envs, base_workspace=base_workspace,
+            cycle_lengths=cycle_lengths, cycle_strategy=cycle_strategy)
         _verify_enhanced_state_space(
             env, env_params_string, is_vectorized=True)
     else:
         # For single environment, add workspace to params
         single_env_params = f"{env_params_string} --workspace {base_workspace}"
-        env = TrafficControlEnv(single_env_params)
+        env = TrafficControlEnv(
+            env_params_string=single_env_params,
+            episode_number=0,
+            cycle_lengths=cycle_lengths,
+            cycle_strategy=cycle_strategy
+        )
         check_env(env)
         _verify_enhanced_state_space(env, env_params_string)
 
@@ -561,20 +584,96 @@ def train_rl_policy(env_params_string: str,
 
     # Load pre-trained model from imitation learning (mutually exclusive with resume)
     if not resume_from_model and pretrain_from_model and os.path.exists(pretrain_from_model):
-        logger.info("=== LOADING PRE-TRAINED MODEL FROM IMITATION LEARNING ===")
+        logger.info("=== LOADING PRE-TRAINED POLICY WEIGHTS FROM IMITATION LEARNING ===")
         logger.info(f"Pre-trained model path: {pretrain_from_model}")
         try:
-            model = PPO.load(pretrain_from_model, env=env,
-                             tensorboard_log=tensorboard_log, device=TRAINING_DEVICE_AUTO)
-            logger.info(
-                f"✓ Successfully loaded pre-trained model from {pretrain_from_model}")
-            logger.info(
-                f"Starting RL fine-tuning for {total_timesteps} timesteps")
-            logger.info(
-                "Policy weights initialized from Tree Method imitation learning")
+            # CRITICAL FIX (2025-10-20): Cannot override batch_size/n_steps after PPO.load()
+            # because they're tied to internal buffer sizes. Instead:
+            # 1. Create NEW model with optimized hyperparameters
+            # 2. Load ONLY policy weights from pre-trained model
+            # This preserves pre-trained knowledge while using optimized training config
+
+            logger.info("=== CREATING NEW MODEL WITH OPTIMIZED HYPERPARAMETERS ===")
+
+            # Policy network configuration
+            policy_kwargs = {
+                'net_arch': TRAINING_NETWORK_ARCHITECTURE,
+                'activation_fn': TRAINING_ACTIVATION_FUNCTION,
+                # CRITICAL: Reduce exploration noise to prevent model collapse
+                # Default log_std_init=0.0 gives std=1.0, which drowns out logit-scale signals (range ~[-2, -1])
+                # Using log_std_init=-1.0 gives std≈0.37, keeping noise smaller than signal for learning
+                'log_std_init': -1.0
+            }
+
+            # Configure learning rate schedule
+            if LEARNING_RATE_SCHEDULE_ENABLED:
+                learning_rate = get_learning_rate_schedule(
+                    LEARNING_RATE_INITIAL,
+                    LEARNING_RATE_FINAL,
+                    LEARNING_RATE_DECAY_RATE
+                )
+                logger.info(f"Learning rate: SCHEDULED ({LEARNING_RATE_INITIAL} → {LEARNING_RATE_FINAL})")
+            else:
+                learning_rate = DEFAULT_LEARNING_RATE
+                logger.info(f"Learning rate: {DEFAULT_LEARNING_RATE}")
+
+            # Configure entropy coefficient schedule
+            if ENTROPY_COEF_SCHEDULE_ENABLED:
+                ent_coef = ENTROPY_COEF_INITIAL
+                logger.info(f"Entropy coef: SCHEDULED ({ENTROPY_COEF_INITIAL} → {ENTROPY_COEF_FINAL})")
+            else:
+                ent_coef = 0.01
+                logger.info(f"Entropy coef: 0.01")
+
+            # Create NEW model with optimized hyperparameters
+            model = PPO(
+                TRAINING_POLICY_TYPE,
+                env,
+                learning_rate=learning_rate,
+                clip_range=DEFAULT_CLIP_RANGE,
+                batch_size=DEFAULT_BATCH_SIZE,
+                n_steps=DEFAULT_N_STEPS,
+                n_epochs=DEFAULT_N_EPOCHS,
+                gamma=DEFAULT_GAMMA,
+                gae_lambda=DEFAULT_GAE_LAMBDA,
+                ent_coef=ent_coef,
+                max_grad_norm=MAX_GRAD_NORM,
+                policy_kwargs=policy_kwargs,
+                tensorboard_log=tensorboard_log,
+                verbose=TRAINING_VERBOSE_LEVEL,
+                device=TRAINING_DEVICE_AUTO
+            )
+
+            logger.info(f"✓ New model created with optimized hyperparameters:")
+            logger.info(f"  clip_range: {DEFAULT_CLIP_RANGE} (conservative for pre-training preservation)")
+            logger.info(f"  batch_size: {DEFAULT_BATCH_SIZE} (large for stability)")
+            logger.info(f"  n_steps: {DEFAULT_N_STEPS} (sufficient experience collection)")
+            logger.info(f"  n_epochs: {DEFAULT_N_EPOCHS}")
+            logger.info(f"  gamma: {DEFAULT_GAMMA} (long horizon for traffic cascades)")
+            logger.info(f"  gae_lambda: {DEFAULT_GAE_LAMBDA}")
+            logger.info(f"  max_grad_norm: {MAX_GRAD_NORM}")
+
+            # Load ONLY policy weights from pre-trained model
+            logger.info("=== LOADING PRE-TRAINED POLICY WEIGHTS ===")
+            pretrained_model = PPO.load(pretrain_from_model, device=TRAINING_DEVICE_AUTO)
+
+            # Transfer policy network weights (actor and critic)
+            model.policy.load_state_dict(pretrained_model.policy.state_dict())
+
+            logger.info(f"✓ Successfully loaded policy weights from {pretrain_from_model}")
+            logger.info(f"Starting RL fine-tuning for {total_timesteps} timesteps")
+            logger.info("Policy network initialized from Tree Method imitation learning")
+            logger.info("Training hyperparameters use optimized values (not pre-trained model's values)")
+
+            # Clean up temporary model
+            del pretrained_model
+
         except Exception as e:
             logger.error(
-                f"Failed to load pre-trained model from {pretrain_from_model}: {e}")
+                f"Failed to load pre-trained policy weights from {pretrain_from_model}: {e}")
+            logger.error(f"Error details: {type(e).__name__}")
+            import traceback
+            logger.error(traceback.format_exc())
             logger.info("Creating new model from scratch instead...")
             pretrain_from_model = None
 
@@ -582,7 +681,11 @@ def train_rl_policy(env_params_string: str,
         # Policy network configuration
         policy_kwargs = {
             'net_arch': TRAINING_NETWORK_ARCHITECTURE,
-            'activation_fn': TRAINING_ACTIVATION_FUNCTION
+            'activation_fn': TRAINING_ACTIVATION_FUNCTION,
+            # CRITICAL: Reduce exploration noise to prevent model collapse
+            # Default log_std_init=0.0 gives std=1.0, which drowns out logit-scale signals (range ~[-2, -1])
+            # Using log_std_init=-1.0 gives std≈0.37, keeping noise smaller than signal for learning
+            'log_std_init': -1.0
         }
 
         # Configure learning rate schedule

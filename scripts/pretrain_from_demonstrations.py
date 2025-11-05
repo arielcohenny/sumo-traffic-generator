@@ -34,7 +34,10 @@ from src.rl.constants import (
     PRETRAINING_BATCH_SIZE,
     PRETRAINING_EPOCHS,
     PRETRAINING_VALIDATION_SPLIT,
-    PRETRAINING_VERBOSE
+    PRETRAINING_VERBOSE,
+    RL_USE_CONTINUOUS_ACTIONS,
+    STATE_NORMALIZATION_MIN,
+    STATE_NORMALIZATION_MAX
 )
 
 
@@ -47,10 +50,16 @@ class DemonstrationDataset(Dataset):
 
         Args:
             states: State observations (N, state_dim)
-            actions: Expert actions (N, num_junctions)
+            actions: Expert actions
+                - If RL_USE_CONTINUOUS_ACTIONS: (N, num_junctions * 4) float logits
+                - Otherwise: (N, num_junctions) int phase indices
         """
         self.states = torch.FloatTensor(states)
-        self.actions = torch.LongTensor(actions)
+        # Use FloatTensor for continuous actions, LongTensor for discrete
+        if RL_USE_CONTINUOUS_ACTIONS:
+            self.actions = torch.FloatTensor(actions)
+        else:
+            self.actions = torch.LongTensor(actions)
 
     def __len__(self):
         return len(self.states)
@@ -152,12 +161,26 @@ def pretrain_policy(
 
     # Determine state and action dimensions from data
     state_dim = states.shape[1]
-    num_junctions = actions.shape[1]
-    actions_per_junction = int(np.max(actions) + 1)  # Assume actions are 0-indexed
 
-    logger.info(f"State dimension: {state_dim}")
-    logger.info(f"Number of junctions: {num_junctions}")
-    logger.info(f"Actions per junction: {actions_per_junction}")
+    if RL_USE_CONTINUOUS_ACTIONS:
+        # Continuous actions: shape is (N, num_junctions * 4)
+        # where 4 is the number of phases
+        action_dim = actions.shape[1]
+        num_junctions = action_dim // 4  # Assuming 4 phases per junction
+        actions_per_junction = 4
+        logger.info(f"State dimension: {state_dim}")
+        logger.info(f"Total action dimension: {action_dim}")
+        logger.info(f"Number of junctions: {num_junctions}")
+        logger.info(f"Actions per junction (phases): {actions_per_junction}")
+        logger.info("Using CONTINUOUS action space for duration-based control")
+    else:
+        # Discrete actions: shape is (N, num_junctions)
+        num_junctions = actions.shape[1]
+        actions_per_junction = int(np.max(actions) + 1)  # Assume actions are 0-indexed
+        logger.info(f"State dimension: {state_dim}")
+        logger.info(f"Number of junctions: {num_junctions}")
+        logger.info(f"Actions per junction: {actions_per_junction}")
+        logger.info("Using DISCRETE action space for phase-only control")
 
     # Create dummy environment for PPO initialization
     # We need this to get the correct policy architecture
@@ -166,12 +189,16 @@ def pretrain_policy(
 
     class DummyEnv(gym.Env):
         """Minimal dummy environment for PPO initialization."""
-        def __init__(self, state_dim, num_junctions, actions_per_junction):
+        def __init__(self, state_dim, action_space_config):
             super().__init__()
+            # Match RL environment observation space exactly (including floating point tolerance)
             self.observation_space = spaces.Box(
-                low=0.0, high=1.0, shape=(state_dim,), dtype=np.float32
+                low=STATE_NORMALIZATION_MIN,
+                high=STATE_NORMALIZATION_MAX + 0.01,  # Add tolerance for floating point precision
+                shape=(state_dim,),
+                dtype=np.float32
             )
-            self.action_space = spaces.MultiDiscrete([actions_per_junction] * num_junctions)
+            self.action_space = action_space_config
 
         def reset(self, seed=None, options=None):
             return np.zeros(self.observation_space.shape, dtype=np.float32), {}
@@ -182,8 +209,23 @@ def pretrain_policy(
                 0.0, False, False, {}
             )
 
-    dummy_env = DummyEnv(state_dim, num_junctions, actions_per_junction)
-    model = PPO("MlpPolicy", dummy_env, verbose=0)
+    # Create appropriate action space
+    if RL_USE_CONTINUOUS_ACTIONS:
+        # Use finite bounds for PPO compatibility
+        # Actions are logits that get normalized via softmax
+        # Range of -10 to +10 covers practical spectrum (exp(-10) ≈ 0%, exp(+10) ≈ 100%)
+        action_space_config = spaces.Box(
+            low=-10.0, high=10.0,
+            shape=(num_junctions * actions_per_junction,),
+            dtype=np.float32
+        )
+    else:
+        action_space_config = spaces.MultiDiscrete([actions_per_junction] * num_junctions)
+
+    dummy_env = DummyEnv(state_dim, action_space_config)
+    # CRITICAL: Use [256, 256] architecture to match RL training (src/rl/constants.py TRAINING_NETWORK_ARCHITECTURE)
+    # This ensures pretrained weights can properly transfer to RL training
+    model = PPO("MlpPolicy", dummy_env, policy_kwargs={'net_arch': [256, 256]}, verbose=0)
 
     # Extract policy network
     policy = model.policy
@@ -192,8 +234,13 @@ def pretrain_policy(
     # Setup optimizer
     optimizer = optim.Adam(policy.parameters(), lr=learning_rate)
 
-    # Loss function for multi-junction discrete actions
-    criterion = nn.CrossEntropyLoss()
+    # Loss function based on action type
+    if RL_USE_CONTINUOUS_ACTIONS:
+        criterion = nn.MSELoss()  # Regression for continuous actions
+        logger.info("Using MSE loss for continuous action prediction")
+    else:
+        criterion = nn.CrossEntropyLoss()  # Classification for discrete actions
+        logger.info("Using CrossEntropy loss for discrete action prediction")
 
     logger.info("=" * 80)
     logger.info("TRAINING")
@@ -217,17 +264,28 @@ def pretrain_policy(
             features = policy.extract_features(batch_states)
             action_logits = policy.action_net(policy.mlp_extractor.forward_actor(features))
 
-            # Compute loss for each junction
-            total_loss = 0.0
-            for junction_idx in range(num_junctions):
-                junction_logits = action_logits[:, junction_idx * actions_per_junction:(junction_idx + 1) * actions_per_junction]
-                junction_targets = batch_actions[:, junction_idx]
-                total_loss += criterion(junction_logits, junction_targets)
+            if RL_USE_CONTINUOUS_ACTIONS:
+                # Continuous actions: direct MSE loss on all outputs
+                total_loss = criterion(action_logits, batch_actions)
 
-                # Accuracy
-                predictions = torch.argmax(junction_logits, dim=1)
-                train_correct += (predictions == junction_targets).sum().item()
-                train_total += len(predictions)
+                # For continuous actions, "accuracy" is measured as percentage within threshold
+                with torch.no_grad():
+                    threshold = 0.5  # Consider prediction correct if within 0.5 of target
+                    correct_mask = torch.abs(action_logits - batch_actions) < threshold
+                    train_correct += correct_mask.sum().item()
+                    train_total += batch_actions.numel()
+            else:
+                # Discrete actions: compute loss for each junction
+                total_loss = 0.0
+                for junction_idx in range(num_junctions):
+                    junction_logits = action_logits[:, junction_idx * actions_per_junction:(junction_idx + 1) * actions_per_junction]
+                    junction_targets = batch_actions[:, junction_idx]
+                    total_loss += criterion(junction_logits, junction_targets)
+
+                    # Accuracy
+                    predictions = torch.argmax(junction_logits, dim=1)
+                    train_correct += (predictions == junction_targets).sum().item()
+                    train_total += len(predictions)
 
             # Backpropagation
             total_loss.backward()
@@ -249,15 +307,26 @@ def pretrain_policy(
                 features = policy.extract_features(batch_states)
                 action_logits = policy.action_net(policy.mlp_extractor.forward_actor(features))
 
-                total_loss = 0.0
-                for junction_idx in range(num_junctions):
-                    junction_logits = action_logits[:, junction_idx * actions_per_junction:(junction_idx + 1) * actions_per_junction]
-                    junction_targets = batch_actions[:, junction_idx]
-                    total_loss += criterion(junction_logits, junction_targets)
+                if RL_USE_CONTINUOUS_ACTIONS:
+                    # Continuous actions: direct MSE loss
+                    total_loss = criterion(action_logits, batch_actions)
 
-                    predictions = torch.argmax(junction_logits, dim=1)
-                    val_correct += (predictions == junction_targets).sum().item()
-                    val_total += len(predictions)
+                    # Accuracy threshold metric
+                    threshold = 0.5
+                    correct_mask = torch.abs(action_logits - batch_actions) < threshold
+                    val_correct += correct_mask.sum().item()
+                    val_total += batch_actions.numel()
+                else:
+                    # Discrete actions: per-junction loss
+                    total_loss = 0.0
+                    for junction_idx in range(num_junctions):
+                        junction_logits = action_logits[:, junction_idx * actions_per_junction:(junction_idx + 1) * actions_per_junction]
+                        junction_targets = batch_actions[:, junction_idx]
+                        total_loss += criterion(junction_logits, junction_targets)
+
+                        predictions = torch.argmax(junction_logits, dim=1)
+                        val_correct += (predictions == junction_targets).sum().item()
+                        val_total += len(predictions)
 
                 val_loss += total_loss.item()
 
@@ -329,8 +398,8 @@ def main():
     parser.add_argument(
         '--output',
         type=str,
-        required=True,
-        help='Output pre-trained model path (.zip format)'
+        default=None,
+        help='Output pre-trained model path (.zip format). If not specified, creates models/pretrained/rl_pretrained_TIMESTAMP/'
     )
     parser.add_argument(
         '--learning-rate',
@@ -359,9 +428,21 @@ def main():
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    # Get paths from required arguments
+    # Get paths from arguments
     input_file = args.input
-    output_file = args.output
+
+    # Auto-generate output path in new timestamped subdirectory under models/pretrained/
+    if args.output is None:
+        from datetime import datetime
+        # Create new timestamped subdirectory under models/pretrained/
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_dir = os.path.join("models/pretrained", f"rl_pretrained_{timestamp}")
+        os.makedirs(output_dir, exist_ok=True)
+        output_file = os.path.join(output_dir, f"rl_pretrained_{timestamp}.zip")
+        print(f"Auto-generated output directory: {output_dir}")
+        print(f"Output model path: {output_file}")
+    else:
+        output_file = args.output
 
     # Pre-train
     pretrain_policy(

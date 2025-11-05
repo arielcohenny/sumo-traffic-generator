@@ -8,6 +8,7 @@ from pathlib import Path
 import traci
 from src.config import CONFIG
 from src.orchestration.traffic_controller import TrafficController
+from .bottleneck_logger import BottleneckCSVLogger
 
 
 class TreeMethodController(TrafficController):
@@ -27,6 +28,14 @@ class TreeMethodController(TrafficController):
 
         # Junction control state - junctions with multi-edge trees that Tree Method controls
         self.controlled_junctions = set()
+
+        # Bottleneck logging
+        self.bottleneck_logger = None
+
+        # DEBUG: Log controller creation with unique ID
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.debug(f"🏗️  TreeMethodController created: {id(self)}")
 
     def initialize(self) -> None:
         """Initialize Tree Method objects and data structures."""
@@ -52,12 +61,32 @@ class TreeMethodController(TrafficController):
             sumo_cfg=CONFIG.config_file
         )
 
-        self.network_data = Network(json_file)
+        # CRITICAL FIX: Create Network object but immediately deepcopy its data
+        # to prevent ANY possibility of state leakage through shared references
+        import copy
+        network_temp = Network(json_file)
 
-        self.graph = Graph(self.args.end_time)
+        # Create SEPARATE deep copies for network_data and graph
+        # This ensures they don't share ANY mutable objects
+        junctions_dict_for_network = copy.deepcopy(network_temp.junctions_dict)
+        edges_list_for_network = copy.deepcopy(network_temp.edges_list)
 
-        self.graph.build(self.network_data.edges_list,
-                         self.network_data.junctions_dict)
+        junctions_dict_for_graph = copy.deepcopy(network_temp.junctions_dict)
+        edges_list_for_graph = copy.deepcopy(network_temp.edges_list)
+
+        # Store the deep-copied data (not the original Network object)
+        self.network_data = type('NetworkData', (), {
+            'junctions_dict': junctions_dict_for_network,
+            'edges_list': edges_list_for_network
+        })()
+
+        del network_temp  # Explicitly delete temp object
+
+        self.graph = Graph(self.args.end_time, self.args.tree_method_m, self.args.tree_method_l)
+
+        # Pass separate deep copies to graph.build
+        self.graph.build(edges_list_for_graph,
+                         junctions_dict_for_graph)
 
         # Use explicit Tree Method interval (independent of traffic light cycles)
         self.tree_method_interval = getattr(
@@ -73,6 +102,14 @@ class TreeMethodController(TrafficController):
         from ..atlcs.enhancements.detector import BottleneckDetector
         self.bottleneck_detector = BottleneckDetector(self.graph, self.network_data)
 
+        # Initialize bottleneck logger for tracking bottleneck development
+        # Use CONFIG.output_dir which has the correct workspace path
+        from ..shared.config import ENABLE_BOTTLENECK_LOGGING
+        self.bottleneck_logger = BottleneckCSVLogger(
+            output_dir=str(CONFIG.output_dir),
+            enabled=ENABLE_BOTTLENECK_LOGGING
+        )
+
     def update(self, step: int) -> None:
         """Update Tree Method traffic control at given step."""
         from ..shared.utils import is_calculation_time, calc_iteration_from_step
@@ -87,6 +124,10 @@ class TreeMethodController(TrafficController):
         if is_calc_time:
             iteration = calc_iteration_from_step(
                 step, self.tree_method_interval)
+
+            # DEBUG: Log calculation trigger
+            if step <= 300:  # Only log first 5 minutes to avoid spam
+                self.logger.debug(f"🔧 CALC_TIME: step={step}, iteration={iteration}, will_calc={iteration > 0}")
 
             if iteration > 0:  # Skip first iteration
                 try:
@@ -107,6 +148,12 @@ class TreeMethodController(TrafficController):
 
                     # Populate shared variable with calculated phase durations
                     self._populate_shared_phase_durations()
+
+                    # DEBUG: Log first junction's phase durations after calculation
+                    if step <= 300 and self.current_phase_durations:
+                        first_junction = list(self.current_phase_durations.keys())[0]
+                        durations = list(self.current_phase_durations[first_junction].values())
+                        self.logger.debug(f"📊 AFTER_CALC: junction={first_junction}, durations={durations}")
 
                     # Update junction control state based on tree complexity
                     self._update_junction_control_state(step)
@@ -186,6 +233,9 @@ class TreeMethodController(TrafficController):
         try:
             # Clear existing durations
             self.current_phase_durations.clear()
+
+            # DEBUG: Track first junction for detailed logging
+            first_junction_logged = False
 
             # Populate from Tree Method calculated phases
             for node_id in self.graph.tl_node_ids:
@@ -432,6 +482,10 @@ class TreeMethodController(TrafficController):
 
                             define_tl_program(
                                 tl_id, phase_index, duration)
+
+                            # Log bottleneck information at phase change
+                            self._log_bottleneck_phase_change(step, node, tl_id, phase_index, duration)
+
                             break
                         secs_sum += phase_durations.get(
                             phase_index, node.phases[phase_index].duration)
@@ -442,6 +496,10 @@ class TreeMethodController(TrafficController):
                         if inner_sec == secs_sum:
                             define_tl_program(
                                 tl_id, phase_index, phase.duration)
+
+                            # Log bottleneck information at phase change
+                            self._log_bottleneck_phase_change(step, node, tl_id, phase_index, phase.duration)
+
                             break
                         secs_sum += phase.duration
 
@@ -453,12 +511,70 @@ class TreeMethodController(TrafficController):
                 self.graph.update_traffic_lights(
                     step, seconds_in_cycle, algo_type)
 
+    def _log_bottleneck_phase_change(self, step: int, node, tl_id: str, phase_index: int, duration: int) -> None:
+        """Log bottleneck information when a phase change occurs."""
+        if not self.bottleneck_logger or not self.bottleneck_logger.enabled:
+            return
+
+        try:
+            # Collect all bottleneck links
+            bottleneck_links = []
+            bottleneck_scores = []
+            vehicle_counts = []
+
+            for link in self.graph.all_links:
+                if link.is_loaded:
+                    bottleneck_links.append(link.edge_name)
+                    # Use current speed as bottleneck score (lower = worse bottleneck)
+                    if link.calc_iteration_speed:
+                        bottleneck_scores.append(link.calc_iteration_speed[-1])
+                    else:
+                        bottleneck_scores.append(0.0)
+                    vehicle_counts.append(link.current_vehicle_count)
+
+            # Get phase cost
+            phase_cost = 0.0
+            if hasattr(node, 'phases') and phase_index < len(node.phases):
+                phase = node.phases[phase_index]
+                if hasattr(phase, 'cost'):
+                    phase_cost = phase.cost
+
+            # Get active links in this phase
+            active_links = []
+            if hasattr(node, 'phases') and phase_index < len(node.phases):
+                phase = node.phases[phase_index]
+                if hasattr(phase, 'link_ids'):
+                    # Convert link IDs to edge names
+                    for link_id in phase.link_ids:
+                        if link_id < len(self.graph.all_links):
+                            active_links.append(self.graph.all_links[link_id].edge_name)
+
+            # Log the phase change with bottleneck information
+            self.bottleneck_logger.log_phase_change(
+                step=step,
+                junction_id=tl_id,
+                phase_index=phase_index,
+                duration_sec=duration,
+                phase_cost=phase_cost,
+                bottleneck_links=bottleneck_links,
+                bottleneck_scores=bottleneck_scores,
+                vehicle_counts=vehicle_counts,
+                active_links_in_phase=active_links
+            )
+
+        except Exception as e:
+            self.logger.warning(f"Failed to log bottleneck information: {e}")
+
     def cleanup(self) -> None:
         """Clean up Tree Method resources and report Tree Method statistics."""
         try:
             if hasattr(self, 'graph') and self.graph:
                 # Tree Method statistics are now included in the unified statistics system
                 pass
+
+            # Close bottleneck logger
+            if hasattr(self, 'bottleneck_logger') and self.bottleneck_logger:
+                self.bottleneck_logger.close()
 
         except Exception as e:
             self.logger.error(f"Error in Tree Method cleanup: {e}")

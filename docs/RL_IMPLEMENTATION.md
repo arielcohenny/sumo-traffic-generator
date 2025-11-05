@@ -20,6 +20,7 @@ The RL implementation extends the existing infrastructure by:
 - **Demonstration Collection Interval**: 90 seconds (must match both)
 
 **Why This Matters**:
+
 - Behavioral cloning learns to imitate expert decisions **in specific contexts**
 - If RL makes decisions 9x more frequently (10s vs 90s), it sees completely different traffic states
 - The trained model achieves 100% accuracy on demonstrations but fails catastrophically in practice
@@ -1376,3 +1377,454 @@ python scripts/pretrain_from_demonstrations.py --input models/tree_method_demons
 # Note: env-params should match the fixed params from config
 
 python scripts/train_rl_production.py --timesteps 10000 --single-env --checkpoint-freq 10000 --pretrain-from models/pretrained/test_pretrained_20251010_084940.zip --env-params "--network-seed 42 --grid_dimension 5 --block_size_m 200 --lane_count realistic --step-length 1.0 --land_use_block_size_m 25.0 --attractiveness land_use --traffic_light_strategy opposites --routing_strategy 'shortest 75 realtime 25' --vehicle_types 'passenger 95 public 5' --passenger-routes 'in 20 out 20 inner 10 pass 50' --public-routes 'in 0 out 0 inner 0 pass 100' --departure_pattern uniform --private-traffic-seed 418655 --public-traffic-seed 166903 --start_time_hour 8.0 --num_vehicles 1000 --end-time 3600"
+
+Implementation Plan: Duration-Based RL with Future Extensibility │ │
+│ │ │ │
+│ │ Phase 1: Fixed 90s Cycle (Immediate Implementation) │ │
+│ │ │ │
+│ │ Implement full duration control with 90s cycles, but design for future variable cycles. │ │
+│ │ │ │
+│ │ 1. Change Action Space (src/rl/environment.py) │ │
+│ │ │ │
+│ │ Current: Discrete phase selection │ │
+│ │ self.action*space = spaces.MultiDiscrete([4] * num*junctions) # 25 junctions × 4 phases │ │
+│ │ │ │
+│ │ New: Continuous duration proportions │ │
+│ │ # 25 junctions × 4 phases = 100 continuous values │ │
+│ │ # Each represents unnormalized logit for softmax │ │
+│ │ self.action_space = spaces.Box( │ │
+│ │ low=-np.inf, │ │
+│ │ high=np.inf, │ │
+│ │ shape=(num_junctions * 4,), │ │
+│ │ dtype=np.float32 │ │
+│ │ ) │ │
+│ │ │ │
+│ │ Add cycle length parameter (for future use): │ │
+│ │ def **init**(self, env*params_string: str, episode_number: int = 0, cycle_length: int = 90): │ │
+│ │ self.cycle_length = cycle_length # Will be variable in Phase 2 │ │
+│ │ self.min_phase_time = 10 │ │
+│ │ │ │
+│ │ 2. Update \_apply_traffic_light_actions() (src/rl/environment.py) │ │
+│ │ │ │
+│ │ Replace single phase application with full cycle schedule: │ │
+│ │ │ │
+│ │ def \_apply_traffic_light_actions(self, actions): │ │
+│ │ """Apply duration-based actions for full cycle.""" │ │
+│ │ # Convert raw actions to durations per junction │ │
+│ │ junction_schedules = {} │ │
+│ │ │ │
+│ │ for i, junction_id in enumerate(self.junction_ids): │ │
+│ │ # Extract 4 values for this junction │ │
+│ │ raw_outputs = actions[i*4 : (i+1)_4] │ │
+│ │ │ │
+│ │ # Apply softmax to get proportions │ │
+│ │ proportions = self.\_softmax(raw_outputs) │ │
+│ │ │ │
+│ │ # Convert to durations (sum to self.cycle_length) │ │
+│ │ durations = self.\_proportions_to_durations( │ │
+│ │ proportions, │ │
+│ │ self.cycle_length, # Currently 90, will be variable later │ │
+│ │ self.min_phase_time │ │
+│ │ ) │ │
+│ │ │ │
+│ │ junction_schedules[junction_id] = durations │ │
+│ │ │ │
+│ │ # Store schedule for application during cycle │ │
+│ │ self.current_schedules = junction_schedules │ │
+│ │ self.cycle_start_step = self.current_step │ │
+│ │ │ │
+│ │ def \_softmax(self, x): │ │
+│ │ """Numerically stable softmax.""" │ │
+│ │ exp_x = np.exp(x - np.max(x)) │ │
+│ │ return exp_x / exp_x.sum() │ │
+│ │ │ │
+│ │ def \_proportions_to_durations(self, proportions, cycle_length, min_phase_time): │ │
+│ │ """Convert proportions to durations with constraints. │ │
+│ │ │ │
+│ │ Args: │ │
+│ │ proportions: [0.25, 0.15, 0.40, 0.20] summing to 1.0 │ │
+│ │ cycle_length: Total cycle time (e.g., 90) │ │
+│ │ min_phase_time: Minimum per phase (e.g., 10) │ │
+│ │ │ │
+│ │ Returns: │ │
+│ │ [duration0, duration1, duration2, duration3] summing to cycle_length │ │
+│ │ """ │ │
+│ │ available_time = cycle_length - (len(proportions) _ min*phase_time) │ │
+│ │ durations = [min_phase_time + (p * available_time) for p in proportions] │ │
+│ │ │ │
+│ │ # Round and ensure exact sum │ │
+│ │ durations = [int(round(d)) for d in durations] │ │
+│ │ diff = cycle_length - sum(durations) │ │
+│ │ if diff != 0: │ │
+│ │ # Add/subtract from phase with most allocation │ │
+│ │ max_idx = np.argmax(durations) │ │
+│ │ durations[max_idx] += diff │ │
+│ │ │ │
+│ │ return durations │ │
+│ │ │ │
+│ │ 3. Modify step() Loop (src/rl/environment.py) │ │
+│ │ │ │
+│ │ Apply scheduled phases throughout the cycle: │ │
+│ │ │ │
+│ │ def step(self, action): │ │
+│ │ """Execute one simulation step with duration-based action.""" │ │
+│ │ if not self.traci_connected: │ │
+│ │ raise RuntimeError("SUMO simulation not connected") │ │
+│ │ │ │
+│ │ # Apply traffic light actions (sets schedule) │ │
+│ │ self.\_apply_traffic_light_actions(action) │ │
+│ │ │ │
+│ │ # Advance simulation by cycle length │ │
+│ │ for t in range(self.cycle_length): # 90 seconds │ │
+│ │ if self.traci_connected: │ │
+│ │ # Apply scheduled phases at correct times │ │
+│ │ self.\_apply_scheduled_phases(t) │ │
+│ │ │ │
+│ │ # Advance SUMO simulation │ │
+│ │ traci.simulationStep() │ │
+│ │ self.current_step += 1 │ │
+│ │ │ │
+│ │ # Update vehicle tracker │ │
+│ │ if self.current_step % MEASUREMENT_INTERVAL_STEPS == 0: │ │
+│ │ self.vehicle_tracker.update_vehicles(self.current_step) │ │
+│ │ │ │
+│ │ # Get new observation, compute reward, check termination │ │
+│ │ observation = self.\_get_observation() │ │
+│ │ reward = self.\_compute_reward() │ │
+│ │ terminated = self.\_is_terminated() │ │
+│ │ truncated = self.\_is_truncated() │ │
+│ │ │ │
+│ │ return observation, reward, terminated, truncated, {} │ │
+│ │ │ │
+│ │ def \_apply_scheduled_phases(self, time_in_cycle): │ │
+│ │ """Apply correct phase based on schedule and time within cycle.""" │ │
+│ │ for junction_id, durations in self.current_schedules.items(): │ │
+│ │ # Find which phase should be active at this time │ │
+│ │ elapsed = 0 │ │
+│ │ for phase_idx, duration in enumerate(durations): │ │
+│ │ if time_in_cycle < elapsed + duration: │ │
+│ │ # This is the active phase - apply it │ │
+│ │ traci.trafficlight.setPhase(junction_id, phase_idx) │ │
+│ │ traci.trafficlight.setPhaseDuration(junction_id, duration) │ │
+│ │ break │ │
+│ │ elapsed += duration │ │
+│ │ │ │
+│ │ 4. Update Demonstration Collection (scripts/collect_tree_method_demonstrations.py) │ │
+│ │ │ │
+│ │ Extract full duration information from Tree Method: │ │
+│ │ │ │
+│ │ # In demonstration adapter (src/rl/demonstration_collector.py) │ │
+│ │ def extract_rl_action(self) -> Optional[np.ndarray]: │ │
+│ │ """Extract Tree Method's phase durations as RL action. │ │
+│ │ │ │
+│ │ Returns: │ │
+│ │ Array of shape (num_junctions \* 4,) containing duration proportions │ │
+│ │ for each phase at each junction. │ │
+│ │ """ │ │
+│ │ phase_durations = self.tree_method.current_phase_durations │ │
+│ │ │ │
+│ │ if not phase_durations: │ │
+│ │ return None │ │
+│ │ │ │
+│ │ actions = [] │ │
+│ │ for junction_id in self.junction_ids: │ │
+│ │ if junction_id in phase_durations: │ │
+│ │ durations = phase_durations[junction_id] # Dict: {0: 25, 1: 15, 2: 35, 3: 15} │ │
+│ │ │ │
+│ │ # Convert durations to proportions │ │
+│ │ dur_list = [durations.get(i, 10) for i in range(4)] │ │
+│ │ total = sum(dur_list) │ │
+│ │ proportions = [d / total for d in dur_list] │ │
+│ │ │ │
+│ │ # Convert proportions to logits (inverse softmax approximation) │ │
+│ │ logits = np.log(proportions + 1e-8) │ │
+│ │ actions.extend(logits) │ │
+│ │ else: │ │
+│ │ # Fallback: uniform distribution │ │
+│ │ actions.extend([0.0, 0.0, 0.0, 0.0]) │ │
+│ │ │ │
+│ │ return np.array(actions, dtype=np.float32) │ │
+│ │ │ │
+│ │ 5. Update Constants (src/rl/constants.py) │ │
+│ │ │ │
+│ │ # Action Space Configuration │ │
+│ │ RL_PHASE_ONLY_MODE = False # Now using duration control │ │
+│ │ RL_USE_CONTINUOUS_ACTIONS = True │ │
+│ │ RL_ACTIONS_PER_JUNCTION = 4 # Duration proportions for 4 phases │ │
+│ │ CYCLE_LENGTH_SECONDS = 90 # Fixed for Phase 1, will be variable in Phase 2 │ │
+│ │ MIN_PHASE_DURATION_SECONDS = 10 │ │
+│ │ │ │
+│ │ --- │ │
+│ │ Phase 2: Variable Cycle Length (Future Enhancement) │ │
+│ │ │ │
+│ │ When ready to implement dynamic cycles: │ │
+│ │ │ │
+│ │ Changes Required: │ │
+│ │ │ │
+│ │ 1. Add cycle_length to observation space: │ │
+│ │ # In \_get_observation() │ │
+│ │ obs = np.concatenate([ │ │
+│ │ edge_features, │ │
+│ │ junction_features, │ │
+│ │ network_features, │ │
+│ │ [self.cycle_length / 120.0] # Normalized cycle length (NEW) │ │
+│ │ ]) │ │
+│ │ │ │
+│ │ 2. Vary cycle length in demonstration collection: │ │
+│ │ # In collect_tree_method_demonstrations.py │ │
+│ │ cycle_lengths = [60, 90, 120] │ │
+│ │ current_cycle = random.choice(cycle_lengths) │ │
+│ │ │ │
+│ │ 3. Pass cycle length to environment: │ │
+│ │ env.set_cycle_length(current_cycle) # Before each decision │ │
+│ │ │ │
+│ │ No other code changes needed - the proportion-based approach automatically adapts! │ │
+│ │ │ │
+│ │ --- │ │
+│ │ Benefits of This Design: │ │
+│ │ │ │
+│ │ ✅ Phase 1 works immediately with fixed 90s cycles │ │
+│ │ ✅ Phase 2 is easy to add - just expose cycle_length parameter │ │
+│ │ ✅ No refactoring needed - same proportion-based logic works for both │ │
+│ │ ✅ Clean separation - cycle length is a parameter, not hardcoded │ │
+│ │ │ │
+│ │ Would you like me to proceed with implementing Phase 1?
+
+17.10. =======
+
+ROOT CAUSE IDENTIFIED - Complete Analysis │ │
+│ │ │ │
+│ │ I've traced through the entire training pipeline and identified the exact specific reason why the model │ │
+│ │ outputs near-constant actions: │ │
+│ │ │ │
+│ │ THE THREE-STAGE FAILURE CASCADE: │ │
+│ │ │ │
+│ │ Stage 1: Tree Method Produces Non-Adaptive Demonstrations │ │
+│ │ │ │
+│ │ - 500 demonstrations collected from Tree Method algorithm │ │
+│ │ - Only 6 unique action vectors out of 19,500 total actions (0.03% diversity!) │ │
+│ │ - Junction B0 examples: │ │
+│ │ - Episode 0: [-0.81, -2.89, -0.81, -2.89] │ │
+│ │ - Episodes 100-400: ALL IDENTICAL [-0.94, -2.01, -1.03, -2.10] │ │
+│ │ │ │
+│ │ Root Issue: Tree Method itself produces nearly constant timing plans regardless of traffic state. The │ │
+│ │ algorithm was designed for their specific test scenarios and doesn't adapt to our network/traffic │ │
+│ │ patterns. │ │
+│ │ │ │
+│ │ Stage 2: Perfect Pretraining = Perfect Overfitting │ │
+│ │ │ │
+│ │ - 50 epochs of behavioral cloning on the 6 unique patterns │ │
+│ │ - Epoch 1: 76% accuracy → Epoch 50: 100% accuracy (train & val) │ │
+│ │ - Final val loss: 0.0007 (near-perfect fit) │ │
+│ │ │ │
+│ │ Result: Model memorized which of the 6 constant outputs to use for different observations. Since Tree │ │
+│ │ Method outputs were nearly constant, the model learned a near-constant policy. │ │
+│ │ │ │
+│ │ Stage 3: Zero Exploration During RL Fine-Tuning │ │
+│ │ │ │
+│ │ - Training: 100k steps (~9 hours) from pretrained initialization │ │
+│ │ - CRITICAL: ent_coef = 0.0 ← NO ENTROPY BONUS = NO EXPLORATION │ │
+│ │ - clip_range = 0.2: Limits how far policy can deviate from pretrained │ │
+│ │ │ │
+│ │ Result: With zero exploration incentive, PPO stayed extremely close to the pretrained (already │ │
+│ │ non-adaptive) policy. The model learned slight variations around the constant Tree Method outputs but │ │
+│ │ never explored truly adaptive control. │ │
+│ │ │ │
+│ │ Evidence from Trained Model: │ │
+│ │ │ │
+│ │ - Pretrained model raw outputs (from demos): [-0.94, -2.01, -1.03, -2.10] │ │
+│ │ - Trained model raw outputs (our diagnostic): [-3.6, -4.4, +3.9, -4.9] │ │
+│ │ - Pattern shifted but relative relationships stayed similar (one dominant value, others suppressed) │ │
+│ │ - Small variations in raw values (±0.05) don't change final durations after softmax+rounding │ │
+│ │ │ │
+│ │ THE EXACT SPECIFIC REASON: │ │
+│ │ │ │
+│ │ The model outputs near-constant actions because: │ │
+│ │ │ │
+│ │ 1. Tree Method demonstrations had no diversity (6 patterns for 500 episodes) │ │
+│ │ 2. Pretraining perfectly learned the non-adaptive patterns (100% accuracy) │ │
+│ │ 3. RL training with ent_coef=0.0 prevented exploration away from pretrained policy │ │
+│ │ 4. Result: Model learned to output slight variations of Tree Method's constant patterns, which round to │ │
+│ │ identical final durations │ │
+│ │ │ │
+│ │ This is NOT a bug in the code - it's a fundamental training methodology failure. │ │
+│ │ │ │
+│ │ Solution Requirements: │ │
+│ │ │ │
+│ │ Option 1: Fix Demonstrations │ │
+│ │ - Collect demonstrations from actually adaptive algorithms │ │
+│ │ - Or use diverse traffic scenarios that force Tree Method to vary outputs │ │
+│ │ - Or abandon imitation learning entirely │ │
+│ │ │ │
+│ │ Option 2: Enable Exploration │ │
+│ │ - Train from scratch with ent_coef > 0 (e.g., 0.01-0.05) │ │
+│ │ - Remove pretrained initialization bias │ │
+│ │ - Allow PPO to discover adaptive policies through RL │ │
+│ │ │ │
+│ │ Option 3: Hybrid Approach │ │
+│ │ - Short pretraining (10-20 epochs, not 50) to learn basic structure │ │
+│ │ - RL training with moderate exploration (ent_coef=0.02) │ │
+│ │ - Diverse training scenarios with varying congestion levels
+
+current_speed < (0.8 \* q_max_u)
+
+Option 2: Collect More Diverse Demonstrations │ │
+│ │ │ │
+│ │ Goal: Improve performance by learning from wider variety of scenarios │ │
+│ │ │ │
+│ │ Actions: │ │
+│ │ 1. Collect 1000-2000 demonstrations (vs current 500) with: │ │
+│ │ - More network seeds (10-20 different topologies) │ │
+│ │ - More vehicle counts (systematic coverage of 1000-6000 range) │ │
+│ │ - Both attractiveness methods (land_use AND poisson) │ │
+│ │ - Multiple time-of-day scenarios (start_time_hour: 7, 12, 17, 20) │ │
+│ │ 2. Pre-train new model from expanded demonstrations │ │
+│ │ 3. Fine-tune with RL │ │
+│ │ │ │
+│ │ Why This Matters: │ │
+│ │ - Current demonstrations may not cover full state space │ │
+│ │ - More diverse data → better generalization │ │
+│ │ - May unlock performance beyond Tree Method baseline │ │
+│ │ │ │
+│ │ Expected Outcome: │ │
+│ │ - 5-10% improvement over current model │ │
+│ │ - Better generalization to unseen scenarios │ │
+│ │ │ │
+│ │ Code changes: Update demonstration collection config │ │
+│ │ │ │
+│ │ --- │ │
+│ │ Option 3: Reward Function Engineering │ │
+│ │ │ │
+│ │ Goal: Surpass Tree Method by optimizing for different objectives │ │
+│ │ │ │
+│ │ Investigation Needed: │ │
+│ │ 1. Analyze what Tree Method optimizes (bottleneck minimization) │ │
+│ │ 2. Check if RL reward function aligns with Tree Method objectives │ │
+│ │ 3. Consider adding: │ │
+│ │ - Explicit congestion penalties │ │
+│ │ - Fairness terms (balance waiting times across junctions) │ │
+│ │ - Efficiency bonuses (reward faster completions) │ │
+│ │ │ │
+│ │ Why This Matters: │ │
+│ │ - Current model imitates Tree Method, not surpass it │ │
+│ │ - Different reward = different optimal policy │ │
+│ │ - Could find better strategies Tree Method misses │ │
+│ │ │ │
+│ │ Expected Outcome: │ │
+│ │ - Potential 10-20% improvement if reward misalignment exists │ │
+│ │ - Risky - could degrade performance │ │
+│ │ │ │
+│ │ Code changes: Modify reward calculation in environment │ │
+│ │ │ │
+│ │ --- │ │
+│ │ Option 4: Architecture/Hyperparameter Search │ │
+│ │ │ │
+│ │ Goal: Find better network architecture or training settings │ │
+│ │ │ │
+│ │ Actions: │ │
+│ │ 1. Try different network architectures: │ │
+│ │ - Current: [256, 256] │ │
+│ │ - Try: [512, 512], [256, 256, 256], [512, 256, 128] │ │
+│ │ 2. Try different learning rates: 1e-4, 5e-4 │ │
+│ │ 3. Try different batch sizes: 1024, 4096 │ │
+│ │ 4. Try longer training: 500k-1M steps │ │
+│ │ │ │
+│ │ Why This Matters: │ │
+│ │ - Current hyperparameters may not be optimal │ │
+│ │ - Deeper/wider networks might capture complex patterns │ │
+│ │ │ │
+│ │ Expected Outcome: │ │
+│ │ - 0-5% improvement (diminishing returns likely) │ │
+│ │ - Very time-consuming │ │
+│ │ │ │
+│ │ Code changes: Modify constants.py hyperparameters │ │
+│ │ │ │
+│ │ --- │ │
+│ │ Option 5: Handle Dynamic Routing (New Distribution) │ │
+│ │ │ │
+│ │ Goal: Make model work with mixed routing strategies │ │
+│ │ │ │
+│ │ Actions: │ │
+│ │ 1. Collect demonstrations with routing_strategy 'shortest 75 realtime 25' │ │
+│ │ 2. Pre-train new model │ │
+│ │ 3. Test on dynamic routing scenarios │ │
+│ │ │ │
+│ │ Why This Matters: │ │
+│ │ - Current model only works with static routing │ │
+│ │ - Real-world traffic has dynamic rerouting (GPS apps) │ │
+│ │ - Expands applicability │ │
+│ │ │ │
+│ │ Expected Outcome: │ │
+│ │ - Model that works on both static and dynamic routing │ │
+│ │ - May sacrifice some static-only performance │ │
+│ │ │ │
+│ │ Code changes: Update demonstration collection config │ │
+│ │ │ │
+│ │ --- │ │
+│ │ Option 6: Multi-Objective Optimization │ │
+│ │ │ │
+│ │ Goal: Optimize for multiple metrics simultaneously │ │
+│ │ │ │
+│ │ Actions: │ │
+│ │ 1. Define multi-objective reward: │ │
+│ │ - Throughput (vehicles/hour) │ │
+│ │ - Fairness (variance in travel times) │ │
+│ │ - Fuel efficiency (smooth traffic flow) │ │
+│ │ 2. Use Pareto optimization or weighted combination │ │
+│ │ 3. Compare Pareto front to Tree Method │ │
+│ │ │ │
+│ │ Why This Matters: │ │
+│ │ - Single reward may miss important trade-offs │ │
+│ │ - City planners care about multiple objectives │ │
+│ │ - Could find policies that dominate Tree Method on multiple dimensions │ │
+│ │ │ │
+│ │ Expected Outcome: │ │
+│ │ - Better real-world performance metrics │ │
+│ │ - More aligned with city planning goals │ │
+│ │ │ │
+│ │ Code changes: Redesign reward function with multiple components │ │
+│ │ │ │
+│ │ --- │ │
+│ │ Recommended Action Sequence │ │
+│ │ │ │
+│ │ Phase 1: Validation (No code changes) │ │
+│ │ │ │
+│ │ 1. Test generalization (Option 1) - Run experiments on 10 different network seeds │ │
+│ │ 2. If generalization is poor → Option 2 (diverse demonstrations) │ │
+│ │ 3. If generalization is good → Proceed to Phase 2 │ │
+│ │ │ │
+│ │ Phase 2: Improvement (If validation passes) │ │
+│ │ │ │
+│ │ Choose based on your priority: │ │
+│ │ - Research goal: Option 3 (reward engineering) or Option 6 (multi-objective) │ │
+│ │ - Practical deployment: Option 5 (dynamic routing support) │ │
+│ │ - Baseline improvement: Option 2 (more demonstrations) │ │
+│ │ │ │
+│ │ Phase 3: Optimization (If Phase 2 doesn't help) │ │
+│ │ │ │
+│ │ - Option 4 (architecture search) - Only if other options exhausted │ │
+│ │ │ │
+│ │ --- │ │
+│ │ My Recommendation: Start with Option 1 (Generalization Testing) │ │
+│ │ │ │
+│ │ Why: Before investing in improvements, validate your current model generalizes. This takes <1 day and tells you │ │
+│ │ if you have a fundamental problem or if the model is actually ready for deployment. │ │
+│ │ │ │
+│ │ Concrete plan: │ │
+│ │ 1. Create test script that runs RL vs Tree Method on 10 network seeds │ │
+│ │ 2. Collect statistics: mean performance, std deviation, worst case │ │
+│ │ 3. Decision point: │ │
+│ │ - If RL maintains 95%+ of Tree Method performance → Model is DONE, ready for deployment │ │
+│ │ - If RL degrades >10% → Need Option 2 (more diverse demonstrations) │ │
+│ │ - If RL fails completely → Need to investigate state representation or reward function │ │
+│ │ │ │
+│ │ Would you like me to implement Option 1 (generalization testing script)?
+
+Make waiting time penalties STRONGER relative to throughput rewards. Currently:
+
+- REWARD_THROUGHPUT_PER_VEHICLE = 50.0
+- WAITING_TIME_PENALTY_FACTOR = -0.01
+
+Try increasing waiting penalty by 5-10x:
+
+- WAITING_TIME_PENALTY_FACTOR = -0.05 or -0.10

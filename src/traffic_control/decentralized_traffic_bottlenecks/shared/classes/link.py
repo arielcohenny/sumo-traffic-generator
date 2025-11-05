@@ -1,9 +1,9 @@
-from ..config import MAX_DENSITY, ITERATION_TIME_MINUTES, M, L, MIN_VELOCITY
+from ..config import MAX_DENSITY, ITERATION_TIME_MINUTES, MIN_VELOCITY
 from ..enums import CostType
 
 
 class Link:
-    def __init__(self, link_id, edge_name, from_node_name, to_node_name, distance, lanes, free_flow_v, head_names):
+    def __init__(self, link_id, edge_name, from_node_name, to_node_name, distance, lanes, free_flow_v, head_names, m, l):
         self.link_id = link_id
         self.from_node_name = from_node_name
         self.to_node_name = to_node_name
@@ -14,6 +14,8 @@ class Link:
         self.speed_each_sec = []
         self.speeds_sec_sum = 0
         self.calc_iteration_speed = []
+        self.vehicle_count_per_sec = []  # Track vehicle counts per second
+        self.current_vehicle_count = 0  # Most recent vehicle count
         self.is_loaded = False
         self.q_max_properties = None
         self.iteration_data = []
@@ -24,6 +26,8 @@ class Link:
         self.is_lead_to_tl = None
         self.head_names = head_names
         self.cost_data_per_iter = []
+        self.m = m
+        self.l = l
 
     def join_links_to_me(self, links_connections, link_names):
         if self.edge_name in links_connections:
@@ -53,6 +57,11 @@ class Link:
         self.speed_each_sec.append(speed_km_h)
         self.speeds_sec_sum += speed_km_h
 
+    def fill_my_vehicle_count(self, vehicle_count):
+        """Store vehicle count for this timestep."""
+        self.vehicle_count_per_sec.append(vehicle_count)
+        self.current_vehicle_count = vehicle_count  # Keep most recent count
+
     def add_speed_to_calculation(self, iteration):
         self.calc_iteration_speed.append(
             round(self.speeds_sec_sum / len(self.speed_each_sec)))
@@ -73,22 +82,29 @@ class Link:
             q_max_u, q_max, self.calc_dist_in_iter_time(q_max_u))
 
     def calc_u_by_k(self, current_density):  # test for k=50, uf=90, u=42.73
-        return max(round(self.free_flow_v_km_h * ((1 - (current_density / MAX_DENSITY) ** (L - 1)) ** (1 / (1 - M)))), MIN_VELOCITY)
+        return max(round(self.free_flow_v_km_h * ((1 - (current_density / MAX_DENSITY) ** (self.l - 1)) ** (1 / (1 - self.m)))), MIN_VELOCITY)
 
     def calc_k_by_u(self, current_speed_km_h):  # test for k=50, uf=90, u=42.73
-        return max(round(MAX_DENSITY * ((max(1 - (current_speed_km_h / self.free_flow_v_km_h), 0) ** (1 - M)) ** (1 / (L - 1)))), 0)
+        return max(round(MAX_DENSITY * ((max(1 - (current_speed_km_h / self.free_flow_v_km_h), 0) ** (1 - self.m)) ** (1 / (self.l - 1)))), 0)
 
     def calc_dist_in_iter_time(self, velocity):
         # meters
         return min(round(velocity * 1000 / (60 / ITERATION_TIME_MINUTES)), self.distance_meters)
 
     def calc_my_iteration_data(self, iteration, loaded_per_iter):  # q = uk
+        # MODIFIED by Ariel on 2025-10-19
+        # Changed bottleneck threshold from q_max_u to 1.2 * q_max_u for more lenient detection
+        # Reason: Expanded threshold to catch bottlenecks earlier, even when speeds are still above optimal flow
+
         current_speed = max(self.calc_iteration_speed[-1], MIN_VELOCITY)
         current_density = self.calc_k_by_u(current_speed)
         current_flow_per_lane_per_hour = current_speed * current_density
         current_flow_per_iter = current_flow_per_lane_per_hour * \
             self.lanes / (60 / ITERATION_TIME_MINUTES)
-        self.is_loaded = current_speed < self.q_max_properties.q_max_u
+
+        # More lenient bottleneck threshold: 120% of optimal flow speed
+        bottleneck_threshold = 1.2 * self.q_max_properties.q_max_u
+        self.is_loaded = current_speed < bottleneck_threshold
 
         iteration_distance_meters = self.calc_dist_in_iter_time(
             current_speed)  # meters;

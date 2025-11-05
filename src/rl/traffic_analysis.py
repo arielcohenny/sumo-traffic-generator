@@ -10,7 +10,7 @@ from collections import deque
 
 # Import Tree Method traffic flow functions (no duplication)
 from src.traffic_control.decentralized_traffic_bottlenecks.shared.config import (
-    MAX_DENSITY, MIN_VELOCITY, M, L, ITERATION_TIME_MINUTES
+    MAX_DENSITY, MIN_VELOCITY, ITERATION_TIME_MINUTES
 )
 from src.traffic_control.decentralized_traffic_bottlenecks.shared.classes.link import (
     Link, QmaxProperties
@@ -18,7 +18,6 @@ from src.traffic_control.decentralized_traffic_bottlenecks.shared.classes.link i
 
 from .constants import (
     TREE_METHOD_MAX_DENSITY, TREE_METHOD_MIN_VELOCITY,
-    TREE_METHOD_M_PARAMETER, TREE_METHOD_L_PARAMETER,
     MAX_TIME_LOSS_MINUTES, MAX_COST_PER_EDGE, MAX_FLOW_PER_LANE_PER_HOUR,
     MAX_VEHICLE_COUNT_PER_EDGE, MOVING_AVERAGE_WINDOW_SIZE,
     RL_DYNAMIC_EDGE_FEATURES_COUNT, RL_DYNAMIC_JUNCTION_FEATURES_COUNT,
@@ -41,7 +40,7 @@ class RLTrafficAnalyzer:
     """Provides Tree Method traffic analysis for RL state collection."""
 
     # Enable debug by default
-    def __init__(self, edge_ids: List[str], debug: bool = False):
+    def __init__(self, edge_ids: List[str], m: float, l: float, debug: bool = False):
         """Initialize with network topology."""
         self.edge_ids = edge_ids
         self.edge_links: Dict[str, Link] = {}
@@ -49,6 +48,8 @@ class RLTrafficAnalyzer:
         self.debug = False  # debug
         self.logger = logging.getLogger(self.__class__.__name__)
         self.observation_count = 0
+        self.m = m
+        self.l = l
 
         # self.logger.info(f"=== RL TRAFFIC ANALYZER INITIALIZATION ===")
         # self.logger.info(f"Total edge IDs provided: {len(edge_ids)}")
@@ -85,7 +86,9 @@ class RLTrafficAnalyzer:
                     lanes=lanes,
                     # This becomes free_flow_v_km_h (after conversion)
                     free_flow_v=max_speed,
-                    head_names=[]       # Not needed for RL
+                    head_names=[],      # Not needed for RL
+                    m=self.m,
+                    l=self.l
                 )
 
                 # Calculate optimal flow properties using Tree Method algorithms

@@ -13,7 +13,8 @@ General simulation constants are in src/constants.py.
 # PPO Training Parameters (Optimized for Long-Horizon Traffic Control)
 import torch.nn as nn
 DEFAULT_LEARNING_RATE = 3e-4  # Higher initial (will be scheduled)
-DEFAULT_CLIP_RANGE = 0.2      # More aggressive for traffic adaptation
+# Conservative clipping to preserve pre-trained knowledge during RL fine-tuning
+DEFAULT_CLIP_RANGE = 0.05
 DEFAULT_BATCH_SIZE = 2048     # Larger for stability with long episodes
 DEFAULT_N_STEPS = 4096        # More experience for long-horizon effects
 DEFAULT_N_EPOCHS = 15         # More optimization (expensive simulation data)
@@ -38,7 +39,7 @@ ENTROPY_COEF_DECAY_STEPS = 500000  # Decay over 500k steps
 EARLY_STOPPING_ENABLED = True
 # Stop after 10 evals (~100k steps) without improvement
 EARLY_STOPPING_PATIENCE = 10
-EARLY_STOPPING_MIN_DELTA = 10.0  # Minimum improvement threshold
+EARLY_STOPPING_MIN_DELTA = 70.0  # Minimum improvement threshold
 EARLY_STOPPING_VERBOSE = True
 
 # Training Duration
@@ -69,7 +70,7 @@ TRAINING_CHECKPOINT_PREFIX = "checkpoint"         # Prefix for checkpoint saves
 # Extension for model metadata files
 TRAINING_MODEL_METADATA_EXTENSION = ".json"
 # Episodes to evaluate at each checkpoint
-TRAINING_EVAL_EPISODES_PER_CHECKPOINT = 5
+TRAINING_EVAL_EPISODES_PER_CHECKPOINT = 20
 # Episodes to wait before early stopping
 TRAINING_PATIENCE_EPISODES = 20
 # Minimum improvement to reset patience
@@ -114,15 +115,14 @@ ACTIONS_PER_INTERSECTION = 2
 PHASE_ACTION_INDEX = 0
 DURATION_ACTION_INDEX = 1
 
-# Phase-Only Action Space Configuration (Tree Method Compatibility)
-# Enable phase-only control (matching Tree Method)
-RL_PHASE_ONLY_MODE = True
-# Fixed duration in seconds (matches Tree Method MIN_PHASE_TIME = 10)
-# Note: Tree Method uses variable durations but applies changes every MIN_PHASE_TIME
-# RL uses this as the fixed duration for each phase decision
-RL_FIXED_PHASE_DURATION = 10
-# Only phase selection per intersection (phase index 0-3)
-RL_ACTIONS_PER_INTERSECTION_PHASE_ONLY = 1
+# Action Space Configuration
+# Duration-based control with continuous actions (full Tree Method imitation)
+RL_PHASE_ONLY_MODE = False  # Now using duration control
+# Continuous action space for duration proportions
+RL_USE_CONTINUOUS_ACTIONS = True
+RL_ACTIONS_PER_JUNCTION = 4  # Duration proportions for 4 phases (via softmax)
+RL_FIXED_PHASE_DURATION = 10  # Kept for backward compatibility
+RL_ACTIONS_PER_INTERSECTION_PHASE_ONLY = 1  # Kept for backward compatibility
 
 # Phase Duration Options (seconds)
 PHASE_DURATION_OPTIONS = [10, 15, 20, 30, 45, 60, 90, 120]
@@ -134,13 +134,19 @@ MIN_GREEN_TIME = 10
 MAX_GREEN_TIME = 120
 YELLOW_CLEARANCE_TIME = 3
 
-# Decision Making Frequency
-# IMPORTANT: Must match Tree Method's decision interval (90s) for behavioral cloning
-# to work correctly. The RL agent should make decisions at the same frequency as
-# the expert (Tree Method) it's imitating.
-DECISION_INTERVAL_SECONDS = 90  # Match Tree Method interval for imitation learning
-MIN_DECISION_INTERVAL = 5
-MAX_DECISION_INTERVAL = 120  # Increased to accommodate Tree Method interval
+# Decision Making Frequency (Cycle Length)
+# IMPORTANT: Must match Tree Method's decision interval for behavioral cloning
+# Now supports variable cycle lengths controlled via CLI arguments
+DEFAULT_CYCLE_LENGTH = 90  # Default cycle length in seconds
+MIN_CYCLE_LENGTH = 30  # Minimum supported cycle length
+MAX_CYCLE_LENGTH = 300  # Maximum supported cycle length
+
+# DEPRECATED: Use instance-based cycle_length instead
+# This constant is kept only for backward compatibility and should not be used
+# Controllers should use self.decision_interval (from self.cycle_lengths)
+DECISION_INTERVAL_SECONDS = DEFAULT_CYCLE_LENGTH  # DEPRECATED
+MIN_DECISION_INTERVAL = MIN_CYCLE_LENGTH  # DEPRECATED
+MAX_DECISION_INTERVAL = MAX_CYCLE_LENGTH  # DEPRECATED
 
 # =============================================================================
 # REWARD SYSTEM CONSTANTS
@@ -208,7 +214,8 @@ CONGESTION_HISTORY_WINDOW_SIZE = 20
 MILESTONE_COMPLETION_THRESHOLDS = [0.25, 0.50, 0.75, 0.90]
 
 # Penalty Calculation
-WAITING_TIME_PENALTY_FACTOR = -0.1  # Penalty per second of increased waiting time
+# Penalty per second of increased waiting time (reduced 10x to balance with throughput rewards)
+WAITING_TIME_PENALTY_FACTOR = -0.01
 MIN_WAITING_TIME_THRESHOLD = 1.0    # Minimum waiting time to trigger penalty
 
 # Episode Rewards
@@ -388,7 +395,8 @@ STD_CALCULATION_FALLBACK = 0.0       # Fallback value when std calculation fails
 
 # Debug Modes
 DEBUG_STATE_COLLECTION = False    # Debug state vector construction
-DEBUG_REWARD_COMPUTATION = False  # Debug reward calculations
+# Debug reward calculations - CSV logs will be created
+DEBUG_REWARD_COMPUTATION = True
 DEBUG_ACTION_EXECUTION = False    # Debug action processing
 DEBUG_VEHICLE_TRACKING = False    # Debug vehicle journey tracking
 
@@ -458,10 +466,10 @@ VARIANCE_CALCULATION_POWER = 0.5
 # Traffic Flow Theory (from Tree Method shared/config.py)
 TREE_METHOD_MAX_DENSITY = 150                    # vehicles per km per lane
 TREE_METHOD_MIN_VELOCITY = 3                     # km/h minimum speed
-# speed-density relationship parameter
-TREE_METHOD_M_PARAMETER = 0.8
-# speed-density relationship parameter
-TREE_METHOD_L_PARAMETER = 2.8
+# # speed-density relationship parameter
+# TREE_METHOD_M_PARAMETER = 0.8
+# # speed-density relationship parameter
+# TREE_METHOD_L_PARAMETER = 2.8
 # Tree Method calculation interval
 TREE_METHOD_ITERATION_TIME_MINUTES = 1.5
 

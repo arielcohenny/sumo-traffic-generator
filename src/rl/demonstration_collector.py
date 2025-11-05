@@ -11,7 +11,7 @@ import traci
 import logging
 from typing import Dict, List, Tuple, Optional
 
-from .constants import DEMONSTRATION_DECISION_INTERVAL_SECONDS
+from .constants import DEMONSTRATION_DECISION_INTERVAL_SECONDS, RL_USE_CONTINUOUS_ACTIONS, RL_ACTIONS_PER_JUNCTION
 
 
 class TreeMethodDemonstrationAdapter:
@@ -43,10 +43,14 @@ class TreeMethodDemonstrationAdapter:
         Extract Tree Method's current phase decisions as RL actions.
 
         Reads Tree Method's current_phase_durations attribute (read-only access)
-        and converts to RL action format (array of phase indices).
+        and converts to RL action format:
+        - If RL_USE_CONTINUOUS_ACTIONS=True: Returns logits for duration proportions
+          Shape: (num_junctions * 4,) containing inverse-softmax of duration proportions
+        - If RL_USE_CONTINUOUS_ACTIONS=False: Returns phase indices
+          Shape: (num_junctions,) containing active phase index per junction
 
         Returns:
-            np.ndarray: Array of phase indices, one per junction in sorted order
+            np.ndarray: Action array in appropriate format for current RL mode
                        Returns None if phase information is not yet available
         """
         try:
@@ -54,46 +58,126 @@ class TreeMethodDemonstrationAdapter:
             phase_durations = self.tree_method.current_phase_durations
 
             if not phase_durations:
-                # Tree Method hasn't computed phases yet - use current SUMO phases as fallback
-                # This happens during the initial interval before Tree Method's first decision
-                actions = []
-                for junction_id in self.junction_ids:
-                    try:
-                        current_phase = traci.trafficlight.getPhase(
-                            junction_id)
-                        actions.append(current_phase)
-                    except Exception as e:
-                        self.logger.warning(
-                            f"Could not get phase for {junction_id} during fallback: {e}")
-                        actions.append(0)  # Default to phase 0
-                return np.array(actions, dtype=np.int32)
+                # Tree Method hasn't computed phases yet - use fallback
+                return self._create_fallback_action()
 
-            actions = []
-            for junction_id in self.junction_ids:
-                if junction_id in phase_durations:
-                    # Find active phase (the one Tree Method selected)
-                    active_phase = self._find_active_phase(
-                        junction_id, phase_durations[junction_id]
-                    )
-                    actions.append(active_phase)
-                else:
-                    # Junction not in Tree Method's current decisions
-                    # This can happen if Tree Method uses partial control
-                    # Use current TraCI phase as fallback
-                    try:
-                        current_phase = traci.trafficlight.getPhase(
-                            junction_id)
-                        actions.append(current_phase)
-                    except Exception as e:
-                        self.logger.warning(
-                            f"Could not get phase for {junction_id}: {e}")
-                        actions.append(0)  # Default to phase 0
-
-            return np.array(actions, dtype=np.int32)
+            if RL_USE_CONTINUOUS_ACTIONS:
+                # Duration-based control: extract durations for all phases
+                return self._extract_duration_logits(phase_durations)
+            else:
+                # Phase-only control: extract active phase indices
+                return self._extract_phase_indices(phase_durations)
 
         except Exception as e:
             self.logger.error(f"Failed to extract RL action: {e}")
             return None
+
+    def _create_fallback_action(self) -> np.ndarray:
+        """
+        Create fallback action when Tree Method hasn't computed phases yet.
+
+        Returns:
+            np.ndarray: Fallback action in appropriate format
+        """
+        if RL_USE_CONTINUOUS_ACTIONS:
+            # Return uniform logits (equal proportions after softmax)
+            num_values = len(self.junction_ids) * RL_ACTIONS_PER_JUNCTION
+            return np.zeros(num_values, dtype=np.float32)
+        else:
+            # Return current SUMO phases
+            actions = []
+            for junction_id in self.junction_ids:
+                try:
+                    current_phase = traci.trafficlight.getPhase(junction_id)
+                    actions.append(current_phase)
+                except Exception as e:
+                    self.logger.warning(
+                        f"Could not get phase for {junction_id} during fallback: {e}")
+                    actions.append(0)  # Default to phase 0
+            return np.array(actions, dtype=np.int32)
+
+    def _extract_duration_logits(self, phase_durations: Dict[str, Dict[int, float]]) -> np.ndarray:
+        """
+        Extract phase durations and convert to logits for continuous actions.
+
+        Process:
+        1. Extract durations for all 4 phases at each junction
+        2. Convert durations to proportions (normalized to sum to 1.0)
+        3. Convert proportions to logits using inverse softmax: logit = log(proportion + epsilon)
+
+        Args:
+            phase_durations: Dict[junction_id -> Dict[phase_idx -> duration_seconds]]
+
+        Returns:
+            np.ndarray: Logits array of shape (num_junctions * 4,)
+        """
+        logits = []
+        epsilon = 1e-8  # For numerical stability
+
+        # DEBUG: Log first junction's extraction
+        first_junction_logged = False
+
+        for junction_id in self.junction_ids:
+            if junction_id in phase_durations:
+                junction_durations = phase_durations[junction_id]
+
+                # Extract durations for all 4 phases (use 0.0 if phase not present)
+                durations = [junction_durations.get(i, 0.0) for i in range(RL_ACTIONS_PER_JUNCTION)]
+
+                # DEBUG: Log first junction's extracted durations
+                if not first_junction_logged:
+                    self.logger.info(f"📤 EXTRACT: junction={junction_id}, durations={durations}")
+                    first_junction_logged = True
+
+                # Convert to proportions
+                total_duration = sum(durations)
+                if total_duration > 0:
+                    proportions = [d / total_duration for d in durations]
+                else:
+                    # Fallback to uniform proportions
+                    proportions = [1.0 / RL_ACTIONS_PER_JUNCTION] * RL_ACTIONS_PER_JUNCTION
+
+                # Convert proportions to logits (inverse softmax)
+                # After softmax, these logits will reproduce the original proportions
+                junction_logits = [np.log(p + epsilon) for p in proportions]
+                logits.extend(junction_logits)
+            else:
+                # Junction not in Tree Method's current decisions - use uniform logits
+                uniform_logits = [0.0] * RL_ACTIONS_PER_JUNCTION
+                logits.extend(uniform_logits)
+
+        return np.array(logits, dtype=np.float32)
+
+    def _extract_phase_indices(self, phase_durations: Dict[str, Dict[int, float]]) -> np.ndarray:
+        """
+        Extract active phase indices for discrete actions (legacy mode).
+
+        Args:
+            phase_durations: Dict[junction_id -> Dict[phase_idx -> duration_seconds]]
+
+        Returns:
+            np.ndarray: Phase indices array of shape (num_junctions,)
+        """
+        actions = []
+        for junction_id in self.junction_ids:
+            if junction_id in phase_durations:
+                # Find active phase (the one Tree Method selected)
+                active_phase = self._find_active_phase(
+                    junction_id, phase_durations[junction_id]
+                )
+                actions.append(active_phase)
+            else:
+                # Junction not in Tree Method's current decisions
+                # Use current TraCI phase as fallback
+                try:
+                    current_phase = traci.trafficlight.getPhase(junction_id)
+                    actions.append(current_phase)
+                except Exception as e:
+                    self.logger.warning(
+                        f"Could not get phase for {junction_id}: {e}")
+                    actions.append(0)  # Default to phase 0
+
+        return np.array(actions, dtype=np.int32)
 
     def _find_active_phase(self, junction_id: str, phase_durations: Dict[int, float]) -> int:
         """

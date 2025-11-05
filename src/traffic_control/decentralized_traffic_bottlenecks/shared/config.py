@@ -8,3 +8,6 @@ MIN_VELOCITY = 3
 M = 0.8
 L = 2.8
 ITERATION_TIME_MINUTES = 1.5
+
+# bottleneck logging config:
+ENABLE_BOTTLENECK_LOGGING = True

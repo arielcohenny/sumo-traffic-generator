@@ -32,7 +32,7 @@ from src.rl.training import train_rl_policy
 from src.rl.constants import (
     DEFAULT_TOTAL_TIMESTEPS, DEFAULT_MODEL_SAVE_PATH, DEFAULT_CHECKPOINT_FREQ,
     DEFAULT_N_PARALLEL_ENVS, MIN_PARALLEL_ENVS, MAX_PARALLEL_ENVS,
-    PARALLEL_WORKSPACE_PREFIX, SINGLE_ENV_THRESHOLD
+    PARALLEL_WORKSPACE_PREFIX, SINGLE_ENV_THRESHOLD, DEFAULT_CYCLE_LENGTH
 )
 
 
@@ -146,6 +146,22 @@ def create_argument_parser() -> argparse.ArgumentParser:
         help='Environment parameters string (e.g., "--network-seed 42 --grid_dimension 5 --num_vehicles 4500 ...")'
     )
 
+    # RL cycle parameters
+    parser.add_argument(
+        '--cycle-lengths',
+        type=int,
+        nargs='+',
+        default=[DEFAULT_CYCLE_LENGTH],
+        help=f'List of cycle lengths in seconds (default: [{DEFAULT_CYCLE_LENGTH}]). Example: --cycle-lengths 60 90 120'
+    )
+    parser.add_argument(
+        '--cycle-strategy',
+        type=str,
+        choices=['fixed', 'random', 'sequential'],
+        default='fixed',
+        help='Strategy for selecting cycle length per episode (default: fixed)'
+    )
+
     return parser
 
 
@@ -192,6 +208,8 @@ def main():
     logger.info("=== PRODUCTION RL TRAINING STARTED ===")
     logger.info(f"Training timesteps: {args.timesteps:,}")
     logger.info(f"Parallel environments: {args.parallel_envs}")
+    logger.info(f"Cycle lengths: {args.cycle_lengths}")
+    logger.info(f"Cycle strategy: {args.cycle_strategy}")
     logger.info("All logs and files will be organized in models/rl_YYYYMMDD_HHMMSS/")
 
     try:
@@ -241,7 +259,9 @@ def main():
                 use_parallel=use_parallel,
                 n_envs=args.parallel_envs,
                 resume_from_model=args.resume_from,
-                pretrain_from_model=args.pretrain_from
+                pretrain_from_model=args.pretrain_from,
+                cycle_lengths=args.cycle_lengths,
+                cycle_strategy=args.cycle_strategy
             )
         except (BrokenPipeError, ConnectionError, OSError) as e:
             logger.warning(f"SUMO connection error during training: {e}")
@@ -258,7 +278,9 @@ def main():
                     use_parallel=False,
                     n_envs=1,
                     resume_from_model=args.resume_from,
-                    pretrain_from_model=args.pretrain_from
+                    pretrain_from_model=args.pretrain_from,
+                    cycle_lengths=args.cycle_lengths,
+                    cycle_strategy=args.cycle_strategy
                 )
             else:
                 raise

@@ -26,7 +26,7 @@ from .constants import (
     DEFAULT_FALLBACK_VALUE, DEFAULT_INITIAL_TIME, NUM_TRAFFIC_LIGHT_PHASES,
     RL_MODEL_LOAD_RETRY_DELAY, TRAFFIC_LIGHT_DEFINITION_INDEX,
     RL_INFERENCE_TIME_MAX_HISTORY, RL_INFERENCE_TIME_KEEP_RECENT,
-    RL_ACTION_DISTRIBUTION_LOG_INTERVAL, DECISION_INTERVAL_SECONDS,
+    RL_ACTION_DISTRIBUTION_LOG_INTERVAL,
     RL_PHASE_ONLY_MODE, RL_FIXED_PHASE_DURATION
 )
 from .environment import TrafficControlEnv
@@ -52,6 +52,14 @@ class RLController(TrafficController):
         self.model_path = getattr(args, 'rl_model_path', DEFAULT_RL_MODEL_PATH)
         self.mode = RL_INFERENCE_MODE if self.model_path else RL_DEFAULT_MODE
 
+        # RL cycle parameters
+        from .constants import DEFAULT_CYCLE_LENGTH
+        self.cycle_lengths = getattr(
+            args, 'rl_cycle_lengths', [DEFAULT_CYCLE_LENGTH])
+        self.cycle_strategy = getattr(args, 'rl_cycle_strategy', 'fixed')
+        # Use first cycle length as decision interval
+        self.decision_interval = self.cycle_lengths[0]
+
         # RL Environment
         self.rl_env = None
         self.current_observation = None
@@ -65,6 +73,10 @@ class RLController(TrafficController):
         # Traffic signal state
         self.traffic_lights = {}
         self.last_action_time = DEFAULT_INITIAL_TIME
+
+        # Duration-based control state
+        self.current_schedules = {}  # Store phase schedules for current cycle
+        self.cycle_start_step = 0  # Track when current cycle started
 
         # Verify mode setting logic
         if self.model_path:
@@ -83,7 +95,7 @@ class RLController(TrafficController):
         try:
             # Initialize Graph object for vehicle tracking (same as other controllers)
             from src.traffic_control.decentralized_traffic_bottlenecks.shared.classes.graph import Graph
-            self.graph = Graph(self.args.end_time)
+            self.graph = Graph(self.args.end_time, self.args.tree_method_m, self.args.tree_method_l)
 
             # Load RL model if in inference mode
             if self.mode == RL_INFERENCE_MODE:
@@ -296,10 +308,18 @@ class RLController(TrafficController):
 
         # RL control logic - only make decisions at specified intervals
         try:
-            # Only make RL decisions every DECISION_INTERVAL_SECONDS
-            if step % DECISION_INTERVAL_SECONDS == 0:
+            # For continuous duration-based control: apply scheduled phases at every step
+            from .constants import RL_USE_CONTINUOUS_ACTIONS
+            if RL_USE_CONTINUOUS_ACTIONS and hasattr(self, 'current_schedules') and self.current_schedules:
+                # Calculate time within current cycle
+                time_in_cycle = (
+                    step - self.cycle_start_step) % self.decision_interval
+                self._apply_scheduled_phases(time_in_cycle)
+
+            # Only make RL decisions every decision_interval seconds
+            if step % self.decision_interval == 0:
                 # self.logger.info(
-                #     f"=== RL DECISION STEP {step} (DECISION INTERVAL: {DECISION_INTERVAL_SECONDS}) ===")
+                #     f"=== RL DECISION STEP {step} (DECISION INTERVAL: {self.decision_interval}) ===")
                 # self.logger.info(
                 #     f"Mode: {self.mode}, Model available: {self.model is not None}")
 
@@ -309,6 +329,21 @@ class RLController(TrafficController):
                         self.current_observation = self.rl_env._get_observation()
                         # self.logger.info(
                         #     f"Observation collected - shape: {self.current_observation.shape if self.current_observation is not None else 'None'}")
+
+                        # DIAGNOSTIC: Log observation statistics to detect if observations are frozen
+                        if self.current_observation is not None:
+                            obs_hash = hash(self.current_observation.tobytes())
+                            obs_min = np.min(self.current_observation)
+                            obs_max = np.max(self.current_observation)
+                            obs_mean = np.mean(self.current_observation)
+                            obs_std = np.std(self.current_observation)
+                            obs_first_10 = self.current_observation[:10]
+                            obs_last_10 = self.current_observation[-10:]
+
+                            self.logger.info(f"DIAGNOSTIC Step {step} - Observation stats:")
+                            self.logger.info(f"  Hash: {obs_hash}, Min: {obs_min:.6f}, Max: {obs_max:.6f}, Mean: {obs_mean:.6f}, Std: {obs_std:.6f}")
+                            self.logger.info(f"  First 10: {obs_first_10}")
+                            self.logger.info(f"  Last 10: {obs_last_10}")
 
                         # # DEBUG: Log observation stats
                         # if self.current_observation is not None:
@@ -380,9 +415,9 @@ class RLController(TrafficController):
             # else:
             #     # Skip non-decision steps - only log occasionally to avoid spam
             #     # Log every 10 decision intervals
-            #     if step % (DECISION_INTERVAL_SECONDS * 10) == 0:
+            #     if step % (self.decision_interval * 10) == 0:
             #         self.logger.debug(
-            #             f"Step {step}: Skipping non-decision step (next decision at step {((step // DECISION_INTERVAL_SECONDS) + 1) * DECISION_INTERVAL_SECONDS})")
+            #             f"Step {step}: Skipping non-decision step (next decision at step {((step // self.decision_interval) + 1) * self.decision_interval})")
 
             # Update statistics
             if step % RL_STATISTICS_COLLECTION_INTERVAL == 0:
@@ -421,6 +456,18 @@ class RLController(TrafficController):
 
             # self.logger.info(f"Model prediction successful - action type: {type(action)}, shape: {action.shape}")
             # self.logger.info(f"Predicted action values: {action}")
+
+            # DIAGNOSTIC: Log raw model outputs to detect if actions are frozen
+            action_hash = hash(action.tobytes())
+            self.logger.info(f"DIAGNOSTIC - Raw model action output:")
+            self.logger.info(f"  Action hash: {action_hash}")
+            self.logger.info(f"  First 8 values: {action[:8]}")
+            self.logger.info(f"  Last 8 values: {action[-8:]}")
+            self.logger.info(f"  Action shape: {action.shape}, min: {np.min(action):.6f}, max: {np.max(action):.6f}, mean: {np.mean(action):.6f}")
+            # Log B0 junction's raw values (junction index 4, action indices 16-19)
+            if len(action) >= 20:
+                b0_values = action[16:20]
+                self.logger.info(f"  B0 junction (indices 16-19) raw values: {b0_values}")
 
             # Record inference time
             if RL_INFERENCE_TIME_TRACKING and start_time:
@@ -502,7 +549,47 @@ class RLController(TrafficController):
             # self.logger.info(
             #     f"Executing actions for {num_intersections} intersections: {traffic_light_ids}")
 
-            if RL_PHASE_ONLY_MODE:
+            # Import action space constants
+            from .constants import RL_USE_CONTINUOUS_ACTIONS, RL_ACTIONS_PER_JUNCTION, MIN_PHASE_DURATION
+
+            if RL_USE_CONTINUOUS_ACTIONS:
+                # Duration-based control: convert raw actions to duration schedules
+                self.logger.info("Using CONTINUOUS DURATION-BASED mode")
+                import numpy as np
+
+                junction_schedules = {}
+
+                for i, junction_id in enumerate(traffic_light_ids):
+                    # Extract 4 values for this junction
+                    start_idx = i * RL_ACTIONS_PER_JUNCTION
+                    end_idx = start_idx + RL_ACTIONS_PER_JUNCTION
+                    raw_outputs = action[start_idx:end_idx]
+
+                    # Apply softmax to get proportions
+                    proportions = self._softmax(raw_outputs)
+
+                    # Convert to durations summing to current_cycle_length
+                    durations = self._proportions_to_durations(
+                        proportions,
+                        self.decision_interval,  # Use decision_interval as cycle_length
+                        MIN_PHASE_DURATION
+                    )
+
+                    junction_schedules[junction_id] = durations
+
+                    # Log for first junction
+                    if i < 24:
+                        self.logger.info(
+                            f"  Example: junction {junction_id} -> durations {durations} (total: {sum(durations)}s)")
+
+                # Store schedule for application during cycle
+                self.current_schedules = junction_schedules
+                self.cycle_start_step = step
+
+                self.logger.info(
+                    f"  Stored schedules for {len(junction_schedules)} junctions, cycle starts at step {step}")
+
+            elif RL_PHASE_ONLY_MODE:
                 # self.logger.info("Using PHASE-ONLY mode")
                 # Phase-only mode: action is flat array of phase indices
                 # Ensure correct length
@@ -672,27 +759,77 @@ class RLController(TrafficController):
         max_duration_idx = len(PHASE_DURATION_OPTIONS) - 1
         validated_duration_idx = max(0, min(duration_idx, max_duration_idx))
 
-        # Enforce minimum green time if needed
-        if RL_MIN_GREEN_TIME_ENFORCEMENT:
-            duration = PHASE_DURATION_OPTIONS[validated_duration_idx]
-            if duration < MIN_GREEN_TIME:
-                # Find minimum acceptable duration index
-                for i, dur in enumerate(PHASE_DURATION_OPTIONS):
-                    if dur >= MIN_GREEN_TIME:
-                        validated_duration_idx = i
-                        break
-
-        # Enforce maximum duration if needed
-        if RL_MAX_DURATION_ENFORCEMENT:
-            duration = PHASE_DURATION_OPTIONS[validated_duration_idx]
-            if duration > MAX_PHASE_DURATION:
-                # Find maximum acceptable duration index
-                for i in range(len(PHASE_DURATION_OPTIONS) - 1, -1, -1):
-                    if PHASE_DURATION_OPTIONS[i] <= MAX_PHASE_DURATION:
-                        validated_duration_idx = i
-                        break
-
         return validated_phase, validated_duration_idx
+
+    def _softmax(self, x):
+        """Numerically stable softmax.
+
+        Args:
+            x: Array of raw values
+
+        Returns:
+            Array of probabilities summing to 1.0
+        """
+        import numpy as np
+        if len(x) == 0:
+            raise ValueError("Cannot apply softmax to empty array")
+
+        exp_x = np.exp(x - np.max(x))
+        return exp_x / exp_x.sum()
+
+    def _proportions_to_durations(self, proportions, cycle_length, min_phase_time):
+        """Convert proportions to integer durations with constraints.
+
+        Args:
+            proportions: Array of 4 proportions summing to 1.0 (e.g., [0.25, 0.15, 0.40, 0.20])
+            cycle_length: Total cycle time in seconds (e.g., 90)
+            min_phase_time: Minimum duration per phase in seconds (e.g., 10)
+
+        Returns:
+            List of 4 integer durations summing exactly to cycle_length
+        """
+        import numpy as np
+        num_phases = len(proportions)
+        available_time = cycle_length - (num_phases * min_phase_time)
+
+        # Calculate durations
+        durations = [min_phase_time + (p * available_time)
+                     for p in proportions]
+
+        # Round to integers
+        durations = [int(round(d)) for d in durations]
+
+        # Ensure exact sum (adjust largest phase if needed)
+        diff = cycle_length - sum(durations)
+        if diff != 0:
+            max_idx = np.argmax(durations)
+            durations[max_idx] += diff
+
+        return durations
+
+    def _apply_scheduled_phases(self, time_in_cycle):
+        """Apply correct phase based on schedule and time within cycle.
+
+        Args:
+            time_in_cycle: Time elapsed since start of cycle (0 to cycle_length-1)
+        """
+        if not hasattr(self, 'current_schedules') or not self.current_schedules:
+            return
+
+        for junction_id, durations in self.current_schedules.items():
+            # Find which phase should be active at this time
+            elapsed = 0
+            for phase_idx, duration in enumerate(durations):
+                if time_in_cycle < elapsed + duration:
+                    # This is the active phase - apply it
+                    try:
+                        traci.trafficlight.setPhase(junction_id, phase_idx)
+                        traci.trafficlight.setPhaseDuration(
+                            junction_id, duration)
+                    except Exception:
+                        pass
+                    break
+                elapsed += duration
 
     def _track_action(self, action: np.ndarray) -> None:
         """Track action distribution for analysis."""

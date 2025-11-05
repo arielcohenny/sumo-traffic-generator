@@ -13,12 +13,13 @@ from src.constants import (
     DEFAULT_VEHICLE_TYPES, DEFAULT_PASSENGER_ROUTES, DEFAULT_PUBLIC_ROUTES,
     DEFAULT_DEPARTURE_PATTERN, DEFAULT_STEP_LENGTH,
     DEFAULT_END_TIME, DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_ATTRACTIVENESS,
-    DEFAULT_START_TIME_HOUR, DEFAULT_TRAFFIC_LIGHT_STRATEGY, 
+    DEFAULT_START_TIME_HOUR, DEFAULT_TRAFFIC_LIGHT_STRATEGY,
     DEFAULT_TRAFFIC_CONTROL, DEFAULT_BOTTLENECK_DETECTION_INTERVAL,
     DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL,
     MIN_TREE_METHOD_INTERVAL, MAX_TREE_METHOD_INTERVAL, DEFAULT_WORKSPACE_DIR,
     UNIFORM_DEPARTURE_PATTERN, SENTINEL_START_TIME_HOUR, SENTINEL_END_TIME
 )
+from src.traffic_control.decentralized_traffic_bottlenecks.shared.config import M, L
 
 
 def create_argument_parser() -> argparse.ArgumentParser:
@@ -226,6 +227,18 @@ def _add_traffic_control_arguments(parser: argparse.ArgumentParser) -> None:
         help="Path to trained RL model for inference. If not provided, RL controller runs in training mode with random actions."
     )
     parser.add_argument(
+        "--rl-cycle-lengths",
+        type=int,
+        nargs='+',
+        help="List of cycle lengths in seconds for RL control (e.g., 90 for fixed, or 60 90 120 for variable). Default: [90]"
+    )
+    parser.add_argument(
+        "--rl-cycle-strategy",
+        type=str,
+        choices=['fixed', 'random', 'sequential'],
+        help="Strategy for selecting RL cycle length ('fixed', 'random', 'sequential'). Default: fixed"
+    )
+    parser.add_argument(
         "--bottleneck-detection-interval",
         type=int,
         default=DEFAULT_BOTTLENECK_DETECTION_INTERVAL,
@@ -243,6 +256,20 @@ def _add_traffic_control_arguments(parser: argparse.ArgumentParser) -> None:
         default=DEFAULT_TREE_METHOD_INTERVAL,
         metavar="SECONDS",
         help=f"Tree Method calculation interval in seconds (default: {DEFAULT_TREE_METHOD_INTERVAL}). Controls how often Tree Method algorithm runs its optimization calculations. Valid range: {MIN_TREE_METHOD_INTERVAL}-{MAX_TREE_METHOD_INTERVAL} seconds."
+    )
+    parser.add_argument(
+        "--tree-method-m",
+        type=float,
+        default=M,
+        metavar="VALUE",
+        help=f"Tree Method M parameter for speed-density relationship (default: {M}). Used in traffic flow calculations."
+    )
+    parser.add_argument(
+        "--tree-method-l",
+        type=float,
+        default=L,
+        metavar="VALUE",
+        help=f"Tree Method L parameter for speed-density relationship (default: {L}). Used in traffic flow calculations."
     )
 
 

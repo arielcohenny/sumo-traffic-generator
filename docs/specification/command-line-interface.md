@@ -254,6 +254,26 @@ Tree Method calculation interval in seconds.
 - **Performance**: Lower values = more responsive, higher CPU usage
 - **Example**: `--tree-method-interval 60`
 
+#### `--tree-method-m` (float, default: 0.8)
+
+Tree Method M parameter for speed-density relationship in traffic flow calculations.
+
+- **Range**: 0.1-2.0
+- **Purpose**: Controls speed-density curve shape in fundamental diagram
+- **Default**: 0.8 (from original Tree Method research)
+- **Example**: `--tree-method-m 0.9`
+- **Note**: Advanced parameter - modify only for traffic flow research
+
+#### `--tree-method-l` (float, default: 2.8)
+
+Tree Method L parameter for speed-density relationship in traffic flow calculations.
+
+- **Range**: 1.0-5.0
+- **Purpose**: Controls speed-density curve shape in fundamental diagram
+- **Default**: 2.8 (from original Tree Method research)
+- **Example**: `--tree-method-l 3.0`
+- **Note**: Advanced parameter - modify only for traffic flow research
+
 #### `--bottleneck-detection-interval` (int, default: 60)
 
 ATLCS enhanced bottleneck detection interval in seconds.
@@ -330,6 +350,9 @@ env PYTHONUNBUFFERED=1 python -m src.cli --num_vehicles 800 --seed 42 --traffic_
 
 # ATLCS performance testing
 env PYTHONUNBUFFERED=1 python -m src.cli --traffic_control atlcs --bottleneck-detection-interval 30 --atlcs-interval 2
+
+# Tree Method with custom flow parameters (traffic flow research)
+env PYTHONUNBUFFERED=1 python -m src.cli --traffic_control tree_method --tree-method-m 0.9 --tree-method-l 3.0 --seed 42
 ```
 
 ### Advanced Scenarios

@@ -139,7 +139,9 @@ class TrafficSimulator:
         """
         # Parse SUMO statistics file for comprehensive metrics
         # Note: This is called AFTER traci.close() so the statistics file is complete
-        stats = parse_sumo_statistics_file('workspace/sumo_statistics.xml')
+        workspace_path = getattr(self.args, 'workspace', 'workspace')
+        stats_file = f'{workspace_path}/workspace/sumo_statistics.xml'
+        stats = parse_sumo_statistics_file(stats_file)
 
         # Build metrics dictionary
         if stats:
