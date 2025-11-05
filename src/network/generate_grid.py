@@ -356,6 +356,241 @@ def convert_to_incoming_strategy():
     )
 
 
+def convert_to_partial_opposites_strategy():
+    """Convert traffic light layout to partial_opposites strategy
+
+    Creates 4-phase system where:
+    - Phase 1: N/S straight + right turns (30s green)
+    - Phase 2: N/S left turns + U-turns (9s green)
+    - Phase 3: E/W straight + right turns (30s green)
+    - Phase 4: E/W left turns + U-turns (9s green)
+
+    Requires: Minimum 2 lanes per edge to separate movement groups
+    """
+    import xml.etree.ElementTree as ET
+    import re
+    from pathlib import Path
+    from src.constants import (
+        PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN,
+        PARTIAL_OPPOSITES_LEFT_UTURN_GREEN,
+        PARTIAL_OPPOSITES_YELLOW
+    )
+
+    def get_edge_direction(edge_id: str) -> str:
+        """Determine which cardinal direction an edge is heading"""
+        base_edge = edge_id.split('_')[0]
+        junctions = re.findall(r'[A-Z]\d+', base_edge)
+
+        if len(junctions) != 2:
+            return 'unknown'
+
+        from_junction, to_junction = junctions
+        from_row = from_junction[0]
+        from_col = int(from_junction[1:])
+        to_row = to_junction[0]
+        to_col = int(to_junction[1:])
+
+        # Determine direction based on junction change
+        if from_row == to_row:  # Horizontal movement
+            if to_col > from_col:
+                return 'E'  # Moving east
+            elif to_col < from_col:
+                return 'W'  # Moving west
+        elif from_col == to_col:  # Vertical movement
+            if to_row > from_row:
+                return 'S'  # Moving south
+            elif to_row < from_row:
+                return 'N'  # Moving north
+
+        return 'unknown'
+
+    def get_edge_orientation(edge_id: str) -> str:
+        """Determine if edge is vertical (N/S) or horizontal (E/W)"""
+        direction = get_edge_direction(edge_id)
+        if direction in ['N', 'S']:
+            return 'NS'
+        elif direction in ['E', 'W']:
+            return 'EW'
+        else:
+            return 'EW'  # Default fallback
+
+    def calculate_turn_angle(from_dir: str, to_dir: str) -> float:
+        """Calculate turn angle from one direction to another"""
+        direction_angles = {'N': 0, 'E': 90, 'S': 180, 'W': 270}
+
+        if from_dir not in direction_angles or to_dir not in direction_angles:
+            return 0
+
+        from_angle = direction_angles[from_dir]
+        to_angle = direction_angles[to_dir]
+
+        # Calculate relative turn angle
+        turn = to_angle - from_angle
+
+        # Normalize to -180 to +180 range
+        while turn > 180:
+            turn -= 360
+        while turn < -180:
+            turn += 360
+
+        return turn
+
+    def classify_movement(turn_angle: float) -> str:
+        """Classify movement type for partial_opposites strategy
+
+        The turn angle is calculated as the difference between outgoing and incoming edge directions:
+            0° = straight (continuing in same direction, e.g., westbound→westbound)
+            +90° = right turn (e.g., westbound→northbound)
+            -90° = left turn (e.g., westbound→southbound)
+            ±180° = u-turn (complete reversal, e.g., westbound→eastbound)
+
+        For partial_opposites strategy:
+            - 'straight_right': straight movements (0°) and right turns (+90°)
+            - 'left_uturn': left turns (-90°/+270°) and u-turns (±180°)
+
+        Returns:
+            'straight_right' for straight (0°) or right turns (+90°)
+            'left_uturn' for left turns (-90°) or u-turns (±180°)
+        """
+        # Normalize angle to 0-360 range for easier classification
+        angle = turn_angle % 360
+
+        # Straight: ~0° OR Right turn: ~90°
+        if (angle < 10 or angle > 350) or (80 <= angle <= 100):
+            return 'straight_right'
+        # Left turn: ~270° (same as -90°) OR U-turn: ~180°
+        else:
+            return 'left_uturn'
+
+    # Parse the traffic light logic file
+    tree = ET.parse(Path(str(CONFIG.network_tll_file)))
+    root = tree.getroot()
+
+    # Build connection database with movement classification
+    connections_db = {}  # tl_id -> list of connections with metadata
+
+    for tl_logic in root.findall('tlLogic'):
+        tl_id = tl_logic.get('id')
+        connections_db[tl_id] = []
+
+        # Find all connections controlled by this traffic light (in the same file)
+        for connection in root.findall('connection'):
+            if connection.get('tl') == tl_id:
+                from_edge = connection.get('from')
+                to_edge = connection.get('to')
+                link_index = int(connection.get('linkIndex', -1))
+
+                # Determine edge directions from junction IDs
+                from_direction = get_edge_direction(from_edge)
+                to_direction = get_edge_direction(to_edge)
+
+                # Calculate turn angle
+                turn_angle = calculate_turn_angle(from_direction, to_direction)
+
+                # Classify movement type based on turn angle
+                movement_type = classify_movement(turn_angle)
+
+                # Determine approach orientation (N/S or E/W)
+                approach_orientation = get_edge_orientation(from_edge)
+
+                connections_db[tl_id].append({
+                    'from': from_edge,
+                    'to': to_edge,
+                    'link_index': link_index,
+                    'from_direction': from_direction,
+                    'to_direction': to_direction,
+                    'turn_angle': turn_angle,
+                    'movement_type': movement_type,
+                    'approach_orientation': approach_orientation
+                })
+
+    # Rebuild traffic light phases for each intersection
+    for tl_logic in root.findall('tlLogic'):
+        tl_id = tl_logic.get('id')
+        connections = connections_db.get(tl_id, [])
+
+        if not connections:
+            continue
+
+        # Group connections by approach direction and movement type
+        ns_straight_right = []  # North/South straight+right
+        ns_left_uturn = []      # North/South left+u-turn
+        ew_straight_right = []  # East/West straight+right
+        ew_left_uturn = []      # East/West left+u-turn
+
+        for conn in connections:
+            approach_orientation = conn['approach_orientation']
+            movement = conn['movement_type']
+            link_idx = conn['link_index']
+
+            # Group by approach orientation and movement type
+            if approach_orientation == 'NS':
+                if movement == 'straight_right':
+                    ns_straight_right.append(link_idx)
+                else:
+                    ns_left_uturn.append(link_idx)
+            elif approach_orientation == 'EW':
+                if movement == 'straight_right':
+                    ew_straight_right.append(link_idx)
+                else:
+                    ew_left_uturn.append(link_idx)
+
+        # Determine state string length (number of connections)
+        num_links = max([c['link_index'] for c in connections]) + 1
+
+        # Build phase states
+        def build_state_string(num_links: int, green_link_indices: list) -> str:
+            """Build SUMO traffic light state string"""
+            state = ['r'] * num_links
+            for idx in green_link_indices:
+                if 0 <= idx < num_links:
+                    state[idx] = 'G'
+            return ''.join(state)
+
+        def convert_to_yellow(green_state: str) -> str:
+            """Convert green state to yellow transition state"""
+            return green_state.replace('G', 'y').replace('g', 'y')
+
+        phases = []
+
+        # Phase 1: N/S straight+right green (30s)
+        state1 = build_state_string(num_links, ns_straight_right)
+        phases.append({'duration': PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN, 'state': state1})
+        phases.append({'duration': PARTIAL_OPPOSITES_YELLOW, 'state': convert_to_yellow(state1)})
+
+        # Phase 2: N/S left+u-turn green (9s)
+        state2 = build_state_string(num_links, ns_left_uturn)
+        phases.append({'duration': PARTIAL_OPPOSITES_LEFT_UTURN_GREEN, 'state': state2})
+        phases.append({'duration': PARTIAL_OPPOSITES_YELLOW, 'state': convert_to_yellow(state2)})
+
+        # Phase 3: E/W straight+right green (30s)
+        state3 = build_state_string(num_links, ew_straight_right)
+        phases.append({'duration': PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN, 'state': state3})
+        phases.append({'duration': PARTIAL_OPPOSITES_YELLOW, 'state': convert_to_yellow(state3)})
+
+        # Phase 4: E/W left+u-turn green (9s)
+        state4 = build_state_string(num_links, ew_left_uturn)
+        phases.append({'duration': PARTIAL_OPPOSITES_LEFT_UTURN_GREEN, 'state': state4})
+        phases.append({'duration': PARTIAL_OPPOSITES_YELLOW, 'state': convert_to_yellow(state4)})
+
+        # Replace phases in traffic light logic
+        for phase in tl_logic.findall('phase'):
+            tl_logic.remove(phase)
+
+        for phase_data in phases:
+            phase_elem = ET.SubElement(tl_logic, 'phase')
+            phase_elem.set('duration', str(phase_data['duration']))
+            phase_elem.set('state', phase_data['state'])
+
+    # Write modified traffic light file
+    ET.indent(root)
+    tree.write(
+        Path(str(CONFIG.network_tll_file)),
+        encoding='UTF-8',
+        xml_declaration=True
+    )
+
+
 def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_input, lane_count_arg, traffic_light_strategy="opposites", traffic_control=None):
     try:
         is_list, junction_ids, count = parse_junctions_to_remove(
@@ -383,6 +618,8 @@ def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_inp
         # Post-process traffic lights for incoming strategy
         if traffic_light_strategy == "incoming":
             convert_to_incoming_strategy()
+        elif traffic_light_strategy == "partial_opposites":
+            convert_to_partial_opposites_strategy()
 
     except subprocess.CalledProcessError as e:
         raise Exception(f"Error during netgenerate execution:", e.stderr)

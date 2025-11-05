@@ -211,8 +211,8 @@ def _add_traffic_control_arguments(parser: argparse.ArgumentParser) -> None:
         "--traffic_light_strategy",
         type=str,
         default=DEFAULT_TRAFFIC_LIGHT_STRATEGY,
-        choices=["opposites", "incoming"],
-        help=f"Traffic light phasing strategy: '{DEFAULT_TRAFFIC_LIGHT_STRATEGY}' (default, opposing directions together) or 'incoming' (each edge gets own phase)"
+        choices=["opposites", "incoming", "partial_opposites"],
+        help=f"Traffic light phasing strategy: '{DEFAULT_TRAFFIC_LIGHT_STRATEGY}' (default, opposing directions together), 'incoming' (each edge gets own phase), or 'partial_opposites' (straight+right and left+u-turn in separate phases, requires 2+ lanes)"
     )
     parser.add_argument(
         "--traffic_control",

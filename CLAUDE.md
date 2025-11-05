@@ -552,7 +552,33 @@ dbps
   - Each type has distinct characteristics: length, maxSpeed, acceleration, deceleration, sigma
   - Seamless integration with routing strategies and temporal systems
 - **Traffic Light Strategies**:
-  - Two phasing strategies: opposites (default, opposing directions together) and incoming (each edge separate)
+  - Three phasing strategies:
+    - `opposites` (default): Opposing directions signal together, 90s cycle (42s+3s green+yellow per direction)
+    - `incoming`: Each edge gets independent phase, 132s cycle (30s+3s per edge)
+    - `partial_opposites`: Separates straight+right from left+u-turn movements, 90s cycle (30s+3s straight+right, 9s+3s left+u-turn per direction)
+  - **partial_opposites Requirements**:
+    - Minimum 2 lanes per edge (enforced by validation)
+    - Lane assignment: lane 0 for straight+right, lane 1+ for left+u-turn
+    - Automatic validation of phase structure and cycle timing
+    - Compatible with all lane count algorithms (realistic, random, fixed)
+  - **Usage Examples**:
+    ```bash
+    # Default opposites strategy (1+ lanes)
+    env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100 --gui
+
+    # Incoming strategy (each edge independent)
+    env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100 --traffic_light_strategy incoming --gui
+
+    # Partial opposites strategy (requires 2+ lanes)
+    env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100 --lane_count 2 --traffic_light_strategy partial_opposites --gui
+
+    # Partial opposites with realistic lane assignment (automatically enforces 2+ lanes)
+    env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 800 --lane_count realistic --traffic_light_strategy partial_opposites --end-time 3600 --gui
+
+    # Compare strategies with identical network conditions
+    env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 500 --seed 42 --traffic_light_strategy opposites --gui
+    env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 500 --seed 42 --lane_count 2 --traffic_light_strategy partial_opposites --gui
+    ```
 - **Vehicle Departure Patterns**:
   - Replaced sequential departure (0, 1, 2, 3...) with realistic temporal distribution based on research papers
   - Default: six_periods system with research-based 6-period daily structure (Morning 20%, Morning Rush 30%, Noon 25%, Evening Rush 20%, Evening 4%, Night 1%)
@@ -591,6 +617,13 @@ dbps
   - ✅ **File Removal**: Can safely delete `split_edges.py` (no longer referenced)
   - ✅ **Working System**: All components now operational with successful test runs
   - ✅ **Traffic Control Implementation**: Successfully implemented traffic control method switching with tested examples
+  - ✅ **partial_opposites Traffic Light Strategy**: Implemented third traffic light strategy that separates straight+right from left+u-turn movements
+    - 90-second cycle time: 30s+3s for straight+right, 9s+3s for left+u-turn per direction
+    - Enforces minimum 2 lanes per edge with comprehensive validation
+    - Turn angle-based movement classification for accurate phase assignment
+    - Post-processing approach consistent with incoming strategy
+    - Full integration with lane count algorithms and validation pipeline
+    - Documented in `docs/PARTIAL_OPPOSITES_STRATEGY.md` with implementation roadmap
 - **Experimental Framework**:
   - ✅ **COMPLETED & WORKING**: Comprehensive experimental framework for traffic control method comparison
   - **Two Main Experiments**: moderate-traffic (600 vehicles) and high-traffic (1200 vehicles) over 2-hour simulations

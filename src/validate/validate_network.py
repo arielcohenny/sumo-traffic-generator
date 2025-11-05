@@ -15,7 +15,9 @@ from src.config import CONFIG
 from src.validate.errors import ValidationError
 from src.constants import (
     MIN_XML_FILE_SIZE, MIN_PHASE_DURATION, MAX_PHASE_DURATION,
-    MIN_CYCLE_TIME, MAX_CYCLE_TIME, MIN_GREEN_TIME_RATIO
+    MIN_CYCLE_TIME, MAX_CYCLE_TIME, MIN_GREEN_TIME_RATIO,
+    PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN, PARTIAL_OPPOSITES_LEFT_UTURN_GREEN,
+    PARTIAL_OPPOSITES_YELLOW, TL_STRATEGY_PARTIAL_OPPOSITES
 )
 
 
@@ -292,6 +294,66 @@ def verify_generate_grid_network(
             if green_time < MIN_GREEN_TIME_RATIO * total_cycle_time:
                 raise ValidationError(
                     f"Traffic light {tl_id} has insufficient green time: {green_time}/{total_cycle_time}s")
+
+    # 15 ── validate partial_opposites specific requirements -------------------
+    if traffic_light_strategy == TL_STRATEGY_PARTIAL_OPPOSITES:
+        # Validate phase structure for partial_opposites
+        for tl_logic in tll_root.findall("tlLogic"):
+            tl_id = tl_logic.get("id")
+            phases = tl_logic.findall("phase")
+
+            # Should have exactly 8 phases (4 green + 4 yellow)
+            if len(phases) != 8:
+                raise ValidationError(
+                    f"Traffic light {tl_id} with partial_opposites strategy should have 8 phases, found {len(phases)}")
+
+            # Validate phase durations match expected pattern
+            expected_durations = [
+                PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN,  # NS straight+right green
+                PARTIAL_OPPOSITES_YELLOW,                # NS straight+right yellow
+                PARTIAL_OPPOSITES_LEFT_UTURN_GREEN,     # NS left+uturn green
+                PARTIAL_OPPOSITES_YELLOW,                # NS left+uturn yellow
+                PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN,  # EW straight+right green
+                PARTIAL_OPPOSITES_YELLOW,                # EW straight+right yellow
+                PARTIAL_OPPOSITES_LEFT_UTURN_GREEN,     # EW left+uturn green
+                PARTIAL_OPPOSITES_YELLOW,                # EW left+uturn yellow
+            ]
+
+            for i, phase in enumerate(phases):
+                duration = float(phase.get("duration", 0))
+                expected = expected_durations[i]
+                if abs(duration - expected) > 0.1:  # Allow small floating point tolerance
+                    raise ValidationError(
+                        f"Traffic light {tl_id} phase {i} has incorrect duration: {duration}s, expected {expected}s")
+
+            # Validate total cycle time is 90 seconds
+            total_cycle = sum(expected_durations)
+            if total_cycle != 90:
+                raise ValidationError(
+                    f"Traffic light {tl_id} with partial_opposites should have 90s cycle, computed {total_cycle}s")
+
+        # Validate minimum 2 lanes per edge for partial_opposites
+        # Note: Only validate after edge splitting has occurred (when _H edges exist)
+        # At Step 1, edges haven't been split yet and will still have 1 lane
+        has_head_edges = any("_H" in edge.get("id", "") for edge in edg_root.findall("edge"))
+
+        if has_head_edges:
+            # Edge splitting has occurred, validate lane counts
+            for edge in edg_root.findall("edge"):
+                edge_id = edge.get("id")
+                num_lanes = int(edge.get("numLanes", 1))
+
+                # Skip internal edges
+                if edge_id.startswith(":"):
+                    continue
+
+                # Skip head edges (_H suffix) as they may have different lane counts
+                if "_H" in edge_id:
+                    continue
+
+                if num_lanes < 2:
+                    raise ValidationError(
+                        f"Edge {edge_id} has {num_lanes} lane(s), but partial_opposites strategy requires minimum 2 lanes")
 
     return
 

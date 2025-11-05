@@ -23,7 +23,7 @@ def normalize_angle_degrees(angle_degrees: float) -> float:
     return angle_degrees
 
 
-def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int, algorithm: str, block_size_m: int = 200) -> None:
+def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int, algorithm: str, block_size_m: int = 200, traffic_light_strategy: str = "opposites") -> None:
     """Integrated edge splitting with flow-based lane assignment.
 
     Replaces separate edge splitting and lane configuration steps with a single
@@ -32,6 +32,14 @@ def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int,
     2. Splits edges at HEAD_DISTANCE from downstream junction
     3. Assigns lanes using existing algorithms (realistic/random/fixed)
     4. Updates all 4 XML files (.nod/.edg/.con/.tll) maintaining structure
+
+    Args:
+        seed: Random seed for reproducibility
+        min_lanes: Minimum number of lanes
+        max_lanes: Maximum number of lanes
+        algorithm: Lane count algorithm ('realistic', 'random', or fixed number)
+        block_size_m: Block size in meters
+        traffic_light_strategy: Traffic light strategy (affects minimum lanes)
     """
 
     # Initialize random number generator
@@ -58,7 +66,7 @@ def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int,
 
     # Step 4: Split edges and calculate lane assignments
     split_edges, new_nodes = split_edges_at_head_distance(
-        edg_root, edge_coords, movement_data, algorithm, rng, min_lanes, max_lanes, block_size_m)
+        edg_root, edge_coords, movement_data, algorithm, rng, min_lanes, max_lanes, block_size_m, traffic_light_strategy)
 
     # Step 5: Update all XML files
     update_nodes_file(nod_root, new_nodes)
@@ -304,7 +312,7 @@ def assign_lanes_by_angle(movements_with_angles: List[Dict], head_lanes: int) ->
 
 
 def split_edges_at_head_distance(edg_root, edge_coords: Dict[str, Tuple[float, float, float, float]],
-                                 movement_data: Dict[str, Dict], algorithm: str, rng, min_lanes: int, max_lanes: int, block_size_m: int) -> Tuple[Dict[str, Dict], List[Dict]]:
+                                 movement_data: Dict[str, Dict], algorithm: str, rng, min_lanes: int, max_lanes: int, block_size_m: int, traffic_light_strategy: str = "opposites") -> Tuple[Dict[str, Dict], List[Dict]]:
     """Split edges and calculate lane assignments."""
     split_edges = {}
     new_nodes = []
@@ -341,7 +349,7 @@ def split_edges_at_head_distance(edg_root, edge_coords: Dict[str, Tuple[float, f
             edge_id, {'total_movement_lanes': 1, 'movements': []})
         total_movement_lanes = edge_movement_info['total_movement_lanes']
         tail_lanes = calculate_lane_count(
-            edge_id, algorithm, rng, min_lanes, max_lanes, block_size_m)
+            edge_id, algorithm, rng, min_lanes, max_lanes, block_size_m, traffic_light_strategy)
         head_lanes = max(total_movement_lanes, tail_lanes)
 
         # Create new intermediate node
@@ -599,7 +607,8 @@ def execute_edge_splitting(args) -> None:
             min_lanes=MIN_LANE_COUNT,
             max_lanes=MAX_LANE_COUNT,
             algorithm=args.lane_count,
-            block_size_m=args.block_size_m
+            block_size_m=args.block_size_m,
+            traffic_light_strategy=args.traffic_light_strategy
         )
         # logger.info(
         #     "Successfully completed integrated edge splitting with lane assignment")

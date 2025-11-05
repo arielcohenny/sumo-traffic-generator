@@ -17,7 +17,8 @@ from src.constants import (
     MAX_GRID_DIMENSION, MIN_BLOCK_SIZE_M, MAX_BLOCK_SIZE_VALIDATION,
     MAX_NUM_VEHICLES_VALIDATION, MIN_STEP_LENGTH, MAX_STEP_LENGTH,
     MIN_LANE_COUNT, MAX_LANE_COUNT,
-    JUNCTION_ID_PATTERN, EDGE_ID_PATTERN
+    JUNCTION_ID_PATTERN, EDGE_ID_PATTERN,
+    MIN_LANES_FOR_TL_STRATEGY
 )
 from src.utils.logging import get_logger
 from typing import Tuple, List, Dict, Any
@@ -61,6 +62,7 @@ def validate_arguments(args) -> None:
     # Cross-argument validations
     _validate_cross_arguments(args)
     _validate_sample_arguments(args)
+    _validate_traffic_light_lane_compatibility(args)
 
     # NEW: Custom lanes cross-validation
     _validate_custom_lanes_cross_arguments(args)
@@ -385,6 +387,37 @@ def _validate_lane_count(lane_count: str) -> None:
     except ValueError:
         raise ValidationError(f"Invalid lane count: {lane_count}. "
                               f"Must be 'realistic', 'random', or integer {MIN_LANE_COUNT}-{MAX_LANE_COUNT}")
+
+
+def _validate_traffic_light_lane_compatibility(args) -> None:
+    """Validate lane count is compatible with traffic light strategy.
+
+    partial_opposites strategy requires minimum 2 lanes per edge to separate:
+    - Lane 0 (rightmost): straight + right movements
+    - Lane 1+ (leftmost): left + u-turn movements
+    """
+    if args.traffic_light_strategy == "partial_opposites":
+        # Check if lane assignment is disabled (should not happen with defaults)
+        if args.lane_count == "0":
+            raise ValidationError(
+                "partial_opposites strategy requires lane assignment. "
+                "Cannot use --lane_count 0"
+            )
+
+        # Check for explicit fixed lane configuration
+        if not args.lane_count.startswith("fixed") and args.lane_count not in ["realistic", "random"]:
+            # Try to parse as integer
+            try:
+                lane_value = int(args.lane_count)
+                if lane_value < 2:
+                    raise ValidationError(
+                        f"partial_opposites strategy requires minimum 2 lanes per edge. "
+                        f"You specified: {args.lane_count}. "
+                        f"Use '--lane_count 2' or higher, or use 'realistic'/'random' algorithms."
+                    )
+            except ValueError:
+                # Not an integer, validation will be caught elsewhere
+                pass
 
 
 def _validate_cross_arguments(args) -> None:

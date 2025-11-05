@@ -182,6 +182,24 @@ STEP_START_TIME_HOUR = 0.5
 # Traffic Light Strategy
 DEFAULT_TRAFFIC_LIGHT_STRATEGY = 'opposites'
 
+# Traffic Light Strategy Constants
+TL_STRATEGY_OPPOSITES = 'opposites'
+TL_STRATEGY_INCOMING = 'incoming'
+TL_STRATEGY_PARTIAL_OPPOSITES = 'partial_opposites'
+
+# Minimum Lanes by Traffic Light Strategy
+MIN_LANES_FOR_TL_STRATEGY = {
+    TL_STRATEGY_OPPOSITES: 1,
+    TL_STRATEGY_INCOMING: 1,
+    TL_STRATEGY_PARTIAL_OPPOSITES: 2,  # Requires 2+ lanes
+}
+
+# Partial Opposites Phase Durations
+PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN = 30  # seconds
+PARTIAL_OPPOSITES_LEFT_UTURN_GREEN = 9       # seconds
+PARTIAL_OPPOSITES_YELLOW = 3                 # seconds
+# Total cycle: (30+3) + (9+3) = 45s per direction × 2 directions = 90s
+
 # Traffic Control Method
 DEFAULT_TRAFFIC_CONTROL = 'tree_method'
 
