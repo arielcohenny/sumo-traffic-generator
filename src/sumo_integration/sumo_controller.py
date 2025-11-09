@@ -331,6 +331,22 @@ class SumoController:
             valid_strategies = {ROUTING_SHORTEST, ROUTING_REALTIME, ROUTING_FASTEST, ROUTING_ATTRACTIVENESS}
             vehicle_ids_seen = set()
 
+            # Helper function to extract strategy from vehicle or trip element
+            def get_strategy(elem, elem_id):
+                # Try param child element (new format)
+                param = elem.find("param[@key='routing_strategy']")
+                if param is not None:
+                    return param.get('value')
+
+                # Fallback to attribute for backward compatibility
+                strategy = elem.get('routing_strategy')
+                if strategy:
+                    return strategy
+
+                # Default if not specified
+                return ROUTING_SHORTEST
+
+            # Read vehicles with routes (shortest, fastest, attractiveness)
             for vehicle in route_root.findall('vehicle'):
                 veh_id = vehicle.get('id')
                 if not veh_id:
@@ -351,15 +367,8 @@ class SumoController:
                     sys.exit(1)
                 vehicle_ids_seen.add(veh_id)
 
-                # Get routing strategy (required attribute - no default)
-                strategy = vehicle.get('routing_strategy')
-                if not strategy:
-                    error_msg = XML_PARSING_ERROR_MSG.format(
-                        code=ROUTING_ERROR_XML_PARSING,
-                        details=f"Vehicle {veh_id} missing required 'routing_strategy' attribute"
-                    )
-                    print(error_msg, file=sys.stderr)
-                    sys.exit(1)
+                # Get routing strategy
+                strategy = get_strategy(vehicle, veh_id)
 
                 # Validate strategy is known
                 if strategy not in valid_strategies:
@@ -377,6 +386,46 @@ class SumoController:
                     interval = self.strategy_intervals[strategy]
                     self.vehicle_rerouting_times[veh_id] = interval
 
+            # Read trips (realtime vehicles with from/to only)
+            for trip in route_root.findall('trip'):
+                trip_id = trip.get('id')
+                if not trip_id:
+                    error_msg = XML_PARSING_ERROR_MSG.format(
+                        code=ROUTING_ERROR_XML_PARSING,
+                        details="Trip element missing required 'id' attribute"
+                    )
+                    print(error_msg, file=sys.stderr)
+                    sys.exit(1)
+
+                # Check for duplicate IDs
+                if trip_id in vehicle_ids_seen:
+                    error_msg = XML_PARSING_ERROR_MSG.format(
+                        code=ROUTING_ERROR_XML_PARSING,
+                        details=f"Duplicate vehicle/trip ID found: {trip_id}"
+                    )
+                    print(error_msg, file=sys.stderr)
+                    sys.exit(1)
+                vehicle_ids_seen.add(trip_id)
+
+                # Get routing strategy (trips default to realtime)
+                strategy = get_strategy(trip, trip_id)
+
+                # Validate strategy is known
+                if strategy not in valid_strategies:
+                    error_msg = XML_PARSING_ERROR_MSG.format(
+                        code=ROUTING_ERROR_XML_PARSING,
+                        details=f"Trip {trip_id} has unknown routing strategy: {strategy}. Valid strategies: {valid_strategies}"
+                    )
+                    print(error_msg, file=sys.stderr)
+                    sys.exit(1)
+
+                self.vehicle_strategies[trip_id] = strategy
+
+                # Set initial rerouting time for dynamic strategies
+                if strategy in self.strategy_intervals:
+                    interval = self.strategy_intervals[strategy]
+                    self.vehicle_rerouting_times[trip_id] = interval
+
         except ET.ParseError as e:
             error_msg = XML_PARSING_ERROR_MSG.format(
                 code=ROUTING_ERROR_XML_PARSING,
@@ -393,21 +442,22 @@ class SumoController:
             sys.exit(1)
 
     def handle_realtime_rerouting(self, vehicle_id: str, current_time: float) -> None:
-        """Handle realtime strategy rerouting with SUMO aggregated mode - TERMINATES ON ERROR."""
+        """
+        Handle realtime strategy rerouting with SUMO aggregated mode.
+
+        Realtime vehicles use <trip> elements, so SUMO automatically routes them at departure.
+        Every 30 seconds, we recalculate routes using aggregated mode (traffic-aware) and
+        apply the new route if it provides sufficient improvement.
+        """
         try:
-            # Get current route for improvement validation
+            # Get current route (trips are automatically routed by SUMO at departure)
             current_route = traci.vehicle.getRoute(vehicle_id)
             if not current_route:
-                error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
-                    code=ROUTING_ERROR_REALTIME_FAILED,
-                    strategy=ROUTING_REALTIME,
-                    vehicle_id=vehicle_id,
-                    reason="Vehicle has no current route"
-                )
-                print(error_msg, file=sys.stderr)
-                sys.exit(1)
+                # This shouldn't happen with trips, but handle gracefully
+                print(f"⚠️  Warning: Realtime vehicle {vehicle_id} has no route, skipping rerouting")
+                return
 
-            # Get current position for route calculation
+            # Get current position and destination
             current_edge = traci.vehicle.getRoadID(vehicle_id)
             destination = current_route[-1]
 
@@ -415,7 +465,7 @@ class SumoController:
             if current_edge.startswith(':') or current_edge == destination:
                 return
 
-            # Calculate potential new route using aggregated mode
+            # Calculate potential new route using aggregated mode (traffic-aware routing)
             traci.vehicle.setRoutingMode(vehicle_id, SUMO_ROUTING_MODE_AGGREGATED)
             potential_route = traci.simulation.findRoute(current_edge, destination)
 
@@ -429,7 +479,7 @@ class SumoController:
                 print(error_msg, file=sys.stderr)
                 sys.exit(1)
 
-            # Get route from current position to destination for comparison
+            # Get remaining route from current position for comparison
             try:
                 current_edge_index = current_route.index(current_edge)
                 remaining_current_route = current_route[current_edge_index:]
@@ -437,12 +487,12 @@ class SumoController:
                 # Current edge not in route (vehicle deviated), use full current route for comparison
                 remaining_current_route = current_route
 
-            # Calculate route improvement
+            # Calculate route improvement percentage
             improvement_pct = self.calculate_route_improvement(
                 vehicle_id, remaining_current_route, potential_route.edges
             )
 
-            # Only apply route if improvement exceeds threshold
+            # Only apply new route if improvement exceeds threshold
             if improvement_pct >= REALTIME_ROUTE_IMPROVEMENT_THRESHOLD_PCT:
                 traci.vehicle.setRoute(vehicle_id, potential_route.edges)
 

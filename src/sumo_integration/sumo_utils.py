@@ -48,6 +48,8 @@ def generate_sumo_conf_file(
     network_file,
     route_file: Optional[str] = None,
     zones_file: Optional[str] = None,
+    end_time: int = 3600,
+    step_length: float = 1.0,
 ) -> str:
     """
     Create a SUMO configuration file (.sumocfg).
@@ -55,6 +57,9 @@ def generate_sumo_conf_file(
     :param config_file: File path to write the configuration
     :param network_file: Path to the network .net.xml file
     :param route_file: Optional path to the route .xml file
+    :param zones_file: Optional path to the zones .xml file
+    :param end_time: Simulation end time in seconds (default: 3600)
+    :param step_length: Simulation step length in seconds (default: 1.0)
     """
     # print("Creating SUMO configuration file.")
     try:
@@ -71,7 +76,7 @@ def generate_sumo_conf_file(
         if zones_name:
             config_content += f"        <additional-files value=\"{zones_name}\"/>\n"
 
-        config_content += "    </input>\n    <time>\n        <begin value=\"0\"/>\n        <end value=\"3600\"/>\n    </time>\n    <output>\n        <tripinfo-output value=\"tripinfo.xml\"/>\n        <summary-output value=\"summary.xml\"/>\n        <statistics-output value=\"sumo_statistics.xml\"/>\n        <log value=\"simulation.log\"/>\n    </output>\n</configuration>"
+        config_content += f"    </input>\n    <time>\n        <begin value=\"0\"/>\n        <end value=\"{end_time}\"/>\n        <step-length value=\"{step_length}\"/>\n    </time>\n    <output>\n        <tripinfo-output value=\"tripinfo.xml\"/>\n        <summary-output value=\"summary.xml\"/>\n        <statistics-output value=\"sumo_statistics.xml\"/>\n        <log value=\"simulation.log\"/>\n    </output>\n</configuration>"
 
         with open(config_file, "w") as f:
             f.write(config_content)
@@ -111,6 +116,8 @@ def execute_config_generation(args) -> None:
         CONFIG.network_file,
         route_file=CONFIG.routes_file,
         zones_file=CONFIG.zones_file,
+        end_time=args.end_time,
+        step_length=args.step_length,
     )
     try:
         verify_generate_sumo_conf_file()
@@ -142,6 +149,51 @@ def update_sumo_config_paths() -> None:
     # Save updated config
     tree.write(CONFIG.config_file, encoding='utf-8', xml_declaration=True)
     logger.info("Updated SUMO config file paths")
+
+
+def ensure_output_configuration() -> None:
+    """Ensure SUMO config file has proper output section for statistics generation."""
+    import logging
+    import xml.etree.ElementTree as ET
+
+    logger = logging.getLogger(__name__)
+
+    tree = ET.parse(CONFIG.config_file)
+    root = tree.getroot()
+
+    # Check if output section exists
+    output_elem = root.find('output')
+
+    if output_elem is None:
+        # Create new output section
+        output_elem = ET.SubElement(root, 'output')
+        logger.info("Created new <output> section in SUMO config")
+
+    # Define required output files
+    required_outputs = {
+        'tripinfo-output': 'tripinfo.xml',
+        'summary-output': 'summary.xml',
+        'statistics-output': 'sumo_statistics.xml',
+        'log': 'simulation.log'
+    }
+
+    # Add or update each output element
+    for output_type, output_file in required_outputs.items():
+        output_child = output_elem.find(output_type)
+        if output_child is None:
+            output_child = ET.SubElement(output_elem, output_type)
+            output_child.set('value', output_file)
+            logger.info(f"Added {output_type}={output_file} to SUMO config")
+        else:
+            # Update existing value if different
+            current_value = output_child.get('value')
+            if current_value != output_file:
+                output_child.set('value', output_file)
+                logger.info(f"Updated {output_type} from {current_value} to {output_file}")
+
+    # Save updated config
+    tree.write(CONFIG.config_file, encoding='utf-8', xml_declaration=True)
+    logger.info("Ensured SUMO config has proper output configuration")
 
 
 def override_end_time_from_config(args) -> None:

@@ -149,11 +149,22 @@ class TreeMethodController(TrafficController):
                     # Populate shared variable with calculated phase durations
                     self._populate_shared_phase_durations()
 
-                    # DEBUG: Log first junction's phase durations after calculation
-                    if step <= 300 and self.current_phase_durations:
-                        first_junction = list(self.current_phase_durations.keys())[0]
-                        durations = list(self.current_phase_durations[first_junction].values())
-                        self.logger.debug(f"📊 AFTER_CALC: junction={first_junction}, durations={durations}")
+                    # Log Tree Method decisions: iteration header + all junction phase durations
+                    # hours = step // 3600
+                    # minutes = (step % 3600) // 60
+                    # seconds = step % 60
+                    # time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+                    # num_junctions = len(self.current_phase_durations)
+
+                    # self.logger.info(f"🔧 step={step} | time={time_str} | Tree Method calculating phases for {num_junctions} junctions")
+
+                    # Log all phase durations for each junction in compact array format
+                    # for tl_id, phase_durations in sorted(self.current_phase_durations.items()):
+                    #     # Extract durations in phase order (0, 1, 2, 3, ...)
+                    #     durations_list = [phase_durations.get(i, 0) for i in range(len(phase_durations))]
+                    #     durations_str = ", ".join([f"{d}s" for d in durations_list])
+                    #     self.logger.info(f"🚦 step={step} | {tl_id}: [{durations_str}]")
+                    pass  # Logging disabled
 
                     # Update junction control state based on tree complexity
                     self._update_junction_control_state(step)

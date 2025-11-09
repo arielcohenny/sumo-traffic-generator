@@ -52,7 +52,7 @@ class ActuatedController(TrafficController):
 
     def initialize(self) -> None:
         """Initialize actuated controller - use native SUMO behavior."""
-        self.logger.info("=== ACTUATED CONTROLLER INITIALIZATION ===")
+        # self.logger.info("=== ACTUATED CONTROLLER INITIALIZATION ===")
 
         # Initialize Graph object for vehicle tracking (same as Tree Method)
         from src.traffic_control.decentralized_traffic_bottlenecks.shared.classes.graph import Graph
@@ -81,25 +81,26 @@ class ActuatedController(TrafficController):
                 #     f"Vehicle total time: {getattr(self.graph, 'vehicle_total_time', 'N/A')}")
 
                 # Report Actuated method's duration statistics using same calculation as Tree Method
-                if hasattr(self.graph, 'ended_vehicles_count') and self.graph.ended_vehicles_count > 0:
-                    actuated_avg_duration = self.graph.vehicle_total_time / \
-                        self.graph.ended_vehicles_count
-                    self.logger.info("=== ACTUATED STATISTICS ===")
-                    self.logger.info(
-                        f"Actuated - Vehicles completed: {self.graph.ended_vehicles_count}")
-                    self.logger.info(
-                        f"Actuated - Total driving time: {self.graph.vehicle_total_time}")
-                    self.logger.info(
-                        f"Actuated - Average duration: {actuated_avg_duration:.2f} steps")
-                    if hasattr(self.graph, 'driving_Time_seconds'):
-                        self.logger.info(
-                            f"Actuated - Individual durations collected: {len(self.graph.driving_Time_seconds)}")
-                else:
-                    self.logger.info("=== ACTUATED STATISTICS ===")
-                    self.logger.info(
-                        "Actuated - No completed vehicles found or graph not properly initialized")
-            else:
-                self.logger.info("Graph object not found or not initialized")
+                # if hasattr(self.graph, 'ended_vehicles_count') and self.graph.ended_vehicles_count > 0:
+                #     actuated_avg_duration = self.graph.vehicle_total_time / \
+                #         self.graph.ended_vehicles_count
+                #     self.logger.info("=== ACTUATED STATISTICS ===")
+                #     self.logger.info(
+                #         f"Actuated - Vehicles completed: {self.graph.ended_vehicles_count}")
+                #     self.logger.info(
+                #         f"Actuated - Total driving time: {self.graph.vehicle_total_time}")
+                #     self.logger.info(
+                #         f"Actuated - Average duration: {actuated_avg_duration:.2f} steps")
+                #     if hasattr(self.graph, 'driving_Time_seconds'):
+                #         self.logger.info(
+                #             f"Actuated - Individual durations collected: {len(self.graph.driving_Time_seconds)}")
+                # else:
+                #     self.logger.info("=== ACTUATED STATISTICS ===")
+                #     self.logger.info(
+                #         "Actuated - No completed vehicles found or graph not properly initialized")
+                pass
+            # else:
+            #     self.logger.info("Graph object not found or not initialized")
 
         except Exception as e:
             self.logger.error(f"Error in Actuated cleanup: {e}")
@@ -118,7 +119,7 @@ class FixedController(TrafficController):
 
     def initialize(self) -> None:
         """Initialize fixed controller with deterministic phase cycling."""
-        self.logger.info("=== FIXED CONTROLLER INITIALIZATION ===")
+        # self.logger.info("=== FIXED CONTROLLER INITIALIZATION ===")
 
         # Initialize Graph object for vehicle tracking (same as Tree Method)
         from src.traffic_control.decentralized_traffic_bottlenecks.shared.classes.graph import Graph
@@ -129,8 +130,7 @@ class FixedController(TrafficController):
 
             for tl_id in traffic_lights:
                 # Get original phase information without modifying
-                complete_def = traci.trafficlight.getCompleteRedYellowGreenDefinition(tl_id)[
-                    0]
+                complete_def = traci.trafficlight.getAllProgramLogics(tl_id)[0]
                 phases = complete_def.phases
                 durations = [int(phase.duration) for phase in phases]
                 total_cycle = sum(durations)
@@ -197,24 +197,25 @@ class FixedController(TrafficController):
                 #     f"Vehicle total time: {getattr(self.graph, 'vehicle_total_time', 'N/A')}")
 
                 # Report Fixed method's duration statistics using same calculation as Tree Method
-                if hasattr(self.graph, 'ended_vehicles_count') and self.graph.ended_vehicles_count > 0:
-                    fixed_avg_duration = self.graph.vehicle_total_time / self.graph.ended_vehicles_count
-                    self.logger.info("=== FIXED STATISTICS ===")
-                    self.logger.info(
-                        f"Fixed - Vehicles completed: {self.graph.ended_vehicles_count}")
-                    self.logger.info(
-                        f"Fixed - Total driving time: {self.graph.vehicle_total_time}")
-                    self.logger.info(
-                        f"Fixed - Average duration: {fixed_avg_duration:.2f} steps")
-                    if hasattr(self.graph, 'driving_Time_seconds'):
-                        self.logger.info(
-                            f"Fixed - Individual durations collected: {len(self.graph.driving_Time_seconds)}")
-                else:
-                    self.logger.info("=== FIXED STATISTICS ===")
-                    self.logger.info(
-                        "Fixed - No completed vehicles found or graph not properly initialized")
-            else:
-                self.logger.info("Graph object not found or not initialized")
+                # if hasattr(self.graph, 'ended_vehicles_count') and self.graph.ended_vehicles_count > 0:
+                #     fixed_avg_duration = self.graph.vehicle_total_time / self.graph.ended_vehicles_count
+                #     self.logger.info("=== FIXED STATISTICS ===")
+                #     self.logger.info(
+                #         f"Fixed - Vehicles completed: {self.graph.ended_vehicles_count}")
+                #     self.logger.info(
+                #         f"Fixed - Total driving time: {self.graph.vehicle_total_time}")
+                #     self.logger.info(
+                #         f"Fixed - Average duration: {fixed_avg_duration:.2f} steps")
+                #     if hasattr(self.graph, 'driving_Time_seconds'):
+                #         self.logger.info(
+                #             f"Fixed - Individual durations collected: {len(self.graph.driving_Time_seconds)}")
+                # else:
+                #     self.logger.info("=== FIXED STATISTICS ===")
+                #     self.logger.info(
+                #         "Fixed - No completed vehicles found or graph not properly initialized")
+                pass
+            # else:
+            #     self.logger.info("Graph object not found or not initialized")
 
         except Exception as e:
             self.logger.error(f"Error in Fixed cleanup: {e}")

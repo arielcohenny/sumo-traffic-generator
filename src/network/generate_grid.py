@@ -55,9 +55,6 @@ def generate_full_grid_network(dimension, block_size_m, lane_count_arg, traffic_
     # Fix traffic lights for RL control only
     if traffic_control == 'rl':
         fix_traffic_lights_for_rl_control()
-    else:
-        print(
-            f"Skipping RL traffic light fix - using traffic control method: {traffic_control}")
 
 
 def pick_random_junction_ids(seed: int, num_junctions_to_remove: int, dimension: int) -> List[str]:
@@ -360,21 +357,23 @@ def convert_to_partial_opposites_strategy():
     """Convert traffic light layout to partial_opposites strategy
 
     Creates 4-phase system where:
-    - Phase 1: N/S straight + right turns (30s green)
-    - Phase 2: N/S left turns + U-turns (9s green)
-    - Phase 3: E/W straight + right turns (30s green)
-    - Phase 4: E/W left turns + U-turns (9s green)
+    - Phase 1: N/S straight + right turns
+    - Phase 2: N/S left turns + U-turns
+    - Phase 3: E/W straight + right turns
+    - Phase 4: E/W left turns + U-turns
+
+    Phase durations are calculated dynamically by convert_to_green_only_phases():
+    - Interior junctions (4 phases): 90s / 4 = 22.5s per phase
+    - Corner junctions (2-3 phases): 90s / N phases (equal durations)
+
+    Total cycle: 90 seconds for all junctions (matches Tree Method interval)
+    Yellow transitions (3s) are automatically added by SUMO between conflicting phases
 
     Requires: Minimum 2 lanes per edge to separate movement groups
     """
     import xml.etree.ElementTree as ET
     import re
     from pathlib import Path
-    from src.constants import (
-        PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN,
-        PARTIAL_OPPOSITES_LEFT_UTURN_GREEN,
-        PARTIAL_OPPOSITES_YELLOW
-    )
 
     def get_edge_direction(edge_id: str) -> str:
         """Determine which cardinal direction an edge is heading"""
@@ -553,25 +552,25 @@ def convert_to_partial_opposites_strategy():
 
         phases = []
 
-        # Phase 1: N/S straight+right green (30s)
+        # Phase 1: N/S straight+right green
         state1 = build_state_string(num_links, ns_straight_right)
-        phases.append({'duration': PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN, 'state': state1})
-        phases.append({'duration': PARTIAL_OPPOSITES_YELLOW, 'state': convert_to_yellow(state1)})
+        phases.append({'duration': 1, 'state': state1})  # Placeholder, recalculated by convert_to_green_only_phases()
 
-        # Phase 2: N/S left+u-turn green (9s)
+        # Phase 2: N/S left+u-turn green
         state2 = build_state_string(num_links, ns_left_uturn)
-        phases.append({'duration': PARTIAL_OPPOSITES_LEFT_UTURN_GREEN, 'state': state2})
-        phases.append({'duration': PARTIAL_OPPOSITES_YELLOW, 'state': convert_to_yellow(state2)})
+        phases.append({'duration': 1, 'state': state2})  # Placeholder, recalculated by convert_to_green_only_phases()
 
-        # Phase 3: E/W straight+right green (30s)
+        # Phase 3: E/W straight+right green
         state3 = build_state_string(num_links, ew_straight_right)
-        phases.append({'duration': PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN, 'state': state3})
-        phases.append({'duration': PARTIAL_OPPOSITES_YELLOW, 'state': convert_to_yellow(state3)})
+        phases.append({'duration': 1, 'state': state3})  # Placeholder, recalculated by convert_to_green_only_phases()
 
-        # Phase 4: E/W left+u-turn green (9s)
+        # Phase 4: E/W left+u-turn green
         state4 = build_state_string(num_links, ew_left_uturn)
-        phases.append({'duration': PARTIAL_OPPOSITES_LEFT_UTURN_GREEN, 'state': state4})
-        phases.append({'duration': PARTIAL_OPPOSITES_YELLOW, 'state': convert_to_yellow(state4)})
+        phases.append({'duration': 1, 'state': state4})  # Placeholder, recalculated by convert_to_green_only_phases()
+
+        # Filter out phases with no green lights (all 'r')
+        # This happens at corner junctions that don't have all movement groups
+        phases = [p for p in phases if 'G' in p['state']]
 
         # Replace phases in traffic light logic
         for phase in tl_logic.findall('phase'):
@@ -589,6 +588,179 @@ def convert_to_partial_opposites_strategy():
         encoding='UTF-8',
         xml_declaration=True
     )
+
+
+def convert_to_actuated_traffic_lights():
+    """Convert static traffic lights to actuated type.
+
+    Aligns with original decentralized-traffic-bottlenecks repository by:
+    - Changing type from "static" to "actuated"
+    - Adding actuated control parameters (max-gap, detector-gap, etc.)
+    - Adding minDur and maxDur attributes to phases
+    - Preserving existing phase durations and states
+
+    Must be called AFTER traffic light strategy conversions (incoming, partial_opposites).
+
+    Parameters match original repository:
+    - max-gap: 3.0s (maximum time gap to extend phase)
+    - detector-gap: 1.0s (detector placement distance)
+    - passing-time: 10.0s (vehicle headway estimate)
+    - freq: 300s (detector data aggregation)
+    - show-detectors: true (visible in GUI)
+    - minDur: 10s (minimum phase duration)
+    - maxDur: 70s (maximum phase duration)
+    """
+    import xml.etree.ElementTree as ET
+    from pathlib import Path
+    from src.constants import (
+        ACTUATED_MAX_GAP,
+        ACTUATED_DETECTOR_GAP,
+        ACTUATED_PASSING_TIME,
+        ACTUATED_FREQ,
+        ACTUATED_SHOW_DETECTORS,
+        ACTUATED_MIN_DUR,
+        ACTUATED_MAX_DUR
+    )
+
+    # Parse the traffic light logic file
+    tree = ET.parse(Path(str(CONFIG.network_tll_file)))
+    root = tree.getroot()
+
+    # Convert each traffic light from static to actuated
+    for tl_logic in root.findall('tlLogic'):
+        # Change type from static to actuated
+        tl_logic.set('type', 'actuated')
+
+        # Add actuated control parameters AFTER phases (matches original repository)
+        # Clear existing param elements (if any) and add new ones
+        for param in tl_logic.findall('param'):
+            tl_logic.remove(param)
+
+        # Add parameters after phases (append instead of insert)
+        # This matches the original repository structure and avoids SUMO warnings
+        param_max_gap = ET.Element('param')
+        param_max_gap.set('key', 'max-gap')
+        param_max_gap.set('value', str(ACTUATED_MAX_GAP))
+        tl_logic.append(param_max_gap)
+
+        param_detector_gap = ET.Element('param')
+        param_detector_gap.set('key', 'detector-gap')
+        param_detector_gap.set('value', str(ACTUATED_DETECTOR_GAP))
+        tl_logic.append(param_detector_gap)
+
+        param_passing_time = ET.Element('param')
+        param_passing_time.set('key', 'passing-time')
+        param_passing_time.set('value', str(ACTUATED_PASSING_TIME))
+        tl_logic.append(param_passing_time)
+
+        param_freq = ET.Element('param')
+        param_freq.set('key', 'freq')
+        param_freq.set('value', str(ACTUATED_FREQ))
+        tl_logic.append(param_freq)
+
+        param_show_detectors = ET.Element('param')
+        param_show_detectors.set('key', 'show-detectors')
+        param_show_detectors.set('value', str(ACTUATED_SHOW_DETECTORS).lower())
+        tl_logic.append(param_show_detectors)
+
+        # Add minDur and maxDur only to phases with green lights
+        # (Yellow phases don't need actuated control - SUMO handles them automatically)
+        for phase in tl_logic.findall('phase'):
+            state = phase.get('state', '')
+            # Only add minDur/maxDur if phase contains green lights ('G')
+            if 'G' in state:
+                # Keep existing duration as nominal duration
+                # Add minDur and maxDur for actuated control
+                phase.set('minDur', str(ACTUATED_MIN_DUR))
+                phase.set('maxDur', str(ACTUATED_MAX_DUR))
+
+    # Write modified traffic light file
+    ET.indent(root)
+    tree.write(
+        Path(str(CONFIG.network_tll_file)),
+        encoding='UTF-8',
+        xml_declaration=True
+    )
+
+
+def convert_to_green_only_phases():
+    """Convert traffic lights to green-only phases with equal durations.
+
+    Removes yellow transition phases, normalizes states, and recalculates equal phase durations.
+    This ensures fair Fixed baseline and proper Tree Method optimization.
+
+    Must be called AFTER traffic light strategy conversions (incoming, partial_opposites)
+    but BEFORE convert_to_actuated_traffic_lights().
+
+    Transformation:
+    - Removes pure yellow phases (contain 'y' but no 'G')
+    - Normalizes state strings to use only 'G' (green) and 'r' (red)
+    - Recalculates equal durations: CYCLE_TIME / num_phases for each junction
+    - Ensures all junctions have same total cycle time (90s) regardless of phase count
+
+    This matches the original decentralized-traffic-bottlenecks repository format
+    where Tree Method only optimizes green phases and SUMO automatically inserts
+    3-second yellow transitions between conflicting phases.
+    """
+    import xml.etree.ElementTree as ET
+    from pathlib import Path
+
+    # Standard cycle time (matching Tree Method interval)
+    # TODO: Make this configurable via --tree-method-interval argument
+    CYCLE_TIME = 90  # seconds
+
+    # Parse TLL file
+    tree = ET.parse(Path(str(CONFIG.network_tll_file)))
+    root = tree.getroot()
+
+    # Process each traffic light
+    for tl_logic in root.findall('tlLogic'):
+        phases = list(tl_logic.findall('phase'))
+        green_only_phases = []
+
+        for phase in phases:
+            state = phase.get('state', '')
+
+            # Skip yellow transition phases (contain 'y' character)
+            # These will be automatically inserted by SUMO at 3 seconds
+            if 'y' in state:
+                continue
+
+            # Normalize state to green-only format (only 'G' and 'r')
+            # Convert lowercase 'g' (permissive green) to uppercase 'G'
+            # Convert everything else to 'r' (red)
+            normalized_state = ''
+            for char in state:
+                if char in ['G', 'g']:  # Both uppercase and lowercase green
+                    normalized_state += 'G'
+                else:
+                    # Convert 'r' and any other character to 'r'
+                    normalized_state += 'r'
+
+            green_only_phases.append({
+                'state': normalized_state
+            })
+
+        # Calculate equal duration for all phases
+        # This ensures fair Fixed baseline: all movements get equal green time
+        num_phases = len(green_only_phases)
+        if num_phases > 0:
+            equal_duration = CYCLE_TIME / num_phases
+        else:
+            equal_duration = CYCLE_TIME  # Fallback (shouldn't happen)
+
+        # Replace phases with equal durations
+        for phase in phases:
+            tl_logic.remove(phase)
+
+        for phase_data in green_only_phases:
+            phase_elem = ET.SubElement(tl_logic, 'phase')
+            phase_elem.set('duration', str(equal_duration))
+            phase_elem.set('state', phase_data['state'])
+
+    # Write modified traffic light file
+    ET.indent(root)
+    tree.write(Path(str(CONFIG.network_tll_file)), encoding='UTF-8', xml_declaration=True)
 
 
 def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_input, lane_count_arg, traffic_light_strategy="opposites", traffic_control=None):
@@ -620,6 +792,14 @@ def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_inp
             convert_to_incoming_strategy()
         elif traffic_light_strategy == "partial_opposites":
             convert_to_partial_opposites_strategy()
+
+        # Convert to green-only phases (match original repository format)
+        # This removes yellow phases and normalizes state strings to only 'G' and 'r'
+        # Must be called BEFORE convert_to_actuated_traffic_lights()
+        convert_to_green_only_phases()
+
+        # Convert to actuated baseline (aligns with original decentralized-traffic-bottlenecks repository)
+        convert_to_actuated_traffic_lights()
 
     except subprocess.CalledProcessError as e:
         raise Exception(f"Error during netgenerate execution:", e.stderr)

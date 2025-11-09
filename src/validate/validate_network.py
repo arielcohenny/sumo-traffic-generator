@@ -17,7 +17,9 @@ from src.constants import (
     MIN_XML_FILE_SIZE, MIN_PHASE_DURATION, MAX_PHASE_DURATION,
     MIN_CYCLE_TIME, MAX_CYCLE_TIME, MIN_GREEN_TIME_RATIO,
     PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN, PARTIAL_OPPOSITES_LEFT_UTURN_GREEN,
-    PARTIAL_OPPOSITES_YELLOW, TL_STRATEGY_PARTIAL_OPPOSITES
+    TL_STRATEGY_PARTIAL_OPPOSITES,
+    ACTUATED_MAX_GAP, ACTUATED_DETECTOR_GAP, ACTUATED_PASSING_TIME,
+    ACTUATED_FREQ, ACTUATED_SHOW_DETECTORS, ACTUATED_MIN_DUR, ACTUATED_MAX_DUR
 )
 
 
@@ -283,7 +285,8 @@ def verify_generate_grid_network(
 
         # Check reasonable cycle time (skip validation for RL control setups)
         # If any phase has 1s duration, this is RL control setup - skip cycle validations
-        has_rl_control_duration = any(float(phase.get("duration", 0)) == 1.0 for phase in tl_logic.findall("phase"))
+        has_rl_control_duration = any(
+            float(phase.get("duration", 0)) == 1.0 for phase in tl_logic.findall("phase"))
 
         if not has_rl_control_duration:
             if total_cycle_time < MIN_CYCLE_TIME or total_cycle_time > MAX_CYCLE_TIME:
@@ -295,47 +298,124 @@ def verify_generate_grid_network(
                 raise ValidationError(
                     f"Traffic light {tl_id} has insufficient green time: {green_time}/{total_cycle_time}s")
 
-    # 15 ── validate partial_opposites specific requirements -------------------
+    # 15 ── validate actuated traffic light configuration ----------------------
+    # All traffic lights should be actuated (aligns with original repository)
+    for tl_logic in tll_root.findall("tlLogic"):
+        tl_id = tl_logic.get("id")
+        tl_type = tl_logic.get("type")
+
+        # Check type is actuated
+        if tl_type != "actuated":
+            raise ValidationError(
+                f"Traffic light {tl_id} has type '{tl_type}', expected 'actuated'")
+
+        # Validate required param elements
+        required_params = {
+            "max-gap": ACTUATED_MAX_GAP,
+            "detector-gap": ACTUATED_DETECTOR_GAP,
+            "passing-time": ACTUATED_PASSING_TIME,
+            "freq": ACTUATED_FREQ,
+            "show-detectors": str(ACTUATED_SHOW_DETECTORS).lower(),
+        }
+
+        params = {param.get("key"): param.get("value")
+                  for param in tl_logic.findall("param")}
+
+        for param_key, expected_value in required_params.items():
+            if param_key not in params:
+                raise ValidationError(
+                    f"Traffic light {tl_id} missing required param: {param_key}")
+
+            # Validate param values match expected configuration
+            actual_value = params[param_key]
+            expected_str = str(expected_value)
+
+            # Convert to float for numeric comparisons
+            if param_key != "show-detectors":
+                try:
+                    actual_float = float(actual_value)
+                    expected_float = float(expected_str)
+                    if abs(actual_float - expected_float) > 0.01:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} param {param_key}={actual_value}, expected {expected_str}")
+                except ValueError:
+                    raise ValidationError(
+                        f"Traffic light {tl_id} param {param_key} has invalid value: {actual_value}")
+            else:
+                # Boolean param - check exact match
+                if actual_value != expected_str:
+                    raise ValidationError(
+                        f"Traffic light {tl_id} param {param_key}={actual_value}, expected {expected_str}")
+
+        # Validate only green phases have minDur and maxDur attributes
+        # (Yellow phases don't need actuated control - SUMO handles them automatically)
+        for phase in tl_logic.findall("phase"):
+            state = phase.get("state", "")
+
+            # Only green phases should have minDur/maxDur
+            if 'G' in state:
+                min_dur = phase.get("minDur")
+                max_dur = phase.get("maxDur")
+
+                if min_dur is None:
+                    raise ValidationError(
+                        f"Traffic light {tl_id} green phase missing minDur attribute")
+                if max_dur is None:
+                    raise ValidationError(
+                        f"Traffic light {tl_id} green phase missing maxDur attribute")
+
+                # Validate minDur and maxDur values
+                try:
+                    min_dur_val = float(min_dur)
+                    max_dur_val = float(max_dur)
+
+                    if abs(min_dur_val - ACTUATED_MIN_DUR) > 0.01:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} phase minDur={min_dur}, expected {ACTUATED_MIN_DUR}")
+                    if abs(max_dur_val - ACTUATED_MAX_DUR) > 0.01:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} phase maxDur={max_dur}, expected {ACTUATED_MAX_DUR}")
+                except ValueError:
+                    raise ValidationError(
+                        f"Traffic light {tl_id} phase has invalid minDur/maxDur values")
+
+    # 16 ── validate partial_opposites specific requirements -------------------
     if traffic_light_strategy == TL_STRATEGY_PARTIAL_OPPOSITES:
-        # Validate phase structure for partial_opposites
+        # Validate phase structure for partial_opposites (green-only format)
         for tl_logic in tll_root.findall("tlLogic"):
             tl_id = tl_logic.get("id")
             phases = tl_logic.findall("phase")
 
-            # Should have exactly 8 phases (4 green + 4 yellow)
-            if len(phases) != 8:
-                raise ValidationError(
-                    f"Traffic light {tl_id} with partial_opposites strategy should have 8 phases, found {len(phases)}")
+            # # Should have exactly 4 green phases (yellow transitions handled by SUMO)
+            # if len(phases) != 4:
+            #     raise ValidationError(
+            #         f"Traffic light {tl_id} with partial_opposites strategy should have 4 green phases, found {len(phases)}")
 
-            # Validate phase durations match expected pattern
-            expected_durations = [
-                PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN,  # NS straight+right green
-                PARTIAL_OPPOSITES_YELLOW,                # NS straight+right yellow
-                PARTIAL_OPPOSITES_LEFT_UTURN_GREEN,     # NS left+uturn green
-                PARTIAL_OPPOSITES_YELLOW,                # NS left+uturn yellow
-                PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN,  # EW straight+right green
-                PARTIAL_OPPOSITES_YELLOW,                # EW straight+right yellow
-                PARTIAL_OPPOSITES_LEFT_UTURN_GREEN,     # EW left+uturn green
-                PARTIAL_OPPOSITES_YELLOW,                # EW left+uturn yellow
-            ]
+            # Validate phase durations are equal (fair Fixed baseline)
+            # All phases in a junction should have the same duration
+            # Total cycle should be 90s regardless of number of phases
 
-            for i, phase in enumerate(phases):
-                duration = float(phase.get("duration", 0))
-                expected = expected_durations[i]
-                if abs(duration - expected) > 0.1:  # Allow small floating point tolerance
+            if len(phases) > 0:
+                durations = [float(phase.get("duration", 0)) for phase in phases]
+
+                # Check all durations are equal (within tolerance)
+                first_duration = durations[0]
+                for i, duration in enumerate(durations):
+                    if abs(duration - first_duration) > 0.1:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} has unequal phase durations: phase {i}={duration}s, expected {first_duration}s")
+
+                # Check total cycle time is 90s
+                total_cycle = sum(durations)
+                if abs(total_cycle - 90.0) > 0.1:
                     raise ValidationError(
-                        f"Traffic light {tl_id} phase {i} has incorrect duration: {duration}s, expected {expected}s")
-
-            # Validate total cycle time is 90 seconds
-            total_cycle = sum(expected_durations)
-            if total_cycle != 90:
-                raise ValidationError(
-                    f"Traffic light {tl_id} with partial_opposites should have 90s cycle, computed {total_cycle}s")
+                        f"Traffic light {tl_id} has incorrect total cycle time: {total_cycle}s, expected 90s")
 
         # Validate minimum 2 lanes per edge for partial_opposites
         # Note: Only validate after edge splitting has occurred (when _H edges exist)
         # At Step 1, edges haven't been split yet and will still have 1 lane
-        has_head_edges = any("_H" in edge.get("id", "") for edge in edg_root.findall("edge"))
+        has_head_edges = any("_H" in edge.get("id", "")
+                             for edge in edg_root.findall("edge"))
 
         if has_head_edges:
             # Edge splitting has occurred, validate lane counts

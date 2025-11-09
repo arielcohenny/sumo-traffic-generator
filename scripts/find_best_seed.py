@@ -17,7 +17,7 @@ class SeedFinder:
     def __init__(self):
         self.num_iterations = 100
         self.methods = ['tree_method', 'actuated', 'fixed']
-        self.vehicle_counts = [6000, 7000]
+        self.vehicle_counts = [4500, 6000, 7000]
 
         # Fixed simulation parameters
         self.base_params = [
@@ -27,11 +27,10 @@ class SeedFinder:
             '--step-length', '1.0',
             '--land_use_block_size_m', '25.0',
             '--attractiveness', 'land_use',
-            '--traffic_light_strategy', 'opposites',
-            '--routing_strategy', 'shortest 70 realtime 30',
-            '--vehicle_types', 'passenger 98 public 2',
+            '--traffic_light_strategy', 'partial_opposites',
+            '--routing_strategy', 'realtime 100',
+            '--vehicle_types', 'passenger 100',
             '--passenger-routes', 'in 15 out 15 inner 50 pass 20',
-            '--public-routes', 'in 30 out 30 inner 0 pass 40',
             '--departure_pattern', 'uniform',
             '--start_time_hour', '8.0',
             '--end-time', '7200'

@@ -19,16 +19,32 @@ def write_routes(outfile: str | Path,
 
     # vehicle entries
     for v in vehicles:
-        # Add routing_strategy as a vehicle attribute if present
-        veh_attrs = {
-            "id": v["id"], 
-            "type": v["type"], 
+        routing_strategy = v.get("routing_strategy", "shortest")
+
+        # Base attributes common to both trips and vehicles
+        base_attrs = {
+            "id": v["id"],
+            "type": v["type"],
             "depart": str(v["depart"])
         }
-        if "routing_strategy" in v:
-            veh_attrs["routing_strategy"] = v["routing_strategy"]
-        
-        veh = SubElement(root, "vehicle", **veh_attrs)
-        SubElement(veh, "route", edges=" ".join(v["route_edges"]))
+
+        # Realtime vehicles use <trip> with from/to attributes
+        # SUMO automatically routes them at departure based on current traffic
+        if routing_strategy == "realtime":
+            trip_attrs = {
+                **base_attrs,
+                "from": v["from_edge"],
+                "to": v["to_edge"]
+            }
+            trip_elem = SubElement(root, "trip", **trip_attrs)
+            # Store routing strategy as param for TraCI to read
+            SubElement(trip_elem, "param", key="routing_strategy", value=routing_strategy)
+
+        # Other strategies (shortest, fastest, attractiveness) use <vehicle> with full routes
+        else:
+            veh_elem = SubElement(root, "vehicle", **base_attrs)
+            SubElement(veh_elem, "route", edges=" ".join(v["route_edges"]))
+            # Store routing strategy as param for TraCI to read
+            SubElement(veh_elem, "param", key="routing_strategy", value=routing_strategy)
 
     ElementTree(root).write(outfile, encoding="utf-8", xml_declaration=True)

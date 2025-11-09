@@ -20,26 +20,26 @@ class ComparisonRunner:
         self.num_runs = 20
         # Set to True to delete workspace folders after completion
         self.cleanup_workspaces = False
-        self.private_seed_start = 26775
-        self.public_seed_start = 33524
+        self.private_seed_start = 79880
+        self.public_seed_start = 99917
         self.seed_increment = 4532
 
         # Fixed simulation parameters
         self.base_params = [
-            '--network-seed', '9467',
+            '--network-seed', '45219',
             '--grid_dimension', '6',
             '--block_size_m', '280',
             '--lane_count', 'realistic',
             '--step-length', '1.0',
             '--land_use_block_size_m', '25.0',
             '--attractiveness', 'land_use',
-            '--traffic_light_strategy', 'opposites',
-            '--routing_strategy', 'shortest 70 realtime 30',
+            '--traffic_light_strategy', 'partial_opposites',
+            '--routing_strategy', 'realtime 100',
             '--vehicle_types', 'passenger 100',
             '--passenger-routes', 'in 15 out 15 inner 50 pass 20',
             '--departure_pattern', 'uniform',
             '--start_time_hour', '8.0',
-            '--num_vehicles', '4500',
+            '--num_vehicles', '5500',
             '--end-time', '7200'
         ]
 

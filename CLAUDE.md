@@ -607,6 +607,24 @@ dbps
   - **Experimental Comparison**: Enables A/B testing between different traffic control approaches using identical network conditions
   - **Baseline Evaluation**: SUMO Actuated serves as primary baseline for comparing Tree Method performance
   - **Integration**: Seamlessly works with all existing features (routing strategies, vehicle types, temporal patterns)
+- **Actuated Traffic Light Baseline**:
+  - ✅ **COMPLETED & WORKING**: All traffic lights now use actuated (gap-based detection) instead of static timing
+  - **Research Alignment**: Matches original decentralized-traffic-bottlenecks repository baseline configuration
+  - **Fixed Parameters**: max-gap=3.0s, detector-gap=1.0s, passing-time=10.0s, freq=300s, show-detectors=true
+  - **Phase Duration Bounds**: minDur=10s, maxDur=70s on all phases
+  - **Universal Application**: Applies to all traffic light strategies (opposites, incoming, partial_opposites)
+  - **Gap-Based Detection**: Traffic lights dynamically extend green phases when vehicles are detected within max-gap
+  - **Validation**: Comprehensive validation ensures all traffic lights are properly configured as actuated
+  - **Implementation**: `convert_to_actuated_traffic_lights()` in `src/network/generate_grid.py` post-processes all traffic light definitions
+  - **Documentation**: See `docs/ACTUATED_BASELINE.md` for detailed technical documentation
+  - **Testing**:
+    ```bash
+    # Test actuated baseline with 3x3 grid
+    env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100 --end-time 1800 --gui
+
+    # Verify actuated parameters in workspace/grid.tll.xml
+    grep -A 10 'type="actuated"' workspace/grid.tll.xml
+    ```
 - **Recent Updates (Latest Session)**:
   - ✅ **Fixed Integration Errors**: Resolved "string indices must be integers, not 'str'" errors in TraCI integration
   - ✅ **XML Phase Parsing**: Fixed traffic light phase parsing to handle both single and multiple phase cases
@@ -618,12 +636,19 @@ dbps
   - ✅ **Working System**: All components now operational with successful test runs
   - ✅ **Traffic Control Implementation**: Successfully implemented traffic control method switching with tested examples
   - ✅ **partial_opposites Traffic Light Strategy**: Implemented third traffic light strategy that separates straight+right from left+u-turn movements
-    - 90-second cycle time: 30s+3s for straight+right, 9s+3s for left+u-turn per direction
+    - 90-second cycle time: 19.5s+3s for straight+right, 19.5s+3s for left+u-turn per direction (equal green phases)
     - Enforces minimum 2 lanes per edge with comprehensive validation
-    - Turn angle-based movement classification for accurate phase assignment
+    - Turn angle-based movement classification for accurate phase assignment (0°=straight, +90°=right, -90°=left, ±180°=u-turn)
     - Post-processing approach consistent with incoming strategy
     - Full integration with lane count algorithms and validation pipeline
     - Documented in `docs/PARTIAL_OPPOSITES_STRATEGY.md` with implementation roadmap
+  - ✅ **Actuated Traffic Light Baseline**: Implemented actuated (gap-based detection) traffic lights to align with original decentralized-traffic-bottlenecks repository
+    - All traffic lights now use type="actuated" instead of type="static"
+    - Fixed parameters matching original: max-gap=3.0s, detector-gap=1.0s, passing-time=10.0s, freq=300s
+    - Phase bounds: minDur=10s, maxDur=70s on all phases
+    - Comprehensive validation in `src/validate/validate_network.py` checks actuated configuration
+    - Universal application across all traffic light strategies (opposites, incoming, partial_opposites)
+    - Documentation in `docs/ACTUATED_BASELINE.md` with technical details
 - **Experimental Framework**:
   - ✅ **COMPLETED & WORKING**: Comprehensive experimental framework for traffic control method comparison
   - **Two Main Experiments**: moderate-traffic (600 vehicles) and high-traffic (1200 vehicles) over 2-hour simulations

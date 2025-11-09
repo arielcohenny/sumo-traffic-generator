@@ -11,7 +11,11 @@ import shutil
 from pathlib import Path
 
 from src.config import CONFIG
-from src.sumo_integration.sumo_utils import update_sumo_config_paths, override_end_time_from_config
+from src.sumo_integration.sumo_utils import (
+    update_sumo_config_paths,
+    ensure_output_configuration,
+    override_end_time_from_config
+)
 
 
 def setup_tree_method_samples(args, sample_folder: str) -> None:
@@ -52,7 +56,10 @@ def setup_tree_method_samples(args, sample_folder: str) -> None:
         
         # Update SUMO config file to use our file naming convention
         update_sumo_config_paths()
-        
+
+        # Ensure output section exists for statistics generation
+        ensure_output_configuration()
+
         # Extract and override end time from SUMO config
         override_end_time_from_config(args)
         
