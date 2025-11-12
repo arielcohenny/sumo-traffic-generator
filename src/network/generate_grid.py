@@ -276,16 +276,20 @@ def convert_to_incoming_strategy():
     import xml.etree.ElementTree as ET
     from pathlib import Path
 
-    # Parse the TLS definition file
-    tree = ET.parse(Path(str(CONFIG.network_tll_file)))
-    root = tree.getroot()
+    # Parse the TLS definition file (for phases)
+    tll_tree = ET.parse(Path(str(CONFIG.network_tll_file)))
+    tll_root = tll_tree.getroot()
+
+    # Parse the network file (for connections - connections are in net.xml, not tll.xml!)
+    net_tree = ET.parse(Path(str(CONFIG.network_net_file)))
+    net_root = net_tree.getroot()
 
     # For each traffic light logic
-    for tl in root.findall("tlLogic"):
+    for tl in tll_root.findall("tlLogic"):
         tl_id = tl.get("id")
 
-        # Get all connections for this traffic light, sorted by linkIndex
-        connections = [c for c in root.findall(
+        # Get all connections for this traffic light from net.xml, sorted by linkIndex
+        connections = [c for c in net_root.findall(
             "connection") if c.get("tl") == tl_id]
         if not connections:
             continue
@@ -345,8 +349,8 @@ def convert_to_incoming_strategy():
             phase_elem.set("state", state)
 
     # Write changes back to file
-    ET.indent(root)
-    tree.write(
+    ET.indent(tll_root)
+    tll_tree.write(
         Path(str(CONFIG.network_tll_file)),
         encoding="UTF-8",
         xml_declaration=True
@@ -384,22 +388,23 @@ def convert_to_partial_opposites_strategy():
             return 'unknown'
 
         from_junction, to_junction = junctions
-        from_row = from_junction[0]
-        from_col = int(from_junction[1:])
-        to_row = to_junction[0]
-        to_col = int(to_junction[1:])
+        # CORRECTED: Letter = column, Number = row
+        from_col = from_junction[0]  # Letter (A, B, C, ...) = column
+        from_row = int(from_junction[1:])  # Number (0, 1, 2, ...) = row
+        to_col = to_junction[0]  # Letter (A, B, C, ...) = column
+        to_row = int(to_junction[1:])  # Number (0, 1, 2, ...) = row
 
         # Determine direction based on junction change
-        if from_row == to_row:  # Horizontal movement
-            if to_col > from_col:
-                return 'E'  # Moving east
-            elif to_col < from_col:
-                return 'W'  # Moving west
-        elif from_col == to_col:  # Vertical movement
+        if from_col == to_col:  # Vertical movement (same column)
             if to_row > from_row:
-                return 'S'  # Moving south
+                return 'N'  # Moving north (row increases upward: 0→1→2)
             elif to_row < from_row:
-                return 'N'  # Moving north
+                return 'S'  # Moving south (row decreases downward: 2→1→0)
+        elif from_row == to_row:  # Horizontal movement (same row)
+            if to_col > from_col:
+                return 'E'  # Moving east (column increases rightward: A→B→C)
+            elif to_col < from_col:
+                return 'W'  # Moving west (column decreases leftward: C→B→A)
 
         return 'unknown'
 
@@ -461,36 +466,69 @@ def convert_to_partial_opposites_strategy():
         else:
             return 'left_uturn'
 
-    # Parse the traffic light logic file
-    tree = ET.parse(Path(str(CONFIG.network_tll_file)))
-    root = tree.getroot()
+    # Parse the traffic light logic file (for phases)
+    tll_tree = ET.parse(Path(str(CONFIG.network_tll_file)))
+    tll_root = tll_tree.getroot()
+
+    # Parse the network file (for connections - connections are in net.xml, not tll.xml!)
+    net_tree = ET.parse(Path(str(CONFIG.network_file)))
+    net_root = net_tree.getroot()
 
     # Build connection database with movement classification
     connections_db = {}  # tl_id -> list of connections with metadata
 
-    for tl_logic in root.findall('tlLogic'):
+    for tl_logic in tll_root.findall('tlLogic'):
         tl_id = tl_logic.get('id')
         connections_db[tl_id] = []
 
-        # Find all connections controlled by this traffic light (in the same file)
-        for connection in root.findall('connection'):
+        # Find all connections controlled by this traffic light (from net.xml)
+        for connection in net_root.findall('connection'):
             if connection.get('tl') == tl_id:
                 from_edge = connection.get('from')
                 to_edge = connection.get('to')
                 link_index = int(connection.get('linkIndex', -1))
 
-                # Determine edge directions from junction IDs
-                from_direction = get_edge_direction(from_edge)
-                to_direction = get_edge_direction(to_edge)
+                # Check if this is a multi-head edge (has _H_ suffix)
+                if '_H_' in from_edge:
+                    # Extract movement type directly from edge name
+                    # e.g., "A0A1_H_right" → "right"
+                    movement_suffix = from_edge.split('_H_')[-1]
 
-                # Calculate turn angle
-                turn_angle = calculate_turn_angle(from_direction, to_direction)
+                    # Map movement suffix to phase group
+                    if movement_suffix in ['right', 'straight']:
+                        movement_type = 'straight_right'
+                    elif movement_suffix in ['left', 'uturn']:
+                        movement_type = 'left_uturn'
+                    else:
+                        # Fallback to turn angle calculation
+                        from_direction = get_edge_direction(from_edge)
+                        to_direction = get_edge_direction(to_edge)
+                        turn_angle = calculate_turn_angle(from_direction, to_direction)
+                        movement_type = classify_movement(turn_angle)
 
-                # Classify movement type based on turn angle
-                movement_type = classify_movement(turn_angle)
+                    # Determine approach orientation from base edge name
+                    approach_orientation = get_edge_orientation(from_edge)
+                    turn_angle = 0.0  # Not needed for multi-head edges
+                    from_direction = get_edge_direction(from_edge)
+                    to_direction = 'unknown'
+                else:
+                    # Original single-head edge logic
+                    # Determine edge directions from junction IDs
+                    from_direction = get_edge_direction(from_edge)
+                    to_direction = get_edge_direction(to_edge)
 
-                # Determine approach orientation (N/S or E/W)
-                approach_orientation = get_edge_orientation(from_edge)
+                    # Calculate turn angle
+                    turn_angle = calculate_turn_angle(from_direction, to_direction)
+
+                    # Classify movement type based on turn angle
+                    movement_type = classify_movement(turn_angle)
+
+                    # Determine approach orientation (N/S or E/W)
+                    approach_orientation = get_edge_orientation(from_edge)
+
+                # DEBUG: Print orientation for B1 connections
+                if tl_id == 'B1':
+                    print(f"  DEBUG [{link_index}] {from_edge}: orientation={approach_orientation}, movement={movement_type}")
 
                 connections_db[tl_id].append({
                     'from': from_edge,
@@ -504,7 +542,7 @@ def convert_to_partial_opposites_strategy():
                 })
 
     # Rebuild traffic light phases for each intersection
-    for tl_logic in root.findall('tlLogic'):
+    for tl_logic in tll_root.findall('tlLogic'):
         tl_id = tl_logic.get('id')
         connections = connections_db.get(tl_id, [])
 
@@ -533,6 +571,14 @@ def convert_to_partial_opposites_strategy():
                     ew_straight_right.append(link_idx)
                 else:
                     ew_left_uturn.append(link_idx)
+
+        # DEBUG: Print grouping results for B1
+        if tl_id == 'B1':
+            print(f"\n=== B1 Grouping Results ===")
+            print(f"NS straight_right: {ns_straight_right}")
+            print(f"NS left_uturn: {ns_left_uturn}")
+            print(f"EW straight_right: {ew_straight_right}")
+            print(f"EW left_uturn: {ew_left_uturn}")
 
         # Determine state string length (number of connections)
         num_links = max([c['link_index'] for c in connections]) + 1
@@ -568,6 +614,14 @@ def convert_to_partial_opposites_strategy():
         state4 = build_state_string(num_links, ew_left_uturn)
         phases.append({'duration': 1, 'state': state4})  # Placeholder, recalculated by convert_to_green_only_phases()
 
+        # DEBUG: Print phases for B1
+        if tl_id == 'B1':
+            print(f"\n=== B1 Phases ===")
+            print(f"Phase 1 (NS straight+right): {state1}")
+            print(f"Phase 2 (NS left+uturn): {state2}")
+            print(f"Phase 3 (EW straight+right): {state3}")
+            print(f"Phase 4 (EW left+uturn): {state4}")
+
         # Filter out phases with no green lights (all 'r')
         # This happens at corner junctions that don't have all movement groups
         phases = [p for p in phases if 'G' in p['state']]
@@ -582,8 +636,8 @@ def convert_to_partial_opposites_strategy():
             phase_elem.set('state', phase_data['state'])
 
     # Write modified traffic light file
-    ET.indent(root)
-    tree.write(
+    ET.indent(tll_root)
+    tll_tree.write(
         Path(str(CONFIG.network_tll_file)),
         encoding='UTF-8',
         xml_declaration=True
@@ -786,12 +840,6 @@ def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_inp
         else:
             generate_full_grid_network(
                 dimension, block_size_m, lane_count_arg, "opposites", traffic_control)
-
-        # Post-process traffic lights for incoming strategy
-        if traffic_light_strategy == "incoming":
-            convert_to_incoming_strategy()
-        elif traffic_light_strategy == "partial_opposites":
-            convert_to_partial_opposites_strategy()
 
         # Convert to green-only phases (match original repository format)
         # This removes yellow phases and normalizes state strings to only 'G' and 'r'

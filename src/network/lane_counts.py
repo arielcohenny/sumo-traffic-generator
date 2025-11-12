@@ -69,13 +69,14 @@ def calculate_lane_count_realistic(edge_id: str, edg_root, block_size_m: int = 2
     # Enforce minimum based on traffic light strategy
     min_lanes = MIN_LANES_FOR_TL_STRATEGY.get(traffic_light_strategy, 1)
 
-    # Convert demand score to lane count (enforce min_lanes to 3)
+    # Convert demand score to lane count with strategy-specific thresholds
     if demand_score < 1.0:
         lanes = max(min_lanes, 1)
-    elif demand_score < 2.5:
-        lanes = max(min_lanes, 2)
     else:
-        lanes = 3
+        if demand_score < 3.5:
+            lanes = max(min_lanes, 2)
+        else:
+            lanes = 3
 
     return lanes
 
@@ -96,7 +97,8 @@ def calculate_lane_count(edge_id: str, algorithm: str, rng, min_lanes: int, max_
         Lane count for the edge
     """
     # Enforce minimum based on traffic light strategy
-    strategy_min_lanes = MIN_LANES_FOR_TL_STRATEGY.get(traffic_light_strategy, 1)
+    strategy_min_lanes = MIN_LANES_FOR_TL_STRATEGY.get(
+        traffic_light_strategy, 1)
     effective_min = max(min_lanes, strategy_min_lanes)
 
     if algorithm == 'random':
@@ -117,5 +119,6 @@ def calculate_lane_count(edge_id: str, algorithm: str, rng, min_lanes: int, max_
         # Default to realistic if unknown algorithm
         edg_tree = ET.parse(CONFIG.network_edg_file)
         edg_root = edg_tree.getroot()
-        realistic_lanes = calculate_lane_count_realistic(edge_id, edg_root, block_size_m, traffic_light_strategy)
+        realistic_lanes = calculate_lane_count_realistic(
+            edge_id, edg_root, block_size_m, traffic_light_strategy)
         return max(effective_min, min(max_lanes, realistic_lanes))

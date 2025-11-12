@@ -466,16 +466,22 @@ def generate_vehicle_routes(net_file: str | Path,
     # (sumolib.net.readNet doesn't automatically parse custom attributes)
     load_attractiveness_attributes_from_xml(all_edges, net_file)
 
+    # Filter to get only tail edges (exclude head edges with _H_ suffix)
+    # In multi-head edge architecture: tail edges like "A1B1" connect to intermediate nodes,
+    # head edges like "A1B1_H_left" connect from intermediate nodes to junctions
+    # Routing should use tail edges as origin/destination - SUMO automatically includes head edges in paths
+    tail_edges_only = [e for e in all_edges if '_H_' not in e.getID()]
+
     # Classify edges into boundary and inner for route pattern restrictions
     boundary_edges, inner_edges = classify_edges(grid_dimension)
 
     # Convert edge ID lists to edge objects - only use tail edges (without _H_s or _H_node suffixes)
     # as specified in ROUTES2.md: "we only examine the tail part of edges, namely edges without suffix _H_s or _H_node"
-    boundary_edge_objs = [e for e in all_edges if e.getID() in boundary_edges]
-    inner_edge_objs = [e for e in all_edges if e.getID() in inner_edges]
+    boundary_edge_objs = [e for e in tail_edges_only if e.getID() in boundary_edges]
+    inner_edge_objs = [e for e in tail_edges_only if e.getID() in inner_edges]
     # For inner routes: combine boundary and inner tail edges (all possible tail edges)
     all_tail_edge_objs = boundary_edge_objs + inner_edge_objs
-    all_edge_objs = all_edges
+    all_edge_objs = tail_edges_only  # Use only tail edges for routing
 
     # print(
     #     f"Classified {len(boundary_edge_objs)} boundary edges and {len(inner_edge_objs)} inner edges")
@@ -601,8 +607,27 @@ def _generate_passenger_vehicles(passenger_count: int, private_rng: random.Rando
 
             start_edge = start_edge_ids[ARRAY_FIRST_ELEMENT_INDEX]
             end_edge = end_edge_ids[ARRAY_FIRST_ELEMENT_INDEX]
+
+            # Skip if same edge ID
             if end_edge == start_edge:
                 continue
+
+            # Skip if start and end junctions are the same (prevents B1→B1 routes)
+            # start_edge is a tail edge (e.g., "B1B2" from B1)
+            # end_edge after head conversion will end at a junction
+            try:
+                start_junction = net.getEdge(start_edge).getFromNode().getID()
+                # Convert end_edge to head edge to get the actual destination junction
+                from src.traffic.routing import convert_tail_to_head_edge
+                end_edge_head = convert_tail_to_head_edge(end_edge, net)
+                end_junction = net.getEdge(end_edge_head).getToNode().getID()
+
+                if start_junction == end_junction:
+                    continue
+            except (KeyError, RuntimeError, AttributeError):
+                # Edge lookup failed, skip this combination
+                continue
+
             route_edges = routing_mix.compute_route(
                 assigned_strategy, start_edge, end_edge)
             if route_edges:
@@ -711,8 +736,27 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
 
                 start_edge = start_edge_ids[ARRAY_FIRST_ELEMENT_INDEX]
                 end_edge = end_edge_ids[ARRAY_FIRST_ELEMENT_INDEX]
+
+                # Skip if same edge ID
                 if end_edge == start_edge:
                     continue
+
+                # Skip if start and end junctions are the same (prevents B1→B1 routes)
+                # start_edge is a tail edge (e.g., "B1B2" from B1)
+                # end_edge after head conversion will end at a junction
+                try:
+                    start_junction = net.getEdge(start_edge).getFromNode().getID()
+                    # Convert end_edge to head edge to get the actual destination junction
+                    from src.traffic.routing import convert_tail_to_head_edge
+                    end_edge_head = convert_tail_to_head_edge(end_edge, net)
+                    end_junction = net.getEdge(end_edge_head).getToNode().getID()
+
+                    if start_junction == end_junction:
+                        continue
+                except (KeyError, RuntimeError, AttributeError):
+                    # Edge lookup failed, skip this combination
+                    continue
+
                 route_edges = routing_mix.compute_route(
                     ROUTING_SHORTEST, start_edge, end_edge)
                 if route_edges:

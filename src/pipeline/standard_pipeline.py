@@ -14,6 +14,7 @@ from src.network.edge_attrs import execute_attractiveness_assignment
 from src.sumo_integration.sumo_utils import execute_network_rebuild, execute_config_generation
 from src.traffic.builder import execute_route_generation
 from src.orchestration.simulator import execute_standard_simulation
+from src.network.generate_grid import convert_to_incoming_strategy, convert_to_partial_opposites_strategy, convert_to_actuated_traffic_lights
 
 
 class StandardPipeline(BasePipeline):
@@ -62,6 +63,16 @@ class StandardPipeline(BasePipeline):
         # Step 4: Network Rebuild
         self._log_step(4, "Network Rebuild")
         execute_network_rebuild(self.args)
+
+        # Step 4.5: Apply traffic light strategy (must be after network rebuild so multi-head edges exist)
+        if self.args.traffic_light_strategy == "incoming":
+            convert_to_incoming_strategy()
+            convert_to_actuated_traffic_lights()  # Re-apply actuated attributes after strategy change
+            execute_network_rebuild(self.args)  # Re-embed updated traffic lights into grid.net.xml
+        elif self.args.traffic_light_strategy == "partial_opposites":
+            convert_to_partial_opposites_strategy()
+            convert_to_actuated_traffic_lights()  # Re-apply actuated attributes after strategy change
+            execute_network_rebuild(self.args)  # Re-embed updated traffic lights into grid.net.xml
 
         # Step 5: Edge Attractiveness Assignment
         self._log_step(5, "Edge Attractiveness Assignment")
