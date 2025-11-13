@@ -644,18 +644,21 @@ def convert_to_partial_opposites_strategy():
     )
 
 
-def convert_to_actuated_traffic_lights():
-    """Convert static traffic lights to actuated type.
+def convert_traffic_lights_for_control_mode(traffic_control):
+    """Configure traffic lights based on traffic control mode.
 
-    Aligns with original decentralized-traffic-bottlenecks repository by:
-    - Changing type from "static" to "actuated"
-    - Adding actuated control parameters (max-gap, detector-gap, etc.)
-    - Adding minDur and maxDur attributes to phases
-    - Preserving existing phase durations and states
+    Sets traffic light type and parameters based on the selected traffic control mode:
+    - 'fixed': type="static", no minDur/maxDur (static timing)
+    - 'actuated': type="actuated", minDur/maxDur bounds, gap-based detection params
+    - 'tree_method': type="static", no minDur/maxDur (Tree Method overrides via TraCI)
 
-    Must be called AFTER traffic light strategy conversions (incoming, partial_opposites).
+    Must be called AFTER traffic light strategy conversions (incoming, partial_opposites)
+    and AFTER convert_to_green_only_phases() (which sets equal durations).
 
-    Parameters match original repository:
+    Args:
+        traffic_control: Traffic control mode ('fixed', 'actuated', or 'tree_method')
+
+    For actuated mode, parameters match original decentralized-traffic-bottlenecks repository:
     - max-gap: 3.0s (maximum time gap to extend phase)
     - detector-gap: 1.0s (detector placement distance)
     - passing-time: 10.0s (vehicle headway estimate)
@@ -680,53 +683,66 @@ def convert_to_actuated_traffic_lights():
     tree = ET.parse(Path(str(CONFIG.network_tll_file)))
     root = tree.getroot()
 
-    # Convert each traffic light from static to actuated
+    # Configure each traffic light based on control mode
     for tl_logic in root.findall('tlLogic'):
-        # Change type from static to actuated
-        tl_logic.set('type', 'actuated')
-
-        # Add actuated control parameters AFTER phases (matches original repository)
-        # Clear existing param elements (if any) and add new ones
+        # Clear existing param elements (if any)
         for param in tl_logic.findall('param'):
             tl_logic.remove(param)
 
-        # Add parameters after phases (append instead of insert)
-        # This matches the original repository structure and avoids SUMO warnings
-        param_max_gap = ET.Element('param')
-        param_max_gap.set('key', 'max-gap')
-        param_max_gap.set('value', str(ACTUATED_MAX_GAP))
-        tl_logic.append(param_max_gap)
-
-        param_detector_gap = ET.Element('param')
-        param_detector_gap.set('key', 'detector-gap')
-        param_detector_gap.set('value', str(ACTUATED_DETECTOR_GAP))
-        tl_logic.append(param_detector_gap)
-
-        param_passing_time = ET.Element('param')
-        param_passing_time.set('key', 'passing-time')
-        param_passing_time.set('value', str(ACTUATED_PASSING_TIME))
-        tl_logic.append(param_passing_time)
-
-        param_freq = ET.Element('param')
-        param_freq.set('key', 'freq')
-        param_freq.set('value', str(ACTUATED_FREQ))
-        tl_logic.append(param_freq)
-
-        param_show_detectors = ET.Element('param')
-        param_show_detectors.set('key', 'show-detectors')
-        param_show_detectors.set('value', str(ACTUATED_SHOW_DETECTORS).lower())
-        tl_logic.append(param_show_detectors)
-
-        # Add minDur and maxDur only to phases with green lights
-        # (Yellow phases don't need actuated control - SUMO handles them automatically)
+        # Remove minDur/maxDur from all phases first (clean slate)
         for phase in tl_logic.findall('phase'):
-            state = phase.get('state', '')
-            # Only add minDur/maxDur if phase contains green lights ('G')
-            if 'G' in state:
-                # Keep existing duration as nominal duration
-                # Add minDur and maxDur for actuated control
-                phase.set('minDur', str(ACTUATED_MIN_DUR))
-                phase.set('maxDur', str(ACTUATED_MAX_DUR))
+            if 'minDur' in phase.attrib:
+                del phase.attrib['minDur']
+            if 'maxDur' in phase.attrib:
+                del phase.attrib['maxDur']
+
+        if traffic_control == 'actuated':
+            # Actuated mode: gap-based detection with dynamic phase extensions
+            tl_logic.set('type', 'actuated')
+
+            # Add actuated control parameters
+            param_max_gap = ET.Element('param')
+            param_max_gap.set('key', 'max-gap')
+            param_max_gap.set('value', str(ACTUATED_MAX_GAP))
+            tl_logic.append(param_max_gap)
+
+            param_detector_gap = ET.Element('param')
+            param_detector_gap.set('key', 'detector-gap')
+            param_detector_gap.set('value', str(ACTUATED_DETECTOR_GAP))
+            tl_logic.append(param_detector_gap)
+
+            param_passing_time = ET.Element('param')
+            param_passing_time.set('key', 'passing-time')
+            param_passing_time.set('value', str(ACTUATED_PASSING_TIME))
+            tl_logic.append(param_passing_time)
+
+            param_freq = ET.Element('param')
+            param_freq.set('key', 'freq')
+            param_freq.set('value', str(ACTUATED_FREQ))
+            tl_logic.append(param_freq)
+
+            param_show_detectors = ET.Element('param')
+            param_show_detectors.set('key', 'show-detectors')
+            param_show_detectors.set('value', str(ACTUATED_SHOW_DETECTORS).lower())
+            tl_logic.append(param_show_detectors)
+
+            # Add minDur and maxDur only to phases with green lights
+            for phase in tl_logic.findall('phase'):
+                state = phase.get('state', '')
+                # Only add minDur/maxDur if phase contains green lights ('G')
+                if 'G' in state:
+                    phase.set('minDur', str(ACTUATED_MIN_DUR))
+                    phase.set('maxDur', str(ACTUATED_MAX_DUR))
+
+        elif traffic_control in ['fixed', 'tree_method']:
+            # Fixed or Tree Method mode: static timing (no gap-based detection)
+            # Fixed uses static timing directly, Tree Method overrides via TraCI
+            tl_logic.set('type', 'static')
+            # No additional parameters needed - phases use their duration attribute
+
+        else:
+            # Default to static for unknown modes
+            tl_logic.set('type', 'static')
 
     # Write modified traffic light file
     ET.indent(root)
@@ -744,7 +760,7 @@ def convert_to_green_only_phases():
     This ensures fair Fixed baseline and proper Tree Method optimization.
 
     Must be called AFTER traffic light strategy conversions (incoming, partial_opposites)
-    but BEFORE convert_to_actuated_traffic_lights().
+    but BEFORE convert_traffic_lights_for_control_mode().
 
     Transformation:
     - Removes pure yellow phases (contain 'y' but no 'G')
@@ -841,13 +857,9 @@ def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_inp
             generate_full_grid_network(
                 dimension, block_size_m, lane_count_arg, "opposites", traffic_control)
 
-        # Convert to green-only phases (match original repository format)
-        # This removes yellow phases and normalizes state strings to only 'G' and 'r'
-        # Must be called BEFORE convert_to_actuated_traffic_lights()
-        convert_to_green_only_phases()
-
-        # Convert to actuated baseline (aligns with original decentralized-traffic-bottlenecks repository)
-        convert_to_actuated_traffic_lights()
+        # NOTE: convert_to_green_only_phases() and convert_traffic_lights_for_control_mode()
+        # are now called AFTER traffic light strategy is applied in standard_pipeline.py
+        # This ensures proper phase durations for all strategies (opposites, incoming, partial_opposites)
 
     except subprocess.CalledProcessError as e:
         raise Exception(f"Error during netgenerate execution:", e.stderr)

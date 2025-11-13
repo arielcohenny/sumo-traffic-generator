@@ -14,7 +14,7 @@ from src.network.edge_attrs import execute_attractiveness_assignment
 from src.sumo_integration.sumo_utils import execute_network_rebuild, execute_config_generation
 from src.traffic.builder import execute_route_generation
 from src.orchestration.simulator import execute_standard_simulation
-from src.network.generate_grid import convert_to_incoming_strategy, convert_to_partial_opposites_strategy, convert_to_actuated_traffic_lights
+from src.network.generate_grid import convert_to_incoming_strategy, convert_to_partial_opposites_strategy, convert_to_green_only_phases, convert_traffic_lights_for_control_mode
 
 
 class StandardPipeline(BasePipeline):
@@ -64,15 +64,32 @@ class StandardPipeline(BasePipeline):
         self._log_step(4, "Network Rebuild")
         execute_network_rebuild(self.args)
 
-        # Step 4.5: Apply traffic light strategy (must be after network rebuild so multi-head edges exist)
+        # Step 4.5: Apply traffic light strategy and configure for control mode
+        # Must be after network rebuild so multi-head edges exist (for partial_opposites)
         if self.args.traffic_light_strategy == "incoming":
+            # Apply incoming strategy (each edge gets own phase)
             convert_to_incoming_strategy()
-            convert_to_actuated_traffic_lights()  # Re-apply actuated attributes after strategy change
-            execute_network_rebuild(self.args)  # Re-embed updated traffic lights into grid.net.xml
+            # Recalculate equal durations for all phases (ensures 90s cycle)
+            convert_to_green_only_phases()
+            # Configure traffic light type and parameters based on control mode
+            convert_traffic_lights_for_control_mode(self.args.traffic_control)
+            # Re-embed updated traffic lights into grid.net.xml
+            execute_network_rebuild(self.args)
         elif self.args.traffic_light_strategy == "partial_opposites":
+            # Apply partial_opposites strategy (straight+right separate from left+uturn)
             convert_to_partial_opposites_strategy()
-            convert_to_actuated_traffic_lights()  # Re-apply actuated attributes after strategy change
-            execute_network_rebuild(self.args)  # Re-embed updated traffic lights into grid.net.xml
+            # Recalculate equal durations for all phases (ensures 90s cycle)
+            convert_to_green_only_phases()
+            # Configure traffic light type and parameters based on control mode
+            convert_traffic_lights_for_control_mode(self.args.traffic_control)
+            # Re-embed updated traffic lights into grid.net.xml
+            execute_network_rebuild(self.args)
+        else:  # opposites strategy (default)
+            # Opposites strategy already applied by netgenerate
+            # Just need to ensure equal durations and configure for control mode
+            convert_to_green_only_phases()
+            convert_traffic_lights_for_control_mode(self.args.traffic_control)
+            execute_network_rebuild(self.args)
 
         # Step 5: Edge Attractiveness Assignment
         self._log_step(5, "Edge Attractiveness Assignment")

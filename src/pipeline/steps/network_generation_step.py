@@ -26,7 +26,8 @@ class NetworkGenerationStep(BaseStep):
             int(self.args.block_size_m),
             self.args.junctions_to_remove,
             self.args.lane_count,
-            self.args.traffic_light_strategy
+            self.args.traffic_light_strategy,
+            getattr(self.args, 'traffic_control', 'tree_method')
         )
 
     def _generate_grid_network(self) -> None:

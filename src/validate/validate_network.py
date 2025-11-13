@@ -39,6 +39,8 @@ def verify_generate_grid_network(
     junctions_to_remove_input: str,
     lane_count_arg: str,
     traffic_light_strategy: str = "opposites",
+    traffic_control: str = "tree_method",
+    skip_tl_validation: bool = True,
 ) -> None:
     """Validate grid network generation with junction removal.
 
@@ -46,8 +48,12 @@ def verify_generate_grid_network(
     1. All required XML files exist and are valid
     2. Junction coordinates follow expected grid pattern
     3. Edge structure is consistent with grid topology
-    4. Traffic light logic is properly configured
+    4. Traffic light logic is properly configured based on control mode (if skip_tl_validation=False)
     5. Junction removal was applied correctly
+
+    Args:
+        skip_tl_validation: If True, skips detailed traffic light validation (default True).
+                          Set to False only after Step 4.5 when TL modifications are complete.
     """
 
     # Required files that should exist after grid generation
@@ -298,86 +304,96 @@ def verify_generate_grid_network(
                 raise ValidationError(
                     f"Traffic light {tl_id} has insufficient green time: {green_time}/{total_cycle_time}s")
 
-    # 15 ── validate actuated traffic light configuration ----------------------
-    # All traffic lights should be actuated (aligns with original repository)
+    # 15 ── validate traffic light configuration based on control mode ---------
+    # Skip detailed TL validation if called during Step 1 (before Step 4.5 modifications)
+    if skip_tl_validation:
+        return
+
+    # Traffic light type depends on control mode:
+    # - 'actuated': type="actuated" with minDur/maxDur and params
+    # - 'fixed' or 'tree_method': type="static" without minDur/maxDur
+    expected_type = "actuated" if traffic_control == "actuated" else "static"
+
     for tl_logic in tll_root.findall("tlLogic"):
         tl_id = tl_logic.get("id")
         tl_type = tl_logic.get("type")
 
-        # Check type is actuated
-        if tl_type != "actuated":
+        # Check type matches expected for control mode
+        if tl_type != expected_type:
             raise ValidationError(
-                f"Traffic light {tl_id} has type '{tl_type}', expected 'actuated'")
+                f"Traffic light {tl_id} has type '{tl_type}', expected '{expected_type}' for {traffic_control} control mode")
 
-        # Validate required param elements
-        required_params = {
-            "max-gap": ACTUATED_MAX_GAP,
-            "detector-gap": ACTUATED_DETECTOR_GAP,
-            "passing-time": ACTUATED_PASSING_TIME,
-            "freq": ACTUATED_FREQ,
-            "show-detectors": str(ACTUATED_SHOW_DETECTORS).lower(),
-        }
+        # Only validate actuated params for actuated mode
+        if traffic_control == "actuated":
+            # Validate required param elements
+            required_params = {
+                "max-gap": ACTUATED_MAX_GAP,
+                "detector-gap": ACTUATED_DETECTOR_GAP,
+                "passing-time": ACTUATED_PASSING_TIME,
+                "freq": ACTUATED_FREQ,
+                "show-detectors": str(ACTUATED_SHOW_DETECTORS).lower(),
+            }
 
-        params = {param.get("key"): param.get("value")
-                  for param in tl_logic.findall("param")}
+            params = {param.get("key"): param.get("value")
+                      for param in tl_logic.findall("param")}
 
-        for param_key, expected_value in required_params.items():
-            if param_key not in params:
-                raise ValidationError(
-                    f"Traffic light {tl_id} missing required param: {param_key}")
+            for param_key, expected_value in required_params.items():
+                if param_key not in params:
+                    raise ValidationError(
+                        f"Traffic light {tl_id} missing required param: {param_key}")
 
-            # Validate param values match expected configuration
-            actual_value = params[param_key]
-            expected_str = str(expected_value)
+                # Validate param values match expected configuration
+                actual_value = params[param_key]
+                expected_str = str(expected_value)
 
-            # Convert to float for numeric comparisons
-            if param_key != "show-detectors":
-                try:
-                    actual_float = float(actual_value)
-                    expected_float = float(expected_str)
-                    if abs(actual_float - expected_float) > 0.01:
+                # Convert to float for numeric comparisons
+                if param_key != "show-detectors":
+                    try:
+                        actual_float = float(actual_value)
+                        expected_float = float(expected_str)
+                        if abs(actual_float - expected_float) > 0.01:
+                            raise ValidationError(
+                                f"Traffic light {tl_id} param {param_key}={actual_value}, expected {expected_str}")
+                    except ValueError:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} param {param_key} has invalid value: {actual_value}")
+                else:
+                    # Boolean param - check exact match
+                    if actual_value != expected_str:
                         raise ValidationError(
                             f"Traffic light {tl_id} param {param_key}={actual_value}, expected {expected_str}")
-                except ValueError:
-                    raise ValidationError(
-                        f"Traffic light {tl_id} param {param_key} has invalid value: {actual_value}")
-            else:
-                # Boolean param - check exact match
-                if actual_value != expected_str:
-                    raise ValidationError(
-                        f"Traffic light {tl_id} param {param_key}={actual_value}, expected {expected_str}")
 
-        # Validate only green phases have minDur and maxDur attributes
-        # (Yellow phases don't need actuated control - SUMO handles them automatically)
-        for phase in tl_logic.findall("phase"):
-            state = phase.get("state", "")
+            # Validate only green phases have minDur and maxDur attributes
+            # (Yellow phases don't need actuated control - SUMO handles them automatically)
+            for phase in tl_logic.findall("phase"):
+                state = phase.get("state", "")
 
-            # Only green phases should have minDur/maxDur
-            if 'G' in state:
-                min_dur = phase.get("minDur")
-                max_dur = phase.get("maxDur")
+                # Only green phases should have minDur/maxDur in actuated mode
+                if 'G' in state:
+                    min_dur = phase.get("minDur")
+                    max_dur = phase.get("maxDur")
 
-                if min_dur is None:
-                    raise ValidationError(
-                        f"Traffic light {tl_id} green phase missing minDur attribute")
-                if max_dur is None:
-                    raise ValidationError(
-                        f"Traffic light {tl_id} green phase missing maxDur attribute")
-
-                # Validate minDur and maxDur values
-                try:
-                    min_dur_val = float(min_dur)
-                    max_dur_val = float(max_dur)
-
-                    if abs(min_dur_val - ACTUATED_MIN_DUR) > 0.01:
+                    if min_dur is None:
                         raise ValidationError(
-                            f"Traffic light {tl_id} phase minDur={min_dur}, expected {ACTUATED_MIN_DUR}")
-                    if abs(max_dur_val - ACTUATED_MAX_DUR) > 0.01:
+                            f"Traffic light {tl_id} green phase missing minDur attribute")
+                    if max_dur is None:
                         raise ValidationError(
-                            f"Traffic light {tl_id} phase maxDur={max_dur}, expected {ACTUATED_MAX_DUR}")
-                except ValueError:
-                    raise ValidationError(
-                        f"Traffic light {tl_id} phase has invalid minDur/maxDur values")
+                            f"Traffic light {tl_id} green phase missing maxDur attribute")
+
+                    # Validate minDur and maxDur values
+                    try:
+                        min_dur_val = float(min_dur)
+                        max_dur_val = float(max_dur)
+
+                        if abs(min_dur_val - ACTUATED_MIN_DUR) > 0.01:
+                            raise ValidationError(
+                                f"Traffic light {tl_id} phase minDur={min_dur}, expected {ACTUATED_MIN_DUR}")
+                        if abs(max_dur_val - ACTUATED_MAX_DUR) > 0.01:
+                            raise ValidationError(
+                                f"Traffic light {tl_id} phase maxDur={max_dur}, expected {ACTUATED_MAX_DUR}")
+                    except ValueError:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} phase has invalid minDur/maxDur values")
 
     # 16 ── validate partial_opposites specific requirements -------------------
     if traffic_light_strategy == TL_STRATEGY_PARTIAL_OPPOSITES:
