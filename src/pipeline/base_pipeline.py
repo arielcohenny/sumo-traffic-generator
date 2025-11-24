@@ -26,7 +26,11 @@ class BasePipeline(ABC):
         # Update workspace configuration before any file operations
         if hasattr(args, 'workspace') and args.workspace:
             CONFIG.update_workspace(args.workspace)
-            
+
+        # Update bottleneck logging configuration
+        if hasattr(args, 'log_bottleneck_events'):
+            CONFIG.log_bottleneck_events = args.log_bottleneck_events
+
         self.logger = logging.getLogger(self.__class__.__name__)
         self._setup_logging()
     

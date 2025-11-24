@@ -28,7 +28,7 @@ def main() -> None:
         pipeline = PipelineFactory.create_pipeline(args)
         pipeline.execute()
 
-        logger.info("Pipeline execution completed successfully")
+        # logger.info("Pipeline execution completed successfully")
 
     except ValidationError as e:
         logger.error(f"Validation error: {e}")

@@ -19,6 +19,45 @@ from src.constants import (
 )
 
 
+def convert_tail_to_head_edge(edge_id: str, net) -> str:
+    """Convert tail edge to head edge for routing destinations.
+
+    In multi-head edge architecture:
+    - Tail edges (e.g., "A1B1") connect FROM junctions TO intermediate nodes
+    - Head edges (e.g., "A1B1_H_straight") connect FROM intermediate nodes TO junctions
+
+    For routing, destinations must be edges that END at junctions (head edges).
+    We try head edges in order of preference: straight, right, left, uturn.
+
+    Args:
+        edge_id: Tail edge ID (e.g., "A1B1")
+        net: SUMO network object to check edge existence
+
+    Returns:
+        Head edge ID that exists in the network
+    """
+    if '_H_' in edge_id:
+        # Already a head edge, return as-is
+        return edge_id
+
+    # Try head edges in order of preference
+    for suffix in ['straight', 'right', 'left', 'uturn']:
+        candidate = f"{edge_id}_H_{suffix}"
+        try:
+            edge = net.getEdge(candidate)
+            if edge is not None:
+                # print(f"DEBUG: Converting tail edge '{edge_id}' → head edge '{candidate}'", file=sys.stderr)
+                return candidate
+        except (KeyError, RuntimeError):
+            # Edge doesn't exist, try next suffix
+            continue
+
+    # If no head edge found, return the original (will likely fail routing, but with clear error)
+    print(
+        f"DEBUG: No head edge found for tail edge '{edge_id}', returning original", file=sys.stderr)
+    return edge_id
+
+
 class RoutingStrategy(ABC):
     """Abstract base class for routing strategies."""
 
@@ -40,9 +79,13 @@ class ShortestPathRoutingStrategy(RoutingStrategy):
     def compute_route(self, start_edge: str, end_edge: str) -> List[str]:
         """Compute shortest path by distance - TERMINATES ON ERROR."""
         try:
+            # Convert end edge from tail to head edge for routing destination
+            end_edge_for_routing = convert_tail_to_head_edge(
+                end_edge, self.net)
+
             result = self.net.getShortestPath(
                 self.net.getEdge(start_edge),
-                self.net.getEdge(end_edge)
+                self.net.getEdge(end_edge_for_routing)
             )
             if not result or result[0] is None:
                 error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
@@ -79,10 +122,14 @@ class RealtimeRoutingStrategy(RoutingStrategy):
     def compute_route(self, start_edge: str, end_edge: str) -> List[str]:
         """Compute initial route - will be updated dynamically via TraCI - TERMINATES ON ERROR."""
         try:
+            # Convert end edge from tail to head edge for routing destination
+            end_edge_for_routing = convert_tail_to_head_edge(
+                end_edge, self.net)
+
             # Use fastest path for realtime strategy initial route
             result = self.net.getFastestPath(
                 self.net.getEdge(start_edge),
-                self.net.getEdge(end_edge)
+                self.net.getEdge(end_edge_for_routing)
             )
             if not result or result[0] is None:
                 error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
@@ -119,10 +166,14 @@ class FastestRoutingStrategy(RoutingStrategy):
     def compute_route(self, start_edge: str, end_edge: str) -> List[str]:
         """Compute fastest path by travel time - TERMINATES ON ERROR."""
         try:
+            # Convert end edge from tail to head edge for routing destination
+            end_edge_for_routing = convert_tail_to_head_edge(
+                end_edge, self.net)
+
             # Use SUMO's fastest path algorithm
             result = self.net.getFastestPath(
                 self.net.getEdge(start_edge),
-                self.net.getEdge(end_edge)
+                self.net.getEdge(end_edge_for_routing)
             )
             if not result or result[0] is None:
                 error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
@@ -160,10 +211,14 @@ class AttractivenessRoutingStrategy(RoutingStrategy):
     def compute_route(self, start_edge: str, end_edge: str) -> List[str]:
         """Compute route considering both efficiency and attractiveness."""
         try:
+            # Convert end edge from tail to head edge for routing destination
+            end_edge_for_routing = convert_tail_to_head_edge(
+                end_edge, self.net)
+
             # Get multiple potential routes
             shortest_result = self.net.getShortestPath(
                 self.net.getEdge(start_edge),
-                self.net.getEdge(end_edge)
+                self.net.getEdge(end_edge_for_routing)
             )
 
             if not shortest_result or shortest_result[0] is None:
@@ -351,7 +406,8 @@ def parse_routing_strategy(routing_arg: str) -> Dict[str, float]:
         print(error_msg, file=sys.stderr)
         sys.exit(1)
 
-    valid_strategies = {ROUTING_SHORTEST, ROUTING_REALTIME, ROUTING_FASTEST, ROUTING_ATTRACTIVENESS}
+    valid_strategies = {ROUTING_SHORTEST, ROUTING_REALTIME,
+                        ROUTING_FASTEST, ROUTING_ATTRACTIVENESS}
     percentages = {}
 
     for i in range(0, len(tokens), 2):

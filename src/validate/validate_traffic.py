@@ -67,16 +67,18 @@ def verify_generate_vehicle_routes(
     rt_root = rt_tree.getroot()
 
     vehicles = rt_root.findall("vehicle")
-    v_count = len(vehicles)
+    trips = rt_root.findall("trip")
+    total_count = len(vehicles) + len(trips)
     min_expected = int(num_vehicles * (1 - tolerate_shortfall))
-    if v_count < min_expected:
+    if total_count < min_expected:
         raise ValidationError(
-            f"Routes file contains {v_count} vehicles, expected ≥ {min_expected} (requested {num_vehicles})")
+            f"Routes file contains {total_count} vehicles/trips, expected ≥ {min_expected} (requested {num_vehicles})")
 
     ids_seen: set[str] = set()
     depart_times: list[float] = []
     route_lengths: list[int] = []
 
+    # Validate vehicle elements (with full routes)
     for v in vehicles:
         vid = v.get("id")
         if vid is None:
@@ -141,6 +143,53 @@ def verify_generate_vehicle_routes(
                             f"Vehicle {vid} route disconnected: edge {current_edge_id} (to={current_to}) "
                             f"does not connect to edge {next_edge_id} (from={next_from})")
 
+    # Validate trip elements (with from/to attributes only)
+    for t in trips:
+        trip_id = t.get("id")
+        if trip_id is None:
+            raise ValidationError("Trip without id attribute found")
+        if trip_id in ids_seen:
+            raise ValidationError(f"Duplicate vehicle/trip id: {trip_id}")
+        ids_seen.add(trip_id)
+
+        # ── validate vehicle type ───────────────────────────────────────────────
+        vtype = t.get("type")
+        if vtype and vtype not in valid_vehicle_types:
+            raise ValidationError(f"Trip {trip_id} has unknown type: {vtype}")
+
+        # ── validate departure time ─────────────────────────────────────────────
+        try:
+            depart = float(t.get("depart", "0"))
+        except ValueError:
+            raise ValidationError(f"Trip {trip_id} has non‑numeric depart time")
+        if depart < 0:
+            raise ValidationError(f"Trip {trip_id} depart time negative")
+        depart_times.append(depart)
+
+        # ── validate from/to edges ──────────────────────────────────────────────
+        from_edge = t.get("from")
+        to_edge = t.get("to")
+
+        if not from_edge:
+            raise ValidationError(f"Trip {trip_id} missing 'from' attribute")
+        if not to_edge:
+            raise ValidationError(f"Trip {trip_id} missing 'to' attribute")
+
+        # Validate edges exist and are external
+        if from_edge not in external_edges:
+            raise ValidationError(
+                f"Trip {trip_id} 'from' edge {from_edge} not found or is internal")
+        if to_edge not in external_edges:
+            raise ValidationError(
+                f"Trip {trip_id} 'to' edge {to_edge} not found or is internal")
+
+        if from_edge == to_edge:
+            raise ValidationError(
+                f"Trip {trip_id} has same 'from' and 'to' edge: {from_edge}")
+
+        # Note: Trips don't have route_edges yet, SUMO will calculate them at departure
+        # We don't track route_lengths for trips
+
     # ── additional statistical validation ───────────────────────────────────
 
     # departure variability – not critical, just warn via ValidationError if suspicious
@@ -148,8 +197,8 @@ def verify_generate_vehicle_routes(
         raise ValidationError(
             "All vehicles depart at the same time – check generation logic")
 
-    # Route length statistics
-    if route_lengths:
+    # Route length statistics (only for vehicles with pre-computed routes, not trips)
+    if route_lengths and len(route_lengths) >= 2:  # Need at least 2 routes for diversity check
         avg_route_length = sum(route_lengths) / len(route_lengths)
         min_route_length = min(route_lengths)
         max_route_length = max(route_lengths)
@@ -161,7 +210,8 @@ def verify_generate_vehicle_routes(
                 f"check routing algorithm")
 
         # Warn if all routes are the same length (might indicate lack of diversity)
-        if min_route_length == max_route_length and len(route_lengths) > 1:
+        # Only check if we have a reasonable number of non-trip vehicles
+        if min_route_length == max_route_length and len(route_lengths) > 5:
             raise ValidationError(
                 f"All {len(route_lengths)} routes have identical length {min_route_length}; "
                 f"check route diversity")
@@ -174,6 +224,15 @@ def verify_generate_vehicle_routes(
             edges_attr = route_elem.get("edges", "").strip()
             if edges_attr:
                 all_used_edges.update(edges_attr.split())
+
+    # Also count from/to edges for trips
+    for t in trips:
+        from_edge = t.get("from")
+        to_edge = t.get("to")
+        if from_edge:
+            all_used_edges.add(from_edge)
+        if to_edge:
+            all_used_edges.add(to_edge)
 
     # Warn if routes use very few unique edges relative to available edges
     edge_usage_ratio = len(all_used_edges) / \

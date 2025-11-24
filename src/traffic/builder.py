@@ -466,25 +466,31 @@ def generate_vehicle_routes(net_file: str | Path,
     # (sumolib.net.readNet doesn't automatically parse custom attributes)
     load_attractiveness_attributes_from_xml(all_edges, net_file)
 
+    # Filter to get only tail edges (exclude head edges with _H_ suffix)
+    # In multi-head edge architecture: tail edges like "A1B1" connect to intermediate nodes,
+    # head edges like "A1B1_H_left" connect from intermediate nodes to junctions
+    # Routing should use tail edges as origin/destination - SUMO automatically includes head edges in paths
+    tail_edges_only = [e for e in all_edges if '_H_' not in e.getID()]
+
     # Classify edges into boundary and inner for route pattern restrictions
     boundary_edges, inner_edges = classify_edges(grid_dimension)
 
     # Convert edge ID lists to edge objects - only use tail edges (without _H_s or _H_node suffixes)
     # as specified in ROUTES2.md: "we only examine the tail part of edges, namely edges without suffix _H_s or _H_node"
-    boundary_edge_objs = [e for e in all_edges if e.getID() in boundary_edges]
-    inner_edge_objs = [e for e in all_edges if e.getID() in inner_edges]
+    boundary_edge_objs = [e for e in tail_edges_only if e.getID() in boundary_edges]
+    inner_edge_objs = [e for e in tail_edges_only if e.getID() in inner_edges]
     # For inner routes: combine boundary and inner tail edges (all possible tail edges)
     all_tail_edge_objs = boundary_edge_objs + inner_edge_objs
-    all_edge_objs = all_edges
+    all_edge_objs = tail_edges_only  # Use only tail edges for routing
 
-    print(
-        f"Classified {len(boundary_edge_objs)} boundary edges and {len(inner_edge_objs)} inner edges")
+    # print(
+    #     f"Classified {len(boundary_edge_objs)} boundary edges and {len(inner_edge_objs)} inner edges")
 
     # Debug: Print a few examples of boundary vs inner edges
-    print(
-        f"Sample boundary edges: {[e.getID() for e in boundary_edge_objs[:EDGE_SAMPLE_SLICE_LIMIT]]}")
-    print(
-        f"Sample inner edges: {[e.getID() for e in inner_edge_objs[:EDGE_SAMPLE_SLICE_LIMIT]]}")
+    # print(
+    #     f"Sample boundary edges: {[e.getID() for e in boundary_edge_objs[:EDGE_SAMPLE_SLICE_LIMIT]]}")
+    # print(
+    #     f"Sample inner edges: {[e.getID() for e in inner_edge_objs[:EDGE_SAMPLE_SLICE_LIMIT]]}")
 
     # Parse configurations
     vehicle_distribution = parse_vehicle_types(vehicle_types)
@@ -492,12 +498,12 @@ def generate_vehicle_routes(net_file: str | Path,
     public_route_patterns = parse_route_patterns(public_routes)
     strategy_percentages = parse_routing_strategy(routing_strategy)
 
-    print(f"Using routing strategies: {strategy_percentages}")
-    print(f"Using vehicle types: {vehicle_distribution}")
-    print(f"Using passenger route patterns: {passenger_route_patterns}")
-    print(f"Using public route patterns: {public_route_patterns}")
-    print(f"Using private traffic seed: {private_traffic_seed}")
-    print(f"Using public traffic seed: {public_traffic_seed}")
+    # print(f"Using routing strategies: {strategy_percentages}")
+    # print(f"Using vehicle types: {vehicle_distribution}")
+    # print(f"Using passenger route patterns: {passenger_route_patterns}")
+    # print(f"Using public route patterns: {public_route_patterns}")
+    # print(f"Using private traffic seed: {private_traffic_seed}")
+    # print(f"Using public traffic seed: {public_traffic_seed}")
 
     # Calculate vehicle counts by type
     vehicle_names, vehicle_weights = get_vehicle_weights(vehicle_distribution)
@@ -505,8 +511,8 @@ def generate_vehicle_routes(net_file: str | Path,
         VEHICLE_TYPE_PASSENGER, 0) / MAX_PERCENTAGE) * num_vehicles)
     public_count = num_vehicles - passenger_count
 
-    print(
-        f"Generating {passenger_count} passenger vehicles and {public_count} public vehicles")
+    # print(
+    #     f"Generating {passenger_count} passenger vehicles and {public_count} public vehicles")
 
     # Create RNGs
     private_rng = random.Random(private_traffic_seed)
@@ -536,7 +542,7 @@ def generate_vehicle_routes(net_file: str | Path,
     # Sort vehicles by departure time (SUMO requirement)
     vehicles.sort(key=lambda v: v[ATTR_DEPART])
 
-    print(f"Generated {len(vehicles)} total vehicles")
+    # print(f"Generated {len(vehicles)} total vehicles")
 
     # Write routes to file
     write_routes(output_file, vehicles, CONFIG.vehicle_types)
@@ -601,8 +607,27 @@ def _generate_passenger_vehicles(passenger_count: int, private_rng: random.Rando
 
             start_edge = start_edge_ids[ARRAY_FIRST_ELEMENT_INDEX]
             end_edge = end_edge_ids[ARRAY_FIRST_ELEMENT_INDEX]
+
+            # Skip if same edge ID
             if end_edge == start_edge:
                 continue
+
+            # Skip if start and end junctions are the same (prevents B1→B1 routes)
+            # start_edge is a tail edge (e.g., "B1B2" from B1)
+            # end_edge after head conversion will end at a junction
+            try:
+                start_junction = net.getEdge(start_edge).getFromNode().getID()
+                # Convert end_edge to head edge to get the actual destination junction
+                from src.traffic.routing import convert_tail_to_head_edge
+                end_edge_head = convert_tail_to_head_edge(end_edge, net)
+                end_junction = net.getEdge(end_edge_head).getToNode().getID()
+
+                if start_junction == end_junction:
+                    continue
+            except (KeyError, RuntimeError, AttributeError):
+                # Edge lookup failed, skip this combination
+                continue
+
             route_edges = routing_mix.compute_route(
                 assigned_strategy, start_edge, end_edge)
             if route_edges:
@@ -626,7 +651,7 @@ def _generate_passenger_vehicles(passenger_count: int, private_rng: random.Rando
             ATTR_ROUTING_STRATEGY: assigned_strategy,
         })
 
-    print(f"Generated {len(vehicles)} passenger vehicles")
+    # print(f"Generated {len(vehicles)} passenger vehicles")
     return vehicles, vehicle_id_counter
 
 
@@ -651,7 +676,7 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
     base_vehicles_per_route = public_count // num_public_routes
     extra_vehicles = public_count % num_public_routes  # Distribute remaining vehicles
 
-    print(f"Creating {num_public_routes} public routes with ~{base_vehicles_per_route}-{base_vehicles_per_route + 1} vehicles each")
+    # print(f"Creating {num_public_routes} public routes with ~{base_vehicles_per_route}-{base_vehicles_per_route + 1} vehicles each")
 
     # Calculate route distribution based on percentages
     route_counts = {}
@@ -666,8 +691,8 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
         max_pattern = max(route_patterns.keys(),
                           key=lambda k: route_patterns[k])
         route_counts = {max_pattern: num_public_routes}
-        print(
-            f"⚠️  Not enough public vehicles for all route types. Using only '{max_pattern}' routes.")
+        # print(
+        #     f"⚠️  Not enough public vehicles for all route types. Using only '{max_pattern}' routes.")
 
     # Create routing strategy for public vehicles (always shortest path)
     public_routing_strategy = {ROUTING_SHORTEST: MAX_PERCENTAGE}
@@ -711,8 +736,27 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
 
                 start_edge = start_edge_ids[ARRAY_FIRST_ELEMENT_INDEX]
                 end_edge = end_edge_ids[ARRAY_FIRST_ELEMENT_INDEX]
+
+                # Skip if same edge ID
                 if end_edge == start_edge:
                     continue
+
+                # Skip if start and end junctions are the same (prevents B1→B1 routes)
+                # start_edge is a tail edge (e.g., "B1B2" from B1)
+                # end_edge after head conversion will end at a junction
+                try:
+                    start_junction = net.getEdge(start_edge).getFromNode().getID()
+                    # Convert end_edge to head edge to get the actual destination junction
+                    from src.traffic.routing import convert_tail_to_head_edge
+                    end_edge_head = convert_tail_to_head_edge(end_edge, net)
+                    end_junction = net.getEdge(end_edge_head).getToNode().getID()
+
+                    if start_junction == end_junction:
+                        continue
+                except (KeyError, RuntimeError, AttributeError):
+                    # Edge lookup failed, skip this combination
+                    continue
+
                 route_edges = routing_mix.compute_route(
                     ROUTING_SHORTEST, start_edge, end_edge)
                 if route_edges:
@@ -760,8 +804,8 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
 
             route_id += ROUTE_ID_INCREMENT
 
-    print(
-        f"Generated {len(vehicles)} public vehicles across {route_id} routes")
+    # print(
+    #     f"Generated {len(vehicles)} public vehicles across {route_id} routes")
     return vehicles, vehicle_id_counter
 
 
@@ -986,10 +1030,26 @@ def _calculate_six_periods_deterministic(num_vehicles: int, end_time: int) -> Li
 
     total_weight = sum(p[ATTR_WEIGHT] for p in periods)
 
+    # Calculate vehicles per period with rounding correction
+    period_vehicle_counts = []
     for period in periods:
-        # Calculate exact number of vehicles for this period
         period_vehicles = int(
             (period[ATTR_WEIGHT] / total_weight) * num_vehicles)
+        period_vehicle_counts.append(period_vehicles)
+
+    # Add missing vehicles due to rounding (distribute to periods with highest weights)
+    assigned_total = sum(period_vehicle_counts)
+    missing_vehicles = num_vehicles - assigned_total
+    if missing_vehicles > 0:
+        # Sort periods by weight descending to add missing vehicles to largest periods
+        period_indices_by_weight = sorted(
+            range(len(periods)), key=lambda i: periods[i][ATTR_WEIGHT], reverse=True)
+        for i in range(missing_vehicles):
+            period_vehicle_counts[period_indices_by_weight[i %
+                                                           len(period_indices_by_weight)]] += 1
+
+    for period_idx, period in enumerate(periods):
+        period_vehicles = period_vehicle_counts[period_idx]
 
         if period_vehicles > 0:
             if period[ATTR_NAME] == PERIOD_NIGHT:
@@ -1059,10 +1119,30 @@ def _calculate_rush_hours_deterministic(num_vehicles: int, pattern: str, end_tim
 
     scale_factor = end_time / SECONDS_IN_24_HOURS
 
-    # Distribute vehicles to rush hour periods
+    # Distribute vehicles to rush hour periods with rounding correction
+    rush_period_counts = []
     for period in rush_periods:
         period_vehicles = int(
             (period[ATTR_WEIGHT] / total_weight) * num_vehicles)
+        rush_period_counts.append(period_vehicles)
+
+    rest_vehicles = int((rest_weight / total_weight) * num_vehicles)
+
+    # Add missing vehicles due to rounding
+    assigned_total = sum(rush_period_counts) + rest_vehicles
+    missing_vehicles = num_vehicles - assigned_total
+    if missing_vehicles > 0:
+        # Add to largest rush period first, then rest
+        if rush_periods:
+            max_period_idx = max(range(len(rush_periods)),
+                                 key=lambda i: rush_periods[i][ATTR_WEIGHT])
+            rush_period_counts[max_period_idx] += missing_vehicles
+        else:
+            rest_vehicles += missing_vehicles
+
+    # Generate rush hour departures
+    for period_idx, period in enumerate(rush_periods):
+        period_vehicles = rush_period_counts[period_idx]
         if period_vehicles > 0:
             period_start = period[ATTR_START] * scale_factor
             period_end = period[ATTR_END] * scale_factor
@@ -1073,7 +1153,6 @@ def _calculate_rush_hours_deterministic(num_vehicles: int, pattern: str, end_tim
                 departure_times.append(int(departure_time))
 
     # Distribute vehicles to rest time (outside rush hours)
-    rest_vehicles = int((rest_weight / total_weight) * num_vehicles)
     if rest_vehicles > 0:
         # Calculate rest windows (24 hours minus rush hours)
         rest_windows = _compute_rest_windows(rush_periods, end_time)
@@ -1166,4 +1245,4 @@ def execute_route_generation(args) -> None:
     except ValidationError as ve:
         logger.error(f"Failed to generate vehicle routes: {ve}")
         raise
-    logger.info("Generated vehicle routes successfully")
+    # logger.info("Generated vehicle routes successfully")

@@ -19,6 +19,7 @@ from src.constants import (
     PROGRESS_START, PROGRESS_PIPELINE_CREATED, PROGRESS_EXECUTION_STARTED,
     PROGRESS_EXECUTION_RUNNING, PROGRESS_COMPLETED
 )
+from src.traffic_control.decentralized_traffic_bottlenecks.shared.config import M, L
 from src.utils.logging import setup_logging, get_logger
 from src.pipeline.pipeline_factory import PipelineFactory
 from src.validate.errors import ValidationError
@@ -103,7 +104,10 @@ def generate_command_line(params: Dict[str, Any]) -> str:
 
     if params.get('gui', False):
         cmd_parts.append("--gui")
-    
+
+    if params.get('log_bottleneck_events', False):
+        cmd_parts.append("--log_bottleneck_events")
+
     # Add workspace if different from default
     workspace = params.get('workspace', DEFAULT_WORKSPACE_DIR)
     if workspace != DEFAULT_WORKSPACE_DIR:
@@ -130,6 +134,15 @@ def generate_command_line(params: Dict[str, Any]) -> str:
         f"--atlcs-interval {params.get('atlcs_interval', DEFAULT_ATLCS_INTERVAL)}")
     cmd_parts.append(
         f"--tree-method-interval {params.get('tree_method_interval', DEFAULT_TREE_METHOD_INTERVAL)}")
+
+    # Add Tree Method M & L parameters if non-default
+    tree_method_m = params.get('tree_method_m', M)
+    if tree_method_m != M:
+        cmd_parts.append(f"--tree-method-m {tree_method_m}")
+
+    tree_method_l = params.get('tree_method_l', L)
+    if tree_method_l != L:
+        cmd_parts.append(f"--tree-method-l {tree_method_l}")
 
     if params.get('tree_method_sample'):
         cmd_parts.append(
@@ -192,6 +205,9 @@ def convert_params_to_args(params: Dict[str, Any]) -> argparse.Namespace:
     if params.get("gui", False):
         args_list.append("--gui")
 
+    if params.get("log_bottleneck_events", False):
+        args_list.append("--log_bottleneck_events")
+
     # Add workspace if different from default
     workspace = params.get('workspace', DEFAULT_WORKSPACE_DIR)
     if workspace != DEFAULT_WORKSPACE_DIR:
@@ -216,6 +232,15 @@ def convert_params_to_args(params: Dict[str, Any]) -> argparse.Namespace:
         ["--atlcs-interval", str(params.get("atlcs_interval", DEFAULT_ATLCS_INTERVAL))])
     args_list.extend(
         ["--tree-method-interval", str(params.get("tree_method_interval", DEFAULT_TREE_METHOD_INTERVAL))])
+
+    # Add Tree Method M & L parameters if non-default
+    tree_method_m = params.get('tree_method_m', M)
+    if tree_method_m != M:
+        args_list.extend(["--tree-method-m", str(tree_method_m)])
+
+    tree_method_l = params.get('tree_method_l', L)
+    if tree_method_l != L:
+        args_list.extend(["--tree-method-l", str(tree_method_l)])
 
     if params.get("tree_method_sample"):
         args_list.extend(

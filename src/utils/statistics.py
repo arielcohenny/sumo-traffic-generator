@@ -50,31 +50,38 @@ def parse_sumo_statistics_file(statistics_file_path: str) -> Optional[Dict]:
         # Extract vehicle counts
         vehicles_elem = root.find('.//vehicles')
         vehicle_stats = root.find('.//vehicleTripStatistics')
-        
+        performance_elem = root.find('.//performance')
+
         if vehicles_elem is not None and vehicle_stats is not None:
             # Vehicle counts from <vehicles> element
             loaded = int(vehicles_elem.get('loaded', 0))
             inserted = int(vehicles_elem.get('inserted', 0))
             running = int(vehicles_elem.get('running', 0))
             waiting = int(vehicles_elem.get('waiting', 0))
-            
+
             # Calculate arrived (completed trips)
             arrived = loaded - running - waiting
-            
+
             # Calculate completion rate
             completion_rate = (arrived / loaded * 100) if loaded > 0 else 0
-            
+
             # Extract performance metrics from <vehicleTripStatistics>
             trip_count = int(vehicle_stats.get('count', 0))
             avg_duration = float(vehicle_stats.get('duration', 0))
             avg_waiting_time = float(vehicle_stats.get('waitingTime', 0))
             avg_time_loss = float(vehicle_stats.get('timeLoss', 0))
-            
+
+            # Extract actual simulation duration from <performance> element
+            # Default to 3600 seconds (1 hour) if not found
+            sim_duration_seconds = 3600.0
+            if performance_elem is not None:
+                sim_duration_seconds = float(performance_elem.get('duration', 3600.0))
+
             # Calculate efficiency metrics
             insertion_rate = (inserted / loaded * 100) if loaded > 0 else 0
-            
+
             # Throughput: vehicles that completed per hour
-            sim_hours = 1200 / 3600  # 1200 seconds = 0.33 hours
+            sim_hours = sim_duration_seconds / 3600  # Convert seconds to hours
             throughput = arrived / sim_hours if sim_hours > 0 else 0
             
             return {

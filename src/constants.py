@@ -180,7 +180,38 @@ STEP_START_TIME_HOUR = 0.5
 # =============================================================================
 
 # Traffic Light Strategy
-DEFAULT_TRAFFIC_LIGHT_STRATEGY = 'opposites'
+DEFAULT_TRAFFIC_LIGHT_STRATEGY = 'partial_opposites'
+
+# Traffic Light Strategy Constants
+TL_STRATEGY_OPPOSITES = 'opposites'
+TL_STRATEGY_INCOMING = 'incoming'
+TL_STRATEGY_PARTIAL_OPPOSITES = 'partial_opposites'
+
+# Minimum Lanes by Traffic Light Strategy
+MIN_LANES_FOR_TL_STRATEGY = {
+    TL_STRATEGY_OPPOSITES: 1,
+    TL_STRATEGY_INCOMING: 1,
+    TL_STRATEGY_PARTIAL_OPPOSITES: 2,  # Requires 2+ lanes
+}
+
+# Partial Opposites Phase Durations (DEPRECATED - kept for reference only)
+# NOTE: Actual durations are calculated dynamically by convert_to_green_only_phases()
+# All phases get equal duration: 90s / num_phases
+# - Interior junctions (4 phases): 22.5s each
+# - Corner junctions (2-3 phases): 45s or 30s each
+# This ensures fair Fixed baseline where all movements get equal green time
+PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN = 22.5  # seconds (DEPRECATED - not used)
+PARTIAL_OPPOSITES_LEFT_UTURN_GREEN = 22.5      # seconds (DEPRECATED - not used)
+
+# Actuated Traffic Light Parameters (matching original decentralized-traffic-bottlenecks repository)
+# These parameters align with the original research implementation for comparative experiments
+ACTUATED_MAX_GAP = 3.0              # seconds - maximum time gap between vehicles to extend phase
+ACTUATED_DETECTOR_GAP = 1.0         # seconds - detector placement distance in seconds at max speed
+ACTUATED_PASSING_TIME = 10.0        # seconds - vehicle headway estimate
+ACTUATED_FREQ = 300                 # seconds - detector data aggregation frequency
+ACTUATED_SHOW_DETECTORS = True      # boolean - visibility in GUI for debugging
+ACTUATED_MIN_DUR = 10               # seconds - minimum phase duration
+ACTUATED_MAX_DUR = 70               # seconds - maximum phase duration
 
 # Traffic Control Method
 DEFAULT_TRAFFIC_CONTROL = 'tree_method'

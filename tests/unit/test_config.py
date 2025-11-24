@@ -5,6 +5,7 @@ Tests individual configuration classes and validation logic
 without external dependencies.
 """
 
+from src.config import CONFIG, NetworkConfig
 import pytest
 from pathlib import Path
 import sys
@@ -13,12 +14,10 @@ import sys
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
-from src.config import CONFIG, NetworkConfig
-
 
 class TestGlobalConfig:
     """Test global CONFIG instance and defaults."""
-    
+
     @pytest.mark.unit
     def test_config_instance_exists(self):
         """Test that CONFIG instance is accessible."""
@@ -31,7 +30,7 @@ class TestGlobalConfig:
         """Test vehicle types configuration."""
         assert 'passenger' in CONFIG.vehicle_types
         assert 'public' in CONFIG.vehicle_types
-        
+
         # Check passenger vehicle config
         passenger = CONFIG.vehicle_types['passenger']
         assert passenger['length'] == 5.0
@@ -44,7 +43,7 @@ class TestGlobalConfig:
         assert CONFIG.RNG_SEED == 42
         assert CONFIG.MIN_LANES == 1
         assert CONFIG.MAX_LANES == 3
-        assert CONFIG.HEAD_DISTANCE == 50
+        assert CONFIG.HEAD_DISTANCE == 85
 
     @pytest.mark.unit
     def test_file_paths(self):
@@ -55,28 +54,27 @@ class TestGlobalConfig:
         assert "zones.poly.xml" in str(CONFIG.zones_file)
 
 
-
 class TestNetworkConfig:
     """Test NetworkConfig class."""
-    
+
     @pytest.mark.unit
     def test_network_config_grid(self):
         """Test network config for grid networks."""
         net_config = NetworkConfig(source_type="grid")
-        
+
         assert net_config.source_type == "grid"
 
 
 class TestConfigIntegration:
     """Test configuration integration and combinations."""
-    
+
     @pytest.mark.unit
     def test_global_config_with_network_config(self):
         """Test global CONFIG with network configurations."""
         # Test grid network config
         grid_net_config = NetworkConfig(source_type="grid")
         assert grid_net_config.source_type == "grid"
-        
+
         # Should work with global CONFIG
         assert CONFIG.DEFAULT_NUM_VEHICLES == 300
         assert CONFIG.RNG_SEED == 42
@@ -85,11 +83,11 @@ class TestConfigIntegration:
     def test_vehicle_type_distribution(self):
         """Test default vehicle type distribution."""
         distribution = CONFIG.default_vehicle_distribution
-        
+
         # Should sum to 100
         total = sum(distribution.values())
         assert total == 100.0
-        
+
         # Should have both types
         assert "passenger" in distribution
         assert "public" in distribution
@@ -98,15 +96,15 @@ class TestConfigIntegration:
     def test_land_use_configuration(self):
         """Test land use configuration."""
         land_uses = CONFIG.land_uses
-        
+
         # Should have expected land use types
         land_use_names = [lu["name"] for lu in land_uses]
-        expected_names = ["Residential", "Employment", "Public Buildings", 
-                         "Mixed", "Entertainment/Retail", "Public Open Space"]
-        
+        expected_names = ["Residential", "Employment", "Public Buildings",
+                          "Mixed", "Entertainment/Retail", "Public Open Space"]
+
         for name in expected_names:
             assert name in land_use_names
-        
+
         # Percentages should sum to 100
         total_percentage = sum(lu["percentage"] for lu in land_uses)
         assert total_percentage == 100

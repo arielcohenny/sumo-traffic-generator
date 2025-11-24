@@ -15,7 +15,11 @@ from src.config import CONFIG
 from src.validate.errors import ValidationError
 from src.constants import (
     MIN_XML_FILE_SIZE, MIN_PHASE_DURATION, MAX_PHASE_DURATION,
-    MIN_CYCLE_TIME, MAX_CYCLE_TIME, MIN_GREEN_TIME_RATIO
+    MIN_CYCLE_TIME, MAX_CYCLE_TIME, MIN_GREEN_TIME_RATIO,
+    PARTIAL_OPPOSITES_STRAIGHT_RIGHT_GREEN, PARTIAL_OPPOSITES_LEFT_UTURN_GREEN,
+    TL_STRATEGY_PARTIAL_OPPOSITES,
+    ACTUATED_MAX_GAP, ACTUATED_DETECTOR_GAP, ACTUATED_PASSING_TIME,
+    ACTUATED_FREQ, ACTUATED_SHOW_DETECTORS, ACTUATED_MIN_DUR, ACTUATED_MAX_DUR
 )
 
 
@@ -35,6 +39,8 @@ def verify_generate_grid_network(
     junctions_to_remove_input: str,
     lane_count_arg: str,
     traffic_light_strategy: str = "opposites",
+    traffic_control: str = "tree_method",
+    skip_tl_validation: bool = True,
 ) -> None:
     """Validate grid network generation with junction removal.
 
@@ -42,8 +48,12 @@ def verify_generate_grid_network(
     1. All required XML files exist and are valid
     2. Junction coordinates follow expected grid pattern
     3. Edge structure is consistent with grid topology
-    4. Traffic light logic is properly configured
+    4. Traffic light logic is properly configured based on control mode (if skip_tl_validation=False)
     5. Junction removal was applied correctly
+
+    Args:
+        skip_tl_validation: If True, skips detailed traffic light validation (default True).
+                          Set to False only after Step 4.5 when TL modifications are complete.
     """
 
     # Required files that should exist after grid generation
@@ -270,23 +280,176 @@ def verify_generate_grid_network(
                 if "G" in state or "g" in state:  # Green phases
                     green_time += duration
 
-                # Check reasonable phase duration
-                if duration < MIN_PHASE_DURATION or duration > MAX_PHASE_DURATION:
+                # Check reasonable phase duration (skip validation for RL control durations)
+                # Duration of 1s indicates RL control setup - validation not needed
+                if duration != 1.0 and (duration < MIN_PHASE_DURATION or duration > MAX_PHASE_DURATION):
                     raise ValidationError(
                         f"Traffic light {tl_id} has unreasonable phase duration: {duration}s")
             except ValueError:
                 raise ValidationError(
                     f"Traffic light {tl_id} has invalid phase duration")
 
-        # Check reasonable cycle time
-        if total_cycle_time < MIN_CYCLE_TIME or total_cycle_time > MAX_CYCLE_TIME:
-            raise ValidationError(
-                f"Traffic light {tl_id} has unreasonable cycle time: {total_cycle_time}s")
+        # Check reasonable cycle time (skip validation for RL control setups)
+        # If any phase has 1s duration, this is RL control setup - skip cycle validations
+        has_rl_control_duration = any(
+            float(phase.get("duration", 0)) == 1.0 for phase in tl_logic.findall("phase"))
 
-        # Check minimum green time
-        if green_time < MIN_GREEN_TIME_RATIO * total_cycle_time:
+        if not has_rl_control_duration:
+            if total_cycle_time < MIN_CYCLE_TIME or total_cycle_time > MAX_CYCLE_TIME:
+                raise ValidationError(
+                    f"Traffic light {tl_id} has unreasonable cycle time: {total_cycle_time}s")
+
+            # Check minimum green time
+            if green_time < MIN_GREEN_TIME_RATIO * total_cycle_time:
+                raise ValidationError(
+                    f"Traffic light {tl_id} has insufficient green time: {green_time}/{total_cycle_time}s")
+
+    # 15 ── validate traffic light configuration based on control mode ---------
+    # Skip detailed TL validation if called during Step 1 (before Step 4.5 modifications)
+    if skip_tl_validation:
+        return
+
+    # Traffic light type depends on control mode:
+    # - 'actuated': type="actuated" with minDur/maxDur and params
+    # - 'fixed' or 'tree_method': type="static" without minDur/maxDur
+    expected_type = "actuated" if traffic_control == "actuated" else "static"
+
+    for tl_logic in tll_root.findall("tlLogic"):
+        tl_id = tl_logic.get("id")
+        tl_type = tl_logic.get("type")
+
+        # Check type matches expected for control mode
+        if tl_type != expected_type:
             raise ValidationError(
-                f"Traffic light {tl_id} has insufficient green time: {green_time}/{total_cycle_time}s")
+                f"Traffic light {tl_id} has type '{tl_type}', expected '{expected_type}' for {traffic_control} control mode")
+
+        # Only validate actuated params for actuated mode
+        if traffic_control == "actuated":
+            # Validate required param elements
+            required_params = {
+                "max-gap": ACTUATED_MAX_GAP,
+                "detector-gap": ACTUATED_DETECTOR_GAP,
+                "passing-time": ACTUATED_PASSING_TIME,
+                "freq": ACTUATED_FREQ,
+                "show-detectors": str(ACTUATED_SHOW_DETECTORS).lower(),
+            }
+
+            params = {param.get("key"): param.get("value")
+                      for param in tl_logic.findall("param")}
+
+            for param_key, expected_value in required_params.items():
+                if param_key not in params:
+                    raise ValidationError(
+                        f"Traffic light {tl_id} missing required param: {param_key}")
+
+                # Validate param values match expected configuration
+                actual_value = params[param_key]
+                expected_str = str(expected_value)
+
+                # Convert to float for numeric comparisons
+                if param_key != "show-detectors":
+                    try:
+                        actual_float = float(actual_value)
+                        expected_float = float(expected_str)
+                        if abs(actual_float - expected_float) > 0.01:
+                            raise ValidationError(
+                                f"Traffic light {tl_id} param {param_key}={actual_value}, expected {expected_str}")
+                    except ValueError:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} param {param_key} has invalid value: {actual_value}")
+                else:
+                    # Boolean param - check exact match
+                    if actual_value != expected_str:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} param {param_key}={actual_value}, expected {expected_str}")
+
+            # Validate only green phases have minDur and maxDur attributes
+            # (Yellow phases don't need actuated control - SUMO handles them automatically)
+            for phase in tl_logic.findall("phase"):
+                state = phase.get("state", "")
+
+                # Only green phases should have minDur/maxDur in actuated mode
+                if 'G' in state:
+                    min_dur = phase.get("minDur")
+                    max_dur = phase.get("maxDur")
+
+                    if min_dur is None:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} green phase missing minDur attribute")
+                    if max_dur is None:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} green phase missing maxDur attribute")
+
+                    # Validate minDur and maxDur values
+                    try:
+                        min_dur_val = float(min_dur)
+                        max_dur_val = float(max_dur)
+
+                        if abs(min_dur_val - ACTUATED_MIN_DUR) > 0.01:
+                            raise ValidationError(
+                                f"Traffic light {tl_id} phase minDur={min_dur}, expected {ACTUATED_MIN_DUR}")
+                        if abs(max_dur_val - ACTUATED_MAX_DUR) > 0.01:
+                            raise ValidationError(
+                                f"Traffic light {tl_id} phase maxDur={max_dur}, expected {ACTUATED_MAX_DUR}")
+                    except ValueError:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} phase has invalid minDur/maxDur values")
+
+    # 16 ── validate partial_opposites specific requirements -------------------
+    if traffic_light_strategy == TL_STRATEGY_PARTIAL_OPPOSITES:
+        # Validate phase structure for partial_opposites (green-only format)
+        for tl_logic in tll_root.findall("tlLogic"):
+            tl_id = tl_logic.get("id")
+            phases = tl_logic.findall("phase")
+
+            # # Should have exactly 4 green phases (yellow transitions handled by SUMO)
+            # if len(phases) != 4:
+            #     raise ValidationError(
+            #         f"Traffic light {tl_id} with partial_opposites strategy should have 4 green phases, found {len(phases)}")
+
+            # Validate phase durations are equal (fair Fixed baseline)
+            # All phases in a junction should have the same duration
+            # Total cycle should be 90s regardless of number of phases
+
+            if len(phases) > 0:
+                durations = [float(phase.get("duration", 0)) for phase in phases]
+
+                # Check all durations are equal (within tolerance)
+                first_duration = durations[0]
+                for i, duration in enumerate(durations):
+                    if abs(duration - first_duration) > 0.1:
+                        raise ValidationError(
+                            f"Traffic light {tl_id} has unequal phase durations: phase {i}={duration}s, expected {first_duration}s")
+
+                # Check total cycle time is 90s
+                total_cycle = sum(durations)
+                if abs(total_cycle - 90.0) > 0.1:
+                    raise ValidationError(
+                        f"Traffic light {tl_id} has incorrect total cycle time: {total_cycle}s, expected 90s")
+
+        # Validate minimum 2 lanes per edge for partial_opposites
+        # Note: Only validate after edge splitting has occurred (when _H edges exist)
+        # At Step 1, edges haven't been split yet and will still have 1 lane
+        has_head_edges = any("_H" in edge.get("id", "")
+                             for edge in edg_root.findall("edge"))
+
+        if has_head_edges:
+            # Edge splitting has occurred, validate lane counts
+            for edge in edg_root.findall("edge"):
+                edge_id = edge.get("id")
+                num_lanes = int(edge.get("numLanes", 1))
+
+                # Skip internal edges
+                if edge_id.startswith(":"):
+                    continue
+
+                # Skip head edges (_H suffix) as they may have different lane counts
+                if "_H" in edge_id:
+                    continue
+
+                if num_lanes < 2:
+                    raise ValidationError(
+                        f"Edge {edge_id} has {num_lanes} lane(s), but partial_opposites strategy requires minimum 2 lanes")
 
     return
 

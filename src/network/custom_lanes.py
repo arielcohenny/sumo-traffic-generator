@@ -9,9 +9,7 @@ spatial logic functions while providing complete bidirectional impact management
 
 import xml.etree.ElementTree as ET
 import re
-from pathlib import Path
 from typing import Dict, List, Set, Tuple, Optional
-from collections import defaultdict
 
 from src.config import CONFIG, CustomLaneConfig
 from src.network.split_edges_with_lanes import (
@@ -373,9 +371,6 @@ def _generate_upstream_connections(con_root, edge_id: str, tail_lanes: int) -> N
         # Sort connections by from_lane for consistent ordering
         edge_connections.sort(key=lambda x: x['from_lane'])
 
-        # Redistribute upstream lanes to new tail_lanes
-        num_upstream_lanes = len(edge_connections)
-
         # Create new connections with even distribution
         for i, conn in enumerate(edge_connections):
             # Distribute upstream lanes evenly across available tail lanes
@@ -462,25 +457,26 @@ def _recreate_junction_traffic_light(tll_root, con_root, junction_id: str) -> No
         # Create traffic light logic element
         tl_logic = ET.SubElement(tll_root, "tlLogic")
         tl_logic.set("id", junction_id)
-        tl_logic.set("type", "static")
+        # Changed from "static" to allow TraCI control
+        tl_logic.set("type", "actuated")
         tl_logic.set("programID", "0")
         tl_logic.set("offset", "0")
 
-        # Add phases
+        # Add phases with long default durations that RL can override
         phase1 = ET.SubElement(tl_logic, "phase")
-        phase1.set("duration", "42")
+        phase1.set("duration", "1000")  # Long duration - RL will override this
         phase1.set("state", state_green_ns)
 
         phase2 = ET.SubElement(tl_logic, "phase")
-        phase2.set("duration", "3")
+        phase2.set("duration", "3")  # Keep short yellow phases
         phase2.set("state", state_yellow_ns)
 
         phase3 = ET.SubElement(tl_logic, "phase")
-        phase3.set("duration", "42")
+        phase3.set("duration", "1000")  # Long duration - RL will override this
         phase3.set("state", state_green_ew)
 
         phase4 = ET.SubElement(tl_logic, "phase")
-        phase4.set("duration", "3")
+        phase4.set("duration", "3")  # Keep short yellow phases
         phase4.set("state", state_yellow_ew)
 
     # Create traffic light connections with sequential linkIndex

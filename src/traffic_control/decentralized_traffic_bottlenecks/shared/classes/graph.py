@@ -6,10 +6,11 @@ from .node import JunctionNode
 from .head import Head
 from .vehicle import Vehicle
 from ..utils import validate_vehicle_id
+from ..config import M, L
 
 
 class Graph:
-    def __init__(self, steps):
+    def __init__(self, steps, m=M, l=L):
         self.all_links = []
         self.all_nodes = []
         self.link_names = {}
@@ -29,11 +30,18 @@ class Graph:
         self.driving_Time_seconds = []
         self.ended_ids_list = []  # List of ended vehicle ID strings
         self.started_ids_list = []  # List of started vehicle ID strings
+        self.m = m
+        self.l = l
+
+        # DEBUG: Log Graph creation with unique ID
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.debug(f"🌐 Graph created: {id(self)}")
 
     def create_links_connections_and_heads(self, edges_list):
         for inx, e in enumerate(edges_list):
             this_link = Link(inx, e['id'], e['from_junction'], e['to_junction'],
-                             e['distance'], e['lanes'], e['f_speed'], e['heads'])
+                             e['distance'], e['lanes'], e['f_speed'], e['heads'], self.m, self.l)
             self.all_links.append(this_link)
             self.link_names[this_link.edge_name] = this_link.link_id
             if e['to_junction'] not in self.node_names:
@@ -123,6 +131,9 @@ class Graph:
         for link in self.all_links:
             speed_m_per_s = traci.edge.getLastStepMeanSpeed(link.edge_name)
             link.fill_my_speed(speed_m_per_s)
+            # Fetch vehicle count for bottleneck logging
+            vehicle_count = traci.edge.getLastStepVehicleNumber(link.edge_name)
+            link.fill_my_vehicle_count(vehicle_count)
 
     def update_traffic_lights(self, step, seconds_in_cycle, algo_type):
         for node_id in self.tl_node_ids:
@@ -162,9 +173,22 @@ class Graph:
         return this_iter_trees.all_trees_costs
 
     def fill_head_iteration(self):
+        # DEBUG: Log vehicle counts every 100 steps to verify Tree Method sees different traffic
+        import logging
+        logger = logging.getLogger(__name__)
+
         for head in list(self.all_heads_dict.values()):
             vehicle_count = traci.edge.getLastStepVehicleNumber(head.name)
             head.fill_my_count(vehicle_count)
+
+        # Log total vehicle count periodically
+        if hasattr(self, '_last_log_step'):
+            self._last_log_step = getattr(self, '_last_log_step', 0)
+
+        current_step = len([h for h in self.all_heads_dict.values() if hasattr(h, 'count_per_iteration')])
+        if current_step % 100 == 0:
+            total_vehicles = sum([traci.edge.getLastStepVehicleNumber(h.name) for h in self.all_heads_dict.values()])
+            logger.debug(f"🚦 Tree Method sees {total_vehicles} total vehicles across all edges")
 
 
 class LinkConnections:

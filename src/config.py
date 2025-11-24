@@ -10,15 +10,15 @@ from src.constants import (
 
 class _Config:
     """Dynamic configuration class that allows workspace updates."""
-    
+
     def __init__(self):
         # Initialize with default workspace
         self._output_dir = Path(DEFAULT_WORKSPACE_DIR)
         self._update_paths()
-        
+
         # Initialize non-path attributes
         self._init_attributes()
-    
+
     def _update_paths(self):
         """Update all dependent paths when workspace changes."""
         self.network_prefix = self._output_dir / "grid"
@@ -30,38 +30,44 @@ class _Config:
         self.config_file = self._output_dir / "grid.sumocfg"
         self.zones_file = self._output_dir / "zones.poly.xml"
         self.routes_file = self._output_dir / "vehicles.rou.xml"
-    
+
     @property
     def output_dir(self) -> Path:
         """Get the current output directory."""
         return self._output_dir
-    
+
     def update_workspace(self, workspace_path: str) -> None:
         """Update the workspace directory and regenerate all paths.
-        
+
         The workspace_path specifies the parent directory where a 'workspace' 
         subdirectory will be created for simulation output files.
         """
         parent_dir = Path(workspace_path)
         self._output_dir = parent_dir / "workspace"
         self._update_paths()
-    
+
     def _init_attributes(self) -> None:
         """Initialize non-path configuration attributes."""
         # ---------- land-use palette ----------
         self.land_uses = [
-            {"name": "Residential", "percentage": 34, "max_size": 1000, "color": "#FFA500"},
-            {"name": "Employment", "percentage": 10, "max_size": 500, "color": "#8B0000"},
-            {"name": "Public Buildings", "percentage": 12, "max_size": 200, "color": "#000080"},
-            {"name": "Mixed", "percentage": 24, "max_size": 300, "color": "#FFFF00"},
-            {"name": "Entertainment/Retail", "percentage": 8, "max_size": 40, "color": "#006400"},
-            {"name": "Public Open Space", "percentage": 12, "max_size": 100, "color": "#90EE90"},
+            {"name": "Residential", "percentage": 34,
+                "max_size": 1000, "color": "#FFA500"},
+            {"name": "Employment", "percentage": 10,
+                "max_size": 500, "color": "#8B0000"},
+            {"name": "Public Buildings", "percentage": 12,
+                "max_size": 200, "color": "#000080"},
+            {"name": "Mixed", "percentage": 24,
+                "max_size": 300, "color": "#FFFF00"},
+            {"name": "Entertainment/Retail", "percentage": 8,
+                "max_size": 40, "color": "#006400"},
+            {"name": "Public Open Space", "percentage": 12,
+                "max_size": 100, "color": "#90EE90"},
         ]
 
         # ---------- vehicle generation ----------
         self.vehicle_types = {
-            "passenger": {"length": 5.0, "maxSpeed": 13.9, "accel": 2.6, "decel": 4.5, "sigma": 0.5},
-            "public": {"length": 10.0, "maxSpeed": 11.1, "accel": 1.8, "decel": 4.0, "sigma": 0.5},
+            "passenger": {"length": 5.0, "maxSpeed": 13.9, "accel": 2.6, "decel": 4.5, "sigma": 0.5, "lcStrategic": 1.0},
+            "public": {"length": 10.0, "maxSpeed": 11.1, "accel": 1.8, "decel": 4.0, "sigma": 0.5, "lcStrategic": 1.0},
         }
 
         # Default vehicle type distribution (must sum to 100)
@@ -70,19 +76,30 @@ class _Config:
         # ---------- simulation parameters ----------
         self.RNG_SEED = 42
         self.DEFAULT_JUNCTION_RADIUS = 10.0  # meters
-        self.HEAD_DISTANCE = 50  # head distance from the downstream end when splitting edges
+        self.HEAD_DISTANCE = 85  # head distance from the downstream end when splitting edges
         self.MIN_LANES = MIN_LANE_COUNT  # Backward compatibility alias
         self.MAX_LANES = MAX_LANE_COUNT  # Backward compatibility alias
-        self.LAMBDA_DEPART = 10.0  # edge attractiveness (increased for 1-20 range)
-        self.LAMBDA_ARRIVE = 10.0  # edge attractiveness (increased for 1-20 range)
+        # edge attractiveness (increased for 1-20 range)
+        self.LAMBDA_DEPART = 10.0
+        # edge attractiveness (increased for 1-20 range)
+        self.LAMBDA_ARRIVE = 10.0
 
         # ---------- simulation verification ----------
-        self.SIMULATION_VERIFICATION_FREQUENCY = 30  # Verify algorithm every N simulation steps
+        # Verify algorithm every N simulation steps
+        self.SIMULATION_VERIFICATION_FREQUENCY = 90
 
         # ---------- Tree Method algorithm timing ----------
         self.TREE_METHOD_ITERATION_INTERVAL_SEC = 90
-        self.TREE_METHOD_MIN_INTERVAL_SEC = MIN_TREE_METHOD_INTERVAL  # Backward compatibility alias
-        self.TREE_METHOD_MAX_INTERVAL_SEC = MAX_TREE_METHOD_INTERVAL  # Backward compatibility alias
+        # Backward compatibility alias
+        self.TREE_METHOD_MIN_INTERVAL_SEC = MIN_TREE_METHOD_INTERVAL
+        # Backward compatibility alias
+        self.TREE_METHOD_MAX_INTERVAL_SEC = MAX_TREE_METHOD_INTERVAL
+
+        # ---------- Bottleneck logging ----------
+        # Interval for logging vehicle counts per edge (360 seconds = 6 minutes)
+        self.BOTTLENECK_LOG_INTERVAL_SEC = 360
+        # Enable/disable bottleneck event logging (default: False)
+        self.log_bottleneck_events = False
 
 
 @dataclass

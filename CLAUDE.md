@@ -91,7 +91,6 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --end-time 7200 \
   --workspace custom_output \
   --attractiveness land_use \
-  --time_dependent \
   --start_time_hour 7.0 \
   --routing_strategy 'shortest 70 realtime 30' \
   --vehicle_types 'passenger 90 public 10' \
@@ -122,11 +121,12 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100 -
 ```
 
 **Generated Files Structure:**
+
 ```
 [workspace_directory]/
 ├── grid.net.xml          # SUMO network file
 ├── grid.nod.xml          # Network nodes
-├── grid.edg.xml          # Network edges  
+├── grid.edg.xml          # Network edges
 ├── grid.con.xml          # Network connections
 ├── grid.tll.xml          # Traffic light definitions
 ├── vehicles.rou.xml      # Vehicle routes and types
@@ -137,63 +137,33 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100 -
 ```
 
 **Notes:**
-- Default creates `"./workspace/"` in current working directory  
+
+- Default creates `"./workspace/"` in current working directory
 - A `workspace/` subdirectory is always created in the specified parent directory
 - Only the `workspace/` folder contents are cleaned, never the parent directory
 - **Safe**: You can use `--workspace ./` or any directory without risk of data loss
 - Parent directory is automatically created if it doesn't exist
 - GUI automatically uses the configured workspace for file display
 
-### Tested Scenarios (5x5 Grid, 150m Blocks)
-
-These 10 scenarios have been verified to work correctly:
-
-```bash
-# Scenario 1: Morning Rush Hour Peak Traffic
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 800 --step-length 1.0 --end-time 7200 --departure_pattern six_periods --start_time_hour 7.0 --gui
-
-# Scenario 2: Light Evening Traffic
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 0 --num_vehicles 500 --step-length 1.0 --end-time 5400 --departure_pattern uniform --start_time_hour 20.0 --gui
-
-# Scenario 3: All-Day Urban Simulation
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1200 --step-length 1.0 --end-time 28800 --departure_pattern six_periods --attractiveness land_use --workspace "all_day_simulation" --gui
-
-# Scenario 4: Custom Rush Hour Pattern
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 750 --step-length 1.0 --end-time 10800 --departure_pattern 'rush_hours:7-9:50,17-19:40,rest:10' --routing_strategy 'shortest 70 realtime 30' --gui
-
-# Scenario 5: Midnight to Dawn Low Traffic
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 0 --num_vehicles 600 --step-length 1.0 --end-time 21600 --departure_pattern six_periods --start_time_hour 0.0 --time_dependent --gui
-
-# Scenario 6: High-Density Stress Test
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1500 --step-length 1.0 --end-time 14400 --departure_pattern uniform --routing_strategy 'shortest 50 realtime 30 fastest 20' --workspace "stress_test_results" --gui
-
-# Scenario 7: Time-Dependent Attractiveness Test
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 900 --step-length 1.0 --end-time 12600 --departure_pattern six_periods --time_dependent --start_time_hour 8.0 --gui
-
-# Scenario 8: Weekend Traffic Pattern
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 0 --num_vehicles 650 --step-length 1.0 --end-time 18000 --departure_pattern uniform --start_time_hour 10.0 --attractiveness land_use --gui
-
-# Scenario 9: Infrastructure Disruption Test
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 1000 --step-length 1.0 --end-time 9000 --departure_pattern six_periods --routing_strategy 'shortest 40 realtime 60' --seed 123 --gui
-
-# Scenario 10: Multi-Modal Traffic Mix
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 850 --step-length 1.0 --end-time 16200 --departure_pattern six_periods --vehicle_types 'passenger 90 public 10' --attractiveness land_use --gui
-
 # Quick Development Tests
+
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 500 --end-time 1800 --gui
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 1000 --end-time 3600 --gui
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --junctions_to_remove 1 --num_vehicles 800 --routing_strategy 'realtime 100' --end-time 3600 --gui
 
 # Traffic Control Method Comparison Tests
+
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 800 --end-time 3600 --traffic_control tree_method --gui
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 800 --end-time 3600 --traffic_control actuated --gui
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 150 --num_vehicles 800 --end-time 3600 --traffic_control fixed --gui
 
 # Experimental comparison (identical conditions, different control methods)
+
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 --end-time 3600 --seed 42 --traffic_control tree_method
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 --end-time 3600 --seed 42 --traffic_control actuated
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 1000 --end-time 3600 --seed 42 --traffic_control fixed
-```
+
+````
 
 ### Tree Method Sample Testing
 
@@ -217,7 +187,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/dataset
 
 # Quick validation runs
 env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/datasets/networks/ --traffic_control tree_method --end-time 1800 --gui
-```
+````
 
 **Tree Method Sample Features:**
 
@@ -231,7 +201,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/dataset
 
 The project includes a comprehensive experimental framework for comparing traffic control methods:
 
-```bash
+````bash
 # Run moderate traffic experiment (600 vehicles, 2 hours)
 cd evaluation/benchmarks/experiment-01-moderate-traffic
 ./run_experiment.sh
@@ -247,14 +217,6 @@ python analyze_results.py
 ls -la results/*/  # Check progress across all methods
 tail -f results/tree_method/run_1.log  # Monitor specific run
 
-# Quick single-method test (for debugging)
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --block_size_m 200 --num_vehicles 600 --end-time 7200 --traffic_control tree_method --seed 1
-
-# Compare methods with identical conditions
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 --end-time 3600 --seed 42 --traffic_control tree_method
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 --end-time 3600 --seed 42 --traffic_control actuated
-env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 5 --num_vehicles 800 --end-time 3600 --seed 42 --traffic_control fixed
-```
 
 **Experimental Framework Features:**
 
@@ -285,7 +247,7 @@ pytest tests/validation/     # Domain validation tests
 
 # Run performance benchmarks
 cd evaluation/benchmarks/experiment-01-moderate-traffic && ./run_experiment.sh
-```
+````
 
 ### Code Quality (to be implemented)
 
@@ -330,15 +292,13 @@ env PYTHONUNBUFFERED=1 python -m src.cli --network-seed 42 --private-traffic-see
 
 - **`--network-seed`**: Controls network structure generation
   - Junction removal selection
-  - Lane count assignment (when using "random" algorithm)  
+  - Lane count assignment (when using "random" algorithm)
   - Land use zone clustering and type assignment
   - Edge attractiveness value generation
-  
 - **`--private-traffic-seed`**: Controls passenger vehicle generation
   - Vehicle type assignment for private vehicles
   - Route generation (start/end edges, path computation)
   - Departure time generation for private vehicles
-  
 - **`--public-traffic-seed`**: Controls public transportation vehicle generation
   - Vehicle type assignment for public vehicles
   - Route generation for public vehicles
@@ -421,9 +381,9 @@ Central configuration in `src/config.py` using dataclasses:
 
 **Key Configuration Constants**:
 
-- `HEAD_DISTANCE = 50`: Distance from downstream end when splitting edges
-- `MIN_LANES = 1`, `MAX_LANES = 3`: Lane count bounds for randomization
-- `LAMBDA_DEPART = 3.5`, `LAMBDA_ARRIVE = 2.0`: Poisson distribution parameters for edge attractiveness
+- `HEAD_DISTANCE = 85`: Distance from downstream end when splitting edges
+- `MIN_LANES = 1`, `MAX_LANES = 5`: Lane count bounds for randomization
+- `LAMBDA_DEPART = 10.0`, `LAMBDA_ARRIVE = 10.0`: Poisson distribution parameters for edge attractiveness
 - `DEFAULT_JUNCTION_RADIUS = 10.0`: Junction radius in meters
 - `DEFAULT_ROUTING_STRATEGY = "shortest 100"`: Default routing strategy
 - `DEFAULT_VEHICLE_TYPES = "passenger 90 public 10"`: Default vehicle distribution
@@ -488,6 +448,7 @@ All generated files are placed in `workspace/` directory:
 ### Development Workflow
 
 #### GUI-First Development (Recommended)
+
 1. Launch web GUI with `dbps`
 2. Configure parameters using visual widgets with real-time validation
 3. Enable "SUMO GUI" checkbox for traffic visualization
@@ -495,6 +456,7 @@ All generated files are placed in `workspace/` directory:
 5. Analyze results using integrated log display and file browser
 
 #### CLI Development
+
 1. Modify configuration in `src/config.py`
 2. Run pipeline with `python -m src.cli`
 3. Check generated files in `workspace/` directory
@@ -502,6 +464,7 @@ All generated files are placed in `workspace/` directory:
 5. Validate results using the validation functions (when enabled)
 
 #### Dual GUI Testing
+
 ```bash
 # Launch web GUI first
 dbps
@@ -552,7 +515,17 @@ dbps
   - Each type has distinct characteristics: length, maxSpeed, acceleration, deceleration, sigma
   - Seamless integration with routing strategies and temporal systems
 - **Traffic Light Strategies**:
-  - Two phasing strategies: opposites (default, opposing directions together) and incoming (each edge separate)
+
+  - Three phasing strategies:
+    - `partial_opposites` (default): Separates straight+right from left+u-turn movements, 90s cycle (30s+3s straight+right, 9s+3s left+u-turn per direction)
+    - `opposites`: Opposing directions signal together, 90s cycle (42s+3s green+yellow per direction)
+    - `incoming`: Each edge gets independent phase, 132s cycle (30s+3s per edge)
+  - **partial_opposites Requirements**:
+    - Minimum 2 lanes per edge (enforced by validation)
+    - Lane assignment: lane 0 for straight+right, lane 1+ for left+u-turn
+    - Automatic validation of phase structure and cycle timing
+    - Compatible with all lane count algorithms (realistic, random, fixed)
+
 - **Vehicle Departure Patterns**:
   - Replaced sequential departure (0, 1, 2, 3...) with realistic temporal distribution based on research papers
   - Default: six_periods system with research-based 6-period daily structure (Morning 20%, Morning Rush 30%, Noon 25%, Evening Rush 20%, Evening 4%, Night 1%)
@@ -581,6 +554,27 @@ dbps
   - **Experimental Comparison**: Enables A/B testing between different traffic control approaches using identical network conditions
   - **Baseline Evaluation**: SUMO Actuated serves as primary baseline for comparing Tree Method performance
   - **Integration**: Seamlessly works with all existing features (routing strategies, vehicle types, temporal patterns)
+- **Actuated Traffic Light Baseline**:
+
+  - ✅ **COMPLETED & WORKING**: All traffic lights now use actuated (gap-based detection) instead of static timing
+  - **Research Alignment**: Matches original decentralized-traffic-bottlenecks repository baseline configuration
+  - **Fixed Parameters**: max-gap=3.0s, detector-gap=1.0s, passing-time=10.0s, freq=300s, show-detectors=true
+  - **Phase Duration Bounds**: minDur=10s, maxDur=70s on all phases
+  - **Universal Application**: Applies to all traffic light strategies (opposites, incoming, partial_opposites)
+  - **Gap-Based Detection**: Traffic lights dynamically extend green phases when vehicles are detected within max-gap
+  - **Validation**: Comprehensive validation ensures all traffic lights are properly configured as actuated
+  - **Implementation**: `convert_to_actuated_traffic_lights()` in `src/network/generate_grid.py` post-processes all traffic light definitions
+  - **Documentation**: See `docs/ACTUATED_BASELINE.md` for detailed technical documentation
+  - **Testing**:
+
+    ```bash
+    # Test actuated baseline with 3x3 grid
+    env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 3 --num_vehicles 100 --end-time 1800 --gui
+
+    # Verify actuated parameters in workspace/grid.tll.xml
+    grep -A 10 'type="actuated"' workspace/grid.tll.xml
+    ```
+
 - **Recent Updates (Latest Session)**:
   - ✅ **Fixed Integration Errors**: Resolved "string indices must be integers, not 'str'" errors in TraCI integration
   - ✅ **XML Phase Parsing**: Fixed traffic light phase parsing to handle both single and multiple phase cases
@@ -591,6 +585,20 @@ dbps
   - ✅ **File Removal**: Can safely delete `split_edges.py` (no longer referenced)
   - ✅ **Working System**: All components now operational with successful test runs
   - ✅ **Traffic Control Implementation**: Successfully implemented traffic control method switching with tested examples
+  - ✅ **partial_opposites Traffic Light Strategy**: Implemented third traffic light strategy that separates straight+right from left+u-turn movements
+    - 90-second cycle time: 19.5s+3s for straight+right, 19.5s+3s for left+u-turn per direction (equal green phases)
+    - Enforces minimum 2 lanes per edge with comprehensive validation
+    - Turn angle-based movement classification for accurate phase assignment (0°=straight, +90°=right, -90°=left, ±180°=u-turn)
+    - Post-processing approach consistent with incoming strategy
+    - Full integration with lane count algorithms and validation pipeline
+    - Documented in `docs/PARTIAL_OPPOSITES_STRATEGY.md` with implementation roadmap
+  - ✅ **Actuated Traffic Light Baseline**: Implemented actuated (gap-based detection) traffic lights to align with original decentralized-traffic-bottlenecks repository
+    - All traffic lights now use type="actuated" instead of type="static"
+    - Fixed parameters matching original: max-gap=3.0s, detector-gap=1.0s, passing-time=10.0s, freq=300s
+    - Phase bounds: minDur=10s, maxDur=70s on all phases
+    - Comprehensive validation in `src/validate/validate_network.py` checks actuated configuration
+    - Universal application across all traffic light strategies (opposites, incoming, partial_opposites)
+    - Documentation in `docs/ACTUATED_BASELINE.md` with technical details
 - **Experimental Framework**:
   - ✅ **COMPLETED & WORKING**: Comprehensive experimental framework for traffic control method comparison
   - **Two Main Experiments**: moderate-traffic (600 vehicles) and high-traffic (1200 vehicles) over 2-hour simulations

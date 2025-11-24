@@ -1,5 +1,6 @@
 import os
 import random
+import logging
 from typing import Protocol
 from xml.etree import ElementTree as ET
 from shapely.geometry import box, mapping
@@ -170,9 +171,18 @@ def extract_zones_from_junctions(cell_size: float, seed: int, fill_polygons: boo
 
     # Write GeoJSON file
     geojson_path = os.path.join(CONFIG.output_dir, "zones.geojson")
+
+    # Suppress pyogrio INFO logging during file write
+    pyogrio_logger = logging.getLogger('pyogrio._io')
+    original_level = pyogrio_logger.level
+    pyogrio_logger.setLevel(logging.WARNING)
+
     gpd.GeoDataFrame.from_features(features, crs="EPSG:4326").to_file(
         geojson_path, driver="GeoJSON"
     )
+
+    # Restore original log level
+    pyogrio_logger.setLevel(original_level)
 
     # Write SUMO .poly.xml file
     poly_path = os.path.join(CONFIG.output_dir, "zones.poly.xml")

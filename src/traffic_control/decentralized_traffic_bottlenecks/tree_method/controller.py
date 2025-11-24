@@ -8,6 +8,7 @@ from pathlib import Path
 import traci
 from src.config import CONFIG
 from src.orchestration.traffic_controller import TrafficController
+from .bottleneck_logger import BottleneckCSVLogger
 
 
 class TreeMethodController(TrafficController):
@@ -27,6 +28,14 @@ class TreeMethodController(TrafficController):
 
         # Junction control state - junctions with multi-edge trees that Tree Method controls
         self.controlled_junctions = set()
+
+        # Bottleneck logging
+        self.bottleneck_logger = None
+
+        # DEBUG: Log controller creation with unique ID
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.debug(f"🏗️  TreeMethodController created: {id(self)}")
 
     def initialize(self) -> None:
         """Initialize Tree Method objects and data structures."""
@@ -52,12 +61,33 @@ class TreeMethodController(TrafficController):
             sumo_cfg=CONFIG.config_file
         )
 
-        self.network_data = Network(json_file)
+        # CRITICAL FIX: Create Network object but immediately deepcopy its data
+        # to prevent ANY possibility of state leakage through shared references
+        import copy
+        network_temp = Network(json_file)
 
-        self.graph = Graph(self.args.end_time)
+        # Create SEPARATE deep copies for network_data and graph
+        # This ensures they don't share ANY mutable objects
+        junctions_dict_for_network = copy.deepcopy(network_temp.junctions_dict)
+        edges_list_for_network = copy.deepcopy(network_temp.edges_list)
 
-        self.graph.build(self.network_data.edges_list,
-                         self.network_data.junctions_dict)
+        junctions_dict_for_graph = copy.deepcopy(network_temp.junctions_dict)
+        edges_list_for_graph = copy.deepcopy(network_temp.edges_list)
+
+        # Store the deep-copied data (not the original Network object)
+        self.network_data = type('NetworkData', (), {
+            'junctions_dict': junctions_dict_for_network,
+            'edges_list': edges_list_for_network
+        })()
+
+        del network_temp  # Explicitly delete temp object
+
+        self.graph = Graph(self.args.end_time,
+                           self.args.tree_method_m, self.args.tree_method_l)
+
+        # Pass separate deep copies to graph.build
+        self.graph.build(edges_list_for_graph,
+                         junctions_dict_for_graph)
 
         # Use explicit Tree Method interval (independent of traffic light cycles)
         self.tree_method_interval = getattr(
@@ -71,7 +101,18 @@ class TreeMethodController(TrafficController):
 
         # Initialize enhanced bottleneck detector for junction control decisions
         from ..atlcs.enhancements.detector import BottleneckDetector
-        self.bottleneck_detector = BottleneckDetector(self.graph, self.network_data)
+        self.bottleneck_detector = BottleneckDetector(
+            self.graph, self.network_data)
+
+        # Initialize bottleneck logger for tracking vehicle counts (only if enabled)
+        # Use CONFIG.output_dir which has the correct workspace path
+        if CONFIG.log_bottleneck_events:
+            self.bottleneck_logger = BottleneckCSVLogger(
+                output_dir=str(CONFIG.output_dir),
+                enabled=True
+            )
+        else:
+            self.bottleneck_logger = None
 
     def update(self, step: int) -> None:
         """Update Tree Method traffic control at given step."""
@@ -88,7 +129,12 @@ class TreeMethodController(TrafficController):
             iteration = calc_iteration_from_step(
                 step, self.tree_method_interval)
 
-            if iteration > 0:  # Skip first iteration
+            # DEBUG: Log calculation trigger
+            if step <= 300:  # Only log first 5 minutes to avoid spam
+                self.logger.debug(
+                    f"🔧 CALC_TIME: step={step}, iteration={iteration}, will_calc={iteration > 0}")
+
+            if iteration >= 0:  # Skip first iteration
                 try:
                     # Perform Tree Method calculations
                     ended_iteration = iteration - 1
@@ -107,6 +153,23 @@ class TreeMethodController(TrafficController):
 
                     # Populate shared variable with calculated phase durations
                     self._populate_shared_phase_durations()
+
+                    # Log Tree Method decisions: iteration header + all junction phase durations
+                    # hours = step // 3600
+                    # minutes = (step % 3600) // 60
+                    # seconds = step % 60
+                    # time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+                    # num_junctions = len(self.current_phase_durations)
+
+                    # self.logger.info(f"🔧 step={step} | time={time_str} | Tree Method calculating phases for {num_junctions} junctions")
+
+                    # Log all phase durations for each junction in compact array format
+                    # for tl_id, phase_durations in sorted(self.current_phase_durations.items()):
+                    #     # Extract durations in phase order (0, 1, 2, 3, ...)
+                    #     durations_list = [phase_durations.get(i, 0) for i in range(len(phase_durations))]
+                    #     durations_str = ", ".join([f"{d}s" for d in durations_list])
+                    #     self.logger.info(f"🚦 step={step} | {tl_id}: [{durations_str}]")
+                    pass  # Logging disabled
 
                     # Update junction control state based on tree complexity
                     self._update_junction_control_state(step)
@@ -153,6 +216,14 @@ class TreeMethodController(TrafficController):
                 self.logger.warning(
                     f"Tree Method post-processing failed at step {step}: {e}")
 
+        # Log vehicle counts every BOTTLENECK_LOG_INTERVAL_SEC seconds (default: 360s = 6 minutes)
+        if CONFIG.log_bottleneck_events and step % CONFIG.BOTTLENECK_LOG_INTERVAL_SEC == 0 and step > 0:
+            try:
+                if self.bottleneck_logger:
+                    self.bottleneck_logger.log_vehicle_counts(step, self.graph)
+            except Exception as e:
+                self.logger.warning(f"Failed to log vehicle counts at step {step}: {e}")
+
         # Runtime validation (every 30 steps by default)
         if step % CONFIG.SIMULATION_VERIFICATION_FREQUENCY == 0:
             try:
@@ -186,6 +257,9 @@ class TreeMethodController(TrafficController):
         try:
             # Clear existing durations
             self.current_phase_durations.clear()
+
+            # DEBUG: Track first junction for detailed logging
+            first_junction_logged = False
 
             # Populate from Tree Method calculated phases
             for node_id in self.graph.tl_node_ids:
@@ -389,6 +463,10 @@ class TreeMethodController(TrafficController):
 
     def _update_traffic_lights_with_shared_durations(self, step: int, seconds_in_cycle: int, algo_type) -> None:
         """Update traffic lights using shared durations (allows ATLCS modifications to persist)."""
+
+        # self.logger.info(
+        #     f"step={step}, seconds_in_cycle={seconds_in_cycle}")
+
         if not hasattr(self, 'graph') or not self.graph:
             return
 
@@ -432,6 +510,7 @@ class TreeMethodController(TrafficController):
 
                             define_tl_program(
                                 tl_id, phase_index, duration)
+
                             break
                         secs_sum += phase_durations.get(
                             phase_index, node.phases[phase_index].duration)
@@ -442,6 +521,7 @@ class TreeMethodController(TrafficController):
                         if inner_sec == secs_sum:
                             define_tl_program(
                                 tl_id, phase_index, phase.duration)
+
                             break
                         secs_sum += phase.duration
 
@@ -459,6 +539,10 @@ class TreeMethodController(TrafficController):
             if hasattr(self, 'graph') and self.graph:
                 # Tree Method statistics are now included in the unified statistics system
                 pass
+
+            # Close bottleneck logger
+            if hasattr(self, 'bottleneck_logger') and self.bottleneck_logger:
+                self.bottleneck_logger.close()
 
         except Exception as e:
             self.logger.error(f"Error in Tree Method cleanup: {e}")
