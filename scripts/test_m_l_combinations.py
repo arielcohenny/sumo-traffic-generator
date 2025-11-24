@@ -135,7 +135,7 @@ def main():
         f"Estimated time: {total_experiments * 5 / 60:.1f} - {total_experiments * 10 / 60:.1f} minutes")
 
     # Create results directory
-    results_dir = Path("results")
+    results_dir = Path("evaluation/exp_tree_method_m_l_combinations")
     results_dir.mkdir(exist_ok=True)
 
     # Create output CSV file with timestamp

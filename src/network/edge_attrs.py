@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 import json
+import random
 from pathlib import Path
 from src.config import CONFIG
 from src.constants import (
@@ -265,10 +266,17 @@ def calculate_attractiveness_poisson(seed: int, edge_id: str = "") -> dict:
     return phases
 
 
-def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root) -> dict:
+def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root, seed: int) -> dict:
     """Calculate attractiveness based on land use zones with realistic temporal patterns.
 
     Returns 8 values (departure/arrival × 4 phases) in 1-20 range based on zone types.
+
+    Parameters
+    ----------
+    edge_id : Edge identifier
+    zones_data : Land use zone data
+    edg_root : XML root for edge definitions
+    seed : Random seed for deterministic edge variation
     """
     # Realistic temporal patterns for each zone type (1-20 range)
     land_use_temporal_patterns = {
@@ -331,9 +339,13 @@ def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root) 
     phase_names = ["morning_peak", "midday_offpeak",
                    "evening_peak", "night_low"]
 
-    # Edge-specific base variation
-    edge_hash = hash(edge_id) % 100
-    base_variation = 1 + (edge_hash * 0.01)  # 1.0 to 2.0 multiplier
+    # Edge-specific base variation using seeded random generator
+    # Combine seed with edge_id for deterministic per-edge variation
+    # Use string concatenation to create unique seed per edge
+    edge_seed_str = f"{seed}_{edge_id}"
+    edge_rng = random.Random(edge_seed_str)
+    edge_variation_value = edge_rng.randint(0, 99)
+    base_variation = 1 + (edge_variation_value * 0.01)  # 1.0 to 2.0 multiplier
 
     for phase in phase_names:
         if adjacent_zones:
@@ -474,7 +486,7 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", start_time_ho
             phase_values = calculate_attractiveness_poisson(seed)
         elif method == "land_use":
             phase_values = calculate_attractiveness_land_use(
-                edge_id, zones_data, edg_root)
+                edge_id, zones_data, edg_root, seed)
         elif method == "iac":
             phase_values = calculate_attractiveness_iac(
                 edge_id, zones_data, edg_root, tree)

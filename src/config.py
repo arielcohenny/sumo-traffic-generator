@@ -66,8 +66,8 @@ class _Config:
 
         # ---------- vehicle generation ----------
         self.vehicle_types = {
-            "passenger": {"length": 5.0, "maxSpeed": 13.9, "accel": 2.6, "decel": 4.5, "sigma": 0.5},
-            "public": {"length": 10.0, "maxSpeed": 11.1, "accel": 1.8, "decel": 4.0, "sigma": 0.5},
+            "passenger": {"length": 5.0, "maxSpeed": 13.9, "accel": 2.6, "decel": 4.5, "sigma": 0.5, "lcStrategic": 1.0},
+            "public": {"length": 10.0, "maxSpeed": 11.1, "accel": 1.8, "decel": 4.0, "sigma": 0.5, "lcStrategic": 1.0},
         }
 
         # Default vehicle type distribution (must sum to 100)
@@ -86,7 +86,7 @@ class _Config:
 
         # ---------- simulation verification ----------
         # Verify algorithm every N simulation steps
-        self.SIMULATION_VERIFICATION_FREQUENCY = 30
+        self.SIMULATION_VERIFICATION_FREQUENCY = 90
 
         # ---------- Tree Method algorithm timing ----------
         self.TREE_METHOD_ITERATION_INTERVAL_SEC = 90
@@ -94,6 +94,12 @@ class _Config:
         self.TREE_METHOD_MIN_INTERVAL_SEC = MIN_TREE_METHOD_INTERVAL
         # Backward compatibility alias
         self.TREE_METHOD_MAX_INTERVAL_SEC = MAX_TREE_METHOD_INTERVAL
+
+        # ---------- Bottleneck logging ----------
+        # Interval for logging vehicle counts per edge (360 seconds = 6 minutes)
+        self.BOTTLENECK_LOG_INTERVAL_SEC = 360
+        # Enable/disable bottleneck event logging (default: False)
+        self.log_bottleneck_events = False
 
 
 @dataclass

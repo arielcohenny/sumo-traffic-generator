@@ -1,3 +1,57 @@
+# Changes to Tree Method Code
+
+This document tracks modifications made to the original Tree Method (decentralized-traffic-bottlenecks) implementation.
+
+## 2025-11-15: Fix Division by Zero in Head Cost Calculation
+
+**File**: `shared/classes/link.py`
+**Method**: `calc_heads_costs()`
+**Line**: ~138-149
+
+### Problem
+The algorithm crashed with `ZeroDivisionError` when calculating head costs in scenarios where no vehicles were present on any head edges. This occurred in:
+- Large networks with removed junctions
+- Low-density traffic areas
+- Peripheral edges with minimal traffic
+- Early/late simulation periods
+
+**Error**:
+```python
+heads_costs[head_name] = all_heads[head_name].iterations_vehicle_count[-1] / \
+    heads_vehicles_count_sum * link_cost
+# ZeroDivisionError when heads_vehicles_count_sum = 0
+```
+
+### Solution
+Added zero-division protection that distributes costs equally among head edges when no vehicle data is available:
+
+```python
+if heads_vehicles_count_sum == 0:
+    # No vehicles - distribute cost equally among heads
+    equal_cost = link_cost / len(self.head_names) if self.head_names else 0
+    for head_name in self.head_names:
+        heads_costs[head_name] = equal_cost
+else:
+    # Normal case - distribute proportionally to vehicle counts
+    for head_name in self.head_names:
+        heads_costs[head_name] = all_heads[head_name].iterations_vehicle_count[-1] / \
+            heads_vehicles_count_sum * link_cost
+```
+
+### Rationale
+- **Equal distribution** is the fairest assumption when no vehicle data exists
+- Prevents crashes while maintaining algorithm correctness
+- Minimal impact: only affects edge cases with zero vehicles
+- Normal operation remains unchanged when vehicle data is available
+
+### Testing
+Tested with large network (6x6 grid, 17000 vehicles, 7200s simulation) with junction removal. Simulation completes successfully without division by zero errors.
+
+### Changed By
+Ariel - November 15, 2025
+
+---
+
 ## Change to net_data_builder.py
 
 Change to net_data_builder.py was a critical bug fix in the

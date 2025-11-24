@@ -76,7 +76,7 @@ class SumoController:
             ROUTING_FASTEST: FASTEST_REROUTING_INTERVAL_SECONDS,
             ROUTING_ATTRACTIVENESS: ATTRACTIVENESS_REROUTING_INTERVAL_SECONDS
         }
-        
+
         # Metrics tracking
         self.total_arrived = 0
         self.total_departed = 0
@@ -94,6 +94,7 @@ class SumoController:
             binary,
             "-c", self.sumo_cfg,
             "--step-length", str(self.step_length),
+            "--no-warnings",
         ]
         traci.start(sumo_cmd)
         print("SUMO TraCI started")
@@ -113,19 +114,20 @@ class SumoController:
                 if veh_id not in self.vehicle_departures:
                     self.vehicle_departures[veh_id] = current_time
                     self.total_departed += 1
-            
+
             # Get newly arrived vehicles
             arrived_vehicles = traci.simulation.getArrivedIDList()
             for veh_id in arrived_vehicles:
                 if veh_id not in self.vehicle_arrivals:
                     self.vehicle_arrivals[veh_id] = current_time
                     self.total_arrived += 1
-                    
+
                     # Calculate travel time if we have departure time
                     if veh_id in self.vehicle_departures:
-                        travel_time = current_time - self.vehicle_departures[veh_id]
+                        travel_time = current_time - \
+                            self.vehicle_departures[veh_id]
                         self.vehicle_travel_times[veh_id] = travel_time
-                        
+
         except Exception as e:
             # Don't let metrics tracking break the simulation
             pass
@@ -134,17 +136,18 @@ class SumoController:
         """Collect final simulation metrics using tracked data."""
         try:
             simulation_time = traci.simulation.getTime()
-            
+
             # Use our tracked metrics
             arrived_vehicles = self.total_arrived
             departed_vehicles = self.total_departed
-            
+
             # Calculate average travel time from tracked data
             mean_travel_time = 0.0
             if self.vehicle_travel_times:
                 total_travel_time = sum(self.vehicle_travel_times.values())
-                mean_travel_time = total_travel_time / len(self.vehicle_travel_times)
-            
+                mean_travel_time = total_travel_time / \
+                    len(self.vehicle_travel_times)
+
             metrics = {
                 'arrived_vehicles': arrived_vehicles,
                 'departed_vehicles': departed_vehicles,
@@ -153,13 +156,14 @@ class SumoController:
                 'mean_travel_time': mean_travel_time,
                 'mean_waiting_time': 0.0  # Would need additional tracking
             }
-            
+
             # Calculate completion rate
             if departed_vehicles > 0:
-                metrics['completion_rate'] = arrived_vehicles / departed_vehicles
+                metrics['completion_rate'] = arrived_vehicles / \
+                    departed_vehicles
             else:
                 metrics['completion_rate'] = 0.0
-                
+
             return metrics
         except Exception as e:
             print(f"Error collecting final metrics: {e}")
@@ -262,7 +266,8 @@ class SumoController:
             for veh_id in attractiveness_vehicles:
                 try:
                     current_time = traci.simulation.getTime()
-                    self.handle_attractiveness_rerouting(veh_id, current_time, new_phase)
+                    self.handle_attractiveness_rerouting(
+                        veh_id, current_time, new_phase)
 
                     # Reset their rerouting timer to prevent immediate rerouting again
                     interval = self.strategy_intervals[ROUTING_ATTRACTIVENESS]
@@ -328,7 +333,8 @@ class SumoController:
             route_tree = ET.parse(str(route_path))
             route_root = route_tree.getroot()
 
-            valid_strategies = {ROUTING_SHORTEST, ROUTING_REALTIME, ROUTING_FASTEST, ROUTING_ATTRACTIVENESS}
+            valid_strategies = {
+                ROUTING_SHORTEST, ROUTING_REALTIME, ROUTING_FASTEST, ROUTING_ATTRACTIVENESS}
             vehicle_ids_seen = set()
 
             # Helper function to extract strategy from vehicle or trip element
@@ -454,7 +460,8 @@ class SumoController:
             current_route = traci.vehicle.getRoute(vehicle_id)
             if not current_route:
                 # This shouldn't happen with trips, but handle gracefully
-                print(f"⚠️  Warning: Realtime vehicle {vehicle_id} has no route, skipping rerouting")
+                print(
+                    f"⚠️  Warning: Realtime vehicle {vehicle_id} has no route, skipping rerouting")
                 return
 
             # Get current position and destination
@@ -466,8 +473,10 @@ class SumoController:
                 return
 
             # Calculate potential new route using aggregated mode (traffic-aware routing)
-            traci.vehicle.setRoutingMode(vehicle_id, SUMO_ROUTING_MODE_AGGREGATED)
-            potential_route = traci.simulation.findRoute(current_edge, destination)
+            traci.vehicle.setRoutingMode(
+                vehicle_id, SUMO_ROUTING_MODE_AGGREGATED)
+            potential_route = traci.simulation.findRoute(
+                current_edge, destination)
 
             if not potential_route or not potential_route.edges:
                 error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
@@ -531,7 +540,8 @@ class SumoController:
 
             # Calculate potential new route using default mode for fastest path
             traci.vehicle.setRoutingMode(vehicle_id, SUMO_ROUTING_MODE_DEFAULT)
-            potential_route = traci.simulation.findRoute(current_edge, destination)
+            potential_route = traci.simulation.findRoute(
+                current_edge, destination)
 
             if not potential_route or not potential_route.edges:
                 error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
@@ -594,7 +604,8 @@ class SumoController:
 
             # For attractiveness routing, use findRoute with custom effort evaluation
             # This is a simplified implementation - could be enhanced with multiple route comparison
-            potential_route = traci.simulation.findRoute(current_edge, destination)
+            potential_route = traci.simulation.findRoute(
+                current_edge, destination)
 
             if not potential_route or not potential_route.edges:
                 error_msg = ROUTING_ERROR_MSG_TEMPLATE.format(
@@ -670,7 +681,8 @@ class SumoController:
             # Calculate improvement percentage
             # Positive = new route is better (faster)
             # Negative = new route is worse (slower)
-            improvement_pct = ((current_travel_time - new_travel_time) / current_travel_time) * 100.0
+            improvement_pct = (
+                (current_travel_time - new_travel_time) / current_travel_time) * 100.0
 
             return improvement_pct
 
@@ -736,7 +748,8 @@ class SumoController:
             vehicle_ids = traci.vehicle.getIDList()
 
             for veh_id in vehicle_ids:
-                strategy = self.vehicle_strategies.get(veh_id, ROUTING_SHORTEST)
+                strategy = self.vehicle_strategies.get(
+                    veh_id, ROUTING_SHORTEST)
 
                 # Only reroute vehicles with dynamic strategies
                 if strategy not in self.strategy_intervals:
@@ -751,8 +764,10 @@ class SumoController:
                     elif strategy == ROUTING_FASTEST:
                         self.handle_fastest_rerouting(veh_id, current_time)
                     elif strategy == ROUTING_ATTRACTIVENESS:
-                        current_phase = self.get_current_phase_for_time(current_time)
-                        self.handle_attractiveness_rerouting(veh_id, current_time, current_phase)
+                        current_phase = self.get_current_phase_for_time(
+                            current_time)
+                        self.handle_attractiveness_rerouting(
+                            veh_id, current_time, current_phase)
 
                     # Schedule next rerouting
                     interval = self.strategy_intervals[strategy]
@@ -820,7 +835,7 @@ class SumoController:
 
         # Collect final metrics before closing
         self.final_metrics = self.collect_final_metrics()
-        
+
         # Print final status
         print(f"Simulation ended at time {current_time}")
         self.close()

@@ -40,6 +40,12 @@ def write_routes(outfile: str | Path,
             # Store routing strategy as param for TraCI to read
             SubElement(trip_elem, "param", key="routing_strategy", value=routing_strategy)
 
+            # Add SUMO rerouting device for dynamic rerouting during simulation
+            # This makes SUMO automatically reroute vehicles every 30 seconds based on current travel times
+            SubElement(trip_elem, "param", key="has.rerouting.device", value="true")
+            SubElement(trip_elem, "param", key="device.rerouting.period", value="30")
+            SubElement(trip_elem, "param", key="device.rerouting.adaptation-steps", value="180")
+
         # Other strategies (shortest, fastest, attractiveness) use <vehicle> with full routes
         else:
             veh_elem = SubElement(root, "vehicle", **base_attrs)

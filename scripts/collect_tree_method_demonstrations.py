@@ -150,7 +150,8 @@ def collect_demonstrations(
             shutil.rmtree(demo_temp_dir)
             logger.info(f"✓ Cleaned up previous demonstration_temp/")
         except Exception as e:
-            logger.warning(f"Could not clean up previous {demo_temp_dir}/: {e}")
+            logger.warning(
+                f"Could not clean up previous {demo_temp_dir}/: {e}")
 
     for scenario_idx in range(num_scenarios):
         scenario_seed = base_seed + scenario_idx
@@ -253,7 +254,8 @@ def collect_demonstrations(
         # DISABLED FOR DEBUGGING - Check if route files differ
         demo_temp_dir = "demonstration_temp"
         if os.path.exists(demo_temp_dir):
-            logger.info(f"⚠️  KEEPING demonstration_temp for debugging - check route files!")
+            logger.info(
+                f"⚠️  KEEPING demonstration_temp for debugging - check route files!")
             # try:
             #     shutil.rmtree(demo_temp_dir)
             #     logger.info(
@@ -413,7 +415,8 @@ def _collect_single_scenario(
             # DEBUG: Log vehicle IDs at step 100 to verify traffic variation
             if rl_env.current_step == 100 and not logged_vehicles:
                 vehicle_ids = traci.vehicle.getIDList()
-                logger.info(f"🚗 VEHICLE DEBUG Episode {scenario_idx} Step 100: {len(vehicle_ids)} vehicles")
+                logger.info(
+                    f"🚗 VEHICLE DEBUG Episode {scenario_idx} Step 100: {len(vehicle_ids)} vehicles")
                 logger.info(f"   First 5 IDs: {list(vehicle_ids)[:5]}")
                 logged_vehicles = True
 
@@ -444,7 +447,8 @@ def _collect_single_scenario(
                     # Compute reward to populate CSV (don't actually use it)
                     _ = rl_env._compute_reward()
                 except Exception as e:
-                    logger.warning(f"Failed to log reward data at step {rl_env.current_step}: {e}")
+                    logger.warning(
+                        f"Failed to log reward data at step {rl_env.current_step}: {e}")
 
             # Check if simulation ended
             min_expected_vehicles = traci.simulation.getMinExpectedNumber()
@@ -491,7 +495,8 @@ def _collect_single_scenario(
         if os.path.exists(json_file):
             try:
                 os.remove(json_file)
-                logger.debug(f"🗑️  Deleted JSON file for clean reload: {json_file}")
+                logger.debug(
+                    f"🗑️  Deleted JSON file for clean reload: {json_file}")
             except Exception as e:
                 logger.warning(f"Could not delete JSON file {json_file}: {e}")
 
@@ -599,6 +604,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     # Collect demonstrations
+    print("DEBUG : Starting demonstration collection...")
     collect_demonstrations(
         num_scenarios=args.scenarios,
         base_seed=args.base_seed,

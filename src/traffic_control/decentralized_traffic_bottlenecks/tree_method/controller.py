@@ -82,7 +82,8 @@ class TreeMethodController(TrafficController):
 
         del network_temp  # Explicitly delete temp object
 
-        self.graph = Graph(self.args.end_time, self.args.tree_method_m, self.args.tree_method_l)
+        self.graph = Graph(self.args.end_time,
+                           self.args.tree_method_m, self.args.tree_method_l)
 
         # Pass separate deep copies to graph.build
         self.graph.build(edges_list_for_graph,
@@ -100,15 +101,18 @@ class TreeMethodController(TrafficController):
 
         # Initialize enhanced bottleneck detector for junction control decisions
         from ..atlcs.enhancements.detector import BottleneckDetector
-        self.bottleneck_detector = BottleneckDetector(self.graph, self.network_data)
+        self.bottleneck_detector = BottleneckDetector(
+            self.graph, self.network_data)
 
-        # Initialize bottleneck logger for tracking bottleneck development
+        # Initialize bottleneck logger for tracking vehicle counts (only if enabled)
         # Use CONFIG.output_dir which has the correct workspace path
-        from ..shared.config import ENABLE_BOTTLENECK_LOGGING
-        self.bottleneck_logger = BottleneckCSVLogger(
-            output_dir=str(CONFIG.output_dir),
-            enabled=ENABLE_BOTTLENECK_LOGGING
-        )
+        if CONFIG.log_bottleneck_events:
+            self.bottleneck_logger = BottleneckCSVLogger(
+                output_dir=str(CONFIG.output_dir),
+                enabled=True
+            )
+        else:
+            self.bottleneck_logger = None
 
     def update(self, step: int) -> None:
         """Update Tree Method traffic control at given step."""
@@ -127,9 +131,10 @@ class TreeMethodController(TrafficController):
 
             # DEBUG: Log calculation trigger
             if step <= 300:  # Only log first 5 minutes to avoid spam
-                self.logger.debug(f"🔧 CALC_TIME: step={step}, iteration={iteration}, will_calc={iteration > 0}")
+                self.logger.debug(
+                    f"🔧 CALC_TIME: step={step}, iteration={iteration}, will_calc={iteration > 0}")
 
-            if iteration > 0:  # Skip first iteration
+            if iteration >= 0:  # Skip first iteration
                 try:
                     # Perform Tree Method calculations
                     ended_iteration = iteration - 1
@@ -210,6 +215,14 @@ class TreeMethodController(TrafficController):
             if step % 100 == 0:
                 self.logger.warning(
                     f"Tree Method post-processing failed at step {step}: {e}")
+
+        # Log vehicle counts every BOTTLENECK_LOG_INTERVAL_SEC seconds (default: 360s = 6 minutes)
+        if CONFIG.log_bottleneck_events and step % CONFIG.BOTTLENECK_LOG_INTERVAL_SEC == 0 and step > 0:
+            try:
+                if self.bottleneck_logger:
+                    self.bottleneck_logger.log_vehicle_counts(step, self.graph)
+            except Exception as e:
+                self.logger.warning(f"Failed to log vehicle counts at step {step}: {e}")
 
         # Runtime validation (every 30 steps by default)
         if step % CONFIG.SIMULATION_VERIFICATION_FREQUENCY == 0:
@@ -450,6 +463,10 @@ class TreeMethodController(TrafficController):
 
     def _update_traffic_lights_with_shared_durations(self, step: int, seconds_in_cycle: int, algo_type) -> None:
         """Update traffic lights using shared durations (allows ATLCS modifications to persist)."""
+
+        # self.logger.info(
+        #     f"step={step}, seconds_in_cycle={seconds_in_cycle}")
+
         if not hasattr(self, 'graph') or not self.graph:
             return
 
@@ -494,9 +511,6 @@ class TreeMethodController(TrafficController):
                             define_tl_program(
                                 tl_id, phase_index, duration)
 
-                            # Log bottleneck information at phase change
-                            self._log_bottleneck_phase_change(step, node, tl_id, phase_index, duration)
-
                             break
                         secs_sum += phase_durations.get(
                             phase_index, node.phases[phase_index].duration)
@@ -508,9 +522,6 @@ class TreeMethodController(TrafficController):
                             define_tl_program(
                                 tl_id, phase_index, phase.duration)
 
-                            # Log bottleneck information at phase change
-                            self._log_bottleneck_phase_change(step, node, tl_id, phase_index, phase.duration)
-
                             break
                         secs_sum += phase.duration
 
@@ -521,60 +532,6 @@ class TreeMethodController(TrafficController):
             if hasattr(self.graph, 'update_traffic_lights'):
                 self.graph.update_traffic_lights(
                     step, seconds_in_cycle, algo_type)
-
-    def _log_bottleneck_phase_change(self, step: int, node, tl_id: str, phase_index: int, duration: int) -> None:
-        """Log bottleneck information when a phase change occurs."""
-        if not self.bottleneck_logger or not self.bottleneck_logger.enabled:
-            return
-
-        try:
-            # Collect all bottleneck links
-            bottleneck_links = []
-            bottleneck_scores = []
-            vehicle_counts = []
-
-            for link in self.graph.all_links:
-                if link.is_loaded:
-                    bottleneck_links.append(link.edge_name)
-                    # Use current speed as bottleneck score (lower = worse bottleneck)
-                    if link.calc_iteration_speed:
-                        bottleneck_scores.append(link.calc_iteration_speed[-1])
-                    else:
-                        bottleneck_scores.append(0.0)
-                    vehicle_counts.append(link.current_vehicle_count)
-
-            # Get phase cost
-            phase_cost = 0.0
-            if hasattr(node, 'phases') and phase_index < len(node.phases):
-                phase = node.phases[phase_index]
-                if hasattr(phase, 'cost'):
-                    phase_cost = phase.cost
-
-            # Get active links in this phase
-            active_links = []
-            if hasattr(node, 'phases') and phase_index < len(node.phases):
-                phase = node.phases[phase_index]
-                if hasattr(phase, 'link_ids'):
-                    # Convert link IDs to edge names
-                    for link_id in phase.link_ids:
-                        if link_id < len(self.graph.all_links):
-                            active_links.append(self.graph.all_links[link_id].edge_name)
-
-            # Log the phase change with bottleneck information
-            self.bottleneck_logger.log_phase_change(
-                step=step,
-                junction_id=tl_id,
-                phase_index=phase_index,
-                duration_sec=duration,
-                phase_cost=phase_cost,
-                bottleneck_links=bottleneck_links,
-                bottleneck_scores=bottleneck_scores,
-                vehicle_counts=vehicle_counts,
-                active_links_in_phase=active_links
-            )
-
-        except Exception as e:
-            self.logger.warning(f"Failed to log bottleneck information: {e}")
 
     def cleanup(self) -> None:
         """Clean up Tree Method resources and report Tree Method statistics."""

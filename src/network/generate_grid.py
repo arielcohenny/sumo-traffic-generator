@@ -29,7 +29,8 @@ def generate_full_grid_network(dimension, block_size_m, lane_count_arg, traffic_
         f"--tls.layout={traffic_light_strategy}",
         # aggregate-warnings: aggregates warnings of the same type whenever more than 1 occur
         # warnings can be removed completely by using --no-warnings=true
-        # "--aggregate-warnings=1",
+        "--aggregate-warnings=1",
+        "--no-warnings=true",
         "-o", CONFIG.network_file
     ]
     # Always use 1 lane from netgenerate - lane assignment will be handled by integrated step
@@ -503,7 +504,8 @@ def convert_to_partial_opposites_strategy():
                         # Fallback to turn angle calculation
                         from_direction = get_edge_direction(from_edge)
                         to_direction = get_edge_direction(to_edge)
-                        turn_angle = calculate_turn_angle(from_direction, to_direction)
+                        turn_angle = calculate_turn_angle(
+                            from_direction, to_direction)
                         movement_type = classify_movement(turn_angle)
 
                     # Determine approach orientation from base edge name
@@ -518,7 +520,8 @@ def convert_to_partial_opposites_strategy():
                     to_direction = get_edge_direction(to_edge)
 
                     # Calculate turn angle
-                    turn_angle = calculate_turn_angle(from_direction, to_direction)
+                    turn_angle = calculate_turn_angle(
+                        from_direction, to_direction)
 
                     # Classify movement type based on turn angle
                     movement_type = classify_movement(turn_angle)
@@ -527,8 +530,9 @@ def convert_to_partial_opposites_strategy():
                     approach_orientation = get_edge_orientation(from_edge)
 
                 # DEBUG: Print orientation for B1 connections
-                if tl_id == 'B1':
-                    print(f"  DEBUG [{link_index}] {from_edge}: orientation={approach_orientation}, movement={movement_type}")
+                # if tl_id == 'B1':
+                #     print(
+                #         f"  DEBUG [{link_index}] {from_edge}: orientation={approach_orientation}, movement={movement_type}")
 
                 connections_db[tl_id].append({
                     'from': from_edge,
@@ -573,12 +577,12 @@ def convert_to_partial_opposites_strategy():
                     ew_left_uturn.append(link_idx)
 
         # DEBUG: Print grouping results for B1
-        if tl_id == 'B1':
-            print(f"\n=== B1 Grouping Results ===")
-            print(f"NS straight_right: {ns_straight_right}")
-            print(f"NS left_uturn: {ns_left_uturn}")
-            print(f"EW straight_right: {ew_straight_right}")
-            print(f"EW left_uturn: {ew_left_uturn}")
+        # if tl_id == 'B1':
+        #     print(f"\n=== B1 Grouping Results ===")
+        #     print(f"NS straight_right: {ns_straight_right}")
+        #     print(f"NS left_uturn: {ns_left_uturn}")
+        #     print(f"EW straight_right: {ew_straight_right}")
+        #     print(f"EW left_uturn: {ew_left_uturn}")
 
         # Determine state string length (number of connections)
         num_links = max([c['link_index'] for c in connections]) + 1
@@ -600,27 +604,31 @@ def convert_to_partial_opposites_strategy():
 
         # Phase 1: N/S straight+right green
         state1 = build_state_string(num_links, ns_straight_right)
-        phases.append({'duration': 1, 'state': state1})  # Placeholder, recalculated by convert_to_green_only_phases()
+        # Placeholder, recalculated by convert_to_green_only_phases()
+        phases.append({'duration': 1, 'state': state1})
 
         # Phase 2: N/S left+u-turn green
         state2 = build_state_string(num_links, ns_left_uturn)
-        phases.append({'duration': 1, 'state': state2})  # Placeholder, recalculated by convert_to_green_only_phases()
+        # Placeholder, recalculated by convert_to_green_only_phases()
+        phases.append({'duration': 1, 'state': state2})
 
         # Phase 3: E/W straight+right green
         state3 = build_state_string(num_links, ew_straight_right)
-        phases.append({'duration': 1, 'state': state3})  # Placeholder, recalculated by convert_to_green_only_phases()
+        # Placeholder, recalculated by convert_to_green_only_phases()
+        phases.append({'duration': 1, 'state': state3})
 
         # Phase 4: E/W left+u-turn green
         state4 = build_state_string(num_links, ew_left_uturn)
-        phases.append({'duration': 1, 'state': state4})  # Placeholder, recalculated by convert_to_green_only_phases()
+        # Placeholder, recalculated by convert_to_green_only_phases()
+        phases.append({'duration': 1, 'state': state4})
 
         # DEBUG: Print phases for B1
-        if tl_id == 'B1':
-            print(f"\n=== B1 Phases ===")
-            print(f"Phase 1 (NS straight+right): {state1}")
-            print(f"Phase 2 (NS left+uturn): {state2}")
-            print(f"Phase 3 (EW straight+right): {state3}")
-            print(f"Phase 4 (EW left+uturn): {state4}")
+        # if tl_id == 'B1':
+        #     print(f"\n=== B1 Phases ===")
+        #     print(f"Phase 1 (NS straight+right): {state1}")
+        #     print(f"Phase 2 (NS left+uturn): {state2}")
+        #     print(f"Phase 3 (EW straight+right): {state3}")
+        #     print(f"Phase 4 (EW left+uturn): {state4}")
 
         # Filter out phases with no green lights (all 'r')
         # This happens at corner junctions that don't have all movement groups
@@ -723,7 +731,8 @@ def convert_traffic_lights_for_control_mode(traffic_control):
 
             param_show_detectors = ET.Element('param')
             param_show_detectors.set('key', 'show-detectors')
-            param_show_detectors.set('value', str(ACTUATED_SHOW_DETECTORS).lower())
+            param_show_detectors.set('value', str(
+                ACTUATED_SHOW_DETECTORS).lower())
             tl_logic.append(param_show_detectors)
 
             # Add minDur and maxDur only to phases with green lights
@@ -830,7 +839,8 @@ def convert_to_green_only_phases():
 
     # Write modified traffic light file
     ET.indent(root)
-    tree.write(Path(str(CONFIG.network_tll_file)), encoding='UTF-8', xml_declaration=True)
+    tree.write(Path(str(CONFIG.network_tll_file)),
+               encoding='UTF-8', xml_declaration=True)
 
 
 def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_input, lane_count_arg, traffic_light_strategy="opposites", traffic_control=None):

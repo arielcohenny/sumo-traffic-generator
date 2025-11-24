@@ -271,6 +271,11 @@ def _add_traffic_control_arguments(parser: argparse.ArgumentParser) -> None:
         metavar="VALUE",
         help=f"Tree Method L parameter for speed-density relationship (default: {L}). Used in traffic flow calculations."
     )
+    parser.add_argument(
+        "--log_bottleneck_events",
+        action="store_true",
+        help="Enable logging of vehicle counts per edge to workspace/bottleneck_events.csv. Logs every 360 seconds (6 minutes). Default: disabled."
+    )
 
 
 def _add_sample_arguments(parser: argparse.ArgumentParser) -> None:

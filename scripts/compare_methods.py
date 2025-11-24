@@ -20,13 +20,13 @@ class ComparisonRunner:
         self.num_runs = 20
         # Set to True to delete workspace folders after completion
         self.cleanup_workspaces = False
-        self.private_seed_start = 79880
-        self.public_seed_start = 99917
-        self.seed_increment = 4532
+        self.private_seed_start = 72632
+        self.public_seed_start = 27031
+        self.seed_increment = 4535
 
         # Fixed simulation parameters
         self.base_params = [
-            '--network-seed', '45219',
+            '--network-seed', '24208',
             '--grid_dimension', '6',
             '--block_size_m', '280',
             '--lane_count', 'realistic',
@@ -36,11 +36,12 @@ class ComparisonRunner:
             '--traffic_light_strategy', 'partial_opposites',
             '--routing_strategy', 'realtime 100',
             '--vehicle_types', 'passenger 100',
-            '--passenger-routes', 'in 15 out 15 inner 50 pass 20',
+            '--passenger-routes', 'in 0 out 0 inner 100 pass 0',
             '--departure_pattern', 'uniform',
             '--start_time_hour', '8.0',
-            '--num_vehicles', '5500',
-            '--end-time', '7200'
+            '--num_vehicles', '22000',
+            '--end-time', '7300',
+            '--junctions_to_remove', '2'
         ]
 
         # Storage for results
@@ -51,7 +52,7 @@ class ComparisonRunner:
         }
 
     def run_simulation(self, method: str, private_seed: int, public_seed: int,
-                       run_number: int) -> Optional[Dict[str, float]]:
+                       network_seed: int, run_number: int) -> Optional[Dict]:
         """Run a single simulation and extract statistics."""
 
         # Create workspace directory
@@ -87,7 +88,14 @@ class ComparisonRunner:
 
             if stats:
                 print("SUCCESS")
-                return stats
+                return {
+                    'stats': stats,
+                    'seeds': {
+                        'network': network_seed,
+                        'private': private_seed,
+                        'public': public_seed
+                    }
+                }
             else:
                 print("FAILED (could not parse statistics)")
                 return None
@@ -127,6 +135,13 @@ class ComparisonRunner:
         total_runs = len(self.methods) * self.num_runs
         current_run = 0
 
+        # Extract network seed from base_params
+        network_seed = None
+        for i in range(len(self.base_params) - 1):
+            if self.base_params[i] == '--network-seed':
+                network_seed = int(self.base_params[i + 1])
+                break
+
         print(f"\n{'='*70}")
         print(f"Starting Traffic Control Method Comparison")
         print(f"{'='*70}")
@@ -149,13 +164,14 @@ class ComparisonRunner:
 
                 progress = f"[{current_run}/{total_runs}]"
                 print(
-                    f"\n{progress} Run {run + 1}/{self.num_runs} - Seeds: private={private_seed}, public={public_seed}")
+                    f"\n{progress} Run {run + 1}/{self.num_runs} - Seeds: network={network_seed}, private={private_seed}, public={public_seed}")
 
-                stats = self.run_simulation(
-                    method, private_seed, public_seed, run + 1)
+                result = self.run_simulation(
+                    method, private_seed, public_seed, network_seed, run + 1)
 
-                if stats:
-                    self.results[method].append(stats)
+                if result:
+                    self.results[method].append(result)
+                    stats = result['stats']
                     print(f"  → Throughput: {stats['throughput']:.2f}, "
                           f"Arrived: {int(stats['vehicles_arrived'])}, "
                           f"Duration: {stats['avg_duration']:.2f}s, "
@@ -178,7 +194,8 @@ class ComparisonRunner:
             'avg_waiting_time': 0.0
         }
 
-        for stats in self.results[method]:
+        for result in self.results[method]:
+            stats = result['stats']
             for key in averages:
                 averages[key] += stats[key]
 
@@ -253,42 +270,58 @@ class ComparisonRunner:
             if max_runs > 0:
                 # Table header
                 f.write(f"{'Run':<5} ")
-                f.write(f"{'Fixed Throughput':<16} {'Fixed Duration':<16} ")
-                f.write(f"{'Act Throughput':<16} {'Act Duration':<16} ")
-                f.write(f"{'Tree Throughput':<16} {'Tree Duration':<16}\n")
+                f.write(f"{'Net Seed':<10} {'Priv Seed':<10} {'Pub Seed':<10} ")
+                f.write(f"{'Fix Thr':<10} {'Fix Dur':<10} ")
+                f.write(f"{'Act Thr':<10} {'Act Dur':<10} ")
+                f.write(f"{'Tree Thr':<10} {'Tree Dur':<10}\n")
 
                 f.write(f"{'='*5} ")
-                f.write(f"{'='*16} {'='*16} ")
-                f.write(f"{'='*16} {'='*16} ")
-                f.write(f"{'='*16} {'='*16}\n")
+                f.write(f"{'='*10} {'='*10} {'='*10} ")
+                f.write(f"{'='*10} {'='*10} ")
+                f.write(f"{'='*10} {'='*10} ")
+                f.write(f"{'='*10} {'='*10}\n")
 
                 # Data rows - one row per run showing all three methods
                 for run_idx in range(max_runs):
                     f.write(f"{run_idx + 1:<5} ")
 
+                    # Get seeds from first available method result
+                    seeds = None
+                    for method in self.methods:
+                        if run_idx < len(self.results[method]):
+                            seeds = self.results[method][run_idx]['seeds']
+                            break
+
+                    # Write seeds
+                    if seeds:
+                        f.write(
+                            f"{seeds['network']:<10} {seeds['private']:<10} {seeds['public']:<10} ")
+                    else:
+                        f.write(f"{'N/A':<10} {'N/A':<10} {'N/A':<10} ")
+
                     # Fixed results
                     if run_idx < len(self.results['fixed']):
-                        stats = self.results['fixed'][run_idx]
+                        stats = self.results['fixed'][run_idx]['stats']
                         f.write(
-                            f"{stats['throughput']:<16.0f} {stats['avg_duration']:<16.1f} ")
+                            f"{stats['throughput']:<10.0f} {stats['avg_duration']:<10.1f} ")
                     else:
-                        f.write(f"{'N/A':<16} {'N/A':<16} ")
+                        f.write(f"{'N/A':<10} {'N/A':<10} ")
 
                     # Actuated results
                     if run_idx < len(self.results['actuated']):
-                        stats = self.results['actuated'][run_idx]
+                        stats = self.results['actuated'][run_idx]['stats']
                         f.write(
-                            f"{stats['throughput']:<16.0f} {stats['avg_duration']:<16.1f} ")
+                            f"{stats['throughput']:<10.0f} {stats['avg_duration']:<10.1f} ")
                     else:
-                        f.write(f"{'N/A':<16} {'N/A':<16} ")
+                        f.write(f"{'N/A':<10} {'N/A':<10} ")
 
                     # Tree method results
                     if run_idx < len(self.results['tree_method']):
-                        stats = self.results['tree_method'][run_idx]
+                        stats = self.results['tree_method'][run_idx]['stats']
                         f.write(
-                            f"{stats['throughput']:<16.0f} {stats['avg_duration']:<16.1f}")
+                            f"{stats['throughput']:<10.0f} {stats['avg_duration']:<10.1f}")
                     else:
-                        f.write(f"{'N/A':<16} {'N/A':<16}")
+                        f.write(f"{'N/A':<10} {'N/A':<10}")
 
                     f.write("\n")
 

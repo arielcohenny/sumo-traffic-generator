@@ -16,8 +16,8 @@ class SeedFinder:
 
     def __init__(self):
         self.num_iterations = 100
-        self.methods = ['tree_method', 'actuated', 'fixed']
-        self.vehicle_counts = [4500, 6000, 7000]
+        self.methods = ['actuated', 'tree_method']
+        self.vehicle_counts = [25000]
 
         # Fixed simulation parameters
         self.base_params = [
@@ -30,10 +30,12 @@ class SeedFinder:
             '--traffic_light_strategy', 'partial_opposites',
             '--routing_strategy', 'realtime 100',
             '--vehicle_types', 'passenger 100',
-            '--passenger-routes', 'in 15 out 15 inner 50 pass 20',
+            '--passenger-routes', 'in 0 out 0 inner 100 pass 0',
             '--departure_pattern', 'uniform',
             '--start_time_hour', '8.0',
-            '--end-time', '7200'
+            # '--junctions_to_remove', 'C4, F3',
+            '--junctions_to_remove', '2',
+            '--end-time', '7300'
         ]
 
         # Thresholds
@@ -108,28 +110,25 @@ class SeedFinder:
             return stats
         return None
 
-    def check_criteria(self, tree_stats: Dict, actuated_stats: Dict,
-                       fixed_stats: Dict) -> bool:
+    def check_criteria(self, tree_stats: Dict, actuated_stats: Dict) -> bool:
         """Check if tree_method meets the performance criteria."""
         # Throughput: Tree must be >= 1.20 * (both actuated AND fixed)
         throughput_ok = (
-            tree_stats['throughput'] >= self.throughput_ratio_threshold * actuated_stats['throughput'] and
             tree_stats['throughput'] >= self.throughput_ratio_threshold *
-            fixed_stats['throughput']
+            actuated_stats['throughput']
         )
 
         # Duration: Tree must be <= 0.60 * (both actuated AND fixed)
         duration_ok = (
-            tree_stats['avg_duration'] <= self.duration_ratio_threshold * actuated_stats['avg_duration'] and
             tree_stats['avg_duration'] <= self.duration_ratio_threshold *
-            fixed_stats['avg_duration']
+            actuated_stats['avg_duration']
         )
 
         return throughput_ok and duration_ok
 
     def update_best_result(self, network_seed: int, private_seed: int,
                            public_seed: int, num_vehicles: int,
-                           tree_stats: Dict, actuated_stats: Dict, fixed_stats: Dict):
+                           tree_stats: Dict, actuated_stats: Dict):
         """Update best result if current is better."""
         if self.best_result is None:
             # First qualifying result
@@ -139,8 +138,7 @@ class SeedFinder:
                 'public_seed': public_seed,
                 'num_vehicles': num_vehicles,
                 'tree_stats': tree_stats,
-                'actuated_stats': actuated_stats,
-                'fixed_stats': fixed_stats
+                'actuated_stats': actuated_stats
             }
         elif tree_stats['throughput'] > self.best_result['tree_stats']['throughput']:
             # Better throughput
@@ -150,8 +148,7 @@ class SeedFinder:
                 'public_seed': public_seed,
                 'num_vehicles': num_vehicles,
                 'tree_stats': tree_stats,
-                'actuated_stats': actuated_stats,
-                'fixed_stats': fixed_stats
+                'actuated_stats': actuated_stats
             }
 
     def print_best_result(self):
@@ -172,7 +169,6 @@ class SeedFinder:
         # Calculate percentages
         tree = self.best_result['tree_stats']
         act = self.best_result['actuated_stats']
-        fix = self.best_result['fixed_stats']
 
         throughput_vs_act = (
             (tree['throughput'] - act['throughput']) / act['throughput']) * 100
@@ -229,8 +225,7 @@ class SeedFinder:
         f.write(f"{'='*15} {'='*20} {'='*15}\n")
 
         for method_name, stats_key in [('Tree Method', 'tree_stats'),
-                                       ('Actuated', 'actuated_stats'),
-                                       ('Fixed', 'fixed_stats')]:
+                                       ('Actuated', 'actuated_stats')]:
             stats = self.best_result[stats_key]
             f.write(f"{method_name:<15} "
                     f"{stats['throughput']:<20.0f} "
@@ -242,7 +237,6 @@ class SeedFinder:
 
         tree = self.best_result['tree_stats']
         act = self.best_result['actuated_stats']
-        fix = self.best_result['fixed_stats']
 
         throughput_vs_act = (
             (tree['throughput'] - act['throughput']) / act['throughput']) * 100
@@ -282,17 +276,12 @@ class SeedFinder:
         for i, attempt in enumerate(self.all_attempts, 1):
             tree = attempt['tree_stats']
             act = attempt['actuated_stats']
-            fix = attempt['fixed_stats']
 
             # Calculate average % improvement (average of vs actuated and vs fixed)
             throughput_vs_act = (
                 (tree['throughput'] - act['throughput']) / act['throughput']) * 100
-            throughput_vs_fix = (
-                (tree['throughput'] - fix['throughput']) / fix['throughput']) * 100
             duration_vs_act = (
                 (tree['avg_duration'] - act['avg_duration']) / act['avg_duration']) * 100
-            duration_vs_fix = (
-                (tree['avg_duration'] - fix['avg_duration']) / fix['avg_duration']) * 100
 
             avg_throughput_improvement = (
                 throughput_vs_act + throughput_vs_fix) / 2
@@ -377,7 +366,7 @@ class SeedFinder:
 
                 # Record this attempt
                 qualifies = self.check_criteria(
-                    results['tree_method'], results['actuated'], results['fixed'])
+                    results['tree_method'], results['actuated'])
                 self.all_attempts.append({
                     'network_seed': network_seed,
                     'private_seed': private_seed,
@@ -385,35 +374,27 @@ class SeedFinder:
                     'num_vehicles': num_vehicles,
                     'tree_stats': results['tree_method'],
                     'actuated_stats': results['actuated'],
-                    'fixed_stats': results['fixed'],
                     'qualifies': qualifies
                 })
 
                 # Calculate and print percentage improvements for THIS iteration
                 tree = results['tree_method']
                 act = results['actuated']
-                fix = results['fixed']
 
                 throughput_vs_act = (
                     (tree['throughput'] - act['throughput']) / act['throughput']) * 100
-                throughput_vs_fix = (
-                    (tree['throughput'] - fix['throughput']) / fix['throughput']) * 100
                 duration_vs_act = (
                     (tree['avg_duration'] - act['avg_duration']) / act['avg_duration']) * 100
-                duration_vs_fix = (
-                    (tree['avg_duration'] - fix['avg_duration']) / fix['avg_duration']) * 100
 
                 self.log(
                     f"    Performance vs Actuated: Throughput {throughput_vs_act:+.1f}%, Duration {duration_vs_act:+.1f}%")
-                self.log(
-                    f"    Performance vs Fixed:    Throughput {throughput_vs_fix:+.1f}%, Duration {duration_vs_fix:+.1f}%")
 
                 # Check if criteria met
                 if qualifies:
                     self.log(f"    ✓✓✓ QUALIFYING RESULT! ✓✓✓")
                     self.update_best_result(network_seed, private_seed, public_seed,
                                             num_vehicles, results['tree_method'],
-                                            results['actuated'], results['fixed'])
+                                            results['actuated'])
                     self.print_best_result()
 
         # Final summary

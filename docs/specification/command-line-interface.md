@@ -274,6 +274,23 @@ Tree Method L parameter for speed-density relationship in traffic flow calculati
 - **Example**: `--tree-method-l 3.0`
 - **Note**: Advanced parameter - modify only for traffic flow research
 
+#### `--log_bottleneck_events` (flag, default: disabled)
+
+Enable logging of vehicle counts per edge to `workspace/bottleneck_events.csv`.
+
+- **No value required**: Presence of flag enables logging
+- **Logging Interval**: Every 360 seconds (6 minutes)
+- **CSV Format**: `step,link,num_vehicles` (one row per edge at each interval)
+- **Purpose**: Track vehicle distribution across network over time for analysis
+- **Performance**: Minimal overhead, logs only at 6-minute intervals
+- **Example**: `--log_bottleneck_events`
+- **Output File**: `workspace/bottleneck_events.csv`
+- **Use Cases**:
+  - Network congestion analysis
+  - Vehicle distribution studies
+  - Traffic flow pattern research
+  - Bottleneck identification over time
+
 #### `--bottleneck-detection-interval` (int, default: 60)
 
 ATLCS enhanced bottleneck detection interval in seconds.

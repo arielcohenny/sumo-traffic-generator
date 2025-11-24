@@ -46,14 +46,15 @@ def convert_tail_to_head_edge(edge_id: str, net) -> str:
         try:
             edge = net.getEdge(candidate)
             if edge is not None:
-                print(f"DEBUG: Converting tail edge '{edge_id}' → head edge '{candidate}'", file=sys.stderr)
+                # print(f"DEBUG: Converting tail edge '{edge_id}' → head edge '{candidate}'", file=sys.stderr)
                 return candidate
         except (KeyError, RuntimeError):
             # Edge doesn't exist, try next suffix
             continue
 
     # If no head edge found, return the original (will likely fail routing, but with clear error)
-    print(f"DEBUG: No head edge found for tail edge '{edge_id}', returning original", file=sys.stderr)
+    print(
+        f"DEBUG: No head edge found for tail edge '{edge_id}', returning original", file=sys.stderr)
     return edge_id
 
 
@@ -79,7 +80,8 @@ class ShortestPathRoutingStrategy(RoutingStrategy):
         """Compute shortest path by distance - TERMINATES ON ERROR."""
         try:
             # Convert end edge from tail to head edge for routing destination
-            end_edge_for_routing = convert_tail_to_head_edge(end_edge, self.net)
+            end_edge_for_routing = convert_tail_to_head_edge(
+                end_edge, self.net)
 
             result = self.net.getShortestPath(
                 self.net.getEdge(start_edge),
@@ -121,7 +123,8 @@ class RealtimeRoutingStrategy(RoutingStrategy):
         """Compute initial route - will be updated dynamically via TraCI - TERMINATES ON ERROR."""
         try:
             # Convert end edge from tail to head edge for routing destination
-            end_edge_for_routing = convert_tail_to_head_edge(end_edge, self.net)
+            end_edge_for_routing = convert_tail_to_head_edge(
+                end_edge, self.net)
 
             # Use fastest path for realtime strategy initial route
             result = self.net.getFastestPath(
@@ -164,7 +167,8 @@ class FastestRoutingStrategy(RoutingStrategy):
         """Compute fastest path by travel time - TERMINATES ON ERROR."""
         try:
             # Convert end edge from tail to head edge for routing destination
-            end_edge_for_routing = convert_tail_to_head_edge(end_edge, self.net)
+            end_edge_for_routing = convert_tail_to_head_edge(
+                end_edge, self.net)
 
             # Use SUMO's fastest path algorithm
             result = self.net.getFastestPath(
@@ -208,7 +212,8 @@ class AttractivenessRoutingStrategy(RoutingStrategy):
         """Compute route considering both efficiency and attractiveness."""
         try:
             # Convert end edge from tail to head edge for routing destination
-            end_edge_for_routing = convert_tail_to_head_edge(end_edge, self.net)
+            end_edge_for_routing = convert_tail_to_head_edge(
+                end_edge, self.net)
 
             # Get multiple potential routes
             shortest_result = self.net.getShortestPath(
@@ -401,7 +406,8 @@ def parse_routing_strategy(routing_arg: str) -> Dict[str, float]:
         print(error_msg, file=sys.stderr)
         sys.exit(1)
 
-    valid_strategies = {ROUTING_SHORTEST, ROUTING_REALTIME, ROUTING_FASTEST, ROUTING_ATTRACTIVENESS}
+    valid_strategies = {ROUTING_SHORTEST, ROUTING_REALTIME,
+                        ROUTING_FASTEST, ROUTING_ATTRACTIVENESS}
     percentages = {}
 
     for i in range(0, len(tokens), 2):

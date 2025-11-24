@@ -714,6 +714,11 @@ def update_connections_file(con_root, split_edges: Dict[str, Dict], movement_dat
                     head_lanes_list.append(
                         (movement_type, head_edge_id, lane_idx))
 
+            # Reverse to match spatial ordering: tail lane 0 (rightmost) → right head (rightmost)
+            # Without reversing: uturn→left→straight→right (leftmost to rightmost)
+            # After reversing: right→straight→left→uturn (rightmost to leftmost)
+            head_lanes_list.reverse()
+
             # Distribute tail lanes evenly across all available head lanes
             if tail_lanes <= total_head_lanes:
                 # Each tail lane connects to multiple head lanes (1 or more heads)
