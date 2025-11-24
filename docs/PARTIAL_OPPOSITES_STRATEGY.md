@@ -1023,8 +1023,8 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
    - All existing simulations work identically
 
 3. **Default behavior**:
-   - Default strategy remains `opposites`
-   - Users must explicitly request `partial_opposites`
+   - Default strategy is now `partial_opposites` (changed from `opposites`)
+   - Users can explicitly request `opposites` or `incoming` if needed
    - No automatic conversions or surprises
 
 ### Testing Verification:

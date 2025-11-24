@@ -91,7 +91,6 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --end-time 7200 \
   --workspace custom_output \
   --attractiveness land_use \
-  --time_dependent \
   --start_time_hour 7.0 \
   --routing_strategy 'shortest 70 realtime 30' \
   --vehicle_types 'passenger 90 public 10' \
@@ -382,9 +381,9 @@ Central configuration in `src/config.py` using dataclasses:
 
 **Key Configuration Constants**:
 
-- `HEAD_DISTANCE = 50`: Distance from downstream end when splitting edges
-- `MIN_LANES = 1`, `MAX_LANES = 3`: Lane count bounds for randomization
-- `LAMBDA_DEPART = 3.5`, `LAMBDA_ARRIVE = 2.0`: Poisson distribution parameters for edge attractiveness
+- `HEAD_DISTANCE = 85`: Distance from downstream end when splitting edges
+- `MIN_LANES = 1`, `MAX_LANES = 5`: Lane count bounds for randomization
+- `LAMBDA_DEPART = 10.0`, `LAMBDA_ARRIVE = 10.0`: Poisson distribution parameters for edge attractiveness
 - `DEFAULT_JUNCTION_RADIUS = 10.0`: Junction radius in meters
 - `DEFAULT_ROUTING_STRATEGY = "shortest 100"`: Default routing strategy
 - `DEFAULT_VEHICLE_TYPES = "passenger 90 public 10"`: Default vehicle distribution
@@ -518,9 +517,9 @@ dbps
 - **Traffic Light Strategies**:
 
   - Three phasing strategies:
-    - `opposites` (default): Opposing directions signal together, 90s cycle (42s+3s green+yellow per direction)
+    - `partial_opposites` (default): Separates straight+right from left+u-turn movements, 90s cycle (30s+3s straight+right, 9s+3s left+u-turn per direction)
+    - `opposites`: Opposing directions signal together, 90s cycle (42s+3s green+yellow per direction)
     - `incoming`: Each edge gets independent phase, 132s cycle (30s+3s per edge)
-    - `partial_opposites`: Separates straight+right from left+u-turn movements, 90s cycle (30s+3s straight+right, 9s+3s left+u-turn per direction)
   - **partial_opposites Requirements**:
     - Minimum 2 lanes per edge (enforced by validation)
     - Lane assignment: lane 0 for straight+right, lane 1+ for left+u-turn

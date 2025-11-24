@@ -225,25 +225,95 @@ Real-world hour when simulation starts (0-24) for temporal attractiveness.
 
 ### Traffic Control Arguments
 
-#### `--traffic_light_strategy` (str, default: "opposites")
+#### `--traffic_light_strategy` (str, default: "partial_opposites")
 
 Traffic signal phasing strategy for synthetic networks.
 
 - **Strategies**:
+  - `partial_opposites`: Straight+right and left+u-turn movements in separate phases (requires 2+ lanes, most realistic)
   - `opposites`: Opposing directions signal together (more efficient)
   - `incoming`: Each edge gets separate phase (more flexible)
-- **Example**: `--traffic_light_strategy opposites`
+- **Example**: `--traffic_light_strategy partial_opposites`
 
 #### `--traffic_control` (str, default: "tree_method")
 
-Dynamic signal control method.
+Dynamic signal control method for managing traffic lights.
 
 - **Methods**:
-  - `tree_method`: Tree Method (Decentralized Bottleneck Prioritization Algorithm)
-  - `atlcs`: ATLCS (Adaptive Traffic Light Control System with Tree Method coordination)
-  - `actuated`: SUMO gap-based control
-  - `fixed`: Static timing from configuration
+  - **`tree_method`** (default): Tree Method - Decentralized Bottleneck Prioritization Algorithm
+    - Real-time bottleneck detection and traffic signal optimization
+    - Decentralized junction-level decision making
+    - Research-based algorithm with proven 20-45% travel time improvements
+    - See `--tree-method-interval`, `--tree-method-m`, `--tree-method-l` for configuration
+
+  - **`atlcs`**: ATLCS - Adaptive Traffic Light Control System
+    - Enhanced bottleneck detection with predictive analysis
+    - Junction-level handoff coordination with Tree Method
+    - Dynamic congestion-based pricing for signal priority
+    - See `--bottleneck-detection-interval`, `--atlcs-interval` for configuration
+    - Full documentation: `docs/ATLCS.md`
+
+  - **`rl`**: Reinforcement Learning - Deep Q-Network (DQN) based control
+    - ML-based adaptive signal control using trained neural networks
+    - Supports both training mode (random exploration) and inference mode (using trained models)
+    - Can leverage imitation learning from Tree Method demonstrations
+    - See `--rl_model_path`, `--rl-cycle-lengths`, `--rl-cycle-strategy` for configuration
+    - Training workflow: `scripts/train_rl_production.py`
+    - Full documentation: `docs/RL_IMPLEMENTATION.md`, `docs/IMITATION_LEARNING_GUIDE.md`
+
+  - **`actuated`**: SUMO Actuated - Gap-based vehicle detection control
+    - Uses induction loop detectors to extend green phases when vehicles present
+    - Industry-standard baseline for traffic signal control
+    - Parameters: max-gap=3.0s, min/max duration bounds (10-70s)
+
+  - **`fixed`**: Static Timing - Pre-configured phase durations
+    - Uses fixed green/yellow phase durations from traffic light definitions
+    - Simplest baseline for experimental comparison
+    - Equal green time distribution across all phases
+
 - **Example**: `--traffic_control tree_method`
+- **Comparison**: For research comparing control methods, run identical simulations with different `--traffic_control` values
+- **Baseline**: `actuated` serves as primary baseline, `fixed` as secondary baseline
+
+#### `--rl_model_path` (str, optional)
+
+Path to trained reinforcement learning model for inference mode.
+
+- **Used with**: `--traffic_control rl`
+- **Format**: Path to `.zip` checkpoint file (Stable-Baselines3 format)
+- **Behavior**:
+  - If provided: RL controller loads model and runs in inference mode
+  - If not provided: RL controller runs in training mode with random actions
+- **Example**: `--rl_model_path models/checkpoint/rl_traffic_model_410000_steps.zip`
+- **Training**: See `scripts/train_rl_production.py` for model training workflow
+- **Documentation**: Full details in `docs/RL_IMPLEMENTATION.md` and `docs/IMITATION_LEARNING_GUIDE.md`
+
+#### `--rl-cycle-lengths` (int list, optional)
+
+List of cycle lengths in seconds for reinforcement learning control.
+
+- **Used with**: `--traffic_control rl`
+- **Default**: [90] (single fixed cycle length)
+- **Format**: Space-separated integers (e.g., `60 90 120`)
+- **Behavior**: RL agent can select from these cycle lengths based on `--rl-cycle-strategy`
+- **Examples**:
+  - Fixed cycle: `--rl-cycle-lengths 90`
+  - Variable cycles: `--rl-cycle-lengths 60 90 120`
+  - Extended range: `--rl-cycle-lengths 60 75 90 105 120`
+- **Note**: More cycle options increase action space complexity
+
+#### `--rl-cycle-strategy` (str, optional)
+
+Strategy for selecting cycle length from `--rl-cycle-lengths` options.
+
+- **Used with**: `--traffic_control rl`
+- **Default**: `fixed`
+- **Choices**:
+  - `fixed`: Always use first cycle length from list
+  - `random`: Randomly select cycle length at each decision point
+  - `sequential`: Cycle through lengths in order
+- **Example**: `--rl-cycle-strategy random`
+- **Note**: Only affects behavior when multiple cycle lengths are provided
 
 #### `--tree-method-interval` (int, default: 90)
 

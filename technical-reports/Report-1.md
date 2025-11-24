@@ -780,7 +780,7 @@ pytest>=7.0.0        # Unit testing framework
 
 ```bash
 --traffic_control STR          # Control method: tree_method/actuated/fixed (default: "tree_method")
---traffic_light_strategy STR   # Signal phasing: opposites/incoming (default: "opposites")
+--traffic_light_strategy STR   # Signal phasing: partial_opposites/opposites/incoming (default: "partial_opposites")
 ```
 
 ## 7. Conclusion

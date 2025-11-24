@@ -43,6 +43,9 @@ from src.constants import (
     UNIFORM_DEPARTURE_PATTERN, FIXED_START_TIME_HOUR
 )
 
+# Import Tree Method parameters
+from src.traffic_control.decentralized_traffic_bottlenecks.shared.config import M, L
+
 
 class ParameterWidgets:
     """Collection of parameter input widgets for DBPS GUI."""
@@ -496,6 +499,12 @@ class ParameterWidgets:
             help="Parent directory where 'workspace' folder will be created for simulation output files"
         )
 
+        params["log_bottleneck_events"] = st.checkbox(
+            "Enable Bottleneck Event Logging",
+            value=False,
+            help="Log vehicle counts per edge to workspace/bottleneck_events.csv every 360 seconds (6 minutes). Useful for debugging and research."
+        )
+
         return params
 
     @staticmethod
@@ -531,12 +540,12 @@ class ParameterWidgets:
 
         st.subheader("🚦 Traffic Control Configuration")
 
-        strategy_options = ["opposites", "incoming"]
+        strategy_options = ["partial_opposites", "opposites", "incoming"]
         params["traffic_light_strategy"] = st.radio(
             "Traffic Light Strategy",
             strategy_options,
             index=strategy_options.index(DEFAULT_TRAFFIC_LIGHT_STRATEGY),
-            help="How traffic light phases are organized"
+            help="How traffic light phases are organized. partial_opposites requires 2+ lanes per edge."
         )
 
         control_options = ["tree_method", "atlcs", "actuated", "fixed"]
@@ -576,8 +585,34 @@ class ParameterWidgets:
                 step=STEP_TREE_METHOD_INTERVAL,
                 help="How often Tree Method runs optimization"
             )
+
+            # Advanced Tree Method Parameters
+            with st.expander("⚙️ Advanced Tree Method Parameters"):
+                st.caption("Advanced parameters for traffic flow calculations. Modify only for research purposes.")
+
+                params["tree_method_m"] = st.number_input(
+                    "Tree Method M Parameter",
+                    min_value=0.1,
+                    max_value=2.0,
+                    value=float(M),
+                    step=0.1,
+                    format="%.1f",
+                    help="M parameter for speed-density relationship in traffic flow calculations"
+                )
+
+                params["tree_method_l"] = st.number_input(
+                    "Tree Method L Parameter",
+                    min_value=1.0,
+                    max_value=5.0,
+                    value=float(L),
+                    step=0.1,
+                    format="%.1f",
+                    help="L parameter for speed-density relationship in traffic flow calculations"
+                )
         else:
             params["tree_method_interval"] = DEFAULT_TREE_METHOD_INTERVAL
+            params["tree_method_m"] = M
+            params["tree_method_l"] = L
 
         return params
 

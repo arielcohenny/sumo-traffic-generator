@@ -99,21 +99,23 @@ Vehicle type distribution. Two types with percentage assignment:
 - `passenger`: Cars (5.0m length, 13.9 m/s max speed)
 - `public`: Buses (10.0m length, 11.1 m/s max speed)
 
-### `--traffic_light_strategy` (str, default: "opposites")
+### `--traffic_light_strategy` (str, default: "partial_opposites")
 
-Applied strategies for traffic lights. Two strategies available.
+Applied strategies for traffic lights. Three strategies available.
 
+- `partial_opposites`: Straight+right and left+u-turn movements in separate phases (requires 2+ lanes)
 - `opposites`: Opposing directions signal together
 - `incoming`: Each edge gets separate phase
 
 ### `--traffic_control` (str, default: "tree_method")
 
-Dynamic signal control. Four methods available:
+Dynamic signal control. Five methods available:
 
 - `tree_method`: Tree Method (Decentralized Bottleneck Prioritization Algorithm)
-- `atlcs`: ATLCS (Adaptive Traffic Light Control System with Tree Method coordination)
-- `actuated`: SUMO gap-based control
-- `fixed`: Static timing from configuration
+- `atlcs`: ATLCS (Adaptive Traffic Light Control System with enhanced bottleneck detection)
+- `rl`: Reinforcement Learning (Deep Q-Network based adaptive control)
+- `actuated`: SUMO gap-based control (industry-standard baseline)
+- `fixed`: Static timing from configuration (simple baseline)
 
 ### `--tree-method-interval` (int, default: 90)
 
@@ -197,6 +199,87 @@ python -m src.cli --traffic_control atlcs --bottleneck-detection-interval 90 --a
 
 # Balanced ATLCS with Tree Method coordination
 python -m src.cli --traffic_control atlcs --tree-method-interval 90 --bottleneck-detection-interval 60 --atlcs-interval 5
+```
+
+### `--rl_model_path` (str, optional)
+
+Path to trained reinforcement learning model for inference mode. When using `--traffic_control rl`, this parameter determines whether the RL controller runs in training or inference mode.
+
+**Mode Selection:**
+
+- **With `--rl_model_path`**: Inference mode using trained neural network for signal control decisions
+- **Without `--rl_model_path`**: Training mode with random exploration actions (for model training)
+
+**Model Format:** Stable-Baselines3 `.zip` checkpoint files containing DQN policy network
+
+**Training Workflow:**
+
+1. Train model using `scripts/train_rl_production.py`
+2. Optional: Use imitation learning from Tree Method demonstrations
+3. Load trained checkpoint for inference using `--rl_model_path`
+
+**Examples:**
+
+```bash
+# Inference mode with trained model
+python -m src.cli --traffic_control rl --rl_model_path models/checkpoint/rl_traffic_model_410000_steps.zip
+
+# Training mode (random actions for exploration)
+python -m src.cli --traffic_control rl --end-time 7200
+```
+
+**Documentation:** See `docs/RL_IMPLEMENTATION.md` and `docs/IMITATION_LEARNING_GUIDE.md` for complete training workflow.
+
+### `--rl-cycle-lengths` (int list, default: [90])
+
+List of traffic light cycle lengths (in seconds) that the RL agent can select from. Controls the action space for cycle length decisions.
+
+**Configuration:**
+
+- **Single cycle (default)**: `--rl-cycle-lengths 90` - Fixed 90-second cycles
+- **Multiple cycles**: `--rl-cycle-lengths 60 90 120` - Agent can choose between 60s, 90s, or 120s
+- **Extended range**: `--rl-cycle-lengths 60 75 90 105 120` - More granular control
+
+**Selection Strategy:** Controlled by `--rl-cycle-strategy` parameter
+
+**Action Space Impact:** More cycle options increase action space complexity, potentially requiring longer training
+
+**Examples:**
+
+```bash
+# Fixed cycle length
+python -m src.cli --traffic_control rl --rl-cycle-lengths 90
+
+# Variable cycle lengths with random selection
+python -m src.cli --traffic_control rl --rl-cycle-lengths 60 90 120 --rl-cycle-strategy random
+```
+
+### `--rl-cycle-strategy` (str, default: "fixed")
+
+Strategy for selecting cycle length from the `--rl-cycle-lengths` options.
+
+**Strategies:**
+
+- **`fixed`** (default): Always use first cycle length from list (deterministic)
+- **`random`**: Randomly select cycle length at each decision point (stochastic exploration)
+- **`sequential`**: Cycle through lengths in order (deterministic pattern)
+
+**Use Cases:**
+
+- **Fixed**: Production inference with trained models (consistent behavior)
+- **Random**: Training phase for exploration (discovering optimal cycle lengths)
+- **Sequential**: Testing all cycle lengths systematically
+
+**Note:** Only affects behavior when multiple cycle lengths are provided in `--rl-cycle-lengths`
+
+**Examples:**
+
+```bash
+# Fixed strategy (use first cycle length only)
+python -m src.cli --traffic_control rl --rl-cycle-lengths 90 --rl-cycle-strategy fixed
+
+# Random strategy for training
+python -m src.cli --traffic_control rl --rl-cycle-lengths 60 90 120 --rl-cycle-strategy random
 ```
 
 ### `--gui` (flag)

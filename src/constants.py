@@ -180,7 +180,7 @@ STEP_START_TIME_HOUR = 0.5
 # =============================================================================
 
 # Traffic Light Strategy
-DEFAULT_TRAFFIC_LIGHT_STRATEGY = 'opposites'
+DEFAULT_TRAFFIC_LIGHT_STRATEGY = 'partial_opposites'
 
 # Traffic Light Strategy Constants
 TL_STRATEGY_OPPOSITES = 'opposites'
