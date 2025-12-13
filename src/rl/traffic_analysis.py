@@ -51,12 +51,6 @@ class RLTrafficAnalyzer:
         self.m = m
         self.l = l
 
-        # self.logger.info(f"=== RL TRAFFIC ANALYZER INITIALIZATION ===")
-        # self.logger.info(f"Total edge IDs provided: {len(edge_ids)}")
-        # self.logger.info(
-        #     f"Edge IDs: {edge_ids[:10]}{'...' if len(edge_ids) > 10 else ''}")
-        # self.logger.info(f"Debug mode: {self.debug}")
-
         self._initialize_tree_method_links()
 
     def _initialize_tree_method_links(self):
@@ -121,11 +115,6 @@ class RLTrafficAnalyzer:
                     self.logger.warning(
                         f"✗ Failed to initialize link {edge_id}: {e}")
 
-        # self.logger.info(
-        #     f"Tree Method links initialized: {initialized_count} success, {failed_count} failed")
-        # self.logger.info(
-        #     f"Successfully initialized edges: {list(self.edge_links.keys())}")
-
         if initialized_count == 0:
             self.logger.error(
                 "=== CRITICAL: No Tree Method links were successfully initialized! ===")
@@ -147,7 +136,6 @@ class RLTrafficAnalyzer:
             return [0.0] * RL_DYNAMIC_EDGE_FEATURES_COUNT
 
         link = self.edge_links[edge_id]
-        # self.logger.info(f"DEBUG: Processing edge {edge_id} with link {link}")
 
         try:
             # Basic SUMO data
@@ -157,11 +145,6 @@ class RLTrafficAnalyzer:
             waiting_time = traci.edge.getWaitingTime(edge_id)
             edge_length = link.distance_meters  # Use pre-stored value from initialization
             max_speed = link.free_flow_v_km_h / 3.6  # Convert from km/h to m/s
-
-            # Debug logging for first few calls to understand data
-            # if edge_id == self.edge_ids[0]:  # Log for first edge only
-            #     self.logger.info(
-            #         f"DEBUG: Edge {edge_id} - Speed: {current_speed_ms:.2f}m/s, Vehicles: {vehicle_count}, Waiting: {waiting_time:.1f}s")
 
             # Update speed history for trend calculation
             self.speed_history[edge_id].append(current_speed_kmh)

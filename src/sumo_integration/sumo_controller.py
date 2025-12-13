@@ -2,7 +2,7 @@ import traci
 import sys
 from src.config import CONFIG
 import xml.etree.ElementTree as ET
-from typing import NoReturn, List
+from typing import List
 
 from src.constants import (
     SUMO_ROUTING_MODE_DEFAULT,
@@ -129,8 +129,8 @@ class SumoController:
                         self.vehicle_travel_times[veh_id] = travel_time
 
         except Exception as e:
-            # Don't let metrics tracking break the simulation
-            pass
+            # Don't let metrics tracking break the simulation, but log it
+            print(f"Warning: Metrics tracking error: {e}")
 
     def collect_final_metrics(self):
         """Collect final simulation metrics using tracked data."""

@@ -5,15 +5,18 @@ This module implements the RL-based traffic controller that integrates with
 the existing traffic control architecture.
 """
 
+import logging
 import os
 import time
-import logging
+import traceback
 from typing import Any, Optional, Dict, List
+
 import numpy as np
 import traci
 
 from src.orchestration.traffic_controller import TrafficController
 from .constants import (
+    DEFAULT_CYCLE_LENGTH,
     RL_CONTROLLER_NAME, RL_CONTROLLER_DISPLAY_NAME, RL_CONTROLLER_DESCRIPTION,
     DEFAULT_RL_MODEL_PATH, RL_MODEL_EXTENSION, RL_MODEL_VALIDATION_TIMEOUT,
     RL_MODEL_LOAD_RETRIES, RL_ACTION_EXECUTION_TIMEOUT, RL_SAFETY_CHECK_ENABLED,
@@ -53,7 +56,6 @@ class RLController(TrafficController):
         self.mode = RL_INFERENCE_MODE if self.model_path else RL_DEFAULT_MODE
 
         # RL cycle parameters
-        from .constants import DEFAULT_CYCLE_LENGTH
         self.cycle_lengths = getattr(
             args, 'rl_cycle_lengths', [DEFAULT_CYCLE_LENGTH])
         self.cycle_strategy = getattr(args, 'rl_cycle_strategy', 'fixed')
@@ -222,7 +224,6 @@ class RLController(TrafficController):
             self.logger.error(
                 f"=== MODEL COMPATIBILITY VALIDATION: FAILED ===")
             self.logger.error(f"Model compatibility validation failed: {e}")
-            import traceback
             self.logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
@@ -354,42 +355,6 @@ class RLController(TrafficController):
                             self.logger.info(f"  First 10: {obs_first_10}")
                             self.logger.info(f"  Last 10: {obs_last_10}")
 
-                        # # DEBUG: Log observation stats
-                        # if self.current_observation is not None:
-                        #     obs_min = np.min(self.current_observation)
-                        #     obs_max = np.max(self.current_observation)
-                        #     obs_mean = np.mean(self.current_observation)
-                        #     obs_std = np.std(self.current_observation)
-                        #     zero_count = np.sum(self.current_observation == 0)
-                        #     non_zero_count = np.sum(
-                        #         self.current_observation != 0)
-
-                        #     # self.logger.info(
-                        #     #     f"Observation stats - min: {obs_min:.3f}, max: {obs_max:.3f}, mean: {obs_mean:.3f}, std: {obs_std:.3f}")
-                        #     # self.logger.info(
-                        #     #     f"Observation features - zero: {zero_count}, non-zero: {non_zero_count}, total: {len(self.current_observation)}")
-
-                        #     # Check if observation is within expected bounds
-                        #     if self.model and hasattr(self.model, 'observation_space'):
-                        #         obs_space = self.model.observation_space
-                        #         if hasattr(obs_space, 'low') and hasattr(obs_space, 'high'):
-                        #             out_of_bounds_low = np.sum(
-                        #                 self.current_observation < obs_space.low)
-                        #             out_of_bounds_high = np.sum(
-                        #                 self.current_observation > obs_space.high)
-                        #             if out_of_bounds_low > 0 or out_of_bounds_high > 0:
-                        #                 self.logger.warning(
-                        #                     f"Observation out of bounds: {out_of_bounds_low} below min, {out_of_bounds_high} above max")
-                        #             else:
-                        #                 self.logger.info(
-                        #                     "Observation within expected bounds")
-
-                        # Log first few and last few observation values for pattern analysis
-                        # if len(self.current_observation) > 10:
-                        #     first_5 = self.current_observation[:5]
-                        #     last_5 = self.current_observation[-5:]
-                        #     self.logger.info(
-                        #         f"Observation sample - first 5: {first_5}, last 5: {last_5}")
                     except Exception as e:
                         self.logger.error(
                             f"Failed to collect observation: {e}")
@@ -564,7 +529,6 @@ class RLController(TrafficController):
             if RL_USE_CONTINUOUS_ACTIONS:
                 # Duration-based control: convert raw actions to duration schedules
                 self.logger.info("Using CONTINUOUS DURATION-BASED mode")
-                import numpy as np
 
                 junction_schedules = {}
 
@@ -779,7 +743,6 @@ class RLController(TrafficController):
         Returns:
             Array of probabilities summing to 1.0
         """
-        import numpy as np
         if len(x) == 0:
             raise ValueError("Cannot apply softmax to empty array")
 
@@ -797,7 +760,6 @@ class RLController(TrafficController):
         Returns:
             List of 4 integer durations summing exactly to cycle_length
         """
-        import numpy as np
         num_phases = len(proportions)
         available_time = cycle_length - (num_phases * min_phase_time)
 

@@ -128,7 +128,8 @@ class ATLCSController(TreeMethodController):
 
                 except traci.TraCIException:
                     continue  # Skip traffic lights that can't be modified
-                except Exception:
+                except Exception as e:
+                    self.logger.debug(f"ATLCS pricing error for edge {edge_id}: {e}")
                     continue
 
         except Exception as e:
@@ -136,7 +137,7 @@ class ATLCSController(TreeMethodController):
 
         return signal_adjustments
 
-    def _find_traffic_light_for_edge(self, edge_id) -> str:
+    def _find_traffic_light_for_edge(self, edge_id: str) -> str:
         """Find traffic light that controls the given edge."""
         try:
             # Convert edge_id to string if it's not already
@@ -161,12 +162,12 @@ class ATLCSController(TreeMethodController):
                     if edge_id_str in lane:
                         return tls_id
 
-        except Exception:
-            pass
+        except Exception as e:
+            self.logger.debug(f"Error finding traffic light for edge {edge_id}: {e}")
 
         return None
 
-    def _map_tree_method_edge_to_sumo_edge(self, tree_method_edge_id):
+    def _map_tree_method_edge_to_sumo_edge(self, tree_method_edge_id: str) -> str:
         """Map Tree Method's internal edge ID to actual SUMO edge name."""
         try:
             # Tree Method edge_id is likely an index into self.graph.all_links
@@ -242,6 +243,5 @@ class ATLCSController(TreeMethodController):
                     if hasattr(self, 'current_phase_durations') and tls_id in self.current_phase_durations:
                         self.current_phase_durations[tls_id][current_phase] = new_duration
 
-        except Exception:
-            # Silently fail if traffic light manipulation fails
-            pass
+        except Exception as e:
+            self.logger.debug(f"Error extending green time for {tls_id}: {e}")

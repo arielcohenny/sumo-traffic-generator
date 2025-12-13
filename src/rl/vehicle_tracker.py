@@ -8,6 +8,8 @@ based on the design from RL_DISCUSSION.md.
 from typing import Dict, List, Set
 import logging
 
+import traci
+
 from .constants import (
     MEASUREMENT_INTERVAL_STEPS, CREDIT_ASSIGNMENT_WINDOW_STEPS,
     WAITING_TIME_PENALTY_FACTOR, MIN_WAITING_TIME_THRESHOLD,
@@ -68,8 +70,6 @@ class VehicleTracker:
         Args:
             current_time: Current simulation time step
         """
-        import traci
-
         try:
             # Get current active vehicles
             active_vehicles = traci.vehicle.getIDList()
@@ -106,7 +106,8 @@ class VehicleTracker:
                         vehicle_data['current_edge'] = edge_id
 
                 except Exception as e:
-                    # Skip vehicles that can't be accessed
+                    # Skip vehicles that can't be accessed, but log the issue
+                    self.logger.debug(f"Could not access vehicle {vehicle_id}: {e}")
                     continue
 
             # Check for completed vehicles
@@ -119,8 +120,8 @@ class VehicleTracker:
                         if self.progressive_bonus_enabled:
                             self.vehicles_completed_this_step += 1
                         # Keep history for episode reward calculation
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.debug(f"Error checking arrived vehicles: {e}")
 
             self.last_measurement_time = current_time
 
