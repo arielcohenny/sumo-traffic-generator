@@ -4,17 +4,22 @@ Batch SUMO simulator without TraCI for fixed and actuated traffic control.
 This simulator runs SUMO in batch mode (no Python/TraCI control) for traffic
 control methods that don't need runtime intervention (fixed and actuated).
 SUMO handles everything based on the XML configuration files.
+
+Note: When metric logging is enabled, this simulator uses TraCI to collect
+metrics but does not perform any traffic control.
 """
 
 import subprocess
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from pathlib import Path
 
 import sumolib
+import traci
 
 from src.config import CONFIG
 from src.utils.statistics import parse_sumo_statistics_file, format_cli_statistics_output
+from src.utils.metric_logger import MetricLogger
 
 
 class BatchSimulator:
@@ -24,13 +29,15 @@ class BatchSimulator:
     natively based on XML configuration. No Python/TraCI control needed.
     """
 
-    def __init__(self, args: Any):
+    def __init__(self, args: Any, metric_logger: Optional[MetricLogger] = None):
         """Initialize batch simulator.
 
         Args:
             args: Command line arguments containing simulation parameters
+            metric_logger: Optional metric logger for collecting simulation metrics
         """
         self.args = args
+        self.metric_logger = metric_logger
         self.logger = logging.getLogger(__name__)
 
     def run(self) -> Dict[str, Any]:
@@ -40,11 +47,15 @@ class BatchSimulator:
             Dictionary containing simulation metrics
         """
         self.logger.info(f"Starting SUMO batch simulation (traffic_control={self.args.traffic_control})")
-        self.logger.info("Running SUMO natively - no TraCI/Python control")
 
         try:
-            # Run SUMO simulation
-            self._run_sumo_batch()
+            # If metric logging is enabled, use TraCI mode (for metric collection only)
+            if self.metric_logger:
+                self.logger.info("Running SUMO with TraCI for metric collection (no traffic control)")
+                self._run_sumo_with_metrics()
+            else:
+                self.logger.info("Running SUMO natively - no TraCI/Python control")
+                self._run_sumo_batch()
 
             # Parse and return statistics
             metrics = self._calculate_final_metrics()
@@ -55,6 +66,47 @@ class BatchSimulator:
         except Exception as e:
             self.logger.error(f"Batch simulation failed: {e}")
             raise
+
+    def _run_sumo_with_metrics(self) -> None:
+        """Run SUMO with TraCI for metric collection (no traffic control)."""
+        # Choose SUMO binary based on GUI flag
+        if self.args.gui:
+            sumo_binary = sumolib.checkBinary('sumo-gui')
+        else:
+            sumo_binary = sumolib.checkBinary('sumo')
+
+        try:
+            # Start TraCI
+            traci.start([
+                sumo_binary,
+                '-c', str(CONFIG.config_file),
+                '--no-step-log',
+                '--no-warnings'
+            ])
+
+            # Initialize metric logger
+            if self.metric_logger:
+                self.metric_logger.initialize_from_traci()
+                self.logger.info(f"MetricLogger initialized: logging to {self.metric_logger.output_path}")
+
+            # Run simulation loop with metric collection (NO traffic control)
+            step = 0
+            while traci.simulation.getMinExpectedNumber() > 0 and step < self.args.end_time:
+                # Collect metrics at regular intervals
+                if self.metric_logger and self.metric_logger.should_log(step):
+                    self.metric_logger.log_metrics(step)
+
+                # Just run the simulation step - no traffic control
+                traci.simulationStep()
+                step += 1
+
+            # Log final metrics
+            if self.metric_logger:
+                self.metric_logger.log_metrics(step)
+
+        finally:
+            # Close TraCI
+            traci.close()
 
     def _run_sumo_batch(self) -> None:
         """Run SUMO in batch mode without TraCI."""
