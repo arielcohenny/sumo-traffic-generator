@@ -2,7 +2,14 @@
 Coordinates enhanced bottleneck detection with ATLCS pricing for traffic light control optimization.
 """
 
+import logging
 import traci
+
+from ...constants import (
+    SEVERITY_HIGH, SEVERITY_MEDIUM, SEVERITY_LOW,
+    EXTENSION_HIGH, EXTENSION_MEDIUM, EXTENSION_LOW,
+    PRICE_MULTIPLIER
+)
 
 
 class DemandSupplyCoordinator:
@@ -28,24 +35,22 @@ class DemandSupplyCoordinator:
 
     def _enhance_signal_control_for_bottlenecks(self, bottleneck_data) -> None:
         """USED BY: coordinate() - Supply side enhancement"""
-
-        import logging
         logger = logging.getLogger(self.__class__.__name__)
 
         # Extend green time for bottleneck directions (ENHANCED thresholds and impact)
         extensions_applied = 0
         for bottleneck in bottleneck_data.prioritized_bottlenecks:
-            if bottleneck.severity > 0.3:  # LOWERED from 0.7 to 0.3 for broader intervention
+            if bottleneck.severity > SEVERITY_LOW:
                 # Find associated traffic light and extend green time
                 tls_id = self._find_tls_for_edge(bottleneck.edge_id)
                 if tls_id:
                     # INCREASED extension based on severity
-                    if bottleneck.severity > 0.8:
-                        extension = 25  # High severity: +25 seconds
-                    elif bottleneck.severity > 0.5:
-                        extension = 15  # Medium severity: +15 seconds
+                    if bottleneck.severity > SEVERITY_HIGH:
+                        extension = EXTENSION_HIGH
+                    elif bottleneck.severity > SEVERITY_MEDIUM:
+                        extension = EXTENSION_MEDIUM
                     else:
-                        extension = 10  # Low severity: +10 seconds
+                        extension = EXTENSION_LOW
 
                     self._extend_green_time(
                         tls_id, bottleneck.direction, extension)
@@ -53,8 +58,6 @@ class DemandSupplyCoordinator:
 
     def _analyze_pricing_effectiveness(self, pricing_updates) -> None:
         """USED BY: coordinate() - Analyze pricing data for signal control decisions"""
-
-        import logging
         logger = logging.getLogger(self.__class__.__name__)
 
         # Analyze pricing data to inform traffic light control decisions
@@ -65,7 +68,7 @@ class DemandSupplyCoordinator:
                     pricing_updates.edge_prices.values()) / priced_edges
                 max_price = max(pricing_updates.edge_prices.values())
                 high_priority_edges = [
-                    edge for edge, price in pricing_updates.edge_prices.items() if price > avg_price * 1.5]
+                    edge for edge, price in pricing_updates.edge_prices.items() if price > avg_price * PRICE_MULTIPLIER]
 
                 # Store pricing analysis for signal control coordination
                 self._pricing_analysis = {
@@ -77,8 +80,6 @@ class DemandSupplyCoordinator:
 
     def _coordinate_signal_optimization(self, bottleneck_data, pricing_updates) -> None:
         """USED BY: coordinate() - Coordinate bottleneck detection with pricing-based signal control"""
-
-        import logging
         logger = logging.getLogger(self.__class__.__name__)
 
         # Coordinate enhanced bottleneck detection with ATLCS pricing for unified signal control
@@ -117,8 +118,9 @@ class DemandSupplyCoordinator:
                 for lane in controlled_lanes:
                     if lane.startswith(edge_id):
                         return tls_id
-        except Exception:
-            pass
+        except Exception as e:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.debug(f"Error finding traffic light for edge {edge_id}: {e}")
 
         return None
 
@@ -132,6 +134,6 @@ class DemandSupplyCoordinator:
             new_duration = current_duration + extension_seconds
             traci.trafficlight.setPhaseDuration(tls_id, new_duration)
 
-        except Exception:
-            # Silently fail if traffic light manipulation fails
-            pass
+        except Exception as e:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.debug(f"Error extending green time for {tls_id}: {e}")

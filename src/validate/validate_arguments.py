@@ -87,14 +87,6 @@ def _validate_numeric_ranges(args) -> None:
         raise ValidationError(
             f"Block size should be {MIN_BLOCK_SIZE_M}-{MAX_BLOCK_SIZE_VALIDATION}m for realism, got {args.block_size_m}")
 
-    # Number of vehicles validation
-    # if args.num_vehicles <= 0:
-    #     raise ValidationError(
-    #         f"Number of vehicles must be > 0, got {args.num_vehicles}")
-    # if args.num_vehicles > MAX_NUM_VEHICLES_VALIDATION:
-    #     raise ValidationError(
-    #         f"Number of vehicles must be ≤ {MAX_NUM_VEHICLES_VALIDATION} for performance, got {args.num_vehicles}")
-
     # Step length validation
     if args.step_length <= 0:
         raise ValidationError(
@@ -502,8 +494,6 @@ def _validate_custom_lanes_file(custom_lanes_file: str) -> None:
 
 def _validate_single_edge_config(config: str) -> None:
     """Validate a single edge configuration string."""
-    import re
-
     # Split by semicolon for multiple edges in one config
     edge_configs = [cfg.strip() for cfg in config.split(';') if cfg.strip()]
 

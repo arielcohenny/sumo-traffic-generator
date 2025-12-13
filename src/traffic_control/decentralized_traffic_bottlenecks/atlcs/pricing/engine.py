@@ -5,6 +5,13 @@ Dynamic road pricing engine implementing ATLCS objectives.
 from typing import Dict, List
 from dataclasses import dataclass
 
+from ...constants import (
+    BASE_PRICE,
+    HIGH_PRIORITY_THRESHOLD, MEDIUM_PRIORITY_THRESHOLD, LOW_PRIORITY_THRESHOLD,
+    HIGH_PRIORITY_EXTENSION, MEDIUM_PRIORITY_EXTENSION,
+    LOW_PRIORITY_EXTENSION, NEGATIVE_PRIORITY_EXTENSION
+)
+
 # ATLCS is for traffic light control, not vehicle routing
 
 
@@ -20,10 +27,7 @@ class PricingEngine:
     """Dynamic road pricing engine implementing ATLCS objectives."""
 
     def __init__(self):
-        # → Updated by calculate_dynamic_prices()
-        self.base_prices = {}
-        # → Used for traffic light priority decisions
-        self.signal_priority_calculator = None
+        pass
 
     def calculate_dynamic_prices(self, bottleneck_data, step: int) -> PricingUpdates:
         """MAIN ATLCS METHOD - Called by ATLCSController.update() every 30s."""
@@ -43,11 +47,9 @@ class PricingEngine:
         edge_prices = {}
         for bottleneck in prioritized_bottlenecks:
             # Dynamic pricing based on bottleneck severity (INCREASED PRICING)
-            base_price = 5.0  # Base price per km (INCREASED from 1.0)
             # 1x to 6x pricing (INCREASED)
-            congestion_multiplier = 1.0 + (bottleneck.severity * 5.0)
-            edge_prices[bottleneck.edge_id] = base_price * \
-                congestion_multiplier
+            congestion_multiplier = 1.0 + (bottleneck.severity * BASE_PRICE)
+            edge_prices[bottleneck.edge_id] = BASE_PRICE * congestion_multiplier
 
         return edge_prices
 
@@ -71,18 +73,18 @@ class PricingEngine:
             priority_level = price / max_price if max_price > 0 else 0.0
 
             # Determine signal control action based on priority
-            if priority_level >= 0.8:  # High priority
+            if priority_level >= HIGH_PRIORITY_THRESHOLD:
                 action = 'extend_major'  # Significant green time extension
-                extension_seconds = 15
-            elif priority_level >= 0.5:  # Medium priority
+                extension_seconds = HIGH_PRIORITY_EXTENSION
+            elif priority_level >= MEDIUM_PRIORITY_THRESHOLD:
                 action = 'extend_minor'  # Moderate green time extension
-                extension_seconds = 8
-            elif priority_level >= 0.3:  # Low priority
+                extension_seconds = MEDIUM_PRIORITY_EXTENSION
+            elif priority_level >= LOW_PRIORITY_THRESHOLD:
                 action = 'maintain'     # Maintain current timing
-                extension_seconds = 0
+                extension_seconds = LOW_PRIORITY_EXTENSION
             else:
                 action = 'reduce'       # Slightly reduce green time
-                extension_seconds = -3
+                extension_seconds = NEGATIVE_PRIORITY_EXTENSION
 
             signal_priorities[edge_id] = {
                 'priority_level': priority_level,

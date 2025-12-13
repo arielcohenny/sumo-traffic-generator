@@ -5,6 +5,8 @@ Global impact assessment and bottleneck prioritization (T6 enhancement).
 from typing import Dict, List
 from dataclasses import dataclass
 
+from ...constants import MIN_SEVERITY_THRESHOLD, MIN_MAX_BOTTLENECKS
+
 
 @dataclass
 class PrioritizedBottleneck:
@@ -50,13 +52,11 @@ class GlobalPrioritizer:
             key=lambda b: b.global_impact, reverse=True)
 
         # FILTER: Apply minimum severity threshold to reduce noise
-        min_severity_threshold = 0.2  # Only keep bottlenecks with severity > 20%
         filtered_bottlenecks = [
-            b for b in prioritized_bottlenecks if b.severity > min_severity_threshold]
+            b for b in prioritized_bottlenecks if b.severity > MIN_SEVERITY_THRESHOLD]
 
         # LIMIT: Keep only top bottlenecks to focus on real problems (max 25% of edges)
-        # At least 5, at most 25% of network
-        max_bottlenecks = max(5, len(all_links) // 4)
+        max_bottlenecks = max(MIN_MAX_BOTTLENECKS, len(all_links) // 4)
         final_bottlenecks = filtered_bottlenecks[:max_bottlenecks]
 
         return final_bottlenecks

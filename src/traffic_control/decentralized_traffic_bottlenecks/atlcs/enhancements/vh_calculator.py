@@ -5,6 +5,11 @@ Research-grade Vehicle Hours cost calculation (T6 enhancement).
 from typing import Dict
 from dataclasses import dataclass
 
+from ...constants import (
+    TREE_METHOD_MULTIPLIER, VH_COST_THRESHOLD,
+    FLOW_THRESHOLD, SPEED_RATIO_THRESHOLD
+)
+
 
 @dataclass
 class VHCostData:
@@ -66,7 +71,7 @@ class VHCostCalculator:
                 # ENHANCEMENT: Apply multiplier for Tree Method identified bottlenecks (when available)
                 if tree_method_available and link.link_id in tree_bottleneck_links:
                     # Amplify VH cost for Tree Method bottlenecks (research enhancement)
-                    vh_cost = base_vh_cost * 1.5  # 50% increase for Tree Method bottlenecks
+                    vh_cost = base_vh_cost * TREE_METHOD_MULTIPLIER
                     bottleneck_count += 1
                 else:
                     vh_cost = base_vh_cost
@@ -74,7 +79,7 @@ class VHCostCalculator:
                 processed_links += 1
 
                 # Only include links with meaningful cost
-                if vh_cost > 0.01:  # Threshold to avoid noise
+                if vh_cost > VH_COST_THRESHOLD:
                     vh_costs[link.link_id] = vh_cost
 
         return VHCostData(vh_costs, 0)  # step will be set by caller
@@ -99,8 +104,8 @@ class VHCostCalculator:
 
         # SIMPLIFIED: Any speed reduction with decent flow = congestion
         speed_ratio = current_speed / free_flow_speed if free_flow_speed > 0 else 1.0
-        has_flow = current_iteration.current_flow_per_iter > 100.0
-        has_speed_reduction = speed_ratio < 0.98  # Even 2% reduction counts
+        has_flow = current_iteration.current_flow_per_iter > FLOW_THRESHOLD
+        has_speed_reduction = speed_ratio < SPEED_RATIO_THRESHOLD
 
         is_congested = has_speed_reduction and has_flow
 
