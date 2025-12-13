@@ -42,13 +42,13 @@ class TestGlobalConfig:
         assert CONFIG.DEFAULT_NUM_VEHICLES == 300
         assert CONFIG.RNG_SEED == 42
         assert CONFIG.MIN_LANES == 1
-        assert CONFIG.MAX_LANES == 3
+        assert CONFIG.MAX_LANES == 5  # Updated to match MAX_LANE_COUNT in constants.py
         assert CONFIG.HEAD_DISTANCE == 85
 
     @pytest.mark.unit
     def test_file_paths(self):
         """Test configured file paths."""
-        assert str(CONFIG.output_dir) == "workspace"
+        assert str(CONFIG.output_dir) == "."  # Default is ".", becomes "workspace" via update_workspace
         assert "grid.net.xml" in str(CONFIG.network_file)
         assert "vehicles.rou.xml" in str(CONFIG.routes_file)
         assert "zones.poly.xml" in str(CONFIG.zones_file)

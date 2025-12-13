@@ -185,6 +185,12 @@ def _add_simulation_arguments(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="Path to CSV file for logging comprehensive traffic metrics every 90 seconds. If not provided, metric logging is disabled."
     )
+    parser.add_argument(
+        "--file-generation-only",
+        action="store_true",
+        default=False,
+        help="Generate network and route files only, skip SUMO simulation (steps 1-7). Useful for testing and batch file generation."
+    )
 
 
 def _add_zone_arguments(parser: argparse.ArgumentParser) -> None:

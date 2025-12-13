@@ -64,9 +64,8 @@ def pick_random_junction_ids(seed: int, num_junctions_to_remove: int, dimension:
             "Grid must be at least 3×3 to have removable interior nodes")
 
     row_labels = [chr(ord('A') + i) for i in range(0, dimension)]
-    col_labels = list(range(0, dimension))
 
-    candidates = [f"{row}{col}" for row in row_labels for col in col_labels]
+    candidates = [f"{row}{col}" for row in row_labels for col in range(0, dimension)]
 
     if num_junctions_to_remove > len(candidates):
         raise ValueError(
@@ -282,7 +281,7 @@ def convert_to_incoming_strategy():
     tll_root = tll_tree.getroot()
 
     # Parse the network file (for connections - connections are in net.xml, not tll.xml!)
-    net_tree = ET.parse(Path(str(CONFIG.network_net_file)))
+    net_tree = ET.parse(Path(str(CONFIG.network_file)))
     net_root = net_tree.getroot()
 
     # For each traffic light logic

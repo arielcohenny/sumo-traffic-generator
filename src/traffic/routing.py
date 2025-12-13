@@ -1,6 +1,6 @@
 # src/traffic/routing.py
 from __future__ import annotations
-from typing import List, Dict, Optional, NoReturn
+from typing import List, Dict, Optional
 from abc import ABC, abstractmethod
 import random
 import sys
@@ -46,7 +46,6 @@ def convert_tail_to_head_edge(edge_id: str, net) -> str:
         try:
             edge = net.getEdge(candidate)
             if edge is not None:
-                # print(f"DEBUG: Converting tail edge '{edge_id}' → head edge '{candidate}'", file=sys.stderr)
                 return candidate
         except (KeyError, RuntimeError):
             # Edge doesn't exist, try next suffix

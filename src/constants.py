@@ -512,3 +512,41 @@ PROGRESS_PIPELINE_CREATED = 10
 PROGRESS_EXECUTION_STARTED = 20
 PROGRESS_EXECUTION_RUNNING = 50
 PROGRESS_COMPLETED = 100
+
+# =============================================================================
+# TRAFFIC LIGHT TIMING CONSTANTS (For Network Generation)
+# =============================================================================
+
+# Phase durations for traffic light generation
+PHASE_GREEN_DURATION = 30  # Default green phase duration in seconds
+PHASE_YELLOW_DURATION = 3   # Yellow phase duration in seconds
+PHASE_MAX_DURATION = 1000   # Maximum phase duration for configuration
+CYCLE_TIME = 90             # Standard traffic light cycle time in seconds
+
+# =============================================================================
+# NETWORK GENERATION CONSTANTS (Additional)
+# =============================================================================
+
+# Distance and geometry thresholds
+DISTANCE_THRESHOLD = 0.01   # Threshold for floating point comparisons
+LANE_WIDTH = 3.2            # Standard lane width in meters
+MIN_TAIL_LANES_FOR_MULTI_HEAD = 2  # Minimum tail lanes for multi-head splitting
+
+# =============================================================================
+# TIME CONVERSION CONSTANTS
+# =============================================================================
+
+SECONDS_PER_HOUR = 3600     # Number of seconds in one hour
+
+# =============================================================================
+# WORKSPACE AND CLI CONSTANTS
+# =============================================================================
+
+DEFAULT_WORKSPACE = 'workspace'  # Default workspace subdirectory name
+DEFAULT_CLI_PREFIX = "env PYTHONUNBUFFERED=1 python -m src.cli"  # CLI command prefix
+
+# =============================================================================
+# TRAFFIC CONTROLLER CONSTANTS
+# =============================================================================
+
+TRAFFIC_CONTROLLER_LOG_INTERVAL = 10  # Interval for logging traffic controller state

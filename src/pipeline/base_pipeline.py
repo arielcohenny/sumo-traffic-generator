@@ -8,6 +8,7 @@ and common functionality for all pipeline implementations.
 from abc import ABC, abstractmethod
 from typing import Any
 import logging
+import shutil
 
 from src.config import CONFIG
 
@@ -61,7 +62,6 @@ class BasePipeline(ABC):
     def _validate_output_directory(self) -> None:
         """Ensure output directory exists and is clean."""
         if CONFIG.output_dir.exists():
-            import shutil
             shutil.rmtree(CONFIG.output_dir)
         CONFIG.output_dir.mkdir(exist_ok=True)
         self.logger.info(f"Prepared output directory: {CONFIG.output_dir}")

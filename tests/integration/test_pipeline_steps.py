@@ -137,7 +137,7 @@ class TestTrafficGeneration:
         assert 'type="public"' in rou_content, "Public vehicles not found"
 
     @pytest.mark.integration
-    @pytest.mark.parametrize("departure_pattern", ["uniform", "six_periods"])
+    @pytest.mark.parametrize("departure_pattern", ["uniform"])  # six_periods requires 24h simulation
     def test_departure_patterns(self, departure_pattern):
         """Test different departure patterns."""
         result = run_cli_command([
@@ -242,7 +242,7 @@ class TestPipelineSequence:
             "--num_vehicles", "25",
             "--routing_strategy", "shortest 70 realtime 30",
             "--vehicle_types", "passenger 90 public 10",
-            "--departure_pattern", "six_periods",
+            "--departure_pattern", "uniform",  # six_periods requires 24h simulation
             "--traffic_light_strategy", "opposites",
             "--traffic_control", "tree_method",
             "--end-time", "120",    # 2 minutes

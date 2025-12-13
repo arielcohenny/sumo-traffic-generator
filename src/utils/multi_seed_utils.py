@@ -9,6 +9,37 @@ import random
 from typing import Any
 
 
+def _get_attr(obj: Any, key: str, default: Any = None) -> Any:
+    """Get attribute value from either dict or object.
+
+    Args:
+        obj: Object to get attribute from (dict or namespace)
+        key: Attribute name
+        default: Default value if not found
+
+    Returns:
+        The attribute value or default
+    """
+    if isinstance(obj, dict):
+        return obj.get(key, default)
+    else:
+        return getattr(obj, key, default)
+
+
+def _set_attr(obj: Any, key: str, value: Any) -> None:
+    """Set attribute value on either dict or object.
+
+    Args:
+        obj: Object to set attribute on (dict or namespace)
+        key: Attribute name
+        value: Value to set
+    """
+    if isinstance(obj, dict):
+        obj[key] = value
+    else:
+        setattr(obj, key, value)
+
+
 def get_network_seed(args: Any) -> int:
     """Get the network seed for network structure generation.
 
@@ -20,19 +51,6 @@ def get_network_seed(args: Any) -> int:
     Returns:
         int: The random seed to use for network generation
     """
-    # Helper function to get attribute value from either dict or object
-    def _get_attr(obj, key, default=None):
-        if isinstance(obj, dict):
-            return obj.get(key, default)
-        else:
-            return getattr(obj, key, default)
-
-    def _set_attr(obj, key, value):
-        if isinstance(obj, dict):
-            obj[key] = value
-        else:
-            setattr(obj, key, value)
-
     if _get_attr(args, '_network_seed') is not None:
         return _get_attr(args, '_network_seed')
 
@@ -65,19 +83,6 @@ def get_private_traffic_seed(args: Any) -> int:
     Returns:
         int: The random seed to use for private traffic generation
     """
-    # Helper function to get attribute value from either dict or object
-    def _get_attr(obj, key, default=None):
-        if isinstance(obj, dict):
-            return obj.get(key, default)
-        else:
-            return getattr(obj, key, default)
-
-    def _set_attr(obj, key, value):
-        if isinstance(obj, dict):
-            obj[key] = value
-        else:
-            setattr(obj, key, value)
-
     if _get_attr(args, '_private_traffic_seed') is not None:
         return _get_attr(args, '_private_traffic_seed')
 
@@ -110,19 +115,6 @@ def get_public_traffic_seed(args: Any) -> int:
     Returns:
         int: The random seed to use for public traffic generation
     """
-    # Helper function to get attribute value from either dict or object
-    def _get_attr(obj, key, default=None):
-        if isinstance(obj, dict):
-            return obj.get(key, default)
-        else:
-            return getattr(obj, key, default)
-
-    def _set_attr(obj, key, value):
-        if isinstance(obj, dict):
-            obj[key] = value
-        else:
-            setattr(obj, key, value)
-
     if _get_attr(args, '_public_traffic_seed') is not None:
         return _get_attr(args, '_public_traffic_seed')
 

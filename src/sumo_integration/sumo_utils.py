@@ -1,7 +1,12 @@
+import logging
 import subprocess
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import List, Optional
+
 from src.config import CONFIG
+from src.validate.validate_network import verify_rebuild_network, verify_generate_sumo_conf_file
+from src.validate.errors import ValidationError
 
 # Convert the generated network files to the final .net.xml format
 # Rebuild with fresh internals + connections
@@ -89,10 +94,6 @@ def generate_sumo_conf_file(
 
 def execute_network_rebuild(args) -> None:
     """Execute network rebuild."""
-    import logging
-    from src.validate.validate_network import verify_rebuild_network
-    from src.validate.errors import ValidationError
-
     logger = logging.getLogger(__name__)
 
     rebuild_network()
@@ -105,10 +106,6 @@ def execute_network_rebuild(args) -> None:
 
 def execute_config_generation(args) -> None:
     """Execute SUMO configuration generation."""
-    import logging
-    from src.validate.validate_network import verify_generate_sumo_conf_file
-    from src.validate.errors import ValidationError
-
     logger = logging.getLogger(__name__)
 
     sumo_cfg_path = generate_sumo_conf_file(
@@ -128,9 +125,6 @@ def execute_config_generation(args) -> None:
 
 def update_sumo_config_paths() -> None:
     """Update SUMO config file to reference our file naming convention."""
-    import logging
-    import xml.etree.ElementTree as ET
-
     logger = logging.getLogger(__name__)
 
     tree = ET.parse(CONFIG.config_file)
@@ -153,9 +147,6 @@ def update_sumo_config_paths() -> None:
 
 def ensure_output_configuration() -> None:
     """Ensure SUMO config file has proper output section for statistics generation."""
-    import logging
-    import xml.etree.ElementTree as ET
-
     logger = logging.getLogger(__name__)
 
     tree = ET.parse(CONFIG.config_file)
@@ -198,9 +189,6 @@ def ensure_output_configuration() -> None:
 
 def override_end_time_from_config(args) -> None:
     """Extract end time from SUMO config and override CLI argument."""
-    import logging
-    import xml.etree.ElementTree as ET
-
     logger = logging.getLogger(__name__)
 
     try:

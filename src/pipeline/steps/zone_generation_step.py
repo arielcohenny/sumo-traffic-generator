@@ -4,8 +4,6 @@ Zone generation pipeline step.
 Handles Step 2 of the pipeline: generating land use zones for synthetic grid networks.
 """
 
-from pathlib import Path
-
 from .base_step import BaseStep
 from src.network.zones import extract_zones_from_junctions
 from src.validate.validate_network import verify_extract_zones_from_junctions
@@ -44,7 +42,3 @@ class ZoneGenerationStep(BaseStep):
         """Get the network seed for zone generation."""
         from src.utils.multi_seed_utils import get_network_seed
         return get_network_seed(self.args)
-
-    def _get_seed(self) -> int:
-        """Get the cached random seed (backward compatibility)."""
-        return self._get_network_seed()

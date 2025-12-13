@@ -13,7 +13,8 @@ import traci
 import sumolib
 
 from src.config import CONFIG
-from .traffic_controller import TrafficController
+from .traffic_controller import TrafficController, TrafficControllerFactory
+from .batch_simulator import BatchSimulator
 from src.utils.statistics import parse_sumo_statistics_file, format_cli_statistics_output
 from src.utils.metric_logger import MetricLogger
 
@@ -33,11 +34,6 @@ class TrafficSimulator:
         self.traffic_controller = traffic_controller
         self.metric_logger = metric_logger
         self.logger = logging.getLogger(self.__class__.__name__)
-
-        # Routing strategy tracking
-        self.routing_strategies = self._parse_routing_strategy()
-        self.last_realtime_reroute = 0
-        self.last_fastest_reroute = 0
 
         # Simulation metrics
         self.total_vehicles = 0
@@ -173,20 +169,6 @@ class TrafficSimulator:
         except Exception as e:
             self.logger.error(f"Error during simulation cleanup: {e}")
 
-    def _parse_routing_strategy(self) -> Dict[str, float]:
-        """Parse routing strategy string to extract individual strategies and percentages."""
-        if not hasattr(self.args, 'routing_strategy') or not self.args.routing_strategy:
-            return {}
-
-        strategies = {}
-        parts = self.args.routing_strategy.split()
-        for i in range(0, len(parts), 2):
-            if i + 1 < len(parts):
-                strategy = parts[i]
-                percentage = float(parts[i + 1])
-                strategies[strategy] = percentage
-        return strategies
-
 
 def execute_standard_simulation(args) -> None:
     """Execute standard dynamic simulation.
@@ -195,16 +177,11 @@ def execute_standard_simulation(args) -> None:
     - tree_method/atlcs/rl: TraCISimulator (needs Python control)
     - fixed/actuated: BatchSimulator (SUMO native, no TraCI needed)
     """
-    import logging
-    from .traffic_controller import TrafficControllerFactory
-    from .batch_simulator import BatchSimulator
-
     logger = logging.getLogger(__name__)
 
     # Create metric logger if requested
     metric_logger = None
     if hasattr(args, 'metric_log_path') and args.metric_log_path:
-        from pathlib import Path
         metric_logger = MetricLogger(
             output_path=Path(args.metric_log_path),
             interval_seconds=90
@@ -240,9 +217,6 @@ def execute_standard_simulation(args) -> None:
 
 def execute_sample_simulation(args) -> None:
     """Execute sample dynamic simulation using pre-built sample network."""
-    import logging
-    from .traffic_controller import TrafficControllerFactory
-
     logger = logging.getLogger(__name__)
 
     # Validate traffic control compatibility

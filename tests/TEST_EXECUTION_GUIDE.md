@@ -22,6 +22,9 @@ pytest tests/ -m smoke -v
 # Run scenario tests (2-5 minutes each)
 pytest tests/ -m scenario -v
 
+# Run integration tests (CLI arguments)
+pytest tests/ -m integration -v
+
 # Run complete test suite with coverage
 pytest tests/ --cov=src --cov-report=html -v
 ```
@@ -75,7 +78,19 @@ pytest tests/integration/test_pipeline_steps.py::TestTrafficGeneration -v
 
 # Complete pipeline sequence
 pytest tests/integration/test_pipeline_steps.py::TestPipelineSequence -v
+
+# CLI Argument Tests (82 parametrized tests)
+pytest tests/integration/test_cli_arguments.py -v
+
+# Specific argument categories
+pytest tests/integration/test_cli_arguments.py::TestNetworkArguments -v
+pytest tests/integration/test_cli_arguments.py::TestTrafficArguments -v
+pytest tests/integration/test_cli_arguments.py::TestSimulationArguments -v
+pytest tests/integration/test_cli_arguments.py::TestZoneArguments -v
+pytest tests/integration/test_cli_arguments.py::TestTrafficControlArguments -v
 ```
+
+**Note:** CLI argument tests use `--file-generation-only` flag to run steps 1-7 without SUMO simulation, enabling fast validation.
 
 ### ⚡ Performance Tests (Extended: 2-10 minutes each)
 
@@ -256,7 +271,8 @@ tests/
 │   ├── test_performance.py         # Performance & regression tests
 │   └── fixtures/                   # Test data & golden masters
 ├── integration/                    # Pipeline integration tests
-│   └── test_pipeline_steps.py      # Individual step validation
+│   ├── test_pipeline_steps.py      # Individual step validation
+│   └── test_cli_arguments.py       # CLI argument validation (82 tests)
 ├── unit/                           # Unit tests
 │   └── test_config.py              # Configuration system tests
 ├── utils/                          # Test utilities

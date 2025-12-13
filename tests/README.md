@@ -8,6 +8,8 @@ This directory contains all software testing components for the SUMO Traffic Gen
 tests/
 ├── unit/               # Unit tests for isolated components
 ├── integration/        # Pipeline step testing
+│   ├── test_pipeline_steps.py   # Individual step validation
+│   └── test_cli_arguments.py    # CLI argument validation (82 tests)
 ├── system/             # End-to-end scenario testing
 ├── coverage/           # Coverage data and reports
 │   ├── .coverage      # Coverage database
@@ -32,12 +34,14 @@ Test isolated components and functions:
 
 ### Integration Tests (`integration/`)
 
-Test individual pipeline steps:
+Test individual pipeline steps and CLI arguments:
 
 - **Purpose**: Verify each pipeline step works correctly in isolation
-- **Scope**: Network generation, lane assignment, traffic generation, simulation execution
+- **Scope**: Network generation, lane assignment, traffic generation, simulation execution, CLI argument validation
 - **Framework**: pytest with actual workspace directory
-- **Coverage**: Individual pipeline steps and their file outputs
+- **Coverage**: Individual pipeline steps, file outputs, and CLI argument combinations
+- **CLI Argument Tests**: 82 parametrized tests validating all CLI arguments with boundary and typical values
+- **Fast Mode**: Uses `--file-generation-only` flag to run steps 1-7 without SUMO simulation
 
 ### System Tests (`system/`)
 

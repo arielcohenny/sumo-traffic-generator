@@ -114,7 +114,6 @@ class FixedController(TrafficController):
     def __init__(self, args):
         super().__init__(args)
         self.traffic_lights = {}
-        self.last_logged_states = {}
         self.graph = None
 
     def initialize(self) -> None:

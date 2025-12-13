@@ -80,6 +80,29 @@ def run_cli_command(
         )
 
 
+def run_file_generation(
+    args: List[str],
+    workspace: Optional[Path] = None,
+    timeout: int = 120
+) -> CommandResult:
+    """
+    Execute CLI command for file generation only (steps 1-7, no SUMO simulation).
+
+    This is a convenience wrapper that adds --file-generation-only flag.
+
+    Args:
+        args: Command line arguments (without 'python -m src.cli')
+        workspace: Optional workspace directory
+        timeout: Command timeout in seconds (shorter default since no simulation)
+
+    Returns:
+        CommandResult with return code and output
+    """
+    # Add the file-generation-only flag
+    full_args = args + ["--file-generation-only"]
+    return run_cli_command(full_args, workspace=workspace, timeout=timeout)
+
+
 def validate_output_files(workspace: Path, expected_files: Optional[List[str]] = None) -> bool:
     """
     Validate that expected output files exist and are valid.
