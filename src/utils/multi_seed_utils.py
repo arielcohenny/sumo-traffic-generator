@@ -15,26 +15,42 @@ def get_network_seed(args: Any) -> int:
     Controls: junction removal, lane assignment, land use generation, edge attractiveness.
 
     Args:
-        args: Parsed command line arguments from argparse
+        args: Parsed command line arguments from argparse or dict
 
     Returns:
         int: The random seed to use for network generation
     """
-    if hasattr(args, '_network_seed'):
-        return args._network_seed
+    # Helper function to get attribute value from either dict or object
+    def _get_attr(obj, key, default=None):
+        if isinstance(obj, dict):
+            return obj.get(key, default)
+        else:
+            return getattr(obj, key, default)
+
+    def _set_attr(obj, key, value):
+        if isinstance(obj, dict):
+            obj[key] = value
+        else:
+            setattr(obj, key, value)
+
+    if _get_attr(args, '_network_seed') is not None:
+        return _get_attr(args, '_network_seed')
 
     # Seed resolution logic
-    if args.seed is not None:
+    seed_val = _get_attr(args, 'seed')
+    network_seed_val = _get_attr(args, 'network_seed')
+
+    if seed_val is not None:
         # Backward compatibility: --seed sets all seeds
-        seed = args.seed
-    elif hasattr(args, 'network_seed') and args.network_seed is not None:
+        seed = seed_val
+    elif network_seed_val is not None:
         # Use explicit --network-seed
-        seed = args.network_seed
+        seed = network_seed_val
     else:
         # Generate random seed
         seed = random.randint(0, 2**32 - 1)
 
-    args._network_seed = seed
+    _set_attr(args, '_network_seed', seed)
     return seed
 
 
@@ -44,26 +60,42 @@ def get_private_traffic_seed(args: Any) -> int:
     Controls: private vehicle type assignment, route generation, departure times.
 
     Args:
-        args: Parsed command line arguments from argparse
+        args: Parsed command line arguments from argparse or dict
 
     Returns:
         int: The random seed to use for private traffic generation
     """
-    if hasattr(args, '_private_traffic_seed'):
-        return args._private_traffic_seed
+    # Helper function to get attribute value from either dict or object
+    def _get_attr(obj, key, default=None):
+        if isinstance(obj, dict):
+            return obj.get(key, default)
+        else:
+            return getattr(obj, key, default)
+
+    def _set_attr(obj, key, value):
+        if isinstance(obj, dict):
+            obj[key] = value
+        else:
+            setattr(obj, key, value)
+
+    if _get_attr(args, '_private_traffic_seed') is not None:
+        return _get_attr(args, '_private_traffic_seed')
 
     # Seed resolution logic
-    if args.seed is not None:
+    seed_val = _get_attr(args, 'seed')
+    private_traffic_seed_val = _get_attr(args, 'private_traffic_seed')
+
+    if seed_val is not None:
         # Backward compatibility: --seed sets all seeds
-        seed = args.seed
-    elif hasattr(args, 'private_traffic_seed') and args.private_traffic_seed is not None:
+        seed = seed_val
+    elif private_traffic_seed_val is not None:
         # Use explicit --private-traffic-seed
-        seed = args.private_traffic_seed
+        seed = private_traffic_seed_val
     else:
         # Generate random seed
         seed = random.randint(0, 2**32 - 1)
 
-    args._private_traffic_seed = seed
+    _set_attr(args, '_private_traffic_seed', seed)
     return seed
 
 
@@ -73,26 +105,42 @@ def get_public_traffic_seed(args: Any) -> int:
     Controls: public vehicle type assignment, route generation, departure times.
 
     Args:
-        args: Parsed command line arguments from argparse
+        args: Parsed command line arguments from argparse or dict
 
     Returns:
         int: The random seed to use for public traffic generation
     """
-    if hasattr(args, '_public_traffic_seed'):
-        return args._public_traffic_seed
+    # Helper function to get attribute value from either dict or object
+    def _get_attr(obj, key, default=None):
+        if isinstance(obj, dict):
+            return obj.get(key, default)
+        else:
+            return getattr(obj, key, default)
+
+    def _set_attr(obj, key, value):
+        if isinstance(obj, dict):
+            obj[key] = value
+        else:
+            setattr(obj, key, value)
+
+    if _get_attr(args, '_public_traffic_seed') is not None:
+        return _get_attr(args, '_public_traffic_seed')
 
     # Seed resolution logic
-    if args.seed is not None:
+    seed_val = _get_attr(args, 'seed')
+    public_traffic_seed_val = _get_attr(args, 'public_traffic_seed')
+
+    if seed_val is not None:
         # Backward compatibility: --seed sets all seeds
-        seed = args.seed
-    elif hasattr(args, 'public_traffic_seed') and args.public_traffic_seed is not None:
+        seed = seed_val
+    elif public_traffic_seed_val is not None:
         # Use explicit --public-traffic-seed
-        seed = args.public_traffic_seed
+        seed = public_traffic_seed_val
     else:
         # Generate random seed
         seed = random.randint(0, 2**32 - 1)
 
-    args._public_traffic_seed = seed
+    _set_attr(args, '_public_traffic_seed', seed)
     return seed
 
 

@@ -36,6 +36,11 @@ from .vehicle_tracker import VehicleTracker
 from src.pipeline.pipeline_factory import PipelineFactory
 from src.args.parser import create_argument_parser
 
+# Import Tree Method constants for cost-based reward calculation
+from src.traffic_control.decentralized_traffic_bottlenecks.shared.config import (
+    MAX_DENSITY, MIN_VELOCITY, M, L
+)
+
 
 class TrafficControlEnv(gym.Env):
     """
@@ -109,8 +114,13 @@ class TrafficControlEnv(gym.Env):
         gym.Env.__init__(instance)
 
         # Extract key parameters directly from args
+        # FIX: Account for junctions_to_remove in intersection count
+        from src.network.generate_grid import parse_junctions_to_remove
+
         grid_dimension = int(args.grid_dimension)
-        instance.num_intersections = grid_dimension * grid_dimension
+        junctions_remove_input = getattr(args, 'junctions_to_remove', '0')
+        is_list, junction_ids, remove_count = parse_junctions_to_remove(junctions_remove_input)
+        instance.num_intersections = (grid_dimension * grid_dimension) - remove_count
         instance.num_vehicles = args.num_vehicles
         instance.end_time = args.end_time
         instance.workspace = getattr(args, 'workspace', 'workspace')
@@ -126,15 +136,18 @@ class TrafficControlEnv(gym.Env):
         instance.current_schedules = {}
         instance.cycle_start_step = 0
 
-        # Calculate state vector size dynamically
-        estimated_num_edges = 2 * 2 * \
-            (2 * grid_dimension * (grid_dimension - 1))
+        # Calculate state vector size dynamically by getting actual network dimensions
+        # This ensures observation space matches the actual edge count after edge splitting
         from .constants import (
             RL_DYNAMIC_EDGE_FEATURES_COUNT, RL_DYNAMIC_JUNCTION_FEATURES_COUNT,
             RL_DYNAMIC_NETWORK_FEATURES_COUNT, RL_USE_CONTINUOUS_ACTIONS, RL_ACTIONS_PER_JUNCTION
         )
-        instance.state_vector_size = (estimated_num_edges * RL_DYNAMIC_EDGE_FEATURES_COUNT +
-                                      instance.num_intersections * RL_DYNAMIC_JUNCTION_FEATURES_COUNT +
+
+        # Get actual edge and junction counts by temporarily generating the network
+        actual_edge_count, actual_junction_count = instance._get_actual_network_dimensions()
+
+        instance.state_vector_size = (actual_edge_count * RL_DYNAMIC_EDGE_FEATURES_COUNT +
+                                      actual_junction_count * RL_DYNAMIC_JUNCTION_FEATURES_COUNT +
                                       RL_DYNAMIC_NETWORK_FEATURES_COUNT +
                                       1)  # +1 for normalized cycle_length
 
@@ -208,8 +221,15 @@ class TrafficControlEnv(gym.Env):
         self.cli_args = vars(parser.parse_args(args_list))
 
         # Extract key parameters from CLI args
+        from src.network.generate_grid import parse_junctions_to_remove
+
         grid_dimension = int(self.cli_args['grid_dimension'])
-        self.num_intersections = grid_dimension * grid_dimension
+
+        # Account for junctions_to_remove in intersection count
+        junctions_remove_input = self.cli_args.get('junctions_to_remove', '0')
+        is_list, junction_ids, remove_count = parse_junctions_to_remove(junctions_remove_input)
+        self.num_intersections = (grid_dimension * grid_dimension) - remove_count
+
         self.num_vehicles = self.cli_args['num_vehicles']
         self.end_time = self.cli_args['end_time']
         self.workspace = self.cli_args.get('workspace', 'workspace')
@@ -223,16 +243,18 @@ class TrafficControlEnv(gym.Env):
         self.current_schedules = {}  # Store phase schedules for current cycle
         self.cycle_start_step = 0  # Track when current cycle started
 
-        # Calculate state vector size dynamically
-        # Formula: E×6 + J×2 + 5 + 1 (edges×features + junctions×features + network_features + cycle_length)
-        estimated_num_edges = 2 * 2 * \
-            (2 * grid_dimension * (grid_dimension - 1))
+        # Calculate state vector size dynamically by generating network temporarily
+        # This ensures observation space matches actual edge count after edge splitting
         from .constants import (
             RL_DYNAMIC_EDGE_FEATURES_COUNT, RL_DYNAMIC_JUNCTION_FEATURES_COUNT,
             RL_DYNAMIC_NETWORK_FEATURES_COUNT
         )
-        self.state_vector_size = (estimated_num_edges * RL_DYNAMIC_EDGE_FEATURES_COUNT +
-                                  self.num_intersections * RL_DYNAMIC_JUNCTION_FEATURES_COUNT +
+
+        # Generate network temporarily to get actual edge count
+        actual_edge_count, actual_junction_count = self._get_actual_network_dimensions()
+
+        self.state_vector_size = (actual_edge_count * RL_DYNAMIC_EDGE_FEATURES_COUNT +
+                                  actual_junction_count * RL_DYNAMIC_JUNCTION_FEATURES_COUNT +
                                   RL_DYNAMIC_NETWORK_FEATURES_COUNT +
                                   1)  # +1 for normalized cycle_length
 
@@ -549,98 +571,223 @@ class TrafficControlEnv(gym.Env):
 
         return observation_array
 
-    def _compute_reward(self):
-        """Multi-objective reward function focusing on throughput, waiting time, and flow.
+    def _calc_k_by_u(self, current_speed_km_h, free_flow_speed_km_h):
+        """Calculate density from speed using Greenshields model (Tree Method formula).
+
+        Args:
+            current_speed_km_h: Current speed in km/h
+            free_flow_speed_km_h: Free-flow speed in km/h
 
         Returns:
-            float: Reward value combining throughput rewards, waiting penalties, and flow metrics
+            float: Density in vehicles/km/lane
         """
-        if not self.vehicle_tracker:
+        return max(
+            round(MAX_DENSITY * ((max(1 - (current_speed_km_h / free_flow_speed_km_h), 0) ** (1 - M)) ** (1 / (L - 1)))),
+            0
+        )
+
+    def _calc_u_by_k(self, current_density, free_flow_speed_km_h):
+        """Calculate speed from density using Greenshields model (Tree Method formula).
+
+        Args:
+            current_density: Current density in vehicles/km/lane
+            free_flow_speed_km_h: Free-flow speed in km/h
+
+        Returns:
+            float: Speed in km/h
+        """
+        return max(
+            round(free_flow_speed_km_h * ((1 - (current_density / MAX_DENSITY) ** (L - 1)) ** (1 / (1 - M)))),
+            MIN_VELOCITY
+        )
+
+    def _calculate_q_max_u(self, free_flow_speed_km_h, num_lanes):
+        """Calculate optimal flow speed (q_max_u) using Tree Method's algorithm.
+
+        This is the speed at which traffic flow is maximized for this edge.
+
+        Args:
+            free_flow_speed_km_h: Free-flow speed in km/h
+            num_lanes: Number of lanes
+
+        Returns:
+            float: Optimal flow speed in km/h
+        """
+        q_max = 0
+        q_max_u = -1
+
+        for k in range(MAX_DENSITY):
+            u = self._calc_u_by_k(k, free_flow_speed_km_h)
+            q = u * k * num_lanes
+            if q > q_max:
+                q_max = q
+                q_max_u = u
+
+        return q_max_u
+
+    def _compute_reward(self):
+        """Empirically validated reward based on comparative analysis.
+
+        Uses z-score normalization and Cohen's d-based weights from
+        Tree Method vs Fixed timing comparative study.
+
+        Updated 2025-12-07: Removed broken travel time metric, added throughput bonus.
+
+        Returns:
+            float: Reward value (higher is better, expected range -1 to +2)
+        """
+        if not self.vehicle_tracker or not self.reward_calculator:
             return DEFAULT_FALLBACK_VALUE
 
-        # ═══════════════════════════════════════════════════════════
-        # STEP 1: Fetch all required metrics from environment/TraCI
-        # ═══════════════════════════════════════════════════════════
+        # Collect the 3 empirically validated metrics (travel time removed - broken)
+        avg_waiting_per_vehicle = self._get_avg_waiting_per_vehicle()
+        avg_speed_kmh = self._get_avg_speed_kmh()
+        avg_queue_length = self._get_avg_queue_length()
 
-        # Throughput data
-        vehicles_completed = self.vehicle_tracker.vehicles_completed_this_step
+        # Get throughput for bonus (vehicles that completed their trips this step)
+        vehicles_arrived = len(traci.simulation.getArrivedIDList())
 
-        # Waiting time penalty (pre-computed by vehicle tracker)
-        waiting_penalty = self.vehicle_tracker.compute_intermediate_rewards()
+        # Compute empirical reward using validated function
+        reward = self.reward_calculator.compute_empirical_reward(
+            avg_waiting_per_vehicle=avg_waiting_per_vehicle,
+            avg_speed_kmh=avg_speed_kmh,
+            avg_queue_length=avg_queue_length,
+            vehicles_arrived_this_step=vehicles_arrived
+        )
 
-        # Network performance metrics
-        avg_speed, bottleneck_count = self._get_network_performance_metrics()
+        # Logging (every 100 steps) - Optional for analysis
+        if self.current_step % 100 == 0:
+            import logging
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.debug(
+                f"Step {self.current_step}: "
+                f"waiting={avg_waiting_per_vehicle:.2f}s, "
+                f"speed={avg_speed_kmh:.2f}km/h, "
+                f"queue={avg_queue_length:.2f}, "
+                f"arrived={vehicles_arrived}, "
+                f"reward={reward:.4f}"
+            )
 
-        # Active vehicle waiting times for excessive waiting penalty
-        active_vehicle_waiting_times = []
-        waiting_to_insert = 0
-        active_vehicles_count = 0
-        vehicles_with_excessive_waiting = 0
+        return reward
+
+    def _get_avg_waiting_per_vehicle(self) -> float:
+        """Get average waiting time per vehicle (seconds).
+
+        Returns:
+            float: Average waiting time across all active vehicles
+        """
+        if not self.traci_connected:
+            return 0.0
 
         try:
             active_vehicles = traci.vehicle.getIDList()
-            active_vehicles_count = len(active_vehicles)
+            if not active_vehicles:
+                return 0.0
 
+            total_waiting_time = 0.0
             for vehicle_id in active_vehicles:
                 try:
                     waiting_time = traci.vehicle.getWaitingTime(vehicle_id)
-                    active_vehicle_waiting_times.append(waiting_time)
-                    if waiting_time > REWARD_EXCESSIVE_WAITING_THRESHOLD:
-                        vehicles_with_excessive_waiting += 1
-                except:
-                    pass
+                    total_waiting_time += waiting_time
+                except Exception:
+                    continue
 
-            # Insertion queue metrics
-            loaded_count = traci.simulation.getLoadedNumber()
-            departed_count = traci.simulation.getDepartedNumber()
-            waiting_to_insert = loaded_count - departed_count
-        except:
-            pass
+            return total_waiting_time / len(active_vehicles)
+        except Exception:
+            return 0.0
 
-        # ═══════════════════════════════════════════════════════════
-        # STEP 2: Compute reward using RewardCalculator
-        # ═══════════════════════════════════════════════════════════
-        total_reward = self.reward_calculator.compute_reward(
-            vehicles_completed=vehicles_completed,
-            waiting_penalty=waiting_penalty,
-            avg_speed=avg_speed,
-            bottleneck_count=bottleneck_count,
-            active_vehicle_waiting_times=active_vehicle_waiting_times,
-            waiting_to_insert=waiting_to_insert
-        )
+    def _get_avg_speed_kmh(self) -> float:
+        """Get average network speed (km/h).
 
-        # ═══════════════════════════════════════════════════════════
-        # STEP 3: Log reward components (every 100 steps)
-        # ═══════════════════════════════════════════════════════════
-        if self.current_step % 100 == 0:
-            # Recompute individual components for logging
-            throughput_reward = vehicles_completed * REWARD_THROUGHPUT_PER_VEHICLE
-            excessive_waiting_penalty = -vehicles_with_excessive_waiting * REWARD_EXCESSIVE_WAITING_PENALTY
-            speed_reward = (avg_speed / REWARD_SPEED_NORMALIZATION) * REWARD_SPEED_REWARD_FACTOR
-            bottleneck_penalty = -bottleneck_count * REWARD_BOTTLENECK_PENALTY_PER_EDGE
-            insertion_bonus = REWARD_INSERTION_BONUS if waiting_to_insert < REWARD_INSERTION_THRESHOLD else 0.0
+        Returns:
+            float: Average speed across all active vehicles
+        """
+        if not self.traci_connected:
+            return 0.0
 
-            self.reward_calculator.log_reward_components(
-                step=self.current_step,
-                avg_speed=avg_speed,
-                bottleneck_count=bottleneck_count,
-                active_vehicles=active_vehicles_count,
-                waiting_to_insert=waiting_to_insert,
-                vehicles_with_excessive_waiting=vehicles_with_excessive_waiting,
-                vehicles_completed_this_step=vehicles_completed,
-                throughput_reward=throughput_reward,
-                waiting_penalty=waiting_penalty,
-                excessive_waiting_penalty=excessive_waiting_penalty,
-                speed_reward=speed_reward,
-                bottleneck_penalty=bottleneck_penalty,
-                insertion_bonus=insertion_bonus,
-                total_reward=total_reward
-            )
+        try:
+            active_vehicles = traci.vehicle.getIDList()
+            if not active_vehicles:
+                return 0.0
 
-        # Reset step counter
-        self.vehicle_tracker.vehicles_completed_this_step = 0
+            total_speed = 0.0
+            for vehicle_id in active_vehicles:
+                try:
+                    speed_ms = traci.vehicle.getSpeed(vehicle_id)
+                    total_speed += speed_ms * 3.6  # Convert m/s to km/h
+                except Exception:
+                    continue
 
-        return total_reward
+            return total_speed / len(active_vehicles)
+        except Exception:
+            return 0.0
+
+    def _get_avg_queue_length(self) -> float:
+        """Get average queue length (vehicles) across all controlled lanes.
+
+        Matches MetricLogger's lane-level calculation for proper normalization.
+
+        Returns:
+            float: Average number of halting vehicles per lane
+        """
+        if not self.traci_connected:
+            return 0.0
+
+        try:
+            total_halting = 0.0
+            lane_count = 0
+
+            # Iterate through controlled lanes (matching MetricLogger)
+            for junction_id in self.junction_ids:
+                try:
+                    controlled_lanes = traci.trafficlight.getControlledLanes(junction_id)
+                    for lane_id in controlled_lanes:
+                        halting_count = traci.lane.getLastStepHaltingNumber(lane_id)
+                        total_halting += halting_count
+                        lane_count += 1
+                except Exception:
+                    continue
+
+            if lane_count == 0:
+                return 0.0
+
+            return total_halting / lane_count
+        except Exception:
+            return 0.0
+
+    def _get_avg_edge_travel_time(self) -> float:
+        """Get average edge travel time (seconds) across all edges.
+
+        Uses SUMO's built-in getTraveltime() to match MetricLogger.
+
+        Returns:
+            float: Average travel time per edge
+        """
+        if not self.traci_connected:
+            return 0.0
+
+        try:
+            total_travel_time = 0.0
+            edge_count = 0
+
+            for edge_id in self.edge_ids:
+                if ':' in edge_id:  # Skip internal edges
+                    continue
+
+                try:
+                    # Use SUMO's built-in travel time (matches MetricLogger)
+                    travel_time = traci.edge.getTraveltime(edge_id)
+                    total_travel_time += travel_time
+                    edge_count += 1
+                except Exception:
+                    continue
+
+            if edge_count == 0:
+                return 0.0
+
+            return total_travel_time / edge_count
+        except Exception:
+            return 0.0
 
     def _is_terminated(self):
         """Check if episode should end naturally.
@@ -880,6 +1027,8 @@ class TrafficControlEnv(gym.Env):
             '-c', sumo_config,
             '--start',
             '--quit-on-end',
+            '--no-step-log',
+            '--no-warnings',
         ]
 
         # Add SUMO random seed if episode_seed is set
@@ -897,11 +1046,37 @@ class TrafficControlEnv(gym.Env):
         self.junction_ids = traci.trafficlight.getIDList()
         self.edge_ids = traci.edge.getIDList()
 
+        # Cache edge properties for cost-based reward calculation
+        # These are static properties that don't change during simulation
+        self.edge_properties = {}
+        for edge_id in self.edge_ids:
+            # Get lane information (use first lane for length and max speed since all lanes on an edge share these)
+            lane_id = f"{edge_id}_0"  # First lane ID
+            try:
+                self.edge_properties[edge_id] = {
+                    'lanes': traci.edge.getLaneNumber(edge_id),
+                    'length': traci.lane.getLength(lane_id),  # meters
+                    'free_flow_speed': traci.lane.getMaxSpeed(lane_id) * 3.6  # m/s to km/h
+                }
+            except Exception as e:
+                # If lane doesn't exist (shouldn't happen), skip this edge
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Could not cache properties for edge {edge_id}: {e}")
+
+        # Read actual phase counts for each junction
+        self.junction_phase_counts = {}
+        for junction_id in self.junction_ids:
+            logic = traci.trafficlight.getAllProgramLogics(junction_id)
+            if logic and len(logic) > 0:
+                num_phases = len(logic[0].phases)
+                self.junction_phase_counts[junction_id] = num_phases
+
         # Update action space with actual traffic light phases
         self._update_action_space_from_sumo()
 
-        # Update observation space with actual network dimensions
-        self._update_observation_space_from_sumo()
+        # Observation space already set correctly during __init__ by _get_actual_network_dimensions()
+        # No need to update it here
 
     def _apply_traffic_light_actions(self, actions):
         """Apply RL actions to traffic lights.
@@ -1049,9 +1224,15 @@ class TrafficControlEnv(gym.Env):
             return
 
         for junction_id, durations in self.current_schedules.items():
+            # Get actual number of phases for this junction
+            actual_num_phases = self.junction_phase_counts.get(junction_id, 4)
+
+            # Only use the durations for phases that actually exist
+            valid_durations = durations[:actual_num_phases]
+
             # Find which phase should be active at this time
             elapsed = 0
-            for phase_idx, duration in enumerate(durations):
+            for phase_idx, duration in enumerate(valid_durations):
                 if time_in_cycle < elapsed + duration:
                     # This is the active phase - apply it
                     try:
@@ -1297,6 +1478,155 @@ class TrafficControlEnv(gym.Env):
         except Exception as e:
             logger.error(f"Failed to update observation space from SUMO: {e}")
             logger.info("Keeping default observation space")
+
+    def _get_actual_network_dimensions(self):
+        """
+        Get actual edge and junction counts from the network.
+
+        First checks if network files already exist in the workspace (e.g., during inference
+        after pipeline has run). If not, generates network temporarily.
+
+        This is needed because edge splitting creates many more edges than the basic
+        grid formula predicts.
+
+        Returns:
+            Tuple[int, int]: (actual_edge_count, actual_junction_count)
+        """
+        import logging
+        import shutil
+        import tempfile
+        from pathlib import Path
+        logger = logging.getLogger(self.__class__.__name__)
+
+        # Check if network files already exist in current workspace
+        from src.config import CONFIG
+        if CONFIG.network_file and Path(CONFIG.network_file).exists():
+            logger.info("Parsing existing network file directly (no SUMO needed)")
+            try:
+                # Parse network XML directly - avoids ANY TraCI usage
+                import xml.etree.ElementTree as ET
+
+                tree = ET.parse(CONFIG.network_file)
+                root = tree.getroot()
+
+                # Count edges (exclude internal edges with ':')
+                all_edges = root.findall('.//edge')
+                actual_edges = [e for e in all_edges if ':' not in e.get('id', '')]
+                actual_edge_count = len(actual_edges)
+
+                # Count traffic lights (junctions with traffic lights)
+                junctions = root.findall(".//junction[@type='traffic_light']")
+                actual_junction_count = len(junctions)
+
+                logger.info(f"Detected actual network dimensions from XML:")
+                logger.info(f"  Edges: {actual_edge_count}")
+                logger.info(f"  Junctions: {actual_junction_count}")
+
+                return actual_edge_count, actual_junction_count
+
+            except Exception as e:
+                logger.warning(f"Failed to parse existing network XML, will regenerate: {e}")
+
+        # Network doesn't exist yet - need to generate temporarily
+        logger.info("Generating network temporarily for dimension check")
+        temp_dir = tempfile.mkdtemp(prefix="rl_network_count_")
+
+        try:
+            # Save current workspace
+            original_workspace = self.workspace
+
+            # Use temporary workspace
+            self.cli_args['workspace'] = temp_dir
+
+            # Update global CONFIG to point to temporary workspace
+            from src.config import CONFIG
+            from pathlib import Path
+            original_config_output_dir = CONFIG._output_dir
+            CONFIG.update_workspace(temp_dir)
+
+            # Create the workspace subdirectory
+            workspace_subdir = Path(temp_dir) / "workspace"
+            workspace_subdir.mkdir(parents=True, exist_ok=True)
+
+            # Ensure all seed-related attributes exist
+            if 'seed' not in self.cli_args:
+                self.cli_args['seed'] = None
+            if 'network_seed' not in self.cli_args:
+                self.cli_args['network_seed'] = None
+            if 'private_traffic_seed' not in self.cli_args:
+                self.cli_args['private_traffic_seed'] = None
+            if 'public_traffic_seed' not in self.cli_args:
+                self.cli_args['public_traffic_seed'] = None
+
+            # FIX: Ensure junctions_to_remove exists with proper default
+            if 'junctions_to_remove' not in self.cli_args:
+                self.cli_args['junctions_to_remove'] = '0'  # Default: no junctions removed
+
+            # Convert dict to namespace object for pipeline steps
+            import argparse
+            args_namespace = argparse.Namespace(**self.cli_args)
+
+            # Run pipeline steps individually to generate network
+            from src.pipeline.steps.network_generation_step import NetworkGenerationStep
+            from src.pipeline.steps.zone_generation_step import ZoneGenerationStep
+            from src.network.split_edges_with_lanes import execute_edge_splitting
+            from src.sumo_integration.sumo_utils import execute_network_rebuild
+
+            # Step 1: Network Generation
+            network_step = NetworkGenerationStep(args_namespace)
+            network_step.run()
+
+            # Step 2: Zone Generation
+            zone_step = ZoneGenerationStep(args_namespace)
+            zone_step.run()
+
+            # Step 3: Edge Splitting with Lane Assignment
+            execute_edge_splitting(args_namespace)
+
+            # Step 4: Network Rebuild
+            execute_network_rebuild(args_namespace)
+
+            # Parse network XML directly - no SUMO/TraCI needed
+            try:
+                import xml.etree.ElementTree as ET
+
+                tree = ET.parse(CONFIG.network_file)
+                root = tree.getroot()
+
+                # Count edges (exclude internal edges with ':')
+                all_edges = root.findall('.//edge')
+                actual_edges = [e for e in all_edges if ':' not in e.get('id', '')]
+                actual_edge_count = len(actual_edges)
+
+                # Count traffic lights (junctions with traffic lights)
+                junctions = root.findall(".//junction[@type='traffic_light']")
+                actual_junction_count = len(junctions)
+
+                logger.info(f"Detected actual network dimensions from generated XML:")
+                logger.info(f"  Edges: {actual_edge_count}")
+                logger.info(f"  Junctions: {actual_junction_count}")
+
+            except Exception as e:
+                logger.error(f"Failed to parse generated network XML: {e}")
+                # Fall back to estimated values
+                grid_dimension = int(self.cli_args['grid_dimension'])
+                actual_edge_count = 2 * 2 * (2 * grid_dimension * (grid_dimension - 1))
+                actual_junction_count = self.num_intersections
+                logger.warning(f"Using estimated dimensions: {actual_edge_count} edges, {actual_junction_count} junctions")
+
+            # Restore original workspace
+            self.cli_args['workspace'] = original_workspace
+            CONFIG._output_dir = original_config_output_dir
+            CONFIG._update_paths()
+
+            return actual_edge_count, actual_junction_count
+
+        finally:
+            # Clean up temporary directory
+            try:
+                shutil.rmtree(temp_dir)
+            except Exception as e:
+                logger.warning(f"Failed to clean up temporary directory {temp_dir}: {e}")
 
     def enable_debug_mode(self):
         """Enable detailed state debugging and logging."""

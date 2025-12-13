@@ -180,6 +180,11 @@ def _add_simulation_arguments(parser: argparse.ArgumentParser) -> None:
         default=DEFAULT_WORKSPACE_DIR,
         help=f"Parent directory where 'workspace' folder will be created for simulation output files. Default is '{DEFAULT_WORKSPACE_DIR}' (creates './workspace/')."
     )
+    parser.add_argument(
+        "--metric-log-path",
+        type=str,
+        help="Path to CSV file for logging comprehensive traffic metrics every 90 seconds. If not provided, metric logging is disabled."
+    )
 
 
 def _add_zone_arguments(parser: argparse.ArgumentParser) -> None:

@@ -102,7 +102,8 @@ def pretrain_policy(
     learning_rate: float = PRETRAINING_LEARNING_RATE,
     batch_size: int = PRETRAINING_BATCH_SIZE,
     epochs: int = PRETRAINING_EPOCHS,
-    validation_split: float = PRETRAINING_VALIDATION_SPLIT
+    validation_split: float = PRETRAINING_VALIDATION_SPLIT,
+    patience: int = 15
 ) -> str:
     """
     Pre-train PPO policy using behavioral cloning on Tree Method demonstrations.
@@ -112,8 +113,9 @@ def pretrain_policy(
         output_model_path: Path to save pre-trained model
         learning_rate: Learning rate for supervised learning
         batch_size: Batch size for training
-        epochs: Number of training epochs
+        epochs: Maximum number of training epochs
         validation_split: Fraction of data for validation
+        patience: Early stopping patience (epochs without improvement)
 
     Returns:
         Path to saved pre-trained model
@@ -245,9 +247,14 @@ def pretrain_policy(
     logger.info("=" * 80)
     logger.info("TRAINING")
     logger.info("=" * 80)
+    logger.info(f"Early stopping patience: {patience} epochs")
+    logger.info("=" * 80)
 
     best_val_loss = float('inf')
+    best_epoch = 0
+    epochs_without_improvement = 0
     training_history = []
+    early_stopped = False
 
     for epoch in range(epochs):
         # Training phase
@@ -333,10 +340,39 @@ def pretrain_policy(
         val_loss /= len(val_loader)
         val_accuracy = val_correct / val_total
 
-        # Save best model
+        # Early stopping check
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             best_epoch = epoch + 1
+            epochs_without_improvement = 0
+
+            # Save best model immediately
+            os.makedirs(os.path.dirname(output_model_path), exist_ok=True)
+            model.save(output_model_path)
+            if PRETRAINING_VERBOSE:
+                logger.info(f"  ✓ New best model saved (val_loss: {val_loss:.4f})")
+        else:
+            epochs_without_improvement += 1
+            if PRETRAINING_VERBOSE and epochs_without_improvement > 0:
+                logger.info(f"  No improvement for {epochs_without_improvement} epoch(s)")
+
+            # Early stopping
+            if epochs_without_improvement >= patience:
+                logger.info("")
+                logger.info("=" * 80)
+                logger.info(f"EARLY STOPPING at epoch {epoch + 1}")
+                logger.info(f"No improvement for {patience} epochs")
+                logger.info(f"Best validation loss: {best_val_loss:.4f} at epoch {best_epoch}")
+                logger.info("=" * 80)
+                early_stopped = True
+                training_history.append({
+                    'epoch': epoch + 1,
+                    'train_loss': train_loss,
+                    'train_accuracy': train_accuracy,
+                    'val_loss': val_loss,
+                    'val_accuracy': val_accuracy
+                })
+                break
 
         # Logging
         if PRETRAINING_VERBOSE:
@@ -356,13 +392,13 @@ def pretrain_policy(
 
     logger.info("=" * 80)
     logger.info("TRAINING COMPLETE")
+    if early_stopped:
+        logger.info(f"Stopped early at epoch {epoch + 1} (requested: {epochs})")
+    else:
+        logger.info(f"Completed all {epochs} epochs")
     logger.info(f"Best validation loss: {best_val_loss:.4f} at epoch {best_epoch}")
+    logger.info(f"Best model saved to: {output_model_path}")
     logger.info("=" * 80)
-
-    # Save pre-trained model
-    os.makedirs(os.path.dirname(output_model_path), exist_ok=True)
-    model.save(output_model_path)
-    logger.info(f"✓ Saved pre-trained model to: {output_model_path}")
 
     # Save training history
     history_path = output_model_path.replace('.zip', '_history.npz')
@@ -373,7 +409,10 @@ def pretrain_policy(
             'demonstrations_file': demonstrations_file,
             'learning_rate': learning_rate,
             'batch_size': batch_size,
-            'epochs': epochs,
+            'max_epochs': epochs,
+            'actual_epochs': len(training_history),
+            'patience': patience,
+            'early_stopped': early_stopped,
             'best_val_loss': best_val_loss,
             'best_epoch': best_epoch,
             'training_date': datetime.now().isoformat()
@@ -417,7 +456,13 @@ def main():
         '--epochs',
         type=int,
         default=PRETRAINING_EPOCHS,
-        help=f'Number of epochs (default: {PRETRAINING_EPOCHS})'
+        help=f'Maximum number of epochs (default: {PRETRAINING_EPOCHS})'
+    )
+    parser.add_argument(
+        '--patience',
+        type=int,
+        default=15,
+        help='Early stopping patience - stop if val loss does not improve for N epochs (default: 15)'
     )
 
     args = parser.parse_args()
@@ -450,7 +495,8 @@ def main():
         output_model_path=output_file,
         learning_rate=args.learning_rate,
         batch_size=args.batch_size,
-        epochs=args.epochs
+        epochs=args.epochs,
+        patience=args.patience
     )
 
 

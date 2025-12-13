@@ -332,11 +332,11 @@ def _collect_single_scenario(
     # Add tree-method-interval for this scenario (controls Tree Method's decision interval)
     env_params_parts.append(f"--tree-method-interval {cycle_length}")
 
-    # Add traffic seeds (derived from base_seed + scenario_idx)
+    # Add traffic seeds (fixed starting values, incremented per scenario)
     env_params_parts.append(
-        f"--private-traffic-seed {base_seed + scenario_idx + 10000}")
+        f"--private-traffic-seed {72632 + scenario_idx * 4535}")
     env_params_parts.append(
-        f"--public-traffic-seed {base_seed + scenario_idx + 20000}")
+        f"--public-traffic-seed {27031 + scenario_idx * 4535}")
 
     # Add workspace
     env_params_parts.append(

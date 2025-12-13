@@ -72,6 +72,8 @@ class RLController(TrafficController):
 
         # Traffic signal state
         self.traffic_lights = {}
+        self.traffic_lights_initialized = False  # Track whether traffic lights have been initialized
+        self.junction_phase_counts = {}  # Store phase counts for each junction
         self.last_action_time = DEFAULT_INITIAL_TIME
 
         # Duration-based control state
@@ -104,8 +106,8 @@ class RLController(TrafficController):
             # Initialize RL environment for state collection
             self._initialize_rl_environment()
 
-            # Initialize traffic light tracking
-            self._initialize_traffic_lights()
+            # Note: Traffic light initialization moved to first update() call
+            # when SUMO is actually running (lazy initialization)
 
             # Initialize action distribution tracking
             if RL_ACTION_DISTRIBUTION_TRACKING:
@@ -227,26 +229,20 @@ class RLController(TrafficController):
     def _initialize_rl_environment(self) -> None:
         """Initialize RL environment for state collection."""
         try:
+            self.logger.info("Creating RL environment...")
             # Create minimal environment for inference (no pipeline execution)
             # This avoids re-parsing arguments and running the full simulation pipeline
             self.rl_env = TrafficControlEnv.from_namespace(
                 self.args, minimal=True)
 
-            # Enable enhanced debugging for inference mode
-            # if self.mode == RL_INFERENCE_MODE:
-            #     self.logger.info(
-            #         f"=== ENABLING ENHANCED DEBUGGING FOR INFERENCE MODE ===")
-            #     self.rl_env._debug_state = True
-            #     self.logger.info(
-            #         f"Enhanced debugging enabled on RL environment")
-
-            # self.logger.info(f"RL environment initialized")
-            # self.logger.info(
-            #     f"Observation space: {self.rl_env.observation_space}")
-            # self.logger.info(f"Action space: {self.rl_env.action_space}")
+            self.logger.info(f"RL environment created successfully")
+            self.logger.info(f"Observation space: {self.rl_env.observation_space.shape}")
+            self.logger.info(f"Action space: {self.rl_env.action_space.shape}")
 
         except Exception as e:
             self.logger.error(f"Failed to initialize RL environment: {e}")
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
     def _initialize_traffic_lights(self) -> None:
@@ -260,12 +256,16 @@ class RLController(TrafficController):
                     TRAFFIC_LIGHT_DEFINITION_INDEX]
                 phases = complete_def.phases
 
+                phase_count = len(phases)
                 self.traffic_lights[tl_id] = {
-                    'phase_count': len(phases),
+                    'phase_count': phase_count,
                     'last_phase': DEFAULT_INITIAL_TIME,
                     'last_duration': DEFAULT_INITIAL_TIME,
                     'phase_start_time': DEFAULT_INITIAL_TIME
                 }
+
+                # Store phase count for phase clipping (used in _apply_scheduled_phases)
+                self.junction_phase_counts[tl_id] = phase_count
 
             # self.logger.info(
             #     f"Initialized tracking for {len(self.traffic_lights)} traffic lights")
@@ -297,6 +297,15 @@ class RLController(TrafficController):
         Args:
             step: Current simulation step
         """
+        # Lazy initialization: Initialize traffic lights on first update when SUMO is running
+        if not self.traffic_lights_initialized:
+            try:
+                self._initialize_traffic_lights()
+                self.traffic_lights_initialized = True
+            except Exception as e:
+                self.logger.error(f"Failed to initialize traffic lights on first update: {e}")
+                # Don't raise - allow simulation to continue
+
         try:
             # Vehicle tracking (same as other controllers)
             if hasattr(self, 'graph') and self.graph:
@@ -822,12 +831,16 @@ class RLController(TrafficController):
             for phase_idx, duration in enumerate(durations):
                 if time_in_cycle < elapsed + duration:
                     # This is the active phase - apply it
+                    # FIX: Clip phase_idx to actual phase count at this junction
+                    actual_phase_count = self.junction_phase_counts.get(junction_id, 4)
+                    safe_phase_idx = min(phase_idx, actual_phase_count - 1)
+
                     try:
-                        traci.trafficlight.setPhase(junction_id, phase_idx)
+                        traci.trafficlight.setPhase(junction_id, safe_phase_idx)
                         traci.trafficlight.setPhaseDuration(
                             junction_id, duration)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        self.logger.warning(f"Failed to set phase {safe_phase_idx} for {junction_id}: {e}")
                     break
                 elapsed += duration
 

@@ -19,6 +19,35 @@ from src.rl.constants import (
     REWARD_INSERTION_THRESHOLD
 )
 
+# ═══════════════════════════════════════════════════════════
+# EMPIRICAL REWARD NORMALIZATION STATISTICS
+# ═══════════════════════════════════════════════════════════
+# These statistics were derived from comparative analysis of
+# Tree Method (expert) vs Fixed timing (baseline) across 5 episodes.
+# Used for z-score normalization: (value - mean) / std
+#
+# Source: evaluation/comparative_analysis/metric_statistics.csv
+# Date: 2025-12-06
+# ═══════════════════════════════════════════════════════════
+
+EMPIRICAL_NORM_STATS = {
+    'avg_waiting_per_vehicle': {'mean': 38.01, 'std': 11.12},
+    'avg_speed_kmh': {'mean': 5.74, 'std': 2.73},
+    'avg_queue_length': {'mean': 2.38, 'std': 0.71}
+    # REMOVED: avg_edge_travel_time - getTraveltime() returns pathological values
+    # for edges with no recent traffic (100,000+ seconds), breaking z-score normalization
+}
+
+# Empirically derived weights based on Cohen's d (discriminative power)
+# Cohen's d interpretation: 0.2=small, 0.5=medium, 0.8=large
+# Weights redistributed after removing broken travel time metric (was 0.25)
+EMPIRICAL_WEIGHTS = {
+    'waiting': 0.45,  # d=0.966 (very large effect) - was 0.35, +0.10
+    'speed': 0.35,    # d=0.682 (medium effect) - was 0.25, +0.10
+    'queue': 0.20     # d=0.505 (medium effect) - was 0.15, +0.05
+    # REMOVED: 'travel': 0.25 (broken metric)
+}
+
 
 class RewardCalculator:
     """Calculates multi-objective rewards for traffic signal control.
@@ -133,6 +162,64 @@ class RewardCalculator:
         )
 
         return total_reward
+
+    def compute_empirical_reward(
+        self,
+        avg_waiting_per_vehicle: float,
+        avg_speed_kmh: float,
+        avg_queue_length: float,
+        vehicles_arrived_this_step: int = 0
+    ) -> float:
+        """Compute empirically validated reward based on comparative analysis.
+
+        This reward function was designed through data-driven analysis comparing
+        Tree Method (expert) vs Fixed timing (baseline) across 5 episodes.
+        It uses z-score normalization and Cohen's d-based weights.
+
+        Updated 2025-12-07: Removed avg_edge_travel_time (broken metric - SUMO's
+        getTraveltime() returns pathological values for edges with no recent traffic).
+        Added throughput bonus for positive reward signal.
+
+        Expected reward range: -1 to +2
+        - Good traffic control → positive reward (near 0 to +2)
+        - Bad traffic control → negative reward (-1 to 0)
+
+        Args:
+            avg_waiting_per_vehicle: Average waiting time per vehicle (seconds)
+            avg_speed_kmh: Average network speed (km/h)
+            avg_queue_length: Average queue length (vehicles)
+            vehicles_arrived_this_step: Number of vehicles that completed their trips
+
+        Returns:
+            Empirically validated reward value (higher is better)
+
+        See:
+            evaluation/comparative_analysis/metric_statistics.csv
+        """
+        # Z-score normalization helper
+        def normalize(value: float, metric_name: str) -> float:
+            """Normalize metric using z-score: (value - mean) / std"""
+            stats = EMPIRICAL_NORM_STATS[metric_name]
+            return (value - stats['mean']) / stats['std']
+
+        # Normalize all metrics (3 metrics only - travel time removed)
+        z_waiting = normalize(avg_waiting_per_vehicle, 'avg_waiting_per_vehicle')
+        z_speed = normalize(avg_speed_kmh, 'avg_speed_kmh')
+        z_queue = normalize(avg_queue_length, 'avg_queue_length')
+
+        # Weighted combination based on discriminative power
+        # Weights sum to 1.0 for interpretability
+        reward = (
+            -EMPIRICAL_WEIGHTS['waiting'] * z_waiting  # Minimize per-vehicle waiting
+            + EMPIRICAL_WEIGHTS['speed'] * z_speed      # Maximize network speed
+            - EMPIRICAL_WEIGHTS['queue'] * z_queue      # Minimize queue length
+        )
+
+        # Throughput bonus: positive signal for completing vehicle trips
+        # This encourages the agent to actually move vehicles through the network
+        throughput_bonus = vehicles_arrived_this_step * 0.1
+
+        return reward + throughput_bonus
 
     def log_reward_components(
         self,
