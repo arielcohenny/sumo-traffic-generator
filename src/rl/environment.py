@@ -5,15 +5,20 @@ This module implements the OpenAI Gymnasium environment that interfaces
 with SUMO simulation for reinforcement learning training.
 """
 
+import argparse
+import logging
 import os
-import tempfile
-import subprocess
+import shlex
+import shutil
 import socket
-import traci
-import gymnasium as gym
-import numpy as np
+import subprocess
+import tempfile
 from typing import Dict, Tuple, Any
 from pathlib import Path
+
+import gymnasium as gym
+import numpy as np
+import traci
 
 from .reward import RewardCalculator
 from .constants import (
@@ -63,7 +68,6 @@ class TrafficControlEnv(gym.Env):
             TrafficControlEnv: Initialized environment
         """
         # Convert args to parameter string with proper quoting
-        import shlex
         env_params_list = []
 
         # Skip RL-specific and internal args
@@ -212,7 +216,6 @@ class TrafficControlEnv(gym.Env):
             cycle_strategy: How to select cycle length ('fixed', 'random', 'sequential', 'adaptive')
         """
         super().__init__()
-        import shlex
         from .constants import DEFAULT_CYCLE_LENGTH, MIN_PHASE_DURATION
 
         # Parse parameter string into CLI args
@@ -380,7 +383,6 @@ class TrafficControlEnv(gym.Env):
         log_filename = f"reward_analysis_episode_{self.episode_number}.csv"
         self.reward_calculator = RewardCalculator(log_file_path=log_filename)
 
-        import logging
         logger = logging.getLogger(self.__class__.__name__)
         logger.info(f"Initialized reward analysis logging: {log_filename}")
 
@@ -475,12 +477,10 @@ class TrafficControlEnv(gym.Env):
                 self.edge_ids = traci.edge.getIDList()
                 self.junction_ids = traci.trafficlight.getIDList()
 
-                import logging
                 logger = logging.getLogger(self.__class__.__name__)
 
             except Exception:
                 # TraCI not connected and we're not in training mode
-                import logging
                 logger = logging.getLogger(self.__class__.__name__)
                 logger.error(
                     f"=== NO TRACI CONNECTION AVAILABLE ===\nReturning zero observation")
@@ -531,7 +531,6 @@ class TrafficControlEnv(gym.Env):
 
         # Debug logging for feature construction (only when debug mode is enabled)
         if hasattr(self, '_debug_state') and self._debug_state and self.current_step % 10 == 0:  # Log every 10 steps
-            import logging
             logger = logging.getLogger(self.__class__.__name__)
 
         # Ensure correct size and return
@@ -564,7 +563,6 @@ class TrafficControlEnv(gym.Env):
         # Validate observation quality
         non_zero_count = np.count_nonzero(observation_array)
         if non_zero_count == 0 and self.current_step > 10:
-            import logging
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(
                 f"Step {self.current_step}: All {len(observation)} features are zero - possible data collection issue")
@@ -657,7 +655,6 @@ class TrafficControlEnv(gym.Env):
 
         # Logging (every 100 steps) - Optional for analysis
         if self.current_step % 100 == 0:
-            import logging
             logger = logging.getLogger(self.__class__.__name__)
             logger.debug(
                 f"Step {self.current_step}: "
@@ -920,7 +917,6 @@ class TrafficControlEnv(gym.Env):
             stats['avg_time_loss'] = stats['avg_waiting_time']
 
         except Exception as e:
-            import logging
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(f"Error collecting final statistics: {e}")
 
@@ -933,7 +929,6 @@ class TrafficControlEnv(gym.Env):
         if self.reward_calculator:
             try:
                 self.reward_calculator.close()
-                import logging
                 logger = logging.getLogger(self.__class__.__name__)
                 logger.info(
                     f"Closed reward analysis log for episode {self.episode_number}")
@@ -950,7 +945,6 @@ class TrafficControlEnv(gym.Env):
         # Clean up temporary workspace if created
         if self.workspace_dir and self.workspace_dir.startswith('/tmp'):
             try:
-                import shutil
                 shutil.rmtree(self.workspace_dir)
             except:
                 pass
@@ -963,7 +957,6 @@ class TrafficControlEnv(gym.Env):
                 "Unable to generate CLI args - no parameters provided")
 
         # Convert dict to Namespace object
-        import argparse
         args = argparse.Namespace(**self.cli_args)
 
         # CRITICAL FIX: Override seeds with episode seed for episode variation
@@ -981,7 +974,6 @@ class TrafficControlEnv(gym.Env):
                 args.public_traffic_seed = self.episode_seed + 2000
 
         # DEBUG: Log actual seeds being used
-        import logging
         logger = logging.getLogger(__name__)
         logger.info(f"🔧 SEED DEBUG: network={getattr(args, 'network_seed', 'None')}, private={getattr(args, 'private_traffic_seed', 'None')}, public={getattr(args, 'public_traffic_seed', 'None')}")
 
@@ -1035,7 +1027,6 @@ class TrafficControlEnv(gym.Env):
         # This ensures vehicle behavior (lane changing, speed variation) differs between episodes
         if hasattr(self, 'episode_seed') and self.episode_seed is not None:
             sumo_cmd.extend(['--seed', str(self.episode_seed)])
-            import logging
             logger = logging.getLogger(__name__)
             logger.info(f"🎲 SUMO random seed set to: {self.episode_seed}")
 
@@ -1060,7 +1051,6 @@ class TrafficControlEnv(gym.Env):
                 }
             except Exception as e:
                 # If lane doesn't exist (shouldn't happen), skip this edge
-                import logging
                 logger = logging.getLogger(__name__)
                 logger.warning(f"Could not cache properties for edge {edge_id}: {e}")
 
@@ -1363,7 +1353,6 @@ class TrafficControlEnv(gym.Env):
         if RL_USE_CONTINUOUS_ACTIONS:
             return
 
-        import logging
         logger = logging.getLogger(self.__class__.__name__)
 
         logger.info(f"=== DEBUGGING ACTION SPACE UPDATE ===")
@@ -1434,7 +1423,6 @@ class TrafficControlEnv(gym.Env):
         if not self.traci_connected:
             return
 
-        import logging
         logger = logging.getLogger(self.__class__.__name__)
 
         try:
@@ -1492,10 +1480,6 @@ class TrafficControlEnv(gym.Env):
         Returns:
             Tuple[int, int]: (actual_edge_count, actual_junction_count)
         """
-        import logging
-        import shutil
-        import tempfile
-        from pathlib import Path
         logger = logging.getLogger(self.__class__.__name__)
 
         # Check if network files already exist in current workspace

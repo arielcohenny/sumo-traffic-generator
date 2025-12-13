@@ -1,12 +1,18 @@
 # src/traffic/builder.py
 from __future__ import annotations
+import logging
 import random
 import math
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import List, Tuple
 from sumolib.net import readNet
 
 from ..config import CONFIG
+from src.utils.multi_seed_utils import get_private_traffic_seed, get_public_traffic_seed
+from src.validate.validate_traffic import verify_generate_vehicle_routes
+from src.validate.errors import ValidationError
+from src.traffic.routing import convert_tail_to_head_edge
 from src.constants import (
     DEFAULT_VEHICLE_TYPES, SECONDS_IN_DAY, DEFAULT_VEHICLES_DAILY_PER_ROUTE,
     RUSH_HOUR_MORNING_START, RUSH_HOUR_MORNING_END, RUSH_HOUR_EVENING_START,
@@ -371,8 +377,6 @@ def load_attractiveness_attributes_from_xml(edges, net_file_path):
     sumolib.net.readNet() doesn't automatically parse custom attributes like attractiveness,
     so we need to manually load them from the XML and attach to the edge objects.
     """
-    import xml.etree.ElementTree as ET
-
     try:
         tree = ET.parse(net_file_path)
         root = tree.getroot()
@@ -618,7 +622,6 @@ def _generate_passenger_vehicles(passenger_count: int, private_rng: random.Rando
             try:
                 start_junction = net.getEdge(start_edge).getFromNode().getID()
                 # Convert end_edge to head edge to get the actual destination junction
-                from src.traffic.routing import convert_tail_to_head_edge
                 end_edge_head = convert_tail_to_head_edge(end_edge, net)
                 end_junction = net.getEdge(end_edge_head).getToNode().getID()
 
@@ -747,7 +750,6 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
                 try:
                     start_junction = net.getEdge(start_edge).getFromNode().getID()
                     # Convert end_edge to head edge to get the actual destination junction
-                    from src.traffic.routing import convert_tail_to_head_edge
                     end_edge_head = convert_tail_to_head_edge(end_edge, net)
                     end_junction = net.getEdge(end_edge_head).getToNode().getID()
 
@@ -1209,12 +1211,6 @@ def _compute_rest_windows(rush_periods: List[dict], end_time: int) -> List[Tuple
 
 def execute_route_generation(args) -> None:
     """Execute vehicle route generation."""
-    import logging
-    from src.utils.multi_seed_utils import get_private_traffic_seed, get_public_traffic_seed
-    from src.config import CONFIG
-    from src.validate.validate_traffic import verify_generate_vehicle_routes
-    from src.validate.errors import ValidationError
-
     logger = logging.getLogger(__name__)
 
     generate_vehicle_routes(

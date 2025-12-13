@@ -50,7 +50,3 @@ class NetworkGenerationStep(BaseStep):
         seed = get_network_seed(self.args)
         # self.logger.info(f"Using network seed: {seed}")
         return seed
-
-    def _get_seed(self) -> int:
-        """Get the random seed, generating one if not provided. (Backward compatibility)"""
-        return self._get_network_seed()

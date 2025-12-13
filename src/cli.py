@@ -26,7 +26,11 @@ def main() -> None:
 
         # Create and execute pipeline
         pipeline = PipelineFactory.create_pipeline(args)
-        pipeline.execute()
+
+        if getattr(args, 'file_generation_only', False):
+            pipeline.execute_file_generation_only()
+        else:
+            pipeline.execute()
 
         # logger.info("Pipeline execution completed successfully")
 

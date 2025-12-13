@@ -1,8 +1,13 @@
+import logging
 import xml.etree.ElementTree as ET
 import json
 import random
 from pathlib import Path
+
 from src.config import CONFIG
+from src.utils.multi_seed_utils import get_network_seed
+from src.validate.validate_network import verify_assign_edge_attractiveness
+from src.validate.errors import ValidationError
 from src.constants import (
     ATTR_CURRENT_PHASE, RUSH_HOUR_MORNING_START, RUSH_HOUR_MORNING_END,
     RUSH_HOUR_EVENING_START, RUSH_HOUR_EVENING_END,
@@ -70,8 +75,6 @@ def load_zones_data():
         with open(zones_geojson_path, 'r') as f:
             geojson_data = json.load(f)
         features = geojson_data.get('features', [])
-        if features:
-            sample_zone = features[0]
         return features
     except (json.JSONDecodeError, FileNotFoundError):
         return []
@@ -391,7 +394,7 @@ def calculate_attractiveness_land_use(edge_id: str, zones_data: list, edg_root, 
     return phases
 
 
-def calculate_attractiveness_iac(edge_id: str, zones_data: list, edg_root, network_tree) -> dict:
+def calculate_attractiveness_iac(edge_id: str, zones_data: list, edg_root, network_tree, seed: int) -> dict:
     """Calculate attractiveness using Integrated Attraction Coefficient (IAC) with temporal patterns.
 
     Returns 8 values (departure/arrival × 4 phases) in 1-20 range.
@@ -399,7 +402,7 @@ def calculate_attractiveness_iac(edge_id: str, zones_data: list, edg_root, netwo
     """
     # Get land use temporal patterns as base
     land_use_patterns = calculate_attractiveness_land_use(
-        edge_id, zones_data, edg_root)
+        edge_id, zones_data, edg_root, seed)
 
     # IAC parameters from research (unused variables removed to avoid warnings)
     # Base attractiveness factor (theta)
@@ -489,7 +492,7 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", start_time_ho
                 edge_id, zones_data, edg_root, seed)
         elif method == "iac":
             phase_values = calculate_attractiveness_iac(
-                edge_id, zones_data, edg_root, tree)
+                edge_id, zones_data, edg_root, tree, seed)
         else:
             phase_values = calculate_attractiveness_poisson(seed)
 
@@ -509,11 +512,6 @@ def assign_edge_attractiveness(seed: int, method: str = "poisson", start_time_ho
 
 def execute_attractiveness_assignment(args) -> None:
     """Execute edge attractiveness assignment."""
-    import logging
-    from src.utils.multi_seed_utils import get_network_seed
-    from src.validate.validate_network import verify_assign_edge_attractiveness
-    from src.validate.errors import ValidationError
-
     logger = logging.getLogger(__name__)
 
     assign_edge_attractiveness(

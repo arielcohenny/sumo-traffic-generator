@@ -81,29 +81,3 @@ def get_vehicle_weights(vehicle_distribution: Dict[str, float]) -> tuple:
             weights.append(vehicle_distribution[vehicle_type] / 100.0)
 
     return vehicle_names, weights
-
-    """
-    Validate that all required vehicle types are defined in configuration.
-    
-    Args:
-        vehicle_types_dict: Vehicle types configuration dictionary
-        
-    Raises:
-        ValueError: If required vehicle types are missing or invalid
-    """
-    required_types = {"passenger", "public"}
-    available_types = set(vehicle_types_dict.keys())
-
-    missing_types = required_types - available_types
-    if missing_types:
-        raise ValueError(f"Missing vehicle type definitions: {missing_types}")
-
-    # Validate each vehicle type has required attributes
-    required_attrs = {"length", "maxSpeed", "accel", "decel", "sigma"}
-
-    for vehicle_type, attrs in vehicle_types_dict.items():
-        if vehicle_type in required_types:
-            missing_attrs = required_attrs - set(attrs.keys())
-            if missing_attrs:
-                raise ValueError(
-                    f"Vehicle type '{vehicle_type}' missing attributes: {missing_attrs}")

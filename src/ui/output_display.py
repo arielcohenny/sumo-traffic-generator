@@ -279,7 +279,7 @@ class OutputDisplay:
                         st.subheader("Departure Time Distribution")
                         departure_df = pd.DataFrame(
                             {'Departure Time (seconds)': departure_times})
-                        st.histogram = st.line_chart(
+                        st.line_chart(
                             departure_df['Departure Time (seconds)'].value_counts().sort_index())
 
             except Exception as e:

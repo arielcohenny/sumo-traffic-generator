@@ -2,6 +2,10 @@
 Tree Method traffic controller implementation.
 """
 
+import copy
+import logging
+import random
+import traceback
 from typing import Any
 from pathlib import Path
 
@@ -33,7 +37,6 @@ class TreeMethodController(TrafficController):
         self.bottleneck_logger = None
 
         # DEBUG: Log controller creation with unique ID
-        import logging
         logger = logging.getLogger(__name__)
         logger.debug(f"🏗️  TreeMethodController created: {id(self)}")
 
@@ -63,7 +66,6 @@ class TreeMethodController(TrafficController):
 
         # CRITICAL FIX: Create Network object but immediately deepcopy its data
         # to prevent ANY possibility of state leakage through shared references
-        import copy
         network_temp = Network(json_file)
 
         # Create SEPARATE deep copies for network_data and graph
@@ -175,14 +177,12 @@ class TreeMethodController(TrafficController):
                     self._update_junction_control_state(step)
 
                 except ZeroDivisionError as zde:
-                    import traceback
                     self.logger.error(
                         f"Tree Method division by zero at step {step}: {zde}")
                     self.logger.error(f"Traceback: {traceback.format_exc()}")
                 except Exception as e:
                     self.logger.error(
                         f"Tree Method calculation failed at step {step}: {e}")
-                    import traceback
                     self.logger.error(f"Traceback: {traceback.format_exc()}")
 
         # Tree Method traffic light updates using shared durations
@@ -473,7 +473,6 @@ class TreeMethodController(TrafficController):
         try:
             from ..shared.classes.node import define_tl_program
             from ..shared.enums import AlgoType
-            import random
 
             for node_id in self.graph.tl_node_ids:
                 node = self.graph.all_nodes[node_id]

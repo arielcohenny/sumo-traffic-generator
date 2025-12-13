@@ -74,6 +74,7 @@ class _Config:
         self.default_vehicle_distribution = {"passenger": 90.0, "public": 10.0}
 
         # ---------- simulation parameters ----------
+        self.DEFAULT_NUM_VEHICLES = DEFAULT_NUM_VEHICLES
         self.RNG_SEED = 42
         self.DEFAULT_JUNCTION_RADIUS = 10.0  # meters
         self.HEAD_DISTANCE = 85  # head distance from the downstream end when splitting edges

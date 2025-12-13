@@ -4,6 +4,7 @@ Streamlit parameter widgets for DBPS GUI.
 This module defines all the parameter input widgets corresponding to CLI arguments.
 """
 
+import random
 import streamlit as st
 from typing import Dict, Any
 
@@ -354,7 +355,6 @@ class ParameterWidgets:
             use_random_seed = st.checkbox("Use Random Seed", value=True)
             if use_random_seed:
                 if st.button("Generate New Seed"):
-                    import random
                     st.session_state.generated_seed = random.randint(
                         MIN_SEED, MAX_SEED)
 
@@ -377,7 +377,6 @@ class ParameterWidgets:
                 "**Configure seeds for different simulation aspects:**")
 
             # Initialize session state for seeds with independent random values
-            import random
             if 'multi_network_seed' not in st.session_state:
                 st.session_state.multi_network_seed = random.randint(
                     MIN_SEED, MAX_SEED)
