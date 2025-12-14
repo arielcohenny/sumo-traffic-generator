@@ -197,6 +197,58 @@ env PYTHONUNBUFFERED=1 python -m src.cli --tree_method_sample evaluation/dataset
 - **Method Comparison**: Compare Tree Method vs Actuated vs Fixed on identical network conditions
 - **File Management**: Automatically copies and adapts sample files to our pipeline naming convention
 
+### Network Reuse and Comparison Mode
+
+Generate network files once and reuse them for multiple simulation runs with different traffic seeds and/or traffic control methods:
+
+```bash
+# Generate network files only (steps 1-5), save for reuse
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --grid_dimension 5 \
+  --num_vehicles 500 \
+  --network-seed 42 \
+  --generate-network-only
+
+# Run comparison using pre-generated network
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --use-network-from workspace/network \
+  --comparison-runs '[
+    {"traffic_control": "tree_method", "private_seed": 100, "public_seed": 200, "name": "tree_s0"},
+    {"traffic_control": "actuated", "private_seed": 100, "public_seed": 200, "name": "act_s0"},
+    {"traffic_control": "fixed", "private_seed": 100, "public_seed": 200, "name": "fixed_s0"}
+  ]' \
+  --num_vehicles 500 \
+  --end-time 3600
+
+# Single run using existing network
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --use-network-from workspace/network \
+  --private-traffic-seed 100 \
+  --public-traffic-seed 200 \
+  --traffic_control tree_method \
+  --num_vehicles 500 \
+  --gui
+```
+
+**Network Reuse Features:**
+
+- **Network Generation**: `--generate-network-only` runs steps 1-5 only, saves to `workspace/network/`
+- **Network Loading**: `--use-network-from PATH` skips steps 1-5, uses existing network files
+- **Comparison Runs**: `--comparison-runs JSON` executes multiple simulations with different seeds/methods
+- **Comparison File**: `--comparison-runs-file PATH` loads run specs from JSON file
+- **Results**: Comparison results saved to `workspace/comparison_results.json`
+
+**GUI Comparison Mode:**
+
+The web GUI (`dbps` command) includes a Comparison Mode section that provides:
+
+- Number of seed variations (1-500)
+- Base private/public seeds for reproducible random generation
+- Multi-select for traffic control methods
+- Real-time progress during batch execution
+- Charts showing average metrics by method (travel time, throughput, completion rate, waiting time)
+- Export options (JSON, CSV)
+
 ### Experimental Framework
 
 The project includes a comprehensive experimental framework for comparing traffic control methods:
@@ -633,4 +685,21 @@ dbps
   - **File**: `src/network/zones.py` - Updated `extract_zones_from_junctions` function with configurable cell size
   - **Updated Validation**: Fixed zone count validation in `src/validate/validate_network.py` to work with configurable zone sizes
   - **Integration**: Works in CLI pipeline Step 2
+- **Network Reuse and Comparison Mode**:
+  - ✅ **COMPLETED & WORKING**: Generate network once, run multiple simulations with different seeds/methods
+  - **Network Generation**: `--generate-network-only` runs steps 1-5 only, saves to `workspace/network/`
+  - **Network Loading**: `--use-network-from PATH` skips steps 1-5, uses existing network files
+  - **Comparison Runs**: `--comparison-runs JSON` or `--comparison-runs-file PATH` for batch execution
+  - **Results**: Comparison results saved to `workspace/comparison_results.json`
+  - **GUI Support**: Web GUI (`dbps`) includes Comparison Mode section with:
+    - Number of seed variations (1-500)
+    - Base private/public seeds for reproducible random generation
+    - Multi-select for traffic control methods (tree_method, actuated, fixed, atlcs)
+    - Real-time progress during batch execution
+    - Charts showing average metrics by method (travel time, throughput, completion rate, waiting time)
+    - Export options (JSON, CSV)
+  - **Orchestration Classes**: `src/orchestration/` module with RunSpec, RunMetrics, ComparisonResults, MetricsExtractor, ComparisonRunner
+  - **Use Case**: RL training optimization, controlled experiments, method comparison studies
+  - **Documentation**: `docs/specification/command-line-interface.md`, `docs/specification/web-gui-interface.md`
+  - **Tests**: `tests/unit/test_orchestration.py`
 - **Reminder**: make sure to periodically update CLAUDE.md and README.md to reflect project developments and improvements

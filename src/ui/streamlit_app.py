@@ -27,6 +27,8 @@ from src.validate.validate_arguments import validate_arguments
 from src.args.parser import create_argument_parser
 from src.ui.output_display import OutputDisplay
 from src.ui.parameter_widgets import ParameterWidgets
+from src.ui.comparison_widgets import ComparisonWidgets
+from src.ui.comparison_display import ComparisonDisplay
 import streamlit as st
 import sys
 from pathlib import Path
@@ -365,6 +367,108 @@ def run_simulation(params: Dict[str, Any]):
         st.exception(e)
 
 
+def run_comparison(params: Dict[str, Any], run_specs, network_path=None):
+    """Execute a comparison run with multiple configurations.
+
+    Args:
+        params: Base GUI parameters for network configuration
+        run_specs: List of RunSpec instances to compare
+        network_path: Optional path to existing network folder
+    """
+    from src.orchestration.comparison_runner import ComparisonRunner
+
+    try:
+        # Convert parameters to args namespace
+        args = convert_params_to_args(params)
+
+        # Validate base arguments
+        validate_arguments(args)
+
+        st.success("Parameters validated successfully!")
+
+        # Create progress indicators
+        progress_bar = st.progress(0.0)
+        status_text = st.empty()
+
+        workspace = Path(params.get("workspace", DEFAULT_WORKSPACE_DIR))
+        runner = ComparisonRunner(workspace)
+
+        # Load existing network if specified
+        if network_path:
+            status_text.text(f"Loading network from {network_path}...")
+            runner.load_existing_network(network_path)
+            progress_bar.progress(0.1)
+        else:
+            status_text.text("Generating network...")
+            runner.generate_network_only(args)
+            progress_bar.progress(0.2)
+
+        # Progress callback for comparison runs
+        def progress_callback(status_msg, current, total):
+            progress = 0.2 + (0.7 * current / total) if total > 0 else 0.5
+            progress_bar.progress(progress)
+            status_text.text(f"{status_msg}")
+
+        # Run comparison
+        status_text.text("Running comparison...")
+        results = runner.run_comparison(run_specs, args, progress_callback)
+
+        progress_bar.progress(1.0)
+        status_text.text("Comparison completed!")
+
+        st.success(f"Comparison completed! {len(results.runs)} runs finished.")
+
+        # Display results
+        ComparisonDisplay.show_results(results)
+
+    except ValidationError as e:
+        st.error(f"Validation Error: {e}")
+    except Exception as e:
+        st.error(f"Execution Error: {e}")
+        st.exception(e)
+
+
+def run_generate_network_only(params: Dict[str, Any]):
+    """Generate network files only without running simulation.
+
+    Args:
+        params: GUI parameters for network configuration
+    """
+    from src.orchestration.comparison_runner import ComparisonRunner
+
+    try:
+        # Convert parameters to args namespace
+        args = convert_params_to_args(params)
+
+        # Validate base arguments
+        validate_arguments(args)
+
+        st.success("Parameters validated successfully!")
+
+        progress_bar = st.progress(0.0)
+        status_text = st.empty()
+
+        workspace = Path(params.get("workspace", DEFAULT_WORKSPACE_DIR))
+        runner = ComparisonRunner(workspace)
+
+        status_text.text("Generating network files...")
+        progress_bar.progress(0.3)
+
+        network_path = runner.generate_network_only(args)
+
+        progress_bar.progress(1.0)
+        status_text.text("Network generation completed!")
+
+        st.success(f"Network files saved to: {network_path}")
+        st.info(f"You can now use this network for comparison runs by loading it from: {network_path}")
+
+    except ValidationError as e:
+        st.error(f"Validation Error: {e}")
+    except Exception as e:
+        st.error(f"Execution Error: {e}")
+        st.exception(e)
+
+
 def main():
     """Main Streamlit application."""
     st.set_page_config(
@@ -432,45 +536,53 @@ def main():
         st.json(params)
 
     # Command line preview
-    st.header("💻 Command Line Preview")
+    st.header("Command Line Preview")
     command_line = generate_command_line(params)
     st.code(command_line, language="bash")
 
-    # # Copy button for command line
-    # if st.button("📋 Copy Command to Clipboard"):
-    #     st.write(
-    #         "Copy the command above and paste it in your terminal to run the simulation directly.")
+    # Comparison Mode Section
+    st.header("Comparison Mode")
+    with st.expander("Configure Comparison Runs", expanded=False):
+        comparison_enabled, run_specs, network_path = ComparisonWidgets.render_comparison_mode()
 
     # Execution section
-    st.header("🚀 Execution")
+    st.header("Execution")
 
-    col1, col2, col3 = st.columns([2, 1, 1])
+    # Check if comparison mode is enabled
+    if comparison_enabled and run_specs:
+        # Comparison mode execution
+        col1, col2 = st.columns([2, 1])
 
-    with col1:
-        if st.button("🚀 Run Simulation", type="primary", use_container_width=True):
-            with st.spinner("Preparing simulation..."):
-                run_simulation(params)
+        with col1:
+            if st.button("Run Comparison", type="primary", use_container_width=True):
+                with st.spinner("Running comparison..."):
+                    run_comparison(params, run_specs, network_path)
 
-    with col2:
-        if st.button("🔍 Validate Only", use_container_width=True):
-            try:
-                args = convert_params_to_args(params)
-                validate_arguments(args)
-                st.success("✅ Validation passed!")
-            except ValidationError as e:
-                st.error(f"❌ Validation failed: {e}")
-            except Exception as e:
-                st.error(f"❌ Error: {e}")
+        with col2:
+            if st.button("Generate Network Only", use_container_width=True):
+                with st.spinner("Generating network..."):
+                    run_generate_network_only(params)
 
-    with col3:
-        if st.button("📋 Export Config", use_container_width=True):
-            config_json = json.dumps(params, indent=2)
-            st.download_button(
-                label="📥 Download JSON",
-                data=config_json,
-                file_name="dbps_config.json",
-                mime="application/json"
-            )
+
+    else:
+        # Standard single run execution
+        col1, col2 = st.columns([2, 1])
+
+        with col1:
+            if st.button("Run Simulation", type="primary", use_container_width=True):
+                with st.spinner("Preparing simulation..."):
+                    run_simulation(params)
+
+        with col2:
+            if st.button("Export Config", use_container_width=True):
+                config_json = json.dumps(params, indent=2)
+                st.download_button(
+                    label="Download JSON",
+                    data=config_json,
+                    file_name="dbps_config.json",
+                    mime="application/json",
+                    key="single_run_export_json"
+                )
 
 
 if __name__ == "__main__":

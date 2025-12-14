@@ -409,6 +409,67 @@ Path to pre-built Tree Method sample files for validation.
 - **Requirements**: Folder with `network.net.xml`, `vehicles.trips.xml`, `simulation.sumocfg.xml`
 - **Example**: `--tree_method_sample evaluation/datasets/networks/`
 
+### Network Reuse Arguments
+
+#### `--generate-network-only` (flag)
+
+Generate network files only (steps 1-5), without running traffic generation or simulation.
+
+- **No value required**: Presence of flag enables this mode
+- **Purpose**: Create reusable network files for multiple comparison runs
+- **Output**: Saves network files to `workspace/network/` directory
+- **Saved Files**: `grid.net.xml`, `grid.nod.xml`, `grid.edg.xml`, `grid.con.xml`, `grid.tll.xml`, `zones.poly.xml`, `network_config.json`
+- **Use Case**: Generate network once, then run multiple simulations with different seeds/methods
+- **Example**: `--generate-network-only`
+
+#### `--use-network-from` (str, optional)
+
+Path to pre-generated network folder to skip network generation steps.
+
+- **Purpose**: Reuse existing network for faster comparison runs
+- **Behavior**: Skips steps 1-5, uses existing network files for traffic generation and simulation
+- **Required Files**: `grid.net.xml` and other network files in specified directory
+- **Example**: `--use-network-from workspace/network`
+- **Validation**: Checks that required network files exist before proceeding
+
+### Comparison Run Arguments
+
+#### `--comparison-runs` (str, optional)
+
+JSON array of run specifications for batch comparison execution.
+
+- **Format**: JSON array string with run specifications
+- **Required Fields** (per run):
+  - `traffic_control`: Control method (`tree_method`, `actuated`, `fixed`, `atlcs`)
+  - `private_seed`: Private traffic seed (integer)
+  - `public_seed`: Public traffic seed (integer)
+  - `name`: Unique run identifier
+- **Example**:
+  ```bash
+  --comparison-runs '[
+    {"traffic_control": "tree_method", "private_seed": 100, "public_seed": 200, "name": "tree_100"},
+    {"traffic_control": "fixed", "private_seed": 100, "public_seed": 200, "name": "fixed_100"}
+  ]'
+  ```
+- **Output**: Results saved to `workspace/comparison_results.json`
+
+#### `--comparison-runs-file` (str, optional)
+
+Path to JSON file containing comparison run specifications.
+
+- **Format**: JSON file with array of run specifications (same format as `--comparison-runs`)
+- **Purpose**: Easier management of complex comparison configurations
+- **Example File** (`runs.json`):
+  ```json
+  [
+    {"traffic_control": "tree_method", "private_seed": 100, "public_seed": 200, "name": "tree_s0"},
+    {"traffic_control": "tree_method", "private_seed": 101, "public_seed": 201, "name": "tree_s1"},
+    {"traffic_control": "actuated", "private_seed": 100, "public_seed": 200, "name": "act_s0"},
+    {"traffic_control": "actuated", "private_seed": 101, "public_seed": 201, "name": "act_s1"}
+  ]
+  ```
+- **Usage**: `--comparison-runs-file runs.json`
+
 ## Usage Examples
 
 ### Development and Testing
@@ -495,6 +556,78 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --grid_dimension 5 \
   --num_vehicles 1000 \
   --traffic_control tree_method \
+  --end-time 7200
+```
+
+### Network Reuse and Comparison Examples
+
+#### Generate Reusable Network
+
+```bash
+# Generate network files only (steps 1-5), save for reuse
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --grid_dimension 5 \
+  --num_vehicles 500 \
+  --network-seed 42 \
+  --generate-network-only
+
+# Network saved to workspace/network/
+```
+
+#### Run Comparison with Existing Network
+
+```bash
+# Run comparison using pre-generated network
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --use-network-from workspace/network \
+  --comparison-runs '[
+    {"traffic_control": "tree_method", "private_seed": 100, "public_seed": 200, "name": "tree_s0"},
+    {"traffic_control": "tree_method", "private_seed": 101, "public_seed": 201, "name": "tree_s1"},
+    {"traffic_control": "actuated", "private_seed": 100, "public_seed": 200, "name": "act_s0"},
+    {"traffic_control": "actuated", "private_seed": 101, "public_seed": 201, "name": "act_s1"},
+    {"traffic_control": "fixed", "private_seed": 100, "public_seed": 200, "name": "fixed_s0"},
+    {"traffic_control": "fixed", "private_seed": 101, "public_seed": 201, "name": "fixed_s1"}
+  ]' \
+  --num_vehicles 500 \
+  --end-time 3600
+
+# Results saved to workspace/comparison_results.json
+```
+
+#### Single Run with Existing Network
+
+```bash
+# Single run using existing network (useful for quick tests)
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --use-network-from workspace/network \
+  --private-traffic-seed 100 \
+  --public-traffic-seed 200 \
+  --traffic_control tree_method \
+  --num_vehicles 500 \
+  --end-time 1800 \
+  --gui
+```
+
+#### Using Comparison Runs File
+
+```bash
+# Create runs file: comparison_config.json
+cat > comparison_config.json << 'EOF'
+[
+  {"traffic_control": "tree_method", "private_seed": 100, "public_seed": 200, "name": "tree_run1"},
+  {"traffic_control": "tree_method", "private_seed": 200, "public_seed": 300, "name": "tree_run2"},
+  {"traffic_control": "actuated", "private_seed": 100, "public_seed": 200, "name": "actuated_run1"},
+  {"traffic_control": "actuated", "private_seed": 200, "public_seed": 300, "name": "actuated_run2"},
+  {"traffic_control": "fixed", "private_seed": 100, "public_seed": 200, "name": "fixed_run1"},
+  {"traffic_control": "fixed", "private_seed": 200, "public_seed": 300, "name": "fixed_run2"}
+]
+EOF
+
+# Run comparison using file
+env PYTHONUNBUFFERED=1 python -m src.cli \
+  --use-network-from workspace/network \
+  --comparison-runs-file comparison_config.json \
+  --num_vehicles 800 \
   --end-time 7200
 ```
 

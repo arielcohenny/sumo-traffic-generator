@@ -287,6 +287,86 @@ open http://localhost:8501
   - **Range**: 1-15 seconds (default: 5s)
   - **Description**: "Dynamic congestion pricing calculation frequency"
 
+#### 6. **Comparison Mode Section**
+
+**Purpose**: Run multiple simulations with different traffic seeds and control methods, then compare results.
+
+**Enable Comparison Mode**
+
+- **Widget**: Checkbox to enable/disable comparison mode
+- **Description**: "Run multiple simulations with different seeds and control methods, then compare results"
+- **Behavior**: When enabled, shows comparison configuration options and changes execution to batch mode
+
+**Network Source**
+
+- **Widget**: Radio buttons
+- **Options**:
+  - "Generate New": Generate fresh network files for comparison
+  - "Load Existing": Use pre-generated network from specified path
+- **Conditional Input**: Text input for network path appears when "Load Existing" selected
+- **Validation**: Checks that `grid.net.xml` exists at specified path
+
+**Number of Seed Variations**
+
+- **Widget**: Number input
+- **Range**: 1-500 (default: 5)
+- **Description**: Number of different seed combinations to test
+- **Impact**: Total runs = seed variations × number of methods selected
+
+**Base Seeds**
+
+- **Widget**: Two number inputs side by side
+- **Components**:
+  - **Base Private Seed**: Starting seed for generating private traffic seeds (default: 100)
+  - **Base Public Seed**: Starting seed for generating public traffic seeds (default: 200)
+- **Range**: 0-999,999 for each
+- **Behavior**: Seeds are auto-generated using base seeds as RNG seeds (reproducible)
+
+**Traffic Control Methods**
+
+- **Widget**: Multi-select dropdown
+- **Options**: `tree_method`, `actuated`, `fixed`, `atlcs`
+- **Default**: `tree_method`, `fixed` selected
+- **Validation**: At least one method must be selected
+- **Impact**: Each method runs with all seed variations
+
+**Run Summary**
+
+- **Display**: Info box showing total runs calculation
+- **Format**: "**X total runs** = Y seeds × Z methods"
+- **Example**: "**10 total runs** = 5 seeds × 2 methods"
+
+**Seed Preview** (Expandable)
+
+- **Widget**: Collapsible expander
+- **Content**: Shows first few generated seed pairs
+- **Purpose**: Verify reproducible seed generation before running
+
+**Comparison Execution**
+
+- **Buttons**:
+  - "Run Comparison" (primary): Execute all comparison runs sequentially
+  - "Generate Network Only": Generate network files without running simulations
+- **Progress**: Real-time progress bar showing current run (e.g., "Running tree_method_seed0 (3/10)")
+- **Results**: After completion, displays comparison results with charts and summary table
+
+**Comparison Results Display**
+
+- **Summary by Method**: Cards showing average metrics per method
+  - Average Travel Time (with std dev)
+  - Average Completion Rate
+  - Average Throughput
+  - Number of runs
+- **Visualizations** (requires plotly, pandas):
+  - Average Travel Time by Method (bar chart with error bars)
+  - Average Throughput by Method (bar chart)
+  - Average Completion Rate by Method (bar chart)
+  - Average Waiting Time by Method (bar chart with error bars)
+- **Detailed Results**: Expandable table showing all individual runs
+- **Export Options**:
+  - Download JSON: Full results with all metrics
+  - Download CSV: Tabular format for spreadsheet analysis
+
 ### Advanced Features
 
 #### **Real-time Parameter Validation**
@@ -367,7 +447,16 @@ src/ui/
 ├── streamlit_app.py      # Main Streamlit application entry point
 ├── parameter_widgets.py  # Parameter widget definitions and validation
 ├── output_display.py     # Output display and log management
+├── comparison_widgets.py # Comparison mode configuration widgets
+├── comparison_display.py # Comparison results visualization
 └── __init__.py          # UI module initialization
+
+src/orchestration/
+├── run_spec.py           # RunSpec and RunMetrics dataclasses
+├── comparison_results.py # ComparisonResults class for aggregating runs
+├── metrics_extractor.py  # Extract metrics from SUMO output files
+├── comparison_runner.py  # Main comparison execution orchestrator
+└── __init__.py          # Orchestration module initialization
 
 src/gui.py               # CLI entry point and Chrome launcher
 ```

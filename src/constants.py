@@ -550,3 +550,35 @@ DEFAULT_CLI_PREFIX = "env PYTHONUNBUFFERED=1 python -m src.cli"  # CLI command p
 # =============================================================================
 
 TRAFFIC_CONTROLLER_LOG_INTERVAL = 10  # Interval for logging traffic controller state
+
+# =============================================================================
+# COMPARISON MODE CONSTANTS
+# =============================================================================
+
+# Valid traffic control methods for comparison runs
+VALID_TRAFFIC_CONTROLS = {"tree_method", "actuated", "fixed", "atlcs"}
+
+# Network files required for comparison runs
+COMPARISON_NETWORK_FILES = [
+    "grid.net.xml",
+    "grid.nod.xml",
+    "grid.edg.xml",
+    "grid.con.xml",
+    "grid.tll.xml",
+    "zones.poly.xml",
+]
+
+# Comparison run defaults
+DEFAULT_COMPARISON_NUM_RUNS = 5
+MIN_COMPARISON_RUNS = 1
+MAX_COMPARISON_RUNS = 500
+DEFAULT_BASE_PRIVATE_SEED = 100
+DEFAULT_BASE_PUBLIC_SEED = 200
+DEFAULT_COMPARISON_METHODS = ["tree_method", "fixed"]
+
+# Chart display constants
+COMPARISON_CHART_HEIGHT = 350
+PERCENTAGE_CHART_MAX = 105  # Max y-axis for percentage charts (100% + buffer)
+
+# Date format for comparison naming
+COMPARISON_DATE_FORMAT = "%Y%m%d_%H%M%S"
