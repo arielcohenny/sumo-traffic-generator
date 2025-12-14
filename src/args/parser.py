@@ -192,6 +192,38 @@ def _add_simulation_arguments(parser: argparse.ArgumentParser) -> None:
         help="Generate network and route files only, skip SUMO simulation (steps 1-7). Useful for testing and batch file generation."
     )
 
+    # Network Reuse Arguments
+    parser.add_argument(
+        "--generate-network-only",
+        action="store_true",
+        default=False,
+        help="Generate network files only (steps 1-5), save to workspace/network/ for reuse. "
+             "Does not generate traffic or run simulation."
+    )
+    parser.add_argument(
+        "--use-network-from",
+        type=str,
+        metavar="PATH",
+        help="Path to pre-generated network folder. Skips network generation (steps 1-5), "
+             "uses existing network files for traffic generation and simulation."
+    )
+
+    # Comparison Run Arguments
+    parser.add_argument(
+        "--comparison-runs",
+        type=str,
+        metavar="JSON",
+        help="JSON array of run specifications for comparison. Each spec requires: "
+             "traffic_control, private_seed, public_seed, name. "
+             "Example: '[{\"traffic_control\":\"tree_method\",\"private_seed\":100,\"public_seed\":200,\"name\":\"run1\"}]'"
+    )
+    parser.add_argument(
+        "--comparison-runs-file",
+        type=str,
+        metavar="PATH",
+        help="Path to JSON file containing comparison run specifications."
+    )
+
 
 def _add_zone_arguments(parser: argparse.ArgumentParser) -> None:
     """Add zone and attractiveness arguments."""
