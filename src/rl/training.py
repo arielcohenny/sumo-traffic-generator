@@ -7,9 +7,11 @@ network-wide traffic coordination policies.
 
 import os
 import json
+import shlex
 import time
 import logging
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, Optional
 import numpy as np
 
@@ -379,7 +381,8 @@ class TrafficMetricsCallback(BaseCallback):
 
 
 def make_env(env_params_string: str, env_index: int, base_workspace: str = PARALLEL_WORKSPACE_PREFIX,
-             cycle_lengths: list = None, cycle_strategy: str = 'fixed'):
+             cycle_lengths: list = None, cycle_strategy: str = 'fixed',
+             network_path: str = None, network_dimensions: Tuple[int, int] = None):
     """
     Create a single environment for vectorization.
 
@@ -389,6 +392,8 @@ def make_env(env_params_string: str, env_index: int, base_workspace: str = PARAL
         base_workspace: Base workspace directory name
         cycle_lengths: List of cycle lengths for RL control
         cycle_strategy: Strategy for cycle selection
+        network_path: Path to pre-generated network files for reuse
+        network_dimensions: Pre-computed (edge_count, junction_count) to avoid regenerating network
 
     Returns:
         callable: Environment creation function
@@ -400,12 +405,14 @@ def make_env(env_params_string: str, env_index: int, base_workspace: str = PARAL
         # Append workspace to parameter string
         env_params_with_workspace = f"{env_params_string} --workspace {env_workspace}"
 
-        # Create environment with unique workspace and cycle parameters
+        # Create environment with unique workspace, cycle parameters, network path, and dimensions
         env = TrafficControlEnv(
             env_params_string=env_params_with_workspace,
             episode_number=env_index,
             cycle_lengths=cycle_lengths,
-            cycle_strategy=cycle_strategy
+            cycle_strategy=cycle_strategy,
+            network_path=network_path,
+            network_dimensions=network_dimensions
         )
         return env
 
@@ -413,7 +420,8 @@ def make_env(env_params_string: str, env_index: int, base_workspace: str = PARAL
 
 
 def create_vectorized_env(env_params_string: str, n_envs: int = None, base_workspace: str = PARALLEL_WORKSPACE_PREFIX,
-                         cycle_lengths: list = None, cycle_strategy: str = 'fixed'):
+                         cycle_lengths: list = None, cycle_strategy: str = 'fixed',
+                         network_path: str = None, network_dimensions: Tuple[int, int] = None):
     """
     Create vectorized environment for parallel training.
 
@@ -423,6 +431,8 @@ def create_vectorized_env(env_params_string: str, n_envs: int = None, base_works
         base_workspace: Base workspace directory name
         cycle_lengths: List of cycle lengths for RL control
         cycle_strategy: Strategy for cycle selection
+        network_path: Path to pre-generated network files for reuse
+        network_dimensions: Pre-computed (edge_count, junction_count) to avoid regenerating network
 
     Returns:
         VecEnv: Vectorized environment for parallel training
@@ -432,8 +442,9 @@ def create_vectorized_env(env_params_string: str, n_envs: int = None, base_works
     if n_envs is None:
         n_envs = DEFAULT_N_PARALLEL_ENVS
 
-    # Create list of environment creation functions with cycle parameters
-    env_fns = [make_env(env_params_string, i, base_workspace, cycle_lengths, cycle_strategy)
+    # Create list of environment creation functions with cycle parameters, network path, and dimensions
+    env_fns = [make_env(env_params_string, i, base_workspace, cycle_lengths, cycle_strategy,
+                        network_path, network_dimensions)
                for i in range(n_envs)]
 
     # Use SubprocVecEnv for true parallel execution, DummyVecEnv for single environment
@@ -443,6 +454,77 @@ def create_vectorized_env(env_params_string: str, n_envs: int = None, base_works
         vec_env = SubprocVecEnv(env_fns)
 
     return vec_env
+
+
+def _parse_network_dimensions(net_file: str) -> Tuple[int, int]:
+    """Parse edge/junction counts from network file.
+
+    Args:
+        net_file: Path to the network XML file
+
+    Returns:
+        Tuple[int, int]: (edge_count, junction_count)
+    """
+    import xml.etree.ElementTree as ET
+    tree = ET.parse(net_file)
+    root = tree.getroot()
+    edges = [e for e in root.findall('.//edge') if ':' not in e.get('id', '')]
+    junctions = root.findall(".//junction[@type='traffic_light']")
+    return len(edges), len(junctions)
+
+
+def _generate_network_once(env_params_string: str, model_directory: str) -> Tuple[str, int, int]:
+    """Generate network files once for reuse across all episodes.
+
+    Args:
+        env_params_string: Raw parameter string with network configuration
+        model_directory: Model directory where network will be stored
+
+    Returns:
+        Tuple[str, int, int]: (network_path, edge_count, junction_count)
+    """
+    from src.args.parser import create_argument_parser
+    from src.orchestration.comparison_runner import ComparisonRunner
+
+    logger = logging.getLogger(__name__)
+    network_path = Path(model_directory) / "network"
+    net_file = network_path / "grid.net.xml"
+
+    # Check if network already exists
+    if network_path.exists() and net_file.exists():
+        logger.info(f"🔄 Reusing existing network from: {network_path}")
+        edge_count, junction_count = _parse_network_dimensions(str(net_file))
+        print(f"[NETWORK] Dimensions: {edge_count} edges, {junction_count} junctions", flush=True)
+        return str(network_path), edge_count, junction_count
+
+    logger.info(f"🏗️ Generating network files once for reuse...")
+    logger.info(f"   Network will be saved to: {network_path}")
+
+    # Parse environment params to get network configuration
+    parser = create_argument_parser()
+    args_list = shlex.split(env_params_string)
+    args = parser.parse_args(args_list)
+
+    # Use ComparisonRunner to generate network (Steps 1-5)
+    comparison_runner = ComparisonRunner(Path(model_directory))
+    comparison_runner.generate_network_only(args)
+
+    # Verify the network file was actually created
+    if not net_file.exists():
+        print(f"ERROR: Expected network at {net_file}", flush=True)
+        print(f"  model_directory = {model_directory}", flush=True)
+        if network_path.exists():
+            print(f"  Contents of {network_path}: {list(network_path.iterdir())}", flush=True)
+        else:
+            print(f"  Network directory does not exist!", flush=True)
+        raise RuntimeError(f"Network generation failed: {net_file} not found")
+
+    # Parse dimensions from generated network
+    edge_count, junction_count = _parse_network_dimensions(str(net_file))
+    print(f"[NETWORK] ✅ Verified: {net_file}", flush=True)
+    print(f"[NETWORK] Dimensions: {edge_count} edges, {junction_count} junctions", flush=True)
+    logger.info(f"✅ Network generated and saved to: {network_path}")
+    return str(network_path), edge_count, junction_count
 
 
 def train_rl_policy(env_params_string: str,
@@ -455,7 +537,8 @@ def train_rl_policy(env_params_string: str,
                     resume_from_model: str = None,
                     pretrain_from_model: str = None,
                     cycle_lengths: list = None,
-                    cycle_strategy: str = 'fixed') -> PPO:
+                    cycle_strategy: str = 'fixed',
+                    network_path: str = None) -> PPO:
     """
     Train PPO policy for traffic signal control.
 
@@ -471,6 +554,7 @@ def train_rl_policy(env_params_string: str,
         pretrain_from_model: Path to pre-trained model from imitation learning to initialize from (if None, creates new model from scratch)
         cycle_lengths: List of cycle lengths in seconds (e.g., [90] for fixed, [60, 90, 120] for variable)
         cycle_strategy: Strategy for cycle selection ('fixed', 'random', 'sequential')
+        network_path: Path to pre-generated network files for reuse across episodes (if None, auto-generates once)
 
     Returns:
         PPO: Trained PPO model
@@ -524,15 +608,33 @@ def train_rl_policy(env_params_string: str,
     # The config's update_workspace() will create model_dir/workspace/ automatically
     base_workspace = model_dir
 
+    # Generate network once for reuse across all episodes (if not provided)
+    # Also get dimensions to avoid regenerating network during env init
+    network_dimensions = None
+    if network_path is None:
+        network_path, edge_count, junction_count = _generate_network_once(env_params_string, model_dir)
+        network_dimensions = (edge_count, junction_count)
+    else:
+        # Parse dimensions from provided network
+        net_file = os.path.join(network_path, "grid.net.xml")
+        if os.path.exists(net_file):
+            edge_count, junction_count = _parse_network_dimensions(net_file)
+            network_dimensions = (edge_count, junction_count)
+            print(f"[NETWORK] Dimensions from provided path: {edge_count} edges, {junction_count} junctions", flush=True)
+        logger.info(f"📂 Using provided network path: {network_path}")
+
+    logger.info(f"  Network:      {network_path}")
+
     # Determine number of environments to use
     if n_envs is None:
         n_envs = SINGLE_ENV_THRESHOLD
 
-    # Create environment (vectorized or single)
+    # Create environment (vectorized or single) with network reuse and pre-computed dimensions
     if use_parallel and n_envs > SINGLE_ENV_THRESHOLD:
         env = create_vectorized_env(
             env_params_string, n_envs=n_envs, base_workspace=base_workspace,
-            cycle_lengths=cycle_lengths, cycle_strategy=cycle_strategy)
+            cycle_lengths=cycle_lengths, cycle_strategy=cycle_strategy,
+            network_path=network_path, network_dimensions=network_dimensions)
         _verify_enhanced_state_space(
             env, env_params_string, is_vectorized=True)
     else:
@@ -542,7 +644,9 @@ def train_rl_policy(env_params_string: str,
             env_params_string=single_env_params,
             episode_number=0,
             cycle_lengths=cycle_lengths,
-            cycle_strategy=cycle_strategy
+            cycle_strategy=cycle_strategy,
+            network_path=network_path,
+            network_dimensions=network_dimensions
         )
         check_env(env)
         _verify_enhanced_state_space(env, env_params_string)

@@ -206,7 +206,8 @@ class TrafficControlEnv(gym.Env):
         return instance
 
     def __init__(self, env_params_string: str, episode_number: int = 0,
-                 cycle_lengths: list = None, cycle_strategy: str = 'fixed'):
+                 cycle_lengths: list = None, cycle_strategy: str = 'fixed',
+                 network_path: str = None, network_dimensions: tuple = None):
         """Initialize the traffic control environment.
 
         Args:
@@ -214,6 +215,8 @@ class TrafficControlEnv(gym.Env):
             episode_number: Episode number for reward logging (0 = auto-increment)
             cycle_lengths: List of cycle lengths in seconds (default: [90])
             cycle_strategy: How to select cycle length ('fixed', 'random', 'sequential', 'adaptive')
+            network_path: Path to pre-generated network files for reuse (if None, generates fresh network each episode)
+            network_dimensions: Pre-computed (edge_count, junction_count) to skip network generation during init
         """
         super().__init__()
         from .constants import DEFAULT_CYCLE_LENGTH, MIN_PHASE_DURATION
@@ -222,6 +225,9 @@ class TrafficControlEnv(gym.Env):
         parser = create_argument_parser()
         args_list = shlex.split(env_params_string)
         self.cli_args = vars(parser.parse_args(args_list))
+
+        # Store network path for reuse (if provided)
+        self.network_path = network_path
 
         # Extract key parameters from CLI args
         from src.network.generate_grid import parse_junctions_to_remove
@@ -246,15 +252,19 @@ class TrafficControlEnv(gym.Env):
         self.current_schedules = {}  # Store phase schedules for current cycle
         self.cycle_start_step = 0  # Track when current cycle started
 
-        # Calculate state vector size dynamically by generating network temporarily
+        # Calculate state vector size dynamically
         # This ensures observation space matches actual edge count after edge splitting
         from .constants import (
             RL_DYNAMIC_EDGE_FEATURES_COUNT, RL_DYNAMIC_JUNCTION_FEATURES_COUNT,
             RL_DYNAMIC_NETWORK_FEATURES_COUNT
         )
 
-        # Generate network temporarily to get actual edge count
-        actual_edge_count, actual_junction_count = self._get_actual_network_dimensions()
+        # Use pre-computed dimensions if provided, otherwise generate network temporarily
+        if network_dimensions:
+            actual_edge_count, actual_junction_count = network_dimensions
+            print(f"[ENV] Using provided dimensions: {actual_edge_count} edges, {actual_junction_count} junctions", flush=True)
+        else:
+            actual_edge_count, actual_junction_count = self._get_actual_network_dimensions()
 
         self.state_vector_size = (actual_edge_count * RL_DYNAMIC_EDGE_FEATURES_COUNT +
                                   actual_junction_count * RL_DYNAMIC_JUNCTION_FEATURES_COUNT +
@@ -950,7 +960,11 @@ class TrafficControlEnv(gym.Env):
                 pass
 
     def _generate_sumo_files(self):
-        """Generate SUMO network and route files using existing pipeline."""
+        """Generate SUMO network and route files using existing pipeline.
+
+        If network_path is set, reuses pre-generated network files and only
+        generates routes (Steps 6-7). Otherwise, runs the full pipeline (Steps 1-7).
+        """
         # Create args object from stored CLI args
         if self.cli_args is None:
             raise ValueError(
@@ -973,18 +987,86 @@ class TrafficControlEnv(gym.Env):
             if getattr(args, 'public_traffic_seed', None) is None:
                 args.public_traffic_seed = self.episode_seed + 2000
 
-        # DEBUG: Log actual seeds being used
+        # DEBUG: Log actual seeds being used (use print for reliable output)
         logger = logging.getLogger(__name__)
-        logger.info(f"🔧 SEED DEBUG: network={getattr(args, 'network_seed', 'None')}, private={getattr(args, 'private_traffic_seed', 'None')}, public={getattr(args, 'public_traffic_seed', 'None')}")
+        print(f"[SUMO FILES] Seeds: network={getattr(args, 'network_seed', 'None')}, private={getattr(args, 'private_traffic_seed', 'None')}, public={getattr(args, 'public_traffic_seed', 'None')}", flush=True)
 
-        # Execute pipeline to generate SUMO files (Steps 1-7 only, skip simulation)
-        # RL environment manages its own SUMO simulation via TraCI
+        # Check network reuse with print() for reliable output
+        print(f"[SUMO FILES] network_path='{self.network_path}'", flush=True)
+
+        # If network_path is set, use network reuse (it MUST exist, we verified at generation time)
+        if self.network_path:
+            net_file = os.path.join(self.network_path, "grid.net.xml")
+            dir_exists = os.path.exists(self.network_path)
+            file_exists = os.path.exists(net_file)
+            print(f"[SUMO FILES] dir_exists={dir_exists}, file_exists={file_exists}", flush=True)
+
+            if file_exists:
+                print(f"[SUMO FILES] ✅ Reusing network from: {self.network_path}", flush=True)
+                self._generate_with_network_reuse(args)
+                return
+            else:
+                # Fatal error - network_path set but file missing
+                print(f"[SUMO FILES] ERROR: Network path set but grid.net.xml missing!", flush=True)
+                if dir_exists:
+                    contents = os.listdir(self.network_path)
+                    print(f"[SUMO FILES] Dir contents: {contents}", flush=True)
+                raise RuntimeError(f"Network path set but grid.net.xml missing: {net_file}")
+
+        # Only run full pipeline if no network_path (shouldn't happen in normal RL training)
+        print(f"[SUMO FILES] ⚠️ No network_path, running FULL pipeline (Steps 1-7)...", flush=True)
         pipeline = PipelineFactory.create_pipeline(args)
         if hasattr(pipeline, 'execute_file_generation_only'):
             pipeline.execute_file_generation_only()
         else:
             # Fallback for other pipeline types (e.g., SamplePipeline)
             pipeline.execute()
+
+    def _generate_with_network_reuse(self, args):
+        """Generate SUMO files reusing pre-generated network (Steps 6-7 only).
+
+        Copies network files from network_path to workspace, then generates
+        only vehicle routes and SUMO configuration.
+
+        Args:
+            args: Namespace with simulation parameters
+        """
+        from src.config import CONFIG
+        from src.constants import COMPARISON_NETWORK_FILES
+        from src.traffic.builder import execute_route_generation
+        from src.sumo_integration.sumo_utils import execute_config_generation
+
+        logger = logging.getLogger(__name__)
+
+        # Update CONFIG to use current workspace
+        CONFIG.update_workspace(args.workspace)
+
+        # Create workspace directory
+        actual_workspace = os.path.join(args.workspace, 'workspace')
+        os.makedirs(actual_workspace, exist_ok=True)
+
+        # Copy network files from pre-generated network path
+        network_files_copied = 0
+        optional_files = ["zones.geojson", "attractiveness_phases.json"]
+        all_files = list(COMPARISON_NETWORK_FILES) + optional_files
+
+        for filename in all_files:
+            src_file = os.path.join(self.network_path, filename)
+            dst_file = os.path.join(actual_workspace, filename)
+            if os.path.exists(src_file):
+                shutil.copy2(src_file, dst_file)
+                network_files_copied += 1
+                logger.debug(f"Copied {filename} to workspace")
+
+        logger.info(f"📁 Copied {network_files_copied} network files to workspace")
+
+        # Step 6: Generate vehicle routes with episode-specific seeds
+        logger.info("🚗 Generating vehicle routes (Step 6)")
+        execute_route_generation(args)
+
+        # Step 7: Generate SUMO configuration
+        logger.info("⚙️ Generating SUMO configuration (Step 7)")
+        execute_config_generation(args)
 
     def _start_sumo_simulation(self):
         """Start SUMO simulation with TraCI connection."""
@@ -1467,12 +1549,42 @@ class TrafficControlEnv(gym.Env):
             logger.error(f"Failed to update observation space from SUMO: {e}")
             logger.info("Keeping default observation space")
 
+    def _parse_network_dimensions_from_file(self, net_file: str):
+        """Parse edge/junction counts from existing network XML file.
+
+        Args:
+            net_file: Path to the network XML file
+
+        Returns:
+            Tuple[int, int]: (actual_edge_count, actual_junction_count)
+        """
+        import xml.etree.ElementTree as ET
+        logger = logging.getLogger(self.__class__.__name__)
+
+        tree = ET.parse(net_file)
+        root = tree.getroot()
+
+        # Count edges (exclude internal edges with ':')
+        all_edges = root.findall('.//edge')
+        actual_edges = [e for e in all_edges if ':' not in e.get('id', '')]
+        actual_edge_count = len(actual_edges)
+
+        # Count traffic lights (junctions with traffic lights)
+        junctions = root.findall(".//junction[@type='traffic_light']")
+        actual_junction_count = len(junctions)
+
+        logger.info(f"Parsed network dimensions from: {net_file}")
+        logger.info(f"  Edges: {actual_edge_count}")
+        logger.info(f"  Junctions: {actual_junction_count}")
+
+        return actual_edge_count, actual_junction_count
+
     def _get_actual_network_dimensions(self):
         """
         Get actual edge and junction counts from the network.
 
-        First checks if network files already exist in the workspace (e.g., during inference
-        after pipeline has run). If not, generates network temporarily.
+        First checks if a pre-generated network path was provided. Then checks if
+        network files already exist in the workspace. If neither, generates network temporarily.
 
         This is needed because edge splitting creates many more edges than the basic
         grid formula predicts.
@@ -1482,36 +1594,42 @@ class TrafficControlEnv(gym.Env):
         """
         logger = logging.getLogger(self.__class__.__name__)
 
-        # Check if network files already exist in current workspace
+        # Use print() for reliable output (logging gets lost in subprocess noise)
+        print(f"[DIM CHECK] network_path='{self.network_path}'", flush=True)
+
+        # If network_path was provided, it MUST exist (we verified at generation time)
+        if self.network_path:
+            net_file = os.path.join(self.network_path, "grid.net.xml")
+            dir_exists = os.path.exists(self.network_path)
+            file_exists = os.path.exists(net_file)
+            print(f"[DIM CHECK] dir_exists={dir_exists}, file_exists={file_exists}", flush=True)
+
+            if file_exists:
+                print(f"[DIM CHECK] ✅ Using pre-generated network: {net_file}", flush=True)
+                try:
+                    return self._parse_network_dimensions_from_file(net_file)
+                except Exception as e:
+                    logger.warning(f"Failed to parse pre-generated network: {e}")
+                    print(f"[DIM CHECK] WARNING: Parse failed: {e}", flush=True)
+            else:
+                # This should not happen - network_path was set but file doesn't exist
+                print(f"[DIM CHECK] ERROR: network_path set but file missing!", flush=True)
+                if dir_exists:
+                    contents = os.listdir(self.network_path)
+                    print(f"[DIM CHECK] Dir contents: {contents}", flush=True)
+
+        # SECOND: Check if network files already exist in current workspace
         from src.config import CONFIG
         if CONFIG.network_file and Path(CONFIG.network_file).exists():
-            logger.info("Parsing existing network file directly (no SUMO needed)")
+            print(f"[DIM CHECK] Using existing workspace network: {CONFIG.network_file}", flush=True)
+            logger.info(f"Using existing workspace network: {CONFIG.network_file}")
             try:
-                # Parse network XML directly - avoids ANY TraCI usage
-                import xml.etree.ElementTree as ET
-
-                tree = ET.parse(CONFIG.network_file)
-                root = tree.getroot()
-
-                # Count edges (exclude internal edges with ':')
-                all_edges = root.findall('.//edge')
-                actual_edges = [e for e in all_edges if ':' not in e.get('id', '')]
-                actual_edge_count = len(actual_edges)
-
-                # Count traffic lights (junctions with traffic lights)
-                junctions = root.findall(".//junction[@type='traffic_light']")
-                actual_junction_count = len(junctions)
-
-                logger.info(f"Detected actual network dimensions from XML:")
-                logger.info(f"  Edges: {actual_edge_count}")
-                logger.info(f"  Junctions: {actual_junction_count}")
-
-                return actual_edge_count, actual_junction_count
-
+                return self._parse_network_dimensions_from_file(CONFIG.network_file)
             except Exception as e:
                 logger.warning(f"Failed to parse existing network XML, will regenerate: {e}")
 
         # Network doesn't exist yet - need to generate temporarily
+        print(f"[DIM CHECK] ⚠️ No network found, generating temporarily...", flush=True)
         logger.info("Generating network temporarily for dimension check")
         temp_dir = tempfile.mkdtemp(prefix="rl_network_count_")
 
@@ -1524,7 +1642,6 @@ class TrafficControlEnv(gym.Env):
 
             # Update global CONFIG to point to temporary workspace
             from src.config import CONFIG
-            from pathlib import Path
             original_config_output_dir = CONFIG._output_dir
             CONFIG.update_workspace(temp_dir)
 
@@ -1572,24 +1689,7 @@ class TrafficControlEnv(gym.Env):
 
             # Parse network XML directly - no SUMO/TraCI needed
             try:
-                import xml.etree.ElementTree as ET
-
-                tree = ET.parse(CONFIG.network_file)
-                root = tree.getroot()
-
-                # Count edges (exclude internal edges with ':')
-                all_edges = root.findall('.//edge')
-                actual_edges = [e for e in all_edges if ':' not in e.get('id', '')]
-                actual_edge_count = len(actual_edges)
-
-                # Count traffic lights (junctions with traffic lights)
-                junctions = root.findall(".//junction[@type='traffic_light']")
-                actual_junction_count = len(junctions)
-
-                logger.info(f"Detected actual network dimensions from generated XML:")
-                logger.info(f"  Edges: {actual_edge_count}")
-                logger.info(f"  Junctions: {actual_junction_count}")
-
+                actual_edge_count, actual_junction_count = self._parse_network_dimensions_from_file(CONFIG.network_file)
             except Exception as e:
                 logger.error(f"Failed to parse generated network XML: {e}")
                 # Fall back to estimated values
