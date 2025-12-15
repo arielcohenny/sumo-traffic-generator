@@ -12,7 +12,7 @@ General simulation constants are in src/constants.py.
 
 # PPO Training Parameters (Optimized for Long-Horizon Traffic Control)
 import torch.nn as nn
-DEFAULT_LEARNING_RATE = 1e-4  # Reduced from 3e-4 for stable training
+DEFAULT_LEARNING_RATE = 1e-4  # Higher initial (will be scheduled)
 # Standard PPO clipping for stable training (was 0.05, caused KL divergence issues)
 DEFAULT_CLIP_RANGE = 0.2
 DEFAULT_BATCH_SIZE = 2048     # Larger for stability with long episodes
