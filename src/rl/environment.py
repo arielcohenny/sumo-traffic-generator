@@ -140,6 +140,9 @@ class TrafficControlEnv(gym.Env):
         instance.current_schedules = {}
         instance.cycle_start_step = 0
 
+        # Network path for reuse (None for inference mode)
+        instance.network_path = None
+
         # Calculate state vector size dynamically by getting actual network dimensions
         # This ensures observation space matches the actual edge count after edge splitting
         from .constants import (
