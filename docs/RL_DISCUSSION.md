@@ -195,6 +195,8 @@ These formulation choices are deeply interdependent. The training scope shapes t
 - Time Resolution: Fixed 10-second intervals
 - Exploration & Constraints: Enforce minimum green times (realistic, prevents unsafe policies)
 
+> **Note**: The actual implementation evolved from these recommendations through iterative experimentation. See Section 5 (Implementation Journey) for how the final configuration differs and the lessons learned during development.
+
 ## 3. RL Environment Design
 
 This chapter translates the design choices from Chapter 2 into a concrete RL environment architecture. We focus on the recommended starting configuration: centralized agent with macroscopic state representation, global reward design, and phase control. The goal is to establish the architectural foundation that bridges theoretical formulation with practical implementation, ensuring the RL system can effectively learn network-wide traffic coordination.
@@ -215,7 +217,9 @@ The state representation implements the macroscopic input model from Chapter 2, 
 
 **Network Connectivity Context**: The state representation includes spatial relationships between network elements to support coordination learning. Upstream and downstream connectivity information enables the agent to understand how local decisions affect neighboring intersections. Traffic propagation patterns from congested areas help identify coordination opportunities for implementing strategies like green wave progression.
 
-**State Vector Construction**: All network information is concatenated into a single normalized vector with fixed dimensionality determined by the network topology. For a network with E edges and J junctions, the state vector has dimensionality E × 6 + J × 2 + 5 (six traffic indicators per edge, two signal features per junction, and five network-level metrics including Tree Method features). This fixed-size representation enables efficient neural network processing while capturing all essential traffic and signal information needed for coordination decisions.
+**State Vector Construction**: All network information is concatenated into a single normalized vector with fixed dimensionality determined by the network topology. The state vector structure evolved during implementation (see Section 5.2 for the full evolution). This fixed-size representation enables efficient neural network processing while capturing all essential traffic and signal information needed for coordination decisions.
+
+**Tree Method Alignment**: A key design decision was to align the RL state features with Tree Method's traffic analysis. This ensures the RL agent "sees" traffic the same way Tree Method does, enabling direct performance comparison. The implementation reuses Tree Method's `Link` and `QmaxProperties` classes to compute traffic flow theory metrics (density via `calc_k_by_u`, bottleneck detection via `is_loaded`, time loss, and cost calculations). This alignment validates whether RL can match or exceed Tree Method performance using identical traffic perception.
 
 ### Action Space Design
 
@@ -308,129 +312,288 @@ The statistical reward system from Chapter 3 requires specific integration with 
 
 **PPO Implementation**: The chosen PPO algorithm integrates naturally with the multi-objective reward structure. The value network learns to predict expected cumulative multi-objective rewards, while the policy network learns phase selection strategies that optimize the balanced objective. Conservative learning rates (3e-4 → 5e-6) and clip ranges (0.2) prevent destabilization while allowing effective coordination learning.
 
-## 5. Implementation Overview
+## 5. Implementation Journey
 
-This chapter documents the key implementation facts, technology choices, and empirically-tuned parameters used to build the RL traffic control system. Unlike Sections 1-4 which describe design rationale, this section captures the concrete implementation decisions and validated configuration values.
+This chapter documents how the RL implementation evolved through iterative experimentation. Unlike Sections 1-4 which describe design rationale, this section captures the concrete implementation decisions, the problems encountered during training, and the lessons learned. The final configuration emerged through multiple training iterations, each revealing what works and what doesn't for traffic signal control.
 
-### Technology Stack
+### 5.1 Technology Stack
 
-**Reinforcement Learning Framework**: The implementation uses Stable-Baselines3 (SB3), a PyTorch-based library providing production-quality RL algorithms. SB3 was chosen for its robust PPO implementation, extensive documentation, and proven performance on continuous control tasks.
+**Reinforcement Learning Framework**: The implementation uses Stable-Baselines3 (SB3), a PyTorch-based library providing production-quality RL algorithms. SB3 was chosen for its robust PPO implementation, extensive documentation, and proven performance.
 
-**Environment Interface**: The traffic control environment implements the Gymnasium (OpenAI Gym) API, providing standard `reset()`, `step()`, `observation_space`, and `action_space` interfaces. Gymnasium compatibility ensures the environment works with any RL library supporting the Gym standard.
+**Environment Interface**: The traffic control environment implements the Gymnasium (OpenAI Gym) API, providing standard `reset()`, `step()`, `observation_space`, and `action_space` interfaces.
 
-**Deep Learning Backend**: PyTorch serves as the neural network framework, integrated through Stable-Baselines3. The policy and value networks use PyTorch's automatic differentiation for gradient computation and optimization.
+**Simulation Integration**: TraCI provides real-time control and state observation of SUMO simulations. The implementation uses TraCI's Python API to execute phase changes, query vehicle states, and collect traffic metrics.
 
-**Simulation Integration**: TraCI provides real-time control and state observation of SUMO simulations. The implementation uses TraCI's Python API to execute phase changes, query vehicle states, and collect traffic metrics at each simulation step.
+**Supporting Libraries**: NumPy for numerical operations, PyTorch as the deep learning backend through Stable-Baselines3.
 
-**Supporting Libraries**: NumPy handles numerical operations and array manipulations for state vector construction. Python's built-in logging provides progress tracking and debugging capabilities during training.
+### 5.2 State Space Evolution
 
-### Implementation Architecture
+The state representation went through significant changes as we learned what information the RL agent actually needs.
 
-**Pipeline Integration**: The RL environment integrates with the existing SUMO traffic simulation pipeline rather than building a standalone system. When `--traffic_control rl` is specified, the simulation pipeline instantiates the RL environment and connects it to the SUMO simulation configured through standard pipeline steps.
+**Initial Design (4 edge + 2 junction features)**:
 
-**Environment-Simulation Connection**: The `TrafficControlEnv` class wraps the SUMO simulation, executing the traffic generation pipeline during initialization to create the network and traffic files. The environment maintains a TraCI connection throughout each episode, executing phase changes and collecting observations at every 10-second decision interval.
+The first implementation used minimal features per edge:
+- Speed ratio (current/free-flow speed)
+- Vehicle density (simple count/length)
+- Flow rate (vehicles per second)
+- Congestion flag (binary based on waiting time)
 
-**Tree Method Reuse**: The implementation leverages the existing Tree Method traffic analysis infrastructure. The `TrafficAnalyzer` class (originally built for Tree Method) computes edge speeds, densities, flows, and bottleneck detection. The RL environment reuses these calculations for state construction rather than reimplementing traffic analysis.
+And per junction:
+- Current phase (normalized 0-1)
+- Remaining phase duration (normalized)
 
-**Dual-Mode Operation**: The system supports both training mode (no pre-trained model) and inference mode (loading existing model). Training mode uses random initial policies and learns through PPO updates. Inference mode loads a saved model and executes the learned policy without exploration.
+**Problem**: These basic features didn't capture the traffic dynamics that Tree Method uses for decision-making. The RL agent was essentially "blind" to the sophisticated traffic flow patterns.
 
-### Reward Coefficient Values
+**Evolution to Tree Method-Aligned Features**:
 
-The multi-objective reward function combines six components with empirically-tuned coefficients validated through correlation analysis:
+A key insight was that the RL agent should "see" traffic the same way Tree Method does. This enables direct performance comparison and leverages proven traffic engineering concepts. The implementation now imports Tree Method's `Link` and `QmaxProperties` classes directly.
 
-**Coefficient Values**:
+**Current State Features** (per edge, using Tree Method calculations):
 
-- `REWARD_THROUGHPUT_PER_VEHICLE = 50.0` - Reward per vehicle completion
-- `REWARD_WAITING_TIME_PENALTY_WEIGHT = 0.5` - Waiting time penalty multiplier
-- `REWARD_SPEED_REWARD_FACTOR = 10.0` - Average speed reward multiplier
-- `REWARD_BOTTLENECK_PENALTY_PER_EDGE = 4.0` - Penalty per bottleneck edge
-- `REWARD_EXCESSIVE_WAITING_PENALTY = 2.0` - Penalty per vehicle waiting >5min
-- `REWARD_INSERTION_BONUS = 1.0` - Bonus when insertion queue <50 vehicles
+| Feature | Tree Method Function | Purpose |
+|---------|---------------------|---------|
+| Speed ratio | current/free-flow | Flow efficiency |
+| Simple density | vehicles/length | Basic utilization |
+| Simple flow | vehicles/second | Throughput estimate |
+| Congestion flag | waiting > 30s | Immediate problems |
+| Normalized density | `calc_k_by_u(speed)` | Traffic flow theory density |
+| Normalized flow | speed × density × lanes | Theoretical flow rate |
+| Bottleneck flag | `speed < q_max_u` | Is edge loaded? |
+| Normalized time loss | `time_loss_m` calculation | Delay metric |
+| Speed trend | moving average comparison | Improving or worsening? |
 
-**Coefficient Rationale**: These values maintain balanced multi-objective optimization where no single component dominates the learning signal. The low waiting penalty weight (0.5) prevents this abundant signal from overwhelming throughput rewards. The high bottleneck penalty (4.0) ensures strong negative correlation with congestion for effective bottleneck identification. The moderate throughput reward (50.0) provides sufficient positive feedback without causing exploitation of edge cases. Validation confirms these coefficients achieve the target balance criteria:
+**Per junction** (4 features):
+- Normalized phase, duration, incoming flow, outgoing flow
 
-- No single component exceeds 60% of total reward magnitude
-- Speed reward maintains strong positive correlation with network speed (>+0.3)
-- Bottleneck penalty maintains strong negative correlation with congestion (<-0.3)
+**Network-level** (6 features):
+- Bottleneck ratio, normalized cost, vehicle count, average speed, congestion ratio, cycle length
 
-**Validated Balance** (1500 vehicles, 3600s simulation):
+**Why Tree Method Alignment Matters**:
+- Same traffic perception = apples-to-apples comparison
+- Validates whether RL can match/exceed Tree Method using identical information
+- Leverages proven traffic flow theory rather than reinventing metrics
 
+### 5.3 Action Space Evolution
+
+**Document Design vs. Actual Implementation**:
+
+Section 2 recommended discrete phase selection with fixed 10-second durations for stable learning. The actual implementation evolved differently.
+
+**Current Implementation**: Continuous actions with softmax conversion
+
+- Action shape: `(num_intersections × 4,)` with values in `[-10.0, +10.0]`
+- Softmax converts to phase duration proportions within cycle
+- Default cycle length: 90 seconds (configurable)
+- Supports variable cycles: `--cycle-lengths 60 90 120`
+
+**Rationale for Continuous Actions**: While discrete phase selection is simpler, continuous duration control provides more flexibility for the agent to learn nuanced timing strategies. The softmax ensures valid probability distributions over phases.
+
+### 5.4 Reward Function Evolution
+
+The reward function required a complete redesign from the initial simple approach.
+
+#### Phase 1: Initial Design
+
+Simple individual vehicle penalty approach:
+- `COMPLETION_BONUS_PER_VEHICLE = 1.0`
+- `THROUGHPUT_BONUS_WEIGHT = 10.0`
+- `WAITING_TIME_PENALTY_FACTOR = -0.1` per second
+
+**Problem**: Waiting time penalties dominated the signal, overwhelming throughput rewards. The agent learned to avoid penalties but not to maximize throughput.
+
+#### Phase 2: Multi-Objective Rebalancing
+
+Created validation scripts to measure correlation between reward components and traffic metrics. Rebalanced coefficients based on empirical validation:
+
+| Component | Before | After | Reason |
+|-----------|--------|-------|--------|
+| Throughput per vehicle | 10.0 | 50.0 | 5x increase - make primary signal visible |
+| Waiting time weight | 2.0 | 0.5 | 4x decrease - was dominating the signal |
+| Speed reward | 2.0 | 10.0 | 5x increase - make contribution visible |
+| Bottleneck penalty | 0.5 | 4.0 | 8x increase - strengthen correlation with congestion |
+
+**Validation Scripts Created:**
+- `evaluate_reward_function.py` - Tests different policies with current reward
+- `analyze_reward_validation.py` - Computes correlations between reward and metrics
+
+**Validation Criteria:**
+- Speed correlation >+0.3
+- Bottleneck correlation <-0.3
+- No single component >60% of total magnitude
+
+#### Final Coefficient Values
+
+| Component | Value | Purpose |
+|-----------|-------|---------|
+| Throughput per vehicle | 50.0 | Primary goal: maximize completions |
+| Waiting time penalty | 0.45 | Penalize delays (z-score normalized) |
+| Speed reward factor | 10.0 | Encourage healthy network flow |
+| Bottleneck penalty | 4.0 | Strong signal against congestion |
+| Excessive waiting penalty | 2.0 | Extra penalty for >5 min waits |
+| Insertion bonus | 1.0 | Reward clearing vehicle queue |
+
+#### Reward Formula
+
+The total reward is computed as:
+
+```
+R = R_throughput + R_waiting + R_excessive + R_speed + R_bottleneck + R_insertion
+```
+
+| Component | Formula |
+|-----------|---------|
+| Throughput | `+50.0 × vehicles_completed` |
+| Waiting time | `-0.45 × z_score(avg_waiting_time)` |
+| Excessive waiting | `-2.0 × count(vehicles waiting > 5 min)` |
+| Speed | `+10.0 × (avg_speed / 50.0)` |
+| Bottleneck | `-4.0 × bottleneck_count` |
+| Insertion bonus | `+1.0` if waiting_to_insert < 50 |
+
+The waiting time uses z-score normalization with empirically derived statistics (mean: 38.01s, std: 11.12s).
+
+**Validation Results** (22000 vehicles, 7300s simulation):
 - Waiting penalty: 58% of total magnitude (within <60% target)
-- Bottleneck penalty: 31% of total magnitude
-- Speed reward: 14% of total magnitude
-- Throughput reward: 9% of total magnitude
+- Bottleneck penalty: 31%
+- Speed reward: 14%
+- Throughput: 9%
 - Achieved correlations: +0.684 (speed), -0.708 (bottlenecks)
 
-**Threshold Values**:
+### 5.5 Training Configuration Evolution
 
-- `REWARD_EXCESSIVE_WAITING_THRESHOLD = 300.0` seconds (5 minutes)
-- `REWARD_INSERTION_THRESHOLD = 50` vehicles
-- `REWARD_SPEED_NORMALIZATION = 50.0` km/h (reference speed)
+The training configuration went through five major iterations, each addressing problems discovered during training.
 
-### Training Configuration
+#### Phase 1: Initial Configuration
 
-**PPO Hyperparameters**:
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| Learning rate | 2e-4 | Conservative for expensive episodes |
+| Clip range | 0.1 | Prevent large policy updates |
+| Batch size | 1024 | Balance stability and memory |
+| N_steps | 2048 | Steps per update |
+| N_epochs | 10 | Optimization epochs per update |
+| Gamma | 0.99 | Standard discount factor |
+| GAE lambda | 0.95 | Standard GAE parameter |
 
-- Learning rate: Scheduled decay from 3×10⁻⁴ to 5×10⁻⁶ — Exponential decay prevents overfitting while allowing initial exploration
-- Clip range: 0.2 — Standard PPO value balancing policy update magnitude with training stability
-- Batch size: 2048 — Large batches reduce variance in long-episode traffic scenarios
-- Number of steps: 4096 — Sufficient experience collection before updates for stable gradient estimates
-- Number of epochs: 15 — Multiple optimization passes per batch maximize learning from expensive simulation data
-- Discount factor (γ): 0.995 — High discount captures long-horizon cascading traffic effects across network
-- GAE lambda (λ): 0.98 — High lambda for accurate advantage estimation in long episodes
-- Gradient clipping: 0.5 — Prevents destabilization from occasional large gradients in complex traffic states
+**Result**: Training was stable but slow. The agent learned basic behaviors but struggled with long-horizon coordination effects.
 
-**Neural Network Architecture**:
+#### Phase 2: Long-Horizon Optimization
 
-- Policy type: MlpPolicy — Standard fully-connected architecture suitable for fixed-size state vectors
-- Hidden layers: [256, 256] — Two layers with 256 units each provide sufficient capacity for ~540-dim state space
-- Activation function: ReLU — Standard non-linearity preventing vanishing gradients
-- Separate policy and value networks — Actor-critic architecture enables independent optimization of each component
+Recognized that traffic signal effects cascade across the network over time. Made major changes:
 
-**Entropy Coefficient Schedule**:
+| Parameter | Old → New | Reason |
+|-----------|-----------|--------|
+| Learning rate | 2e-4 → 3e-4 | Faster initial learning |
+| Clip range | 0.1 → 0.05 | Conservative for pre-training preservation |
+| Batch size | 1024 → 2048 | Stability with long episodes |
+| N_steps | 2048 → 4096 | More experience for long-horizon effects |
+| N_epochs | 10 → 15 | More optimization passes |
+| Gamma | 0.99 → 0.995 | Longer horizon for cascading traffic effects |
+| GAE lambda | 0.95 → 0.98 | Better advantage estimation |
 
-- Initial: 0.02 — High exploration early in training to discover effective coordination patterns
-- Final: 0.001 — Low exploration late in training to exploit learned policy
-- Decay: Linear over 500,000 steps — Gradual transition from exploration to exploitation
+**Added**:
+- Learning rate schedule (exponential decay)
+- Entropy schedule (exploration → exploitation)
+- Early stopping to prevent overtraining
+- Enhanced state features aligned with Tree Method
+- Demonstration collection for imitation learning
 
-**Early Stopping**:
+**Result**: Better long-horizon learning, but encountered KL divergence issues.
 
-- Enabled with 10-evaluation patience — Stops training after 10 evaluations without improvement
-- Minimum improvement threshold: 10.0 — Prevents stopping on minor fluctuations in mean reward
-- Rationale: Prevents performance degradation from overtraining on expensive simulation episodes
+#### Phase 3: Demonstration Collection (Imitation Learning)
 
-**Training Scale**:
+Recognized that pure RL from scratch was slow and sample-inefficient due to expensive simulations. Implemented imitation learning from Tree Method as a starting point.
 
-- Default training duration: 100,000 timesteps
-- Checkpoint frequency: Every 10,000 timesteps
-- State vector size: ~540 dimensions (for 5×5 grid with 80 edges, 25 junctions)
-- Action space size: 25-dimensional MultiDiscrete (4 phases per intersection)
+**Key Decision**: Collect expert demonstrations from Tree Method and pre-train the RL policy through behavioral cloning before RL fine-tuning.
 
-**Computational Considerations**:
+**Implementation**:
+1. `collect_tree_method_demonstrations.py` - Runs Tree Method with parameter variation, collects (state, action) pairs
+2. `pretrain_from_demonstrations.py` - Trains RL policy on collected demonstrations
 
-- Single environment training: ~2.1 minutes per 1,000 timesteps (~476 timesteps/min)
-- Model file size: ~5-10 MB (neural network weights)
+**Why This Matters**:
+- Faster convergence by starting from expert behavior rather than random exploration
+- Leverages existing Tree Method expertise
+- Reduces exploration in dangerous policy regions
+- Significant time savings compared to pure RL from scratch
 
-### Training Environment Configuration
+#### Phase 4: Stability Fixes
 
-The RL agent trains on a fixed network topology with variable traffic scenarios to learn robust coordination strategies.
+Training runs showed KL divergence spikes causing policy collapse.
 
-**Fixed Network Parameters** (constant across all training):
+| Parameter | Old → New | Reason |
+|-----------|-----------|--------|
+| Clip range | 0.05 → 0.2 | 0.05 caused KL divergence issues |
+| N_epochs | 15 → 5 | Reduced for stability with standard PPO |
 
-- Network topology: `--network-seed 42 --grid_dimension 5 --block_size_m 200`
-- Lane configuration: `--lane_count realistic`
-- Land use: `--land_use_block_size_m 25.0 --attractiveness land_use`
-- Traffic signals: `--traffic_light_strategy opposites`
-- Simulation: `--step-length 1.0`
+**Lesson**: The conservative 0.05 clip range was too restrictive. Standard PPO uses 0.2 for good reason—it allows sufficient policy updates while maintaining stability.
 
-**Variable Traffic Parameters** (adjusted periodically during training for scenario diversity):
+#### Phase 5: Final Tuning
 
-- Traffic volume: `--num_vehicles` (adjusted for curriculum learning and load testing)
-- Episode duration: `--end-time` (adjusted for training efficiency)
-- Traffic randomization: `--private-traffic-seed`, `--public-traffic-seed` (changed periodically)
-- Driver behavior: `--routing_strategy` (e.g., `'shortest 75 realtime 25'`)
-- Fleet composition: `--vehicle_types` (e.g., `'passenger 95 public 5'`)
-- Route distributions: `--passenger-routes`, `--public-routes`
-- Temporal patterns: `--departure_pattern`, `--start_time_hour`
+| Parameter | Old → New | Reason |
+|-----------|-----------|--------|
+| Learning rate | 3e-4 → 1e-4 | Reduced for stable training |
 
-**Training Rationale**: The fixed network ensures the agent learns to coordinate traffic signals on a consistent 5×5 grid topology. Variable traffic parameters expose the agent to diverse congestion patterns, driver behaviors, and temporal distributions without changing the fundamental coordination problem. This prevents overfitting to specific traffic scenarios while maintaining a well-defined learning task.
+**Final Configuration**:
+
+```
+Learning rate: 1e-4 (scheduled decay to 5e-6)
+Clip range: 0.2
+Batch size: 2048
+N_steps: 4096
+N_epochs: 5
+Gamma: 0.995
+GAE lambda: 0.98
+Gradient clipping: 0.5
+Entropy: 0.02 → 0.001 over 500k steps
+Early stopping: 10 evaluations patience
+```
+
+### 5.6 Key Lessons Learned
+
+1. **Training instability** → Reduce learning rate, reduce epochs, use standard clip range (0.2)
+2. **Long-horizon effects** → Higher gamma (0.995), more steps per update (4096)
+3. **KL divergence issues** → Don't use clip_range=0.05, stick to standard 0.2
+4. **Expensive simulations** → Larger batch sizes for stability, but fewer epochs per batch
+5. **Tree Method alignment** → Use identical traffic metrics for fair comparison
+6. **Imitation learning** → Pre-training from Tree Method demonstrations saves significant training time
+
+### 5.7 Additional Features
+
+**Network Reuse Mode**:
+
+For efficient training, the network can be generated once and reused across episodes:
+- `--generate-network-only` - Create network files without running simulation
+- `--use-network-from PATH` - Load existing network for training
+
+**Variable Cycle Strategies**:
+
+The agent can be trained with different cycle length strategies:
+- `fixed` - Constant cycle length (default 90s)
+- `random` - Random selection from configured options
+- `sequential` - Cycle through options
+- `adaptive` - Agent-controlled (future work)
+
+### 5.8 Current Training Environment
+
+**Fixed Network Parameters**:
+- Network: `--network-seed 24208 --grid_dimension 6 --junctions_to_remove 2 --block_size_m 280`
+- Lanes: `--lane_count realistic`
+- Signals: `--traffic_light_strategy partial_opposites`
+
+**Fixed Traffic Parameters**:
+- Routing: `--routing_strategy 'realtime 100'`
+- Vehicle types: `--vehicle_types 'passenger 100'`
+- Routes: `--passenger-routes 'in 0 out 0 inner 100 pass 0'`
+- Departure: `--departure_pattern uniform`
+- Time: `--start_time_hour 8.0`
+- Duration: `--end-time 7300` (about 2 hours)
+- Volume: `--num_vehicles 22000`
+
+**Variable Traffic Parameters** (for scenario diversity):
+- Seeds: `--private-traffic-seed`, `--public-traffic-seed`
+
+**Training Command**:
+```bash
+python scripts/train_rl_production.py \
+  --env-params "--network-seed 24208 --grid_dimension 6 --junctions_to_remove 2 --block_size_m 280 --lane_count realistic --traffic_light_strategy partial_opposites --routing_strategy 'realtime 100' --vehicle_types 'passenger 100' --passenger-routes 'in 0 out 0 inner 100 pass 0' --departure_pattern uniform --start_time_hour 8.0 --num_vehicles 22000 --end-time 7300" \
+  --timesteps 100000
+```
