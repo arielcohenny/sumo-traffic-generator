@@ -174,4 +174,6 @@ dbps
 
 ## License
 
-This project is licensed under the MIT License.
+This repository is released under the [PolyForm Noncommercial License](https://polyformproject.org/licenses/noncommercial/1.0.0/).
+This repository contains research code released for non-commercial academic use only.
+Commercial use requires explicit permission from the authors.
