@@ -59,17 +59,23 @@ def generate_full_grid_network(dimension, block_size_m, lane_count_arg, traffic_
 
 
 def pick_random_junction_ids(seed: int, num_junctions_to_remove: int, dimension: int) -> List[str]:
+    """Pick random junctions to remove from the grid.
+
+    Note: This intentionally picks from ALL junctions (including corners and edges),
+    not just interior junctions. This allows for more varied network topologies.
+    """
     if dimension < 3:
         raise ValueError(
-            "Grid must be at least 3×3 to have removable interior nodes")
+            "Grid must be at least 3×3 to have removable junctions")
 
     row_labels = [chr(ord('A') + i) for i in range(0, dimension)]
 
+    # All junctions in the grid (corners, edges, and interior)
     candidates = [f"{row}{col}" for row in row_labels for col in range(0, dimension)]
 
     if num_junctions_to_remove > len(candidates):
         raise ValueError(
-            f"Too many junctions requested: only {len(candidates)} interior junctions available.")
+            f"Too many junctions requested: only {len(candidates)} junctions available.")
 
     rng = random.Random(seed)
     return rng.sample(candidates, num_junctions_to_remove)
@@ -176,6 +182,31 @@ def wipe_crossing_from_nod(node_ids: list[str]) -> None:
                encoding="UTF-8", xml_declaration=True)
 
 
+def count_incoming_directions(jid: str, edg_file: Path) -> int:
+    """Count unique directions traffic comes FROM to reach this junction.
+
+    For junction B0, look for edges like A0B0, B1B0, C0B0 (pattern: XnJID where JID is our junction)
+    Returns count of unique source junctions.
+
+    This is used to identify single-direction junctions (dead-ends) that don't need traffic lights.
+    """
+    edg_tree = ET.parse(edg_file)
+    edg_root = edg_tree.getroot()
+
+    # Pattern: edge ID is "SourceJunction" + "DestJunction", e.g., "A0B0" means A0 → B0
+    # We want edges ending at our junction (jid)
+    pattern = re.compile(rf'^([A-Z]\d+){re.escape(jid)}$')
+    incoming = set()
+
+    for edge in edg_root.findall('edge'):
+        edge_id = edge.get('id', '')
+        match = pattern.match(edge_id)
+        if match:
+            incoming.add(match.group(1))  # The source junction
+
+    return len(incoming)
+
+
 def wipe_crossing_from_tll(node_ids: list[str]) -> None:
     # Parse the TLS definition file
     tree = ET.parse(Path(str(CONFIG.network_tll_file)))
@@ -231,6 +262,20 @@ def wipe_crossing_from_tll(node_ids: list[str]) -> None:
     for tl in tls_to_remove_elements:
         root.remove(tl)
 
+    # 3b. Remove TLs from single-direction junctions (dead-ends)
+    # These junctions have traffic from only 1 direction, so no signal is needed
+    # Must check AFTER wipe_crossing_from_edg() has updated the edge file
+    edg_file = Path(str(CONFIG.network_edg_file))
+    single_direction_tls = []
+    for tl in root.findall("tlLogic"):
+        jid = tl.get("id")
+        incoming_count = count_incoming_directions(jid, edg_file)
+        if incoming_count <= 1:
+            single_direction_tls.append(tl)
+
+    for tl in single_direction_tls:
+        root.remove(tl)
+
     # 4. Reindex remaining connections so linkIndex starts at 0 and is contiguous per TL
     tl_ids = {conn.get("tl") for conn in root.findall("connection")}
     for tid in tl_ids:
@@ -253,6 +298,69 @@ def wipe_crossing(node_ids: list[str]) -> None:
     wipe_crossing_from_nod(node_ids)
     wipe_crossing_from_edg(node_ids)
     wipe_crossing_from_tll(node_ids)
+
+
+def check_network_connectivity(removed_junctions: List[str]) -> None:
+    """Check if the network remains connected after junction removal.
+
+    Builds a graph from the edge file and verifies all remaining junctions
+    are reachable from each other. Raises an error if the network is disconnected.
+
+    Args:
+        removed_junctions: List of junction IDs that were removed
+    """
+    edg_tree = ET.parse(Path(str(CONFIG.network_edg_file)))
+    edg_root = edg_tree.getroot()
+
+    # Build adjacency graph from remaining edges
+    # Edge format: "A0B0" means A0 -> B0
+    graph: dict[str, set[str]] = {}
+
+    for edge in edg_root.findall('edge'):
+        edge_id = edge.get('id', '')
+        match = _SPLIT_EDGE.match(edge_id)
+        if match:
+            from_jid, to_jid = match.groups()
+            # Add both directions (edges are bidirectional in our grid)
+            if from_jid not in graph:
+                graph[from_jid] = set()
+            if to_jid not in graph:
+                graph[to_jid] = set()
+            graph[from_jid].add(to_jid)
+            graph[to_jid].add(from_jid)
+
+    if not graph:
+        # No edges left - this is a problem
+        raise ValueError(
+            f"Junction removal created an empty network. "
+            f"Removed junctions: {', '.join(removed_junctions)}. "
+            f"Please choose different junctions to remove."
+        )
+
+    # BFS to find all connected junctions from an arbitrary start
+    all_junctions = set(graph.keys())
+    start = next(iter(all_junctions))
+    visited = set()
+    queue = [start]
+
+    while queue:
+        current = queue.pop(0)
+        if current in visited:
+            continue
+        visited.add(current)
+        for neighbor in graph.get(current, set()):
+            if neighbor not in visited:
+                queue.append(neighbor)
+
+    # Check if all junctions were reached
+    unreached = all_junctions - visited
+    if unreached:
+        raise ValueError(
+            f"Junction removal created a disconnected network. "
+            f"Removed junctions: {', '.join(removed_junctions)}. "
+            f"Unreachable junctions: {', '.join(sorted(unreached))}. "
+            f"Please choose different junctions to remove."
+        )
 
 
 def parse_junctions_to_remove(junctions_input: str) -> tuple[bool, list[str], int]:
@@ -862,6 +970,9 @@ def generate_grid_network(seed, dimension, block_size_m, junctions_to_remove_inp
 
             # remove the selected junctions
             wipe_crossing(junctions_to_remove)
+
+            # verify the network is still connected after removal
+            check_network_connectivity(junctions_to_remove)
         else:
             generate_full_grid_network(
                 dimension, block_size_m, lane_count_arg, "opposites", traffic_control)
