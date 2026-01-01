@@ -418,6 +418,13 @@ def _validate_cross_arguments(args) -> None:
     if args.end_time < 1:
         raise ValidationError("end_time must be positive")
 
+    # --hide-zones requires --gui
+    if getattr(args, 'hide_zones', False) and not args.gui:
+        raise ValidationError(
+            "--hide-zones requires --gui to be enabled. "
+            "Zones are only visible in GUI mode."
+        )
+
     # Grid dimension vs junctions to remove capacity limits
     max_removable = max(0, int(args.grid_dimension - 2)
                         ** 2)  # Interior junctions only

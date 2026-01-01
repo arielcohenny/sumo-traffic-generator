@@ -106,6 +106,8 @@ def generate_command_line(params: Dict[str, Any]) -> str:
 
     if params.get('gui', False):
         cmd_parts.append("--gui")
+        if params.get('hide_zones', False):
+            cmd_parts.append("--hide-zones")
 
     if params.get('log_bottleneck_events', False):
         cmd_parts.append("--log_bottleneck_events")
@@ -206,6 +208,8 @@ def convert_params_to_args(params: Dict[str, Any]) -> argparse.Namespace:
 
     if params.get("gui", False):
         args_list.append("--gui")
+        if params.get("hide_zones", False):
+            args_list.append("--hide-zones")
 
     if params.get("log_bottleneck_events", False):
         args_list.append("--log_bottleneck_events")

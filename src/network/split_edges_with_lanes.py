@@ -65,6 +65,22 @@ def calculate_offset_shape(base_shape: str, lateral_offset_m: float) -> str:
     return f"{new_x1:.2f},{new_y1:.2f} {new_x2:.2f},{new_y2:.2f}"
 
 
+def get_edge_lane_count(edge_id: str, edg_root) -> int:
+    """Get the number of lanes for an edge from the edge XML root.
+
+    Args:
+        edge_id: The edge ID to look up
+        edg_root: The ElementTree root of the edge file
+
+    Returns:
+        Number of lanes for the edge, or 1 if edge not found
+    """
+    for edge in edg_root.findall('edge'):
+        if edge.get('id') == edge_id:
+            return int(edge.get('numLanes', '1'))
+    return 1  # Default fallback
+
+
 def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int, algorithm: str, block_size_m: int = 200, traffic_light_strategy: str = "opposites") -> None:
     """Integrated edge splitting with flow-based lane assignment.
 
@@ -117,7 +133,7 @@ def split_edges_with_flow_based_lanes(seed: int, min_lanes: int, max_lanes: int,
     # Step 5: Update all XML files
     update_nodes_file(nod_root, new_nodes)
     update_edges_file(edg_root, split_edges)
-    update_connections_file(con_root, split_edges, movement_data, edge_coords)
+    update_connections_file(con_root, split_edges, movement_data, edge_coords, edg_root)
     update_traffic_lights_file(tll_root, split_edges, con_root)
 
     # Step 6: Write updated files
@@ -682,7 +698,7 @@ def update_edges_file(edg_root, split_edges: Dict[str, Dict]):
                 head_elem.set(attr, value)
 
 
-def update_connections_file(con_root, split_edges: Dict[str, Dict], movement_data: Dict[str, Dict], edge_coords: Dict[str, Tuple[float, float, float, float]]):
+def update_connections_file(con_root, split_edges: Dict[str, Dict], movement_data: Dict[str, Dict], edge_coords: Dict[str, Tuple[float, float, float, float]], edg_root):
     """Update connections to reference head segments (supports multi-head structure)."""
 
     # Remove all existing connections (we'll regenerate them)
@@ -833,6 +849,29 @@ def update_connections_file(con_root, split_edges: Dict[str, Dict], movement_dat
                         conn_elem.set("to", dest_edge)
                         conn_elem.set("fromLane", str(lane))
                         conn_elem.set("toLane", "0")
+
+            # Fallback: ensure all head lanes have at least one outgoing connection
+            # This prevents vehicles from getting stranded at dead-end junctions
+            connected_lanes = set()
+            dest_edge_fallback = None
+            for conn in con_root.findall('connection'):
+                if conn.get('from') == head_id:
+                    connected_lanes.add(int(conn.get('fromLane')))
+                    dest_edge_fallback = conn.get('to')
+
+            # Add fallback connections for any stranded lanes
+            if dest_edge_fallback and len(connected_lanes) < head_lanes:
+                dest_num_lanes = get_edge_lane_count(dest_edge_fallback, edg_root)
+                for lane in range(head_lanes):
+                    if lane not in connected_lanes:
+                        # Monotonic mapping to avoid lane crossing:
+                        # dest_lane = (source_lane * dest_count) // source_count
+                        dest_lane = (lane * dest_num_lanes) // head_lanes
+                        conn_elem = ET.SubElement(con_root, "connection")
+                        conn_elem.set("from", head_id)
+                        conn_elem.set("to", dest_edge_fallback)
+                        conn_elem.set("fromLane", str(lane))
+                        conn_elem.set("toLane", str(dest_lane))
 
 
 def update_traffic_lights_file(tll_root, split_edges: Dict[str, Dict], con_root):

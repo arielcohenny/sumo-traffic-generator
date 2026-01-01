@@ -293,3 +293,65 @@ Based on "A Simulation Model for Intra-Urban Movements" research methodology, th
 ## Common Zone Generation Outputs
 
 - **File Generated** (both modes): `workspace/zones.poly.xml`
+
+## Zone Visibility in SUMO GUI
+
+### Default Behavior
+
+By default, when running with `--gui`, zone polygons are displayed as colored overlays in SUMO's visualization:
+
+- Each zone type has a distinct color (e.g., Residential = orange, Employment = dark red)
+- Zones are rendered as filled polygons on the network layer
+- Zone overlay can sometimes obscure vehicle traffic visualization
+
+### Hiding Zones from Display
+
+Use the `--hide-zones` flag to suppress zone display while keeping zones fully functional:
+
+```bash
+# Show zones (default)
+env PYTHONUNBUFFERED=1 python -m src.cli --gui
+
+# Hide zones from display
+env PYTHONUNBUFFERED=1 python -m src.cli --gui --hide-zones
+```
+
+**Important**: When `--hide-zones` is used:
+
+- Zones are still **computed** during pipeline Step 2 (Zone Generation)
+- Zones are still **used** for:
+  - Edge attractiveness calculations
+  - Lane count assignment (when using `realistic` algorithm)
+  - Traffic routing decisions
+- Only the **visual display** in SUMO GUI is suppressed
+- The `zones.poly.xml` file is still generated in the workspace
+
+### Web GUI Support
+
+In the web GUI (`dbps`), a "Hide Zones" checkbox appears when "Launch SUMO GUI" is selected. This provides the same functionality as the `--hide-zones` CLI flag.
+
+### Technical Implementation
+
+The `--hide-zones` flag works by excluding `zones.poly.xml` from the SUMO configuration file (`grid.sumocfg`). Normally, zones are included via the `<additional-files>` element:
+
+```xml
+<!-- With zones visible (default) -->
+<configuration>
+    <input>
+        <net-file value="grid.net.xml"/>
+        <route-files value="vehicles.rou.xml"/>
+        <additional-files value="zones.poly.xml"/>
+    </input>
+    ...
+</configuration>
+
+<!-- With --hide-zones (zones hidden) -->
+<configuration>
+    <input>
+        <net-file value="grid.net.xml"/>
+        <route-files value="vehicles.rou.xml"/>
+        <!-- additional-files line omitted -->
+    </input>
+    ...
+</configuration>
+```

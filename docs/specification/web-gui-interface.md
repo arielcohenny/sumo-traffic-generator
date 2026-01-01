@@ -232,6 +232,15 @@ open http://localhost:8501
 - **Description**: "Launch SUMO visualization during simulation"
 - **Impact**: Note about performance impact and window management
 
+**Hide Zones Option**
+
+- **Widget**: Checkbox (conditionally visible)
+- **Visibility**: Only shown when "Launch SUMO GUI" is checked
+- **Description**: "Hide zone polygons from SUMO GUI (zones still used for traffic generation)"
+- **Behavior**: When enabled, zones are computed and used for attractiveness/lane assignment but not displayed in SUMO GUI
+- **Use Case**: Cleaner visualization when focusing on vehicle traffic without zone overlay
+- **CLI Equivalent**: `--hide-zones` flag
+
 #### 4. **Zone & Attractiveness Section**
 
 **Purpose**: Configure land use and traffic attraction modeling
