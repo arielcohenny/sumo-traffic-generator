@@ -179,6 +179,16 @@ Launch SUMO's built-in GUI for traffic visualization.
 - **No value required**: Presence of flag enables GUI
 - **Example**: `--gui`
 
+#### `--hide-zones` (flag)
+
+Hide zone polygons from SUMO GUI display while still computing and using them for traffic generation.
+
+- **No value required**: Presence of flag hides zones
+- **Requires**: `--gui` (only applicable in GUI mode)
+- **Behavior**: Zones are still computed and used for attractiveness calculations and lane assignment, but not displayed in SUMO GUI
+- **Use Case**: Cleaner visualization when you want to focus on vehicle traffic without zone overlay
+- **Example**: `--gui --hide-zones`
+
 #### `--workspace` (str, default: ".")
 
 Parent directory where 'workspace' folder will be created for simulation output files.

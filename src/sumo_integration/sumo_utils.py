@@ -108,11 +108,14 @@ def execute_config_generation(args) -> None:
     """Execute SUMO configuration generation."""
     logger = logging.getLogger(__name__)
 
+    # Hide zones from SUMO GUI if requested (zones are still computed and used)
+    zones_file = None if getattr(args, 'hide_zones', False) else CONFIG.zones_file
+
     sumo_cfg_path = generate_sumo_conf_file(
         CONFIG.config_file,
         CONFIG.network_file,
         route_file=CONFIG.routes_file,
-        zones_file=CONFIG.zones_file,
+        zones_file=zones_file,
         end_time=args.end_time,
         step_length=args.step_length,
     )

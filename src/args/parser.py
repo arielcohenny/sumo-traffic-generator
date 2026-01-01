@@ -175,6 +175,11 @@ def _add_simulation_arguments(parser: argparse.ArgumentParser) -> None:
         help="Launch SUMO in GUI mode (sumo-gui) instead of headless sumo"
     )
     parser.add_argument(
+        "--hide-zones",
+        action="store_true",
+        help="Hide zone polygons in SUMO GUI (zones still computed and used for traffic generation). Requires --gui."
+    )
+    parser.add_argument(
         "--workspace",
         type=str,
         default=DEFAULT_WORKSPACE_DIR,

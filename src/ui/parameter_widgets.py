@@ -492,6 +492,16 @@ class ParameterWidgets:
             help="Open visual simulation interface (slower but interactive)"
         )
 
+        # Only show hide_zones option when GUI is enabled
+        if params["gui"]:
+            params["hide_zones"] = st.checkbox(
+                "Hide Zones",
+                value=False,
+                help="Hide zone polygons from SUMO GUI (zones still used for traffic generation)"
+            )
+        else:
+            params["hide_zones"] = False
+
         params["workspace"] = st.text_input(
             "Workspace Directory",
             value=DEFAULT_WORKSPACE_DIR,
