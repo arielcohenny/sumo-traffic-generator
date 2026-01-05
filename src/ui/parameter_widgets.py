@@ -18,7 +18,7 @@ from src.constants import (
     DEFAULT_PUBLIC_ROUTES, DEFAULT_SEED, DEFAULT_STEP_LENGTH, DEFAULT_END_TIME,
     DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_START_TIME_HOUR, DEFAULT_BOTTLENECK_DETECTION_INTERVAL,
     DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL, DEFAULT_ATTRACTIVENESS, DEFAULT_LANE_COUNT,
-    DEFAULT_DEPARTURE_PATTERN, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL, DEPARTURE_PATTERN_RUSH_HOURS, DEPARTURE_PATTERN_SIX_PERIODS, DEPARTURE_PATTERN_UNIFORM,
+    DEFAULT_DEPARTURE_PATTERN, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL, DEPARTURE_PATTERN_SIX_PERIODS, DEPARTURE_PATTERN_UNIFORM,
 
     # Min/Max Values
     MIN_GRID_DIMENSION, MAX_GRID_DIMENSION, MIN_BLOCK_SIZE_M, MAX_BLOCK_SIZE_M,
@@ -32,10 +32,6 @@ from src.constants import (
     # Step Values
     STEP_BLOCK_SIZE_M, STEP_NUM_VEHICLES, STEP_LENGTH_STEP, STEP_END_TIME,
     STEP_LAND_USE_BLOCK_SIZE_M, STEP_START_TIME_HOUR, STEP_TREE_METHOD_INTERVAL,
-
-    # Rush Hours Values
-    RUSH_HOUR_MORNING_START, RUSH_HOUR_MORNING_END, DEFAULT_MORNING_PCT,
-    RUSH_HOUR_EVENING_START, RUSH_HOUR_EVENING_END, DEFAULT_EVENING_PCT, DEFAULT_REST_PCT,
 
     # Other Constants
     TEMP_FILE_PREFIX, DEFAULT_WORKSPACE_DIR,
@@ -295,7 +291,7 @@ class ParameterWidgets:
 
         # Departure pattern with session state for cross-section coordination
         departure_options = [DEPARTURE_PATTERN_SIX_PERIODS,
-                             DEPARTURE_PATTERN_UNIFORM, DEPARTURE_PATTERN_RUSH_HOURS]
+                             DEPARTURE_PATTERN_UNIFORM]
         departure_pattern = st.selectbox(
             "Departure Pattern",
             departure_options,
@@ -308,30 +304,9 @@ class ParameterWidgets:
 
         # Show constraint info for non-uniform patterns
         if departure_pattern != UNIFORM_DEPARTURE_PATTERN:
-            st.info("ℹ️ **Time constraints**: Non-uniform patterns require midnight start (0.0h) and 24-hour duration (86400s) for realistic daily cycles.")
+            st.info("**Time constraints**: Non-uniform patterns require midnight start (0.0h) and 24-hour duration (86400s) for realistic daily cycles.")
 
-        if departure_pattern == "rush_hours":
-            st.write("Custom Rush Hours Pattern:")
-            morning_start = st.number_input(
-                "Morning Start", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_MORNING_START, key="morning_start")
-            morning_end = st.number_input(
-                "Morning End", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_MORNING_END, key="morning_end")
-            morning_pct = st.number_input(
-                "Morning %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_MORNING_PCT, key="morning_pct")
-
-            evening_start = st.number_input(
-                "Evening Start", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_EVENING_START, key="evening_start")
-            evening_end = st.number_input(
-                "Evening End", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_EVENING_END, key="evening_end")
-            evening_pct = st.number_input(
-                "Evening %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_EVENING_PCT, key="evening_pct")
-
-            rest_pct = st.number_input(
-                "Rest of Day %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_REST_PCT, key="rest_pct")
-
-            params["departure_pattern"] = f"rush_hours:{morning_start}-{morning_end}:{morning_pct},{evening_start}-{evening_end}:{evening_pct},rest:{rest_pct}"
-        else:
-            params["departure_pattern"] = departure_pattern
+        params["departure_pattern"] = departure_pattern
 
         return params
 

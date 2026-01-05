@@ -30,7 +30,7 @@ from src.constants import (
     ROUTE_PATTERN_PAIRS_COUNT, ROUTE_PATTERN_EXPECTED_PAIRS,
     INITIAL_VEHICLE_ID_COUNTER, SINGLE_SAMPLE_COUNT, EDGE_SAMPLE_SLICE_LIMIT,
     MAX_PERCENTAGE, DEFAULT_DEPARTURE_TIME_FALLBACK,
-    DEFAULT_ROUTE_WEIGHT, DEFAULT_REST_WEIGHT, MINIMUM_ROUTE_COUNT,
+    DEFAULT_ROUTE_WEIGHT, MINIMUM_ROUTE_COUNT,
     MINIMUM_VEHICLES_PER_ROUTE, TEMPORAL_BIAS_INVERSE_FACTOR,
     ARRAY_FIRST_ELEMENT_INDEX, RANGE_STEP_INCREMENT, SINGLE_INCREMENT,
     ROUTE_ID_INCREMENT, VEHICLE_INCREMENT, VEHICLES_FOR_ROUTE_INCREMENT,
@@ -45,7 +45,7 @@ from src.constants import (
     PERIOD_MORNING, PERIOD_MORNING_RUSH, PERIOD_NOON, PERIOD_EVENING_RUSH,
     PERIOD_EVENING, PERIOD_NIGHT, ATTR_NAME, ATTR_WEIGHT, ATTR_START, ATTR_END,
     DEFAULT_PASSENGER_ROUTE_PATTERN, DEFAULT_PUBLIC_ROUTE_PATTERN,
-    RUSH_HOURS_PREFIX, RUSH_HOURS_REST, ATTR_DEPART, ATTR_ATTRACTIVENESS,
+    ATTR_DEPART, ATTR_ATTRACTIVENESS,
     ATTR_CURRENT_PHASE, FIELD_PASSENGER_ROUTES, FIELD_PUBLIC_ROUTES, ATTR_TYPE,
     ATTR_FROM_EDGE, ATTR_TO_EDGE, ATTR_ROUTE_EDGES, ATTR_ROUTING_STRATEGY,
     FUNCTION_INTERNAL, ATTR_ID, SUFFIX_ATTRACTIVENESS,
@@ -459,7 +459,7 @@ def generate_vehicle_routes(net_file: str | Path,
         passenger_routes: Passenger route patterns (e.g., "in 30 out 30 inner 25 pass 15")
         public_routes: Public route patterns (e.g., "in 25 out 25 inner 35 pass 15")
         end_time: Total simulation duration in seconds for temporal distribution
-        departure_pattern: Departure pattern ("six_periods", "uniform", "rush_hours:...")
+        departure_pattern: Departure pattern ("six_periods", "uniform", "custom:...")
         start_time_hour: Start time in hours ({TIME_RANGE_START}-{TIME_RANGE_END_24H})
         grid_dimension: Grid dimension for edge classification
     """
@@ -850,9 +850,6 @@ def _generate_departure_time(rng, departure_pattern: str, end_time: int) -> int:
     elif departure_pattern == DEPARTURE_PATTERN_SIX_PERIODS:
         return _generate_six_periods_departure(rng, end_time)
 
-    elif departure_pattern.startswith(RUSH_HOURS_PREFIX):
-        return _generate_rush_hours_departure(rng, departure_pattern, end_time)
-
     else:
         # Default to six_periods if unknown pattern
         return _generate_six_periods_departure(rng, end_time)
@@ -912,50 +909,6 @@ def _generate_six_periods_departure(rng, end_time: int) -> int:
     return int(min(departure_time, end_time * SIMULATION_END_FACTOR_SIX_PERIODS))
 
 
-def _generate_rush_hours_departure(rng, pattern: str, end_time: int) -> int:
-    """
-    Generate departure time using rush hours pattern.
-    Format: "rush_hours:7-9:40,17-19:30,rest:10"
-    """
-    # Parse pattern
-    parts = pattern.split(":", 1)[1].split(",")
-    rush_periods = []
-    rest_weight = DEFAULT_REST_WEIGHT
-
-    for part in parts:
-        if part.startswith(f"{RUSH_HOURS_REST}:"):
-            rest_weight = int(part.split(":")[SINGLE_INCREMENT])
-        else:
-            time_range, weight = part.split(":")
-            start_hour, end_hour = map(float, time_range.split("-"))
-            rush_periods.append({
-                ATTR_START: start_hour * SECONDS_TO_HOURS_DIVISOR,
-                ATTR_END: end_hour * SECONDS_TO_HOURS_DIVISOR,
-                ATTR_WEIGHT: int(weight)
-            })
-
-    # Calculate total weight
-    total_rush_weight = sum(p[ATTR_WEIGHT] for p in rush_periods)
-    total_weight = total_rush_weight + rest_weight
-
-    # Choose rush hour or rest time
-    if rng.random() < total_rush_weight / total_weight:
-        # Choose rush period
-        weights = [p[ATTR_WEIGHT] for p in rush_periods]
-        chosen_period = rng.choices(rush_periods, weights=weights)[0]
-
-        scale_factor = end_time / SECONDS_IN_24_HOURS
-        start_time = chosen_period[ATTR_START] * scale_factor
-        end_time_period = chosen_period[ATTR_END] * scale_factor
-        departure_time = rng.uniform(start_time, end_time_period)
-    else:
-        # Rest time (uniform distribution outside rush hours)
-        departure_time = rng.uniform(
-            TIME_RANGE_START, end_time * SIMULATION_END_FACTOR)
-
-    return int(departure_time)
-
-
 def calculate_temporal_departure_times(num_vehicles: int, departure_pattern: str, start_time: float, end_time: int) -> List[int]:
     """
     Calculate deterministic departure times for all vehicles based on departure pattern.
@@ -966,7 +919,7 @@ def calculate_temporal_departure_times(num_vehicles: int, departure_pattern: str
 
     Args:
         num_vehicles: Total number of vehicles to generate departure times for
-        departure_pattern: Pattern specification ("uniform", "six_periods", "rush_hours:...")
+        departure_pattern: Pattern specification ("uniform", "six_periods", "custom:...")
         start_time: Start time in hours (0-24)
         end_time: Total simulation duration in seconds
 
@@ -996,13 +949,8 @@ def calculate_temporal_departure_times(num_vehicles: int, departure_pattern: str
         departure_times = _calculate_six_periods_deterministic(
             num_vehicles, end_time)
 
-    elif departure_pattern.startswith(RUSH_HOURS_PREFIX):
-        # Custom rush hours pattern with exact percentages
-        departure_times = _calculate_rush_hours_deterministic(
-            num_vehicles, departure_pattern, end_time)
-
     elif departure_pattern.startswith(CUSTOM_PATTERN_PREFIX):
-        # New custom pattern handling
+        # Custom pattern handling
         departure_times = _calculate_custom_deterministic(
             num_vehicles, departure_pattern, start_time, end_time)
 
@@ -1099,121 +1047,6 @@ def _calculate_six_periods_deterministic(num_vehicles: int, end_time: int) -> Li
                     departure_times.append(int(departure_time))
 
     return departure_times
-
-
-def _calculate_rush_hours_deterministic(num_vehicles: int, pattern: str, end_time: int) -> List[int]:
-    """Calculate deterministic rush hours departure times with exact percentages."""
-    departure_times = []
-
-    # Parse pattern (e.g., "rush_hours:7-9:40,17-19:30,rest:10")
-    parts = pattern.split(":", 1)[1].split(",")
-    rush_periods = []
-    rest_weight = DEFAULT_REST_WEIGHT
-
-    for part in parts:
-        if part.startswith(f"{RUSH_HOURS_REST}:"):
-            rest_weight = int(part.split(":")[SINGLE_INCREMENT])
-        else:
-            time_range, weight = part.split(":")
-            start_hour, end_hour = map(float, time_range.split("-"))
-            rush_periods.append({
-                ATTR_START: start_hour * SECONDS_TO_HOURS_DIVISOR,
-                ATTR_END: end_hour * SECONDS_TO_HOURS_DIVISOR,
-                ATTR_WEIGHT: int(weight)
-            })
-
-    # Calculate vehicles for each period
-    total_rush_weight = sum(p[ATTR_WEIGHT] for p in rush_periods)
-    total_weight = total_rush_weight + rest_weight
-
-    scale_factor = end_time / SECONDS_IN_24_HOURS
-
-    # Distribute vehicles to rush hour periods with rounding correction
-    rush_period_counts = []
-    for period in rush_periods:
-        period_vehicles = int(
-            (period[ATTR_WEIGHT] / total_weight) * num_vehicles)
-        rush_period_counts.append(period_vehicles)
-
-    rest_vehicles = int((rest_weight / total_weight) * num_vehicles)
-
-    # Add missing vehicles due to rounding
-    assigned_total = sum(rush_period_counts) + rest_vehicles
-    missing_vehicles = num_vehicles - assigned_total
-    if missing_vehicles > 0:
-        # Add to largest rush period first, then rest
-        if rush_periods:
-            max_period_idx = max(range(len(rush_periods)),
-                                 key=lambda i: rush_periods[i][ATTR_WEIGHT])
-            rush_period_counts[max_period_idx] += missing_vehicles
-        else:
-            rest_vehicles += missing_vehicles
-
-    # Generate rush hour departures
-    for period_idx, period in enumerate(rush_periods):
-        period_vehicles = rush_period_counts[period_idx]
-        if period_vehicles > 0:
-            period_start = period[ATTR_START] * scale_factor
-            period_end = period[ATTR_END] * scale_factor
-            period_interval = (period_end - period_start) / period_vehicles
-
-            for i in range(period_vehicles):
-                departure_time = period_start + i * period_interval
-                departure_times.append(int(departure_time))
-
-    # Distribute vehicles to rest time (outside rush hours)
-    if rest_vehicles > 0:
-        # Calculate rest windows (24 hours minus rush hours)
-        rest_windows = _compute_rest_windows(rush_periods, end_time)
-        rest_total_time = sum(window[1] - window[0] for window in rest_windows)
-
-        if rest_total_time > 0:
-            for window_start, window_end in rest_windows:
-                window_time = window_end - window_start
-                window_vehicles = int(
-                    (window_time / rest_total_time) * rest_vehicles)
-
-                if window_vehicles > 0:
-                    window_interval = (
-                        window_end - window_start) / window_vehicles
-                    for i in range(window_vehicles):
-                        departure_time = window_start + i * window_interval
-                        departure_times.append(int(departure_time))
-
-    return departure_times
-
-
-def _compute_rest_windows(rush_periods: List[dict], end_time: int) -> List[Tuple[float, float]]:
-    """Compute time windows outside of rush hour periods."""
-    scale_factor = end_time / SECONDS_IN_24_HOURS
-
-    # Create occupied time ranges from rush periods
-    occupied_ranges = []
-    for period in rush_periods:
-        start = period[ATTR_START] * scale_factor
-        end = period[ATTR_END] * scale_factor
-        occupied_ranges.append((start, end))
-
-    # Sort by start time
-    occupied_ranges.sort()
-
-    # Find gaps between occupied ranges
-    rest_windows = []
-    simulation_start = INITIAL_VEHICLE_ID_COUNTER
-    simulation_end = end_time * SIMULATION_END_FACTOR
-
-    current_pos = simulation_start
-    for start, end in occupied_ranges:
-        if current_pos < start:
-            # Gap found
-            rest_windows.append((current_pos, start))
-        current_pos = max(current_pos, end)
-
-    # Check for gap at the end
-    if current_pos < simulation_end:
-        rest_windows.append((current_pos, simulation_end))
-
-    return rest_windows
 
 
 def _calculate_custom_deterministic(

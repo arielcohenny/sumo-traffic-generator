@@ -270,77 +270,10 @@ def _validate_departure_pattern(departure_pattern: str, start_hour: float = None
             _validate_custom_pattern(departure_pattern, start_hour, end_time)
         return
 
-    # Check for legacy rush_hours pattern (still supported temporarily)
-    if departure_pattern.startswith("rush_hours:"):
-        _validate_rush_hours_pattern(departure_pattern)
-        return
-
     raise ValidationError(
         f"Invalid departure pattern: {departure_pattern}. "
         f"Valid patterns: 'six_periods', 'uniform', 'custom:HH:MM-HH:MM,percent;...'"
     )
-
-
-def _validate_rush_hours_pattern(pattern: str) -> None:
-    """Validate rush_hours pattern format."""
-
-    # Pattern: rush_hours:7-9:40,17-19:30,rest:10
-    pattern_part = pattern[len("rush_hours:"):]
-    parts = pattern_part.split(",")
-
-    if len(parts) < 2:
-        raise ValidationError(
-            f"Rush hours pattern must have at least one time range and 'rest' percentage")
-
-    # Check that last part is 'rest:XX'
-    rest_part = parts[-1]
-    if not rest_part.startswith("rest:"):
-        raise ValidationError(
-            f"Rush hours pattern must end with 'rest:XX', got: {rest_part}")
-
-    try:
-        rest_percentage = float(rest_part[5:])
-        if rest_percentage < 0 or rest_percentage > 100:
-            raise ValidationError(
-                f"Rest percentage must be 0-100, got {rest_percentage}")
-    except ValueError:
-        raise ValidationError(f"Invalid rest percentage in: {rest_part}")
-
-    # Validate time ranges
-    total_percentage = rest_percentage
-    for part in parts[:-1]:
-        if ":" not in part:
-            raise ValidationError(f"Invalid time range format: {part}")
-
-        time_range, percentage_str = part.rsplit(":", 1)
-        try:
-            percentage = float(percentage_str)
-            if percentage < 0 or percentage > 100:
-                raise ValidationError(
-                    f"Percentage must be 0-100, got {percentage}")
-            total_percentage += percentage
-        except ValueError:
-            raise ValidationError(f"Invalid percentage in: {part}")
-
-        # Validate time range format (e.g., "7-9")
-        if "-" not in time_range:
-            raise ValidationError(f"Invalid time range format: {time_range}")
-
-        start_hour, end_hour = time_range.split("-", 1)
-        try:
-            start = float(start_hour)
-            end = float(end_hour)
-            if start < 0 or start >= 24 or end < 0 or end >= 24:
-                raise ValidationError(f"Hours must be 0-24, got {start}-{end}")
-            if start >= end:
-                raise ValidationError(
-                    f"Start hour must be < end hour, got {start}-{end}")
-        except ValueError:
-            raise ValidationError(f"Invalid hour values in: {time_range}")
-
-    if abs(total_percentage - 100.0) > 0.01:
-        raise ValidationError(
-            f"Rush hours percentages must sum to 100, got {total_percentage}")
 
 
 def _parse_custom_pattern(pattern: str) -> list:
