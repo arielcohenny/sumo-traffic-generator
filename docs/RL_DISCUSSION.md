@@ -333,14 +333,12 @@ The state representation went through significant changes as we learned what inf
 **Initial Design (4 edge + 2 junction features)**:
 
 The first implementation used minimal features per edge:
-
 - Speed ratio (current/free-flow speed)
 - Vehicle density (simple count/length)
 - Flow rate (vehicles per second)
 - Congestion flag (binary based on waiting time)
 
 And per junction:
-
 - Current phase (normalized 0-1)
 - Remaining phase duration (normalized)
 
@@ -352,28 +350,25 @@ A key insight was that the RL agent should "see" traffic the same way Tree Metho
 
 **Current State Features** (per edge, using Tree Method calculations):
 
-| Feature              | Tree Method Function      | Purpose                     |
-| -------------------- | ------------------------- | --------------------------- |
-| Speed ratio          | current/free-flow         | Flow efficiency             |
-| Simple density       | vehicles/length           | Basic utilization           |
-| Simple flow          | vehicles/second           | Throughput estimate         |
-| Congestion flag      | waiting > 30s             | Immediate problems          |
-| Normalized density   | `calc_k_by_u(speed)`      | Traffic flow theory density |
-| Normalized flow      | speed × density × lanes   | Theoretical flow rate       |
-| Bottleneck flag      | `speed < q_max_u`         | Is edge loaded?             |
-| Normalized time loss | `time_loss_m` calculation | Delay metric                |
-| Speed trend          | moving average comparison | Improving or worsening?     |
+| Feature | Tree Method Function | Purpose |
+|---------|---------------------|---------|
+| Speed ratio | current/free-flow | Flow efficiency |
+| Simple density | vehicles/length | Basic utilization |
+| Simple flow | vehicles/second | Throughput estimate |
+| Congestion flag | waiting > 30s | Immediate problems |
+| Normalized density | `calc_k_by_u(speed)` | Traffic flow theory density |
+| Normalized flow | speed × density × lanes | Theoretical flow rate |
+| Bottleneck flag | `speed < q_max_u` | Is edge loaded? |
+| Normalized time loss | `time_loss_m` calculation | Delay metric |
+| Speed trend | moving average comparison | Improving or worsening? |
 
 **Per junction** (4 features):
-
 - Normalized phase, duration, incoming flow, outgoing flow
 
 **Network-level** (6 features):
-
 - Bottleneck ratio, normalized cost, vehicle count, average speed, congestion ratio, cycle length
 
 **Why Tree Method Alignment Matters**:
-
 - Same traffic perception = apples-to-apples comparison
 - Validates whether RL can match/exceed Tree Method using identical information
 - Leverages proven traffic flow theory rather than reinventing metrics
@@ -400,7 +395,6 @@ The reward function required a complete redesign from the initial simple approac
 #### Phase 1: Initial Design
 
 Simple individual vehicle penalty approach:
-
 - `COMPLETION_BONUS_PER_VEHICLE = 1.0`
 - `THROUGHPUT_BONUS_WEIGHT = 10.0`
 - `WAITING_TIME_PENALTY_FACTOR = -0.1` per second
@@ -411,34 +405,32 @@ Simple individual vehicle penalty approach:
 
 Created validation scripts to measure correlation between reward components and traffic metrics. Rebalanced coefficients based on empirical validation:
 
-| Component              | Before | After | Reason                                               |
-| ---------------------- | ------ | ----- | ---------------------------------------------------- |
-| Throughput per vehicle | 10.0   | 50.0  | 5x increase - make primary signal visible            |
-| Waiting time weight    | 2.0    | 0.5   | 4x decrease - was dominating the signal              |
-| Speed reward           | 2.0    | 10.0  | 5x increase - make contribution visible              |
-| Bottleneck penalty     | 0.5    | 4.0   | 8x increase - strengthen correlation with congestion |
+| Component | Before | After | Reason |
+|-----------|--------|-------|--------|
+| Throughput per vehicle | 10.0 | 50.0 | 5x increase - make primary signal visible |
+| Waiting time weight | 2.0 | 0.5 | 4x decrease - was dominating the signal |
+| Speed reward | 2.0 | 10.0 | 5x increase - make contribution visible |
+| Bottleneck penalty | 0.5 | 4.0 | 8x increase - strengthen correlation with congestion |
 
 **Validation Scripts Created:**
-
 - `evaluate_reward_function.py` - Tests different policies with current reward
 - `analyze_reward_validation.py` - Computes correlations between reward and metrics
 
 **Validation Criteria:**
-
 - Speed correlation >+0.3
 - Bottleneck correlation <-0.3
 - No single component >60% of total magnitude
 
 #### Final Coefficient Values
 
-| Component                 | Value | Purpose                              |
-| ------------------------- | ----- | ------------------------------------ |
-| Throughput per vehicle    | 50.0  | Primary goal: maximize completions   |
-| Waiting time penalty      | 0.45  | Penalize delays (z-score normalized) |
-| Speed reward factor       | 10.0  | Encourage healthy network flow       |
-| Bottleneck penalty        | 4.0   | Strong signal against congestion     |
-| Excessive waiting penalty | 2.0   | Extra penalty for >5 min waits       |
-| Insertion bonus           | 1.0   | Reward clearing vehicle queue        |
+| Component | Value | Purpose |
+|-----------|-------|---------|
+| Throughput per vehicle | 50.0 | Primary goal: maximize completions |
+| Waiting time penalty | 0.45 | Penalize delays (z-score normalized) |
+| Speed reward factor | 10.0 | Encourage healthy network flow |
+| Bottleneck penalty | 4.0 | Strong signal against congestion |
+| Excessive waiting penalty | 2.0 | Extra penalty for >5 min waits |
+| Insertion bonus | 1.0 | Reward clearing vehicle queue |
 
 #### Reward Formula
 
@@ -448,16 +440,23 @@ The total reward is computed as:
 R = R_throughput + R_waiting + R_excessive + R_speed + R_bottleneck + R_insertion
 ```
 
-| Component         | Formula                                  |
-| ----------------- | ---------------------------------------- |
-| Throughput        | `+50.0 × vehicles_completed`             |
-| Waiting time      | `-0.45 × z_score(avg_waiting_time)`      |
+| Component | Formula |
+|-----------|---------|
+| Throughput | `+50.0 × vehicles_completed` |
+| Waiting time | `-0.45 × z_score(avg_waiting_time)` |
 | Excessive waiting | `-2.0 × count(vehicles waiting > 5 min)` |
-| Speed             | `+10.0 × (avg_speed / 50.0)`             |
-| Bottleneck        | `-4.0 × bottleneck_count`                |
-| Insertion bonus   | `+1.0` if waiting_to_insert < 50         |
+| Speed | `+10.0 × (avg_speed / 50.0)` |
+| Bottleneck | `-4.0 × bottleneck_count` |
+| Insertion bonus | `+1.0` if waiting_to_insert < 50 |
 
 The waiting time uses z-score normalization with empirically derived statistics (mean: 38.01s, std: 11.12s).
+
+**Validation Results** (22000 vehicles, 7300s simulation):
+- Waiting penalty: 58% of total magnitude (within <60% target)
+- Bottleneck penalty: 31%
+- Speed reward: 14%
+- Throughput: 9%
+- Achieved correlations: +0.684 (speed), -0.708 (bottlenecks)
 
 ### 5.5 Training Configuration Evolution
 
@@ -465,15 +464,15 @@ The training configuration went through five major iterations, each addressing p
 
 #### Phase 1: Initial Configuration
 
-| Parameter     | Value | Rationale                           |
-| ------------- | ----- | ----------------------------------- |
-| Learning rate | 2e-4  | Conservative for expensive episodes |
-| Clip range    | 0.1   | Prevent large policy updates        |
-| Batch size    | 1024  | Balance stability and memory        |
-| N_steps       | 2048  | Steps per update                    |
-| N_epochs      | 10    | Optimization epochs per update      |
-| Gamma         | 0.99  | Standard discount factor            |
-| GAE lambda    | 0.95  | Standard GAE parameter              |
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| Learning rate | 2e-4 | Conservative for expensive episodes |
+| Clip range | 0.1 | Prevent large policy updates |
+| Batch size | 1024 | Balance stability and memory |
+| N_steps | 2048 | Steps per update |
+| N_epochs | 10 | Optimization epochs per update |
+| Gamma | 0.99 | Standard discount factor |
+| GAE lambda | 0.95 | Standard GAE parameter |
 
 **Result**: Training was stable but slow. The agent learned basic behaviors but struggled with long-horizon coordination effects.
 
@@ -481,18 +480,17 @@ The training configuration went through five major iterations, each addressing p
 
 Recognized that traffic signal effects cascade across the network over time. Made major changes:
 
-| Parameter     | Old → New    | Reason                                       |
-| ------------- | ------------ | -------------------------------------------- |
-| Learning rate | 2e-4 → 3e-4  | Faster initial learning                      |
-| Clip range    | 0.1 → 0.05   | Conservative for pre-training preservation   |
-| Batch size    | 1024 → 2048  | Stability with long episodes                 |
-| N_steps       | 2048 → 4096  | More experience for long-horizon effects     |
-| N_epochs      | 10 → 15      | More optimization passes                     |
-| Gamma         | 0.99 → 0.995 | Longer horizon for cascading traffic effects |
-| GAE lambda    | 0.95 → 0.98  | Better advantage estimation                  |
+| Parameter | Old → New | Reason |
+|-----------|-----------|--------|
+| Learning rate | 2e-4 → 3e-4 | Faster initial learning |
+| Clip range | 0.1 → 0.05 | Conservative for pre-training preservation |
+| Batch size | 1024 → 2048 | Stability with long episodes |
+| N_steps | 2048 → 4096 | More experience for long-horizon effects |
+| N_epochs | 10 → 15 | More optimization passes |
+| Gamma | 0.99 → 0.995 | Longer horizon for cascading traffic effects |
+| GAE lambda | 0.95 → 0.98 | Better advantage estimation |
 
 **Added**:
-
 - Learning rate schedule (exponential decay)
 - Entropy schedule (exploration → exploitation)
 - Early stopping to prevent overtraining
@@ -508,12 +506,10 @@ Recognized that pure RL from scratch was slow and sample-inefficient due to expe
 **Key Decision**: Collect expert demonstrations from Tree Method and pre-train the RL policy through behavioral cloning before RL fine-tuning.
 
 **Implementation**:
-
 1. `collect_tree_method_demonstrations.py` - Runs Tree Method with parameter variation, collects (state, action) pairs
 2. `pretrain_from_demonstrations.py` - Trains RL policy on collected demonstrations
 
 **Why This Matters**:
-
 - Faster convergence by starting from expert behavior rather than random exploration
 - Leverages existing Tree Method expertise
 - Reduces exploration in dangerous policy regions
@@ -523,20 +519,20 @@ Recognized that pure RL from scratch was slow and sample-inefficient due to expe
 
 Training runs showed KL divergence spikes causing policy collapse.
 
-| Parameter  | Old → New  | Reason                                  |
-| ---------- | ---------- | --------------------------------------- |
-| Clip range | 0.05 → 0.2 | 0.05 caused KL divergence issues        |
-| N_epochs   | 15 → 5     | Reduced for stability with standard PPO |
+| Parameter | Old → New | Reason |
+|-----------|-----------|--------|
+| Clip range | 0.05 → 0.2 | 0.05 caused KL divergence issues |
+| N_epochs | 15 → 5 | Reduced for stability with standard PPO |
 
 **Lesson**: The conservative 0.05 clip range was too restrictive. Standard PPO uses 0.2 for good reason—it allows sufficient policy updates while maintaining stability.
 
-#### Phase 5: Final Tuning
+#### Phase 5: Learning Rate Stabilization
 
-| Parameter     | Old → New   | Reason                      |
-| ------------- | ----------- | --------------------------- |
+| Parameter | Old → New | Reason |
+|-----------|-----------|--------|
 | Learning rate | 3e-4 → 1e-4 | Reduced for stable training |
 
-**Final Configuration**:
+**Configuration after Phase 5**:
 
 ```
 Learning rate: 1e-4 (scheduled decay to 5e-6)
@@ -550,6 +546,82 @@ Gradient clipping: 0.5
 Entropy: 0.02 → 0.001 over 500k steps
 Early stopping: 10 evaluations patience
 ```
+
+#### Phase 6: Throughput Coefficient Tuning
+
+**Training Run**: `rl_20251215_215030`, checkpoint at 172,032 steps
+
+**Results vs Tree Method Baseline** (22,000 vehicles, 7,300s simulation):
+
+| Metric | RL Agent | Tree Method | Comparison |
+|--------|----------|-------------|------------|
+| Throughput (vehicles) | 8,349 | 8,507 | -1.9% |
+| Average Duration (s) | 602.5 | 708.7 | **+15.0% better** |
+
+The RL agent achieved nearly identical throughput while significantly reducing average travel duration. This indicated the model learned effective signal coordination.
+
+**Reward Component Analysis**:
+
+To understand what the model optimized for, we analyzed the reward breakdown:
+
+| Component | Contribution | % of Magnitude |
+|-----------|--------------|----------------|
+| Throughput bonus | +1,591.8 | 51.3% |
+| Waiting+Speed+Queue (net) | -1,511.1 | 48.7% |
+| **Total Reward** | **80.7** | |
+
+**Observation**: Despite achieving much better average duration (15% improvement), the throughput was slightly lower than Tree Method. The reward function's throughput bonus contributed only 51% of the total magnitude. Since throughput is the primary objective for traffic control, we hypothesized that increasing the throughput coefficient would better align the reward signal with our goals.
+
+**Change Made**: Increased throughput coefficient in `src/rl/reward.py`:
+
+```python
+# Before (Phase 5)
+throughput_bonus = vehicles_arrived_this_step * 0.1
+
+# After (Phase 6)
+throughput_bonus = vehicles_arrived_this_step * 0.4
+```
+
+This 4x increase was intended to make throughput the dominant reward signal, encouraging the agent to prioritize moving vehicles through the network over minimizing individual waiting times.
+
+#### Phase 7: Throughput Coefficient Experiment Results
+
+**Training Run**: `rl_20260103_202526`
+
+**Problem**: Training showed severe instability from the start.
+
+**Metrics at 8,192 steps**:
+
+| Metric | Value | Expected | Issue |
+|--------|-------|----------|-------|
+| `approx_kl` | 269.6 | < 0.1 | Policy changing too fast (5000x normal) |
+| `clip_fraction` | 0.9 | 0.1-0.3 | 90% of updates clipped |
+| `explained_variance` | 0.01 | > 0.5 | Value function not learning |
+| `value_loss` | 436 | < 50 | Reward scale issues |
+
+**Evaluation Results Over Training**:
+
+| Steps | Mean Reward | Std | Trend |
+|-------|-------------|-----|-------|
+| 4,096 | 65.41 | ±9.73 | |
+| 8,192 | 66.51 | ±11.87 | |
+| 12,288 | 70.12 | ±12.55 | |
+| **16,384** | **72.43** | ±15.48 | Peak |
+| 20,480 | 66.40 | ±12.90 | Declining |
+| 24,576 | 61.19 | ±8.71 | Declining |
+
+**Analysis**: Training peaked at 16k steps then degraded. The 4x increase in throughput coefficient made the reward signal too volatile. Combined with other reward components, the value function couldn't keep up with the rapidly changing reward scale, causing the policy to "overshoot" good solutions and then degrade.
+
+**Lessons Learned**:
+1. **Reward scaling matters**: Large coefficient changes can destabilize training even if the direction is correct
+2. **Gradual changes**: Should have tried 0.2 (2x) before jumping to 0.4 (4x)
+3. **Monitor KL divergence**: Values above 0.1 indicate instability; 269 is catastrophic
+4. **Early stopping works**: Best model was saved at 16k steps before degradation
+
+**Next Steps**: Consider either:
+- Lower learning rate (5e-5 instead of 1e-4) with the 0.4 coefficient
+- Try intermediate coefficient (0.2) with current learning rate
+- Revert to 0.1 coefficient and explore other optimization approaches
 
 ### 5.6 Key Lessons Learned
 
@@ -565,14 +637,12 @@ Early stopping: 10 evaluations patience
 **Network Reuse Mode**:
 
 For efficient training, the network can be generated once and reused across episodes:
-
 - `--generate-network-only` - Create network files without running simulation
 - `--use-network-from PATH` - Load existing network for training
 
 **Variable Cycle Strategies**:
 
 The agent can be trained with different cycle length strategies:
-
 - `fixed` - Constant cycle length (default 90s)
 - `random` - Random selection from configured options
 - `sequential` - Cycle through options
@@ -581,13 +651,11 @@ The agent can be trained with different cycle length strategies:
 ### 5.8 Current Training Environment
 
 **Fixed Network Parameters**:
-
 - Network: `--network-seed 24208 --grid_dimension 6 --junctions_to_remove 2 --block_size_m 280`
 - Lanes: `--lane_count realistic`
 - Signals: `--traffic_light_strategy partial_opposites`
 
 **Fixed Traffic Parameters**:
-
 - Routing: `--routing_strategy 'realtime 100'`
 - Vehicle types: `--vehicle_types 'passenger 100'`
 - Routes: `--passenger-routes 'in 0 out 0 inner 100 pass 0'`
@@ -597,11 +665,9 @@ The agent can be trained with different cycle length strategies:
 - Volume: `--num_vehicles 22000`
 
 **Variable Traffic Parameters** (for scenario diversity):
-
 - Seeds: `--private-traffic-seed`, `--public-traffic-seed`
 
 **Training Command**:
-
 ```bash
 python scripts/train_rl_production.py \
   --env-params "--network-seed 24208 --grid_dimension 6 --junctions_to_remove 2 --block_size_m 280 --lane_count realistic --traffic_light_strategy partial_opposites --routing_strategy 'realtime 100' --vehicle_types 'passenger 100' --passenger-routes 'in 0 out 0 inner 100 pass 0' --departure_pattern uniform --start_time_hour 8.0 --num_vehicles 22000 --end-time 7300" \
