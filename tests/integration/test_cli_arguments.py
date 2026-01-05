@@ -152,20 +152,20 @@ class TestTrafficArguments:
         validate_output_files(get_workspace_dir(temp_workspace))
 
     @pytest.mark.integration
-    @pytest.mark.parametrize("pattern", [
-        "uniform",
-        "six_periods",
-        "custom:9:00-10:00,50;11:00-12:00,30",
+    @pytest.mark.parametrize("pattern,start_hour,end_time", [
+        ("uniform", "8.0", "18000"),
+        ("six_periods", "0.0", "86400"),  # six_periods requires start=0, duration=24h
+        ("custom:9:00-10:00,50;11:00-12:00,30", "8.0", "18000"),
     ])
-    def test_departure_pattern_values(self, temp_workspace, pattern):
-        """Test different departure patterns."""
+    def test_departure_pattern_values(self, temp_workspace, pattern, start_hour, end_time):
+        """Test different departure patterns with appropriate timing constraints."""
         result = run_file_generation([
             "--grid_dimension", "3",
             "--departure_pattern", pattern,
             "--num_vehicles", "20",
             "--seed", "42",
-            "--start_time_hour", "8.0",
-            "--end-time", "18000",
+            "--start_time_hour", start_hour,
+            "--end-time", end_time,
             "--workspace", str(temp_workspace),
         ])
         assert result.returncode == 0, f"Failed with departure_pattern={pattern}: {result.stderr}"
