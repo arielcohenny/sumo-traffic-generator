@@ -116,8 +116,18 @@ Vehicle departure timing pattern.
 - **Patterns**:
   - `uniform`: Even distribution across simulation time (default)
   - `six_periods`: Research-based daily structure (Morning 20%, Morning Rush 30%, Noon 25%, Evening Rush 20%, Evening 4%, Night 1%)
-  - `rush_hours:7-9:40,17-19:30,rest:10`: Custom rush hour definition
-- **Example**: `--departure_pattern uniform`
+  - `custom:HH:MM-HH:MM,percent;...`: Precise time window control with percentages
+- **Custom Pattern Format**:
+  - Syntax: `custom:start-end,percent;start-end,percent;...`
+  - Times are absolute clock times (HH:MM format)
+  - Windows must fall within simulation range [start_time, start_time + duration]
+  - Percentages need not sum to 100%; remainder distributed uniformly to gaps
+  - Example: `custom:9:00-9:30,40;10:00-10:45,30` = 40% at 9-9:30, 30% at 10-10:45, 30% elsewhere
+- **Validation**:
+  - Percentages must sum to <= 100%
+  - Windows cannot overlap
+  - Window start must be before end
+- **Example**: `--departure_pattern "custom:8:00-9:00,50;17:00-18:00,30"`
 
 ### Simulation Control Arguments
 
@@ -519,10 +529,11 @@ env PYTHONUNBUFFERED=1 python -m src.cli --traffic_control tree_method --tree-me
 # Large grid simulation
 env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 6 --num_vehicles 1000 --traffic_control tree_method
 
-# Rush hour simulation (morning peak)
+# Custom rush hour simulation (morning and evening peaks)
 env PYTHONUNBUFFERED=1 python -m src.cli \
-  --departure_pattern "rush_hours:7-9:60,17-19:30,rest:10" \
-  --start_time_hour 7.0 \
+  --departure_pattern "custom:7:00-9:00,40;17:00-19:00,35" \
+  --start_time_hour 6.0 \
+  --end-time 50400 \
   --num_vehicles 1500
 ```
 
