@@ -48,12 +48,14 @@ from src.constants import (
     RUSH_HOURS_PREFIX, RUSH_HOURS_REST, ATTR_DEPART, ATTR_ATTRACTIVENESS,
     ATTR_CURRENT_PHASE, FIELD_PASSENGER_ROUTES, FIELD_PUBLIC_ROUTES, ATTR_TYPE,
     ATTR_FROM_EDGE, ATTR_TO_EDGE, ATTR_ROUTE_EDGES, ATTR_ROUTING_STRATEGY,
-    FUNCTION_INTERNAL, ATTR_ID, SUFFIX_ATTRACTIVENESS
+    FUNCTION_INTERNAL, ATTR_ID, SUFFIX_ATTRACTIVENESS,
+    CUSTOM_PATTERN_PREFIX,
 )
 from .routing import RoutingMixStrategy, parse_routing_strategy
 from .vehicle_types import parse_vehicle_types, get_vehicle_weights
 from .xml_writer import write_routes
 from ..network.generate_grid import classify_edges
+from src.validate.validate_arguments import _parse_custom_pattern
 
 # Constants for departure time generation - now imported from src.constants
 
@@ -999,6 +1001,11 @@ def calculate_temporal_departure_times(num_vehicles: int, departure_pattern: str
         departure_times = _calculate_rush_hours_deterministic(
             num_vehicles, departure_pattern, end_time)
 
+    elif departure_pattern.startswith(CUSTOM_PATTERN_PREFIX):
+        # New custom pattern handling
+        departure_times = _calculate_custom_deterministic(
+            num_vehicles, departure_pattern, start_time, end_time)
+
     else:
         # Default to six_periods for unknown patterns
         departure_times = _calculate_six_periods_deterministic(
@@ -1205,6 +1212,150 @@ def _compute_rest_windows(rush_periods: List[dict], end_time: int) -> List[Tuple
     # Check for gap at the end
     if current_pos < simulation_end:
         rest_windows.append((current_pos, simulation_end))
+
+    return rest_windows
+
+
+def _calculate_custom_deterministic(
+    num_vehicles: int,
+    pattern: str,
+    start_hour: float,
+    end_time: int
+) -> List[int]:
+    """
+    Calculate deterministic departure times for custom pattern.
+
+    Args:
+        num_vehicles: Total number of vehicles
+        pattern: Custom pattern string like "custom:9:00-9:30,40;10:00-10:45,30"
+        start_hour: Simulation start time in hours (e.g., 8.0)
+        end_time: Simulation duration in seconds
+
+    Returns:
+        List of departure times in seconds from simulation start, sorted
+    """
+    departure_times = []
+
+    # Parse pattern
+    windows = _parse_custom_pattern(pattern)
+
+    # Calculate simulation bounds in seconds from midnight
+    sim_start_seconds = int(start_hour * 3600)
+    sim_end_seconds = sim_start_seconds + end_time
+
+    # Convert windows to seconds and calculate totals
+    window_specs = []
+    total_specified_percent = 0
+
+    for w in windows:
+        start_h, start_m = w["start"]
+        end_h, end_m = w["end"]
+
+        window_start = start_h * 3600 + start_m * 60
+        window_end = end_h * 3600 + end_m * 60
+
+        window_specs.append({
+            "start": window_start,
+            "end": window_end,
+            "percent": w["percent"],
+            "duration": window_end - window_start
+        })
+        total_specified_percent += w["percent"]
+
+    rest_percent = 100 - total_specified_percent
+
+    # Calculate rest windows (gaps between specified windows and simulation bounds)
+    rest_windows = _compute_rest_windows_custom(window_specs, sim_start_seconds, sim_end_seconds)
+    rest_total_duration = sum(w["duration"] for w in rest_windows)
+
+    # Allocate vehicles to specified windows
+    vehicles_assigned = 0
+    for spec in window_specs:
+        window_vehicles = int((spec["percent"] / 100) * num_vehicles)
+        vehicles_assigned += window_vehicles
+
+        if window_vehicles > 0:
+            # Generate uniformly spaced departure times
+            interval = spec["duration"] / window_vehicles
+            for i in range(window_vehicles):
+                # Convert from absolute time to simulation time (offset from start)
+                abs_time = spec["start"] + i * interval
+                sim_time = abs_time - sim_start_seconds
+                departure_times.append(int(sim_time))
+
+    # Allocate vehicles to rest windows proportionally
+    rest_vehicles = num_vehicles - vehicles_assigned
+
+    if rest_vehicles > 0 and rest_total_duration > 0:
+        for rest_window in rest_windows:
+            # Proportional allocation by duration
+            window_vehicles = int((rest_window["duration"] / rest_total_duration) * rest_vehicles)
+
+            if window_vehicles > 0:
+                interval = rest_window["duration"] / window_vehicles
+                for i in range(window_vehicles):
+                    abs_time = rest_window["start"] + i * interval
+                    sim_time = abs_time - sim_start_seconds
+                    departure_times.append(int(sim_time))
+
+    # Handle rounding: add any missing vehicles to largest window
+    while len(departure_times) < num_vehicles:
+        # Add to middle of simulation
+        departure_times.append(end_time // 2)
+
+    return sorted(departure_times)
+
+
+def _compute_rest_windows_custom(
+    specified_windows: List[dict],
+    sim_start: int,
+    sim_end: int
+) -> List[dict]:
+    """
+    Compute rest windows (gaps) between specified windows.
+
+    Args:
+        specified_windows: List of window specs with start/end in seconds
+        sim_start: Simulation start in seconds from midnight
+        sim_end: Simulation end in seconds from midnight
+
+    Returns:
+        List of rest window specs
+    """
+    if not specified_windows:
+        return [{"start": sim_start, "end": sim_end, "duration": sim_end - sim_start}]
+
+    # Sort windows by start time
+    sorted_windows = sorted(specified_windows, key=lambda w: w["start"])
+
+    rest_windows = []
+
+    # Gap before first window
+    if sorted_windows[0]["start"] > sim_start:
+        rest_windows.append({
+            "start": sim_start,
+            "end": sorted_windows[0]["start"],
+            "duration": sorted_windows[0]["start"] - sim_start
+        })
+
+    # Gaps between windows
+    for i in range(len(sorted_windows) - 1):
+        gap_start = sorted_windows[i]["end"]
+        gap_end = sorted_windows[i + 1]["start"]
+        if gap_end > gap_start:
+            rest_windows.append({
+                "start": gap_start,
+                "end": gap_end,
+                "duration": gap_end - gap_start
+            })
+
+    # Gap after last window
+    if sorted_windows[-1]["end"] < sim_end:
+        rest_windows.append({
+            "start": sorted_windows[-1]["end"],
+            "end": sim_end,
+            "duration": sim_end - sorted_windows[-1]["end"]
+        })
 
     return rest_windows
 
