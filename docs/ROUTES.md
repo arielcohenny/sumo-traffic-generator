@@ -13,7 +13,7 @@ All vehicle types (passenger, public) follow four fundamental route patterns:
 
 ### Integration with Existing Systems
 
-**Departure Pattern Integration**: Route selection timing follows existing temporal patterns (six_periods, uniform, rush_hours). Morning rush hours favor in-bound routes to business zones, evening rush hours favor out-bound routes from residential areas.
+**Departure Pattern Integration**: Route selection timing follows existing temporal patterns (six_periods, uniform, custom). Morning rush hours favor in-bound routes to business zones, evening rush hours favor out-bound routes from residential areas.
 
 **Attractiveness Method Integration**: Route endpoints are selected using existing attractiveness methods (land_use, poisson, iac). In-bound routes target high-arrival attractiveness inner edges, out-bound routes originate from high-departure attractiveness inner edges.
 
@@ -119,21 +119,24 @@ Helper functions to set departure times (it just pseudo code that explain in gen
             //do the same for Morning Rush, Noon, Evening Rush, Evening, Night
             return departure_times
 
-       if departure_pattern == rush_hours:
-            rest_windows = compute_rest_windows() //from 24hrs remove all the rush_hours times. Return array of time windows
-            rest_total_time = comupte from rest_windows
+       if departure_pattern starts with "custom:":
+            // Parse custom pattern: "custom:HH:MM-HH:MM,percent;HH:MM-HH:MM,percent;..."
+            custom_windows = parse_custom_windows(departure_pattern)
+            rest_windows = compute_rest_windows_custom(custom_windows, start_time, end_time) // gaps between specified windows
+            rest_total_time = compute from rest_windows
+            rest_percent = 100 - sum(custom_window_percents)
 
             for each rest_window:
-              rest_window_num_vehicles = rest_window/(rest_total_time*100) * rest_num_vehicles
-              rest_window_interval = rest_window_time / rest_window_num_vehicles
+              rest_window_num_vehicles = (rest_window_duration / rest_total_time) * (rest_percent/100) * num_vehicles
+              rest_window_interval = rest_window_duration / rest_window_num_vehicles
               for (i = 0, i < rest_window_num_vehicles, i++):
                 departure_times.append(rest_window_start_time + i*rest_window_interval)
 
-            for each rush hour window:
-              rush_hour_num_vehicles = rush_hour/100 * num_vehicles
-              rush_hour_interval = (rush_hour_end_time - rush_hour_start_time) / rush_hour_num_vehicles
-              for (i = 0, i < rush_hour_num_vehicles, i++):
-                departure_times.append(rush_hour_start_time + i*rush_hour_interval)
+            for each custom_window:
+              window_num_vehicles = (custom_window_percent/100) * num_vehicles
+              window_interval = (window_end_time - window_start_time) / window_num_vehicles
+              for (i = 0, i < window_num_vehicles, i++):
+                departure_times.append(window_start_time + i*window_interval)
 
             return departure_times
 ```
