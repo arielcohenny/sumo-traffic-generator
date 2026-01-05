@@ -18,7 +18,11 @@ from src.constants import (
     MAX_NUM_VEHICLES_VALIDATION, MIN_STEP_LENGTH, MAX_STEP_LENGTH,
     MIN_LANE_COUNT, MAX_LANE_COUNT,
     JUNCTION_ID_PATTERN, EDGE_ID_PATTERN,
-    MIN_LANES_FOR_TL_STRATEGY
+    MIN_LANES_FOR_TL_STRATEGY,
+    CUSTOM_PATTERN_PREFIX,
+    CUSTOM_WINDOW_SEPARATOR,
+    CUSTOM_TIME_PERCENT_SEPARATOR,
+    CUSTOM_TIME_RANGE_SEPARATOR,
 )
 from src.utils.logging import get_logger
 from typing import Tuple, List, Dict, Any
@@ -325,6 +329,98 @@ def _validate_rush_hours_pattern(pattern: str) -> None:
     if abs(total_percentage - 100.0) > 0.01:
         raise ValidationError(
             f"Rush hours percentages must sum to 100, got {total_percentage}")
+
+
+def _parse_custom_pattern(pattern: str) -> list:
+    """
+    Parse custom departure pattern into list of time windows.
+
+    Args:
+        pattern: Pattern string like "custom:9:00-9:30,40;10:00-10:45,30"
+
+    Returns:
+        List of dicts: [{"start": (h, m), "end": (h, m), "percent": int}, ...]
+    """
+    if not pattern.startswith(CUSTOM_PATTERN_PREFIX):
+        raise ValidationError(f"Custom pattern must start with '{CUSTOM_PATTERN_PREFIX}'")
+
+    pattern_body = pattern[len(CUSTOM_PATTERN_PREFIX):]
+    windows = []
+
+    # Split by semicolon, filter empty parts (handles trailing semicolon)
+    parts = [p.strip() for p in pattern_body.split(CUSTOM_WINDOW_SEPARATOR) if p.strip()]
+
+    for part in parts:
+        # Split time range from percentage: "9:00-9:30,40"
+        if CUSTOM_TIME_PERCENT_SEPARATOR not in part:
+            raise ValidationError(
+                f"Invalid window format '{part}': expected 'HH:MM-HH:MM,percent'"
+            )
+
+        time_range, percent_str = part.rsplit(CUSTOM_TIME_PERCENT_SEPARATOR, 1)
+
+        # Parse percentage
+        try:
+            percent = int(percent_str)
+        except ValueError:
+            raise ValidationError(f"Invalid percentage '{percent_str}': must be an integer")
+
+        if percent <= 0:
+            raise ValidationError(f"Percentage must be positive, got {percent}")
+
+        # Split time range: "9:00-9:30"
+        if CUSTOM_TIME_RANGE_SEPARATOR not in time_range:
+            raise ValidationError(
+                f"Invalid time range '{time_range}': expected 'HH:MM-HH:MM'"
+            )
+
+        start_str, end_str = time_range.split(CUSTOM_TIME_RANGE_SEPARATOR, 1)
+
+        # Parse times
+        start_time = _parse_time_hhmm(start_str)
+        end_time = _parse_time_hhmm(end_str)
+
+        windows.append({
+            "start": start_time,
+            "end": end_time,
+            "percent": percent
+        })
+
+    return windows
+
+
+def _parse_time_hhmm(time_str: str) -> tuple:
+    """
+    Parse HH:MM time string to (hour, minute) tuple.
+
+    Args:
+        time_str: Time string like "9:00" or "14:30"
+
+    Returns:
+        Tuple of (hour, minute) as integers
+    """
+    time_str = time_str.strip()
+
+    if ":" not in time_str:
+        raise ValidationError(f"Invalid time format '{time_str}': expected HH:MM")
+
+    parts = time_str.split(":")
+    if len(parts) != 2:
+        raise ValidationError(f"Invalid time format '{time_str}': expected HH:MM")
+
+    try:
+        hour = int(parts[0])
+        minute = int(parts[1])
+    except ValueError:
+        raise ValidationError(f"Invalid time format '{time_str}': hour and minute must be integers")
+
+    if hour < 0 or hour > 23:
+        raise ValidationError(f"Invalid time format '{time_str}': hour must be 0-23")
+
+    if minute < 0 or minute > 59:
+        raise ValidationError(f"Invalid time format '{time_str}': minutes must be 0-59")
+
+    return (hour, minute)
 
 
 def _validate_junctions_to_remove(junctions_to_remove: str) -> None:
