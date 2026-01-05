@@ -55,7 +55,7 @@ def validate_arguments(args) -> None:
     _validate_routing_strategy(args.routing_strategy)
     _validate_vehicle_types(args.vehicle_types)
     _validate_route_args(args)
-    _validate_departure_pattern(args.departure_pattern)
+    _validate_departure_pattern(args.departure_pattern, args.start_time_hour, args.end_time)
     _validate_junctions_to_remove(args.junctions_to_remove)
     _validate_lane_count(args.lane_count)
 
