@@ -435,7 +435,8 @@ ROUTING_ATTRACTIVENESS = "attractiveness"
 # Departure Pattern Names
 DEPARTURE_PATTERN_UNIFORM = "uniform"
 DEPARTURE_PATTERN_SIX_PERIODS = "six_periods"
-DEPARTURE_PATTERN_RUSH_HOURS = "rush_hours"
+DEPARTURE_PATTERN_RUSH_HOURS = "rush_hours"  # DEPRECATED: kept for backward compatibility, use DEPARTURE_PATTERN_CUSTOM
+DEPARTURE_PATTERN_CUSTOM = "custom"
 
 # Six Periods Names
 PERIOD_MORNING = "morning"
@@ -445,10 +446,16 @@ PERIOD_EVENING_RUSH = "evening_rush"
 PERIOD_EVENING = "evening"
 PERIOD_NIGHT = "night"
 
-# Rush Hours Pattern Components
+# Rush Hours Pattern Components (DEPRECATED: kept for backward compatibility)
 RUSH_HOURS_PREFIX = "rush_hours:"
 RUSH_HOURS_REST = "rest"
 RUSH_HOURS_SEPARATOR = ":"
+
+# Custom Departure Pattern Components
+CUSTOM_PATTERN_PREFIX = "custom:"
+CUSTOM_WINDOW_SEPARATOR = ";"
+CUSTOM_TIME_PERCENT_SEPARATOR = ","
+CUSTOM_TIME_RANGE_SEPARATOR = "-"
 
 # XML and Data Attribute Names
 ATTR_NAME = "name"
