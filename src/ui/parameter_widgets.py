@@ -18,7 +18,8 @@ from src.constants import (
     DEFAULT_PUBLIC_ROUTES, DEFAULT_SEED, DEFAULT_STEP_LENGTH, DEFAULT_END_TIME,
     DEFAULT_LAND_USE_BLOCK_SIZE_M, DEFAULT_START_TIME_HOUR, DEFAULT_BOTTLENECK_DETECTION_INTERVAL,
     DEFAULT_ATLCS_INTERVAL, DEFAULT_TREE_METHOD_INTERVAL, DEFAULT_ATTRACTIVENESS, DEFAULT_LANE_COUNT,
-    DEFAULT_DEPARTURE_PATTERN, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL, DEPARTURE_PATTERN_RUSH_HOURS, DEPARTURE_PATTERN_SIX_PERIODS, DEPARTURE_PATTERN_UNIFORM,
+    DEFAULT_DEPARTURE_PATTERN, DEFAULT_TRAFFIC_LIGHT_STRATEGY, DEFAULT_TRAFFIC_CONTROL,
+    DEPARTURE_PATTERN_SIX_PERIODS, DEPARTURE_PATTERN_UNIFORM, DEPARTURE_PATTERN_CUSTOM, CUSTOM_PATTERN_PREFIX,
 
     # Min/Max Values
     MIN_GRID_DIMENSION, MAX_GRID_DIMENSION, MIN_BLOCK_SIZE_M, MAX_BLOCK_SIZE_M,
@@ -32,10 +33,6 @@ from src.constants import (
     # Step Values
     STEP_BLOCK_SIZE_M, STEP_NUM_VEHICLES, STEP_LENGTH_STEP, STEP_END_TIME,
     STEP_LAND_USE_BLOCK_SIZE_M, STEP_START_TIME_HOUR, STEP_TREE_METHOD_INTERVAL,
-
-    # Rush Hours Values
-    RUSH_HOUR_MORNING_START, RUSH_HOUR_MORNING_END, DEFAULT_MORNING_PCT,
-    RUSH_HOUR_EVENING_START, RUSH_HOUR_EVENING_END, DEFAULT_EVENING_PCT, DEFAULT_REST_PCT,
 
     # Other Constants
     TEMP_FILE_PREFIX, DEFAULT_WORKSPACE_DIR,
@@ -294,44 +291,39 @@ class ParameterWidgets:
             params["public_routes"] = DEFAULT_PUBLIC_ROUTES
 
         # Departure pattern with session state for cross-section coordination
-        departure_options = [DEPARTURE_PATTERN_SIX_PERIODS,
-                             DEPARTURE_PATTERN_UNIFORM, DEPARTURE_PATTERN_RUSH_HOURS]
+        departure_options = [DEPARTURE_PATTERN_UNIFORM,
+                             DEPARTURE_PATTERN_SIX_PERIODS,
+                             DEPARTURE_PATTERN_CUSTOM]
         departure_pattern = st.selectbox(
             "Departure Pattern",
             departure_options,
             index=departure_options.index(DEFAULT_DEPARTURE_PATTERN),
-            help="How vehicles are distributed over time"
+            help="How vehicles are distributed over time",
+            format_func=lambda x: {
+                DEPARTURE_PATTERN_UNIFORM: "Uniform (even distribution)",
+                DEPARTURE_PATTERN_SIX_PERIODS: "Six Periods (research-based daily)",
+                DEPARTURE_PATTERN_CUSTOM: "Custom (specify time windows)"
+            }.get(x, x)
         )
+
+        # Show custom pattern input when Custom is selected
+        if departure_pattern == DEPARTURE_PATTERN_CUSTOM:
+            custom_pattern_input = st.text_input(
+                "Custom Pattern",
+                value="9:00-10:00,50;17:00-18:00,30",
+                help="Format: HH:MM-HH:MM,percent;... Example: 9:00-9:30,40;10:00-10:45,30 (40% at 9-9:30, 30% at 10-10:45, rest distributed)"
+            )
+            departure_pattern = f"{CUSTOM_PATTERN_PREFIX}{custom_pattern_input}"
+            st.caption("💡 Windows must fall within simulation time range. Percentages need not sum to 100% - remainder is distributed to gaps.")
 
         # Store in session state for other sections to access
         st.session_state.departure_pattern = departure_pattern
 
-        # Show constraint info for non-uniform patterns
-        if departure_pattern != UNIFORM_DEPARTURE_PATTERN:
-            st.info("ℹ️ **Time constraints**: Non-uniform patterns require midnight start (0.0h) and 24-hour duration (86400s) for realistic daily cycles.")
+        # Show constraint info for six_periods pattern only
+        if departure_pattern == DEPARTURE_PATTERN_SIX_PERIODS:
+            st.info("**Time constraints**: Six periods pattern requires midnight start (0.0h) and 24-hour duration (86400s) for realistic daily cycles.")
 
-        if departure_pattern == "rush_hours":
-            st.write("Custom Rush Hours Pattern:")
-            morning_start = st.number_input(
-                "Morning Start", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_MORNING_START, key="morning_start")
-            morning_end = st.number_input(
-                "Morning End", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_MORNING_END, key="morning_end")
-            morning_pct = st.number_input(
-                "Morning %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_MORNING_PCT, key="morning_pct")
-
-            evening_start = st.number_input(
-                "Evening Start", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_EVENING_START, key="evening_start")
-            evening_end = st.number_input(
-                "Evening End", min_value=MIN_PERCENTAGE, max_value=23, value=RUSH_HOUR_EVENING_END, key="evening_end")
-            evening_pct = st.number_input(
-                "Evening %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_EVENING_PCT, key="evening_pct")
-
-            rest_pct = st.number_input(
-                "Rest of Day %", min_value=MIN_PERCENTAGE, max_value=MAX_PERCENTAGE, value=DEFAULT_REST_PCT, key="rest_pct")
-
-            params["departure_pattern"] = f"rush_hours:{morning_start}-{morning_end}:{morning_pct},{evening_start}-{evening_end}:{evening_pct},rest:{rest_pct}"
-        else:
-            params["departure_pattern"] = departure_pattern
+        params["departure_pattern"] = departure_pattern
 
         return params
 
@@ -451,10 +443,14 @@ class ParameterWidgets:
         # Time input with departure pattern constraints
         departure_pattern = st.session_state.get(
             'departure_pattern', DEFAULT_DEPARTURE_PATTERN)
-        is_uniform_pattern = departure_pattern == UNIFORM_DEPARTURE_PATTERN
+        # Uniform and custom patterns allow flexible timing
+        allows_flexible_timing = (
+            departure_pattern == UNIFORM_DEPARTURE_PATTERN or
+            departure_pattern.startswith(CUSTOM_PATTERN_PREFIX)
+        )
 
-        if is_uniform_pattern:
-            # Show normal end_time control for uniform pattern
+        if allows_flexible_timing:
+            # Show normal end_time control for uniform and custom patterns
             params["end_time"] = st.number_input(
                 "Simulation Duration (seconds)",
                 min_value=MIN_END_TIME,
@@ -464,14 +460,14 @@ class ParameterWidgets:
                 help="How long to run the simulation in seconds"
             )
         else:
-            # Fixed duration for non-uniform patterns
+            # Fixed duration for six_periods pattern
             params["end_time"] = MAX_END_TIME
             st.info(
                 f"🕐 **Fixed Duration**: {MAX_END_TIME:,} seconds (24 hours) - required for '{departure_pattern}' pattern")
 
         # Start time with departure pattern constraints
-        if is_uniform_pattern:
-            # Show normal start_time_hour control for uniform pattern
+        if allows_flexible_timing:
+            # Show normal start_time_hour control for uniform and custom patterns
             params["start_time_hour"] = st.slider(
                 "Simulation Start Time (hour)",
                 min_value=MIN_START_TIME_HOUR,
@@ -481,7 +477,7 @@ class ParameterWidgets:
                 help="Real-world hour when simulation begins (0 = midnight)"
             )
         else:
-            # Fixed start time for non-uniform patterns
+            # Fixed start time for six_periods pattern
             params["start_time_hour"] = FIXED_START_TIME_HOUR
             st.info(
                 f"🌙 **Fixed Start Time**: {FIXED_START_TIME_HOUR} hours (midnight) - required for '{departure_pattern}' pattern")

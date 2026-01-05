@@ -230,13 +230,6 @@ MIN_TREE_METHOD_INTERVAL = 30
 MAX_TREE_METHOD_INTERVAL = 300
 STEP_TREE_METHOD_INTERVAL = 10
 
-# =============================================================================
-# RUSH HOURS PATTERN CONSTANTS
-# =============================================================================
-
-DEFAULT_MORNING_PCT = 40
-DEFAULT_EVENING_PCT = 30
-DEFAULT_REST_PCT = 30
 
 # =============================================================================
 # UI CONSTANTS
@@ -357,7 +350,6 @@ EDGE_SAMPLE_SLICE_LIMIT = 5  # Limit for edge sample display
 # Default Fallback Values
 DEFAULT_DEPARTURE_TIME_FALLBACK = 0  # Fallback departure time when list is empty
 DEFAULT_ROUTE_WEIGHT = 1.0  # Default weight for uniform route distributions
-DEFAULT_REST_WEIGHT = 10  # Default rest weight for rush hours pattern
 MINIMUM_ROUTE_COUNT = 1  # Minimum routes per pattern
 MINIMUM_VEHICLES_PER_ROUTE = 1.0  # Minimum vehicles per route
 
@@ -435,7 +427,7 @@ ROUTING_ATTRACTIVENESS = "attractiveness"
 # Departure Pattern Names
 DEPARTURE_PATTERN_UNIFORM = "uniform"
 DEPARTURE_PATTERN_SIX_PERIODS = "six_periods"
-DEPARTURE_PATTERN_RUSH_HOURS = "rush_hours"
+DEPARTURE_PATTERN_CUSTOM = "custom"
 
 # Six Periods Names
 PERIOD_MORNING = "morning"
@@ -445,10 +437,11 @@ PERIOD_EVENING_RUSH = "evening_rush"
 PERIOD_EVENING = "evening"
 PERIOD_NIGHT = "night"
 
-# Rush Hours Pattern Components
-RUSH_HOURS_PREFIX = "rush_hours:"
-RUSH_HOURS_REST = "rest"
-RUSH_HOURS_SEPARATOR = ":"
+# Custom Departure Pattern Components
+CUSTOM_PATTERN_PREFIX = "custom:"
+CUSTOM_WINDOW_SEPARATOR = ";"
+CUSTOM_TIME_PERCENT_SEPARATOR = ","
+CUSTOM_TIME_RANGE_SEPARATOR = "-"
 
 # XML and Data Attribute Names
 ATTR_NAME = "name"

@@ -18,7 +18,11 @@ from src.constants import (
     MAX_NUM_VEHICLES_VALIDATION, MIN_STEP_LENGTH, MAX_STEP_LENGTH,
     MIN_LANE_COUNT, MAX_LANE_COUNT,
     JUNCTION_ID_PATTERN, EDGE_ID_PATTERN,
-    MIN_LANES_FOR_TL_STRATEGY
+    MIN_LANES_FOR_TL_STRATEGY,
+    CUSTOM_PATTERN_PREFIX,
+    CUSTOM_WINDOW_SEPARATOR,
+    CUSTOM_TIME_PERCENT_SEPARATOR,
+    CUSTOM_TIME_RANGE_SEPARATOR,
 )
 from src.utils.logging import get_logger
 from typing import Tuple, List, Dict, Any
@@ -51,7 +55,7 @@ def validate_arguments(args) -> None:
     _validate_routing_strategy(args.routing_strategy)
     _validate_vehicle_types(args.vehicle_types)
     _validate_route_args(args)
-    _validate_departure_pattern(args.departure_pattern)
+    _validate_departure_pattern(args.departure_pattern, args.start_time_hour, args.end_time)
     _validate_junctions_to_remove(args.junctions_to_remove)
     _validate_lane_count(args.lane_count)
 
@@ -249,82 +253,220 @@ def _validate_single_route_pattern(route_pattern: str, vehicle_type: str) -> Non
             f"{vehicle_type} route pattern percentages must sum to 100, got {total_percentage}")
 
 
-def _validate_departure_pattern(departure_pattern: str) -> None:
+def _validate_departure_pattern(departure_pattern: str, start_hour: float = None, end_time: int = None) -> None:
     """Validate departure pattern format."""
 
     # Check for basic patterns
     if departure_pattern in [DEPARTURE_PATTERN_SIX_PERIODS, DEPARTURE_PATTERN_UNIFORM]:
         return
 
-    # Check for rush_hours pattern
-    if departure_pattern.startswith("rush_hours:"):
-        _validate_rush_hours_pattern(departure_pattern)
+    # Check for custom pattern
+    if departure_pattern.startswith(CUSTOM_PATTERN_PREFIX):
+        if start_hour is None or end_time is None:
+            # Basic syntax check only (used during initial arg parsing)
+            _parse_custom_pattern(departure_pattern)
+        else:
+            # Full validation with simulation bounds
+            _validate_custom_pattern(departure_pattern, start_hour, end_time)
         return
 
-    raise ValidationError(f"Invalid departure pattern: {departure_pattern}. "
-                          f"Valid patterns: 'six_periods', 'uniform', 'rush_hours:...'")
+    raise ValidationError(
+        f"Invalid departure pattern: {departure_pattern}. "
+        f"Valid patterns: 'six_periods', 'uniform', 'custom:HH:MM-HH:MM,percent;...'"
+    )
 
 
-def _validate_rush_hours_pattern(pattern: str) -> None:
-    """Validate rush_hours pattern format."""
+def _parse_custom_pattern(pattern: str) -> list:
+    """
+    Parse custom departure pattern into list of time windows.
 
-    # Pattern: rush_hours:7-9:40,17-19:30,rest:10
-    pattern_part = pattern[len("rush_hours:"):]
-    parts = pattern_part.split(",")
+    Args:
+        pattern: Pattern string like "custom:9:00-9:30,40;10:00-10:45,30"
 
-    if len(parts) < 2:
-        raise ValidationError(
-            f"Rush hours pattern must have at least one time range and 'rest' percentage")
+    Returns:
+        List of dicts: [{"start": (h, m), "end": (h, m), "percent": int}, ...]
+    """
+    if not pattern.startswith(CUSTOM_PATTERN_PREFIX):
+        raise ValidationError(f"Custom pattern must start with '{CUSTOM_PATTERN_PREFIX}'")
 
-    # Check that last part is 'rest:XX'
-    rest_part = parts[-1]
-    if not rest_part.startswith("rest:"):
-        raise ValidationError(
-            f"Rush hours pattern must end with 'rest:XX', got: {rest_part}")
+    pattern_body = pattern[len(CUSTOM_PATTERN_PREFIX):]
+    windows = []
+
+    # Split by semicolon, filter empty parts (handles trailing semicolon)
+    parts = [p.strip() for p in pattern_body.split(CUSTOM_WINDOW_SEPARATOR) if p.strip()]
+
+    for part in parts:
+        # Split time range from percentage: "9:00-9:30,40"
+        if CUSTOM_TIME_PERCENT_SEPARATOR not in part:
+            raise ValidationError(
+                f"Invalid window format '{part}': expected 'HH:MM-HH:MM,percent'"
+            )
+
+        time_range, percent_str = part.rsplit(CUSTOM_TIME_PERCENT_SEPARATOR, 1)
+
+        # Parse percentage
+        try:
+            percent = int(percent_str)
+        except ValueError:
+            raise ValidationError(f"Invalid percentage '{percent_str}': must be an integer")
+
+        if percent <= 0:
+            raise ValidationError(f"Percentage must be positive, got {percent}")
+
+        # Split time range: "9:00-9:30"
+        if CUSTOM_TIME_RANGE_SEPARATOR not in time_range:
+            raise ValidationError(
+                f"Invalid time range '{time_range}': expected 'HH:MM-HH:MM'"
+            )
+
+        start_str, end_str = time_range.split(CUSTOM_TIME_RANGE_SEPARATOR, 1)
+
+        # Parse times
+        start_time = _parse_time_hhmm(start_str)
+        end_time = _parse_time_hhmm(end_str)
+
+        windows.append({
+            "start": start_time,
+            "end": end_time,
+            "percent": percent
+        })
+
+    return windows
+
+
+def _parse_time_hhmm(time_str: str) -> tuple:
+    """
+    Parse HH:MM time string to (hour, minute) tuple.
+
+    Args:
+        time_str: Time string like "9:00" or "14:30"
+
+    Returns:
+        Tuple of (hour, minute) as integers
+    """
+    time_str = time_str.strip()
+
+    if ":" not in time_str:
+        raise ValidationError(f"Invalid time format '{time_str}': expected HH:MM")
+
+    parts = time_str.split(":")
+    if len(parts) != 2:
+        raise ValidationError(f"Invalid time format '{time_str}': expected HH:MM")
 
     try:
-        rest_percentage = float(rest_part[5:])
-        if rest_percentage < 0 or rest_percentage > 100:
-            raise ValidationError(
-                f"Rest percentage must be 0-100, got {rest_percentage}")
+        hour = int(parts[0])
+        minute = int(parts[1])
     except ValueError:
-        raise ValidationError(f"Invalid rest percentage in: {rest_part}")
+        raise ValidationError(f"Invalid time format '{time_str}': hour and minute must be integers")
 
-    # Validate time ranges
-    total_percentage = rest_percentage
-    for part in parts[:-1]:
-        if ":" not in part:
-            raise ValidationError(f"Invalid time range format: {part}")
+    if hour < 0 or hour > 23:
+        raise ValidationError(f"Invalid time format '{time_str}': hour must be 0-23")
 
-        time_range, percentage_str = part.rsplit(":", 1)
-        try:
-            percentage = float(percentage_str)
-            if percentage < 0 or percentage > 100:
-                raise ValidationError(
-                    f"Percentage must be 0-100, got {percentage}")
-            total_percentage += percentage
-        except ValueError:
-            raise ValidationError(f"Invalid percentage in: {part}")
+    if minute < 0 or minute > 59:
+        raise ValidationError(f"Invalid time format '{time_str}': minutes must be 0-59")
 
-        # Validate time range format (e.g., "7-9")
-        if "-" not in time_range:
-            raise ValidationError(f"Invalid time range format: {time_range}")
+    return (hour, minute)
 
-        start_hour, end_hour = time_range.split("-", 1)
-        try:
-            start = float(start_hour)
-            end = float(end_hour)
-            if start < 0 or start >= 24 or end < 0 or end >= 24:
-                raise ValidationError(f"Hours must be 0-24, got {start}-{end}")
-            if start >= end:
-                raise ValidationError(
-                    f"Start hour must be < end hour, got {start}-{end}")
-        except ValueError:
-            raise ValidationError(f"Invalid hour values in: {time_range}")
 
-    if abs(total_percentage - 100.0) > 0.01:
+def _validate_custom_pattern(pattern: str, start_hour: float, end_time: int) -> None:
+    """
+    Validate custom departure pattern against simulation bounds.
+
+    Args:
+        pattern: Pattern string like "custom:9:00-9:30,40;10:00-10:45,30"
+        start_hour: Simulation start time in hours (e.g., 8.0 for 8:00 AM)
+        end_time: Simulation duration in seconds
+
+    Raises:
+        ValidationError: If pattern is invalid
+    """
+    windows = _parse_custom_pattern(pattern)
+
+    if not windows:
+        raise ValidationError("Custom pattern must have at least one time window")
+
+    # Calculate simulation bounds
+    sim_start_hour = start_hour
+    sim_start_min = int((start_hour % 1) * 60)
+    sim_end_hour = start_hour + (end_time / 3600)
+
+    # Validate each window
+    total_percent = 0
+    for window in windows:
+        start_h, start_m = window["start"]
+        end_h, end_m = window["end"]
+        percent = window["percent"]
+
+        total_percent += percent
+
+        # Convert to decimal hours for comparison
+        window_start_decimal = start_h + start_m / 60
+        window_end_decimal = end_h + end_m / 60
+
+        # Check start before end
+        if window_start_decimal >= window_end_decimal:
+            raise ValidationError(
+                f"Invalid window {start_h:02d}:{start_m:02d}-{end_h:02d}:{end_m:02d}: "
+                f"start time must be before end time"
+            )
+
+        # Check within simulation bounds
+        if window_start_decimal < sim_start_hour:
+            raise ValidationError(
+                f"Window {start_h:02d}:{start_m:02d}-{end_h:02d}:{end_m:02d} is outside "
+                f"simulation range {int(sim_start_hour):02d}:{int(sim_start_min):02d}-"
+                f"{int(sim_end_hour):02d}:{int((sim_end_hour % 1) * 60):02d}"
+            )
+
+        if window_end_decimal > sim_end_hour:
+            raise ValidationError(
+                f"Window {start_h:02d}:{start_m:02d}-{end_h:02d}:{end_m:02d} is outside "
+                f"simulation range {int(sim_start_hour):02d}:{int(sim_start_min):02d}-"
+                f"{int(sim_end_hour):02d}:{int((sim_end_hour % 1) * 60):02d}"
+            )
+
+    # Check total percentage
+    if total_percent > 100:
         raise ValidationError(
-            f"Rush hours percentages must sum to 100, got {total_percentage}")
+            f"Specified percentages sum to {total_percent}%, must be <= 100%"
+        )
+
+    # Check for overlaps
+    _check_window_overlaps(windows)
+
+
+def _check_window_overlaps(windows: list) -> None:
+    """
+    Check that no windows overlap.
+
+    Args:
+        windows: List of window dicts with start/end tuples
+
+    Raises:
+        ValidationError: If any windows overlap
+    """
+    # Convert to decimal hours for easier comparison
+    ranges = []
+    for w in windows:
+        start = w["start"][0] + w["start"][1] / 60
+        end = w["end"][0] + w["end"][1] / 60
+        ranges.append((start, end, w))
+
+    # Sort by start time
+    ranges.sort(key=lambda x: x[0])
+
+    # Check adjacent pairs for overlap
+    for i in range(len(ranges) - 1):
+        _, end1, w1 = ranges[i]
+        start2, _, w2 = ranges[i + 1]
+
+        if end1 > start2:
+            s1, e1 = w1["start"], w1["end"]
+            s2, e2 = w2["start"], w2["end"]
+            raise ValidationError(
+                f"Windows {s1[0]:02d}:{s1[1]:02d}-{e1[0]:02d}:{e1[1]:02d} and "
+                f"{s2[0]:02d}:{s2[1]:02d}-{e2[0]:02d}:{e2[1]:02d} overlap"
+            )
 
 
 def _validate_junctions_to_remove(junctions_to_remove: str) -> None:
@@ -658,7 +800,14 @@ def _smart_fix_departure_pattern_constraints(args) -> None:
     """
     logger = get_logger(__name__)
 
-    if args.departure_pattern != UNIFORM_DEPARTURE_PATTERN:
+    # Patterns that allow flexible start times and durations
+    allows_flexible_timing = (
+        args.departure_pattern == UNIFORM_DEPARTURE_PATTERN or
+        args.departure_pattern.startswith(CUSTOM_PATTERN_PREFIX)
+    )
+
+    if not allows_flexible_timing:
+        # For six_periods pattern: requires midnight start and 24h duration
         # Handle start_time_hour
         if args.start_time_hour == SENTINEL_START_TIME_HOUR:
             # User didn't provide this parameter, auto-fix it
@@ -670,7 +819,7 @@ def _smart_fix_departure_pattern_constraints(args) -> None:
             raise ValidationError(
                 f"start_time_hour must be {FIXED_START_TIME_HOUR} for '{args.departure_pattern}' "
                 f"departure pattern (got {args.start_time_hour}). "
-                f"Only '{UNIFORM_DEPARTURE_PATTERN}' pattern allows custom start times."
+                f"Only 'uniform' and 'custom:...' patterns allow custom start times."
             )
 
         # Handle end_time
@@ -684,10 +833,10 @@ def _smart_fix_departure_pattern_constraints(args) -> None:
             raise ValidationError(
                 f"end_time must be {MAX_END_TIME} seconds (24 hours) for '{args.departure_pattern}' "
                 f"departure pattern (got {args.end_time}). "
-                f"Only '{UNIFORM_DEPARTURE_PATTERN}' pattern allows custom durations."
+                f"Only 'uniform' and 'custom:...' patterns allow custom durations."
             )
     else:
-        # For uniform pattern, convert sentinel values to real defaults
+        # For uniform and custom patterns: allow any start time and duration
         if args.start_time_hour == SENTINEL_START_TIME_HOUR:
             args.start_time_hour = DEFAULT_START_TIME_HOUR
         if args.end_time == SENTINEL_END_TIME:

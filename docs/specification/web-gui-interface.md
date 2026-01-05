@@ -185,10 +185,27 @@ open http://localhost:8501
 
 - **Widget**: Select box with custom configuration options
 - **Options**:
-  - "Six Periods" (research-based daily pattern)
-  - "Uniform" (even distribution)
-  - "Custom Rush Hours" (opens time configuration)
-- **Conditional Inputs**: Additional time configuration widgets based on selection
+  - "Six Periods" (research-based daily pattern, requires 24h simulation starting at midnight)
+  - "Uniform" (even distribution, flexible start time and duration)
+  - "Custom (specify time windows)" (user-defined time windows with percentages)
+- **Conditional Inputs**:
+  - **Six Periods**: Start time locked to 0:00, duration locked to 86,400s (24h)
+  - **Uniform**: Start time and duration fully configurable
+  - **Custom**: Shows text input for custom pattern specification
+
+**Custom Pattern Text Input** (shown when "Custom" selected)
+
+- **Widget**: Text input field with format guidance
+- **Format**: `HH:MM-HH:MM,percent;HH:MM-HH:MM,percent;...`
+- **Default Value**: `9:00-10:00,50;17:00-18:00,30`
+- **Validation**:
+  - Time windows must be within simulation bounds (start_time to start_time + duration)
+  - Percentages must not exceed 100% total
+  - Time windows must not overlap
+  - Times must be in HH:MM format (24-hour clock)
+- **Remainder Distribution**: Unspecified percentage (e.g., 20% if windows specify 80%) is distributed proportionally across gaps between specified windows
+- **Help Text**: "Format: HH:MM-HH:MM,percent;... Example: 9:00-10:00,50;17:00-18:00,30 means 50% of vehicles depart between 9:00-10:00, 30% between 17:00-18:00, and remaining 20% distributed across other times"
+- **Error Display**: Validation errors shown immediately with specific messages (e.g., "Window 9:00-10:00 is outside simulation range 0:00-2:00")
 
 #### 3. **Simulation Control Section**
 
@@ -216,7 +233,7 @@ open http://localhost:8501
 - **Range**: 1-86,400 seconds (default: 7200s/2 hours)
 - **Display**: Multiple time formats (seconds, minutes, hours)
 - **Presets**: Quick selection buttons (30min, 1hr, 2hr, 4hr, 8hr)
-- **Constraint**: Only configurable with `uniform` departure pattern; fixed at 86,400s (24h) for other patterns
+- **Constraint**: Configurable with `uniform` and `custom` departure patterns; fixed at 86,400s (24h) for `six_periods` pattern
 
 **Simulation Start Time**
 
@@ -224,7 +241,7 @@ open http://localhost:8501
 - **Range**: 0.0-24.0 hours (step: 0.5 hours)
 - **Display**: Both 24-hour (14:30) and 12-hour (2:30 PM) formats
 - **Integration**: Works with time dependency and departure patterns
-- **Constraint**: Only configurable with `uniform` departure pattern; fixed at 0.0 (midnight) for other patterns
+- **Constraint**: Configurable with `uniform` and `custom` departure patterns; fixed at 0.0 (midnight) for `six_periods` pattern
 
 **SUMO GUI Option**
 

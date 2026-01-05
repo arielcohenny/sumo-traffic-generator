@@ -120,7 +120,7 @@ python analyze_results.py
   "shared_parameters": {
     "vehicle_types": ["passenger 90 public 10", "passenger 80 public 20"],
     "routing_strategies": ["shortest 100", "realtime 60 fastest 40", "shortest 50 realtime 50"],
-    "departure_patterns": ["uniform", "six_periods", "rush_hours:7-9:40,17-19:40,rest:20"]
+    "departure_patterns": ["uniform", "six_periods", "custom:7:00-9:00,40;17:00-19:00,40"]
   }
 }
 ```

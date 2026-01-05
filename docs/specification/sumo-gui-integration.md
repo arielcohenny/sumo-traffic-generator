@@ -220,9 +220,10 @@ env PYTHONUNBUFFERED=1 python -m src.cli --grid_dimension 8 --num_vehicles 1000 
 ### Demonstration and Education
 
 ```bash
-# Rush hour traffic demonstration
+# Rush hour traffic demonstration with custom departure windows
 env PYTHONUNBUFFERED=1 python -m src.cli \
-  --departure_pattern "rush_hours:7-9:60,17-19:30,rest:10" \
+  --departure_pattern "custom:7:00-9:00,40;17:00-19:00,30" \
+  --start_time_hour 6.0 --end-time 50400 \
   --gui
 
 # Traffic control method comparison

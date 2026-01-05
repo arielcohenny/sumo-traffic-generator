@@ -75,10 +75,13 @@
 - **Calculation**: `departure_time = random_uniform(0, end_time)`
 - **Use Case**: Baseline comparison without temporal bias
 
-**3. Custom Rush Hours Pattern ("rush_hours:7-9:40,17-19:30,rest:10")**
+**3. Custom Pattern ("custom:HH:MM-HH:MM,percent;...")**
 
-- **Format**: Defines specific rush hour periods with percentages, remainder distributed to other times
-- **Flexibility**: Allows custom peak periods for specific scenarios
+- **Format**: `custom:9:00-10:00,50;17:00-18:00,30` - defines specific time windows with percentages
+- **Time Format**: HH:MM in 24-hour clock (absolute times within simulation bounds)
+- **Remainder Distribution**: Unspecified percentage distributed proportionally across gaps between windows
+- **Validation**: Windows must be within simulation range, no overlaps, total ≤ 100%
+- **Flexibility**: Allows precise control over departure timing for specific scenarios
 
 ### Routing Strategy System (4-Strategy Classification)
 

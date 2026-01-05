@@ -580,14 +580,14 @@ dbps
 
 - **Vehicle Departure Patterns**:
   - Replaced sequential departure (0, 1, 2, 3...) with realistic temporal distribution based on research papers
-  - Default: six_periods system with research-based 6-period daily structure (Morning 20%, Morning Rush 30%, Noon 25%, Evening Rush 20%, Evening 4%, Night 1%)
-  - Alternative patterns: uniform distribution, custom rush_hours
-  - Automatically scales to simulation end_time (default 24 hours)
+  - Default: uniform distribution across simulation time
+  - Alternative: six_periods system with research-based 6-period daily structure
+  - Custom: `custom:HH:MM-HH:MM,percent;...` for precise time window control
+    - Example: `custom:9:00-9:30,40;10:00-10:45,30` = 40% at 9-9:30, 30% at 10-10:45, 30% elsewhere
+    - Times are absolute clock times within simulation range
+    - Unspecified percentage distributed proportionally to time gaps
+  - Automatically works with simulation start_time and end_time
   - Compatible with all routing strategies and vehicle types
-  - CLI support via --traffic_light_strategy parameter
-  - Built on netgenerate's --tls.layout functionality for proven traffic signal logic
-  - Compatible with any lane configuration (1+ lanes) and Tree Method optimization
-  - Opposites strategy for efficient green time usage, incoming strategy for unbalanced traffic scenarios
 - **Advanced Features**:
   - Zone-based traffic demand calculation using land use types and attractiveness values
   - Spatial analysis for edge-zone adjacency detection

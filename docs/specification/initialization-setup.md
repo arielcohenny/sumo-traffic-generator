@@ -77,11 +77,11 @@ Real-world hour when simulation starts (0-24) for temporal attractiveness. Used 
 
 ### `--departure_pattern` (str, default: "uniform")
 
-Vehicle departure timing. Four patterns available:
+Vehicle departure timing. Three patterns available:
 
-- `six_periods`: Research-based daily structure
-- `uniform`: Even distribution
-- `rush_hours:7-9:40,17-19:30,rest:10`: Custom rush hour definition
+- `six_periods`: Research-based daily structure (requires 24h simulation starting at midnight)
+- `uniform`: Even distribution (flexible start time and duration)
+- `custom:HH:MM-HH:MM,percent;...`: Custom time windows with percentages (e.g., `custom:9:00-10:00,50;17:00-18:00,30`)
 
 ### `--routing_strategy` (str, default: "shortest 100")
 
@@ -392,13 +392,14 @@ D1E1=tail:2,head:
 
 ### Departure Pattern Validation
 
-- **Current**: Not implemented
-- **Needed Checks**:
-  - Valid pattern names: {"six_periods", "uniform"}
-  - Format validation for "rush_hours:7-9:40,17-19:30,rest:10"
-  - Hour range validation (0-24)
-  - Percentage validation for custom patterns
-  - Time range validation (start < end hours)
+- **Current**: Fully implemented
+- **Implemented Checks**:
+  - Valid pattern names: {"six_periods", "uniform", "custom:..."}
+  - Format validation for custom patterns (HH:MM-HH:MM,percent;...)
+  - Time window validation within simulation bounds (start_time to start_time + duration)
+  - Percentage validation (total ≤ 100%)
+  - Overlap detection between time windows
+  - Time format validation (HH:MM 24-hour clock)
 
 ### Numeric Range Validations
 
