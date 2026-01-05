@@ -800,7 +800,14 @@ def _smart_fix_departure_pattern_constraints(args) -> None:
     """
     logger = get_logger(__name__)
 
-    if args.departure_pattern != UNIFORM_DEPARTURE_PATTERN:
+    # Patterns that allow flexible start times and durations
+    allows_flexible_timing = (
+        args.departure_pattern == UNIFORM_DEPARTURE_PATTERN or
+        args.departure_pattern.startswith(CUSTOM_PATTERN_PREFIX)
+    )
+
+    if not allows_flexible_timing:
+        # For six_periods pattern: requires midnight start and 24h duration
         # Handle start_time_hour
         if args.start_time_hour == SENTINEL_START_TIME_HOUR:
             # User didn't provide this parameter, auto-fix it
@@ -812,7 +819,7 @@ def _smart_fix_departure_pattern_constraints(args) -> None:
             raise ValidationError(
                 f"start_time_hour must be {FIXED_START_TIME_HOUR} for '{args.departure_pattern}' "
                 f"departure pattern (got {args.start_time_hour}). "
-                f"Only '{UNIFORM_DEPARTURE_PATTERN}' pattern allows custom start times."
+                f"Only 'uniform' and 'custom:...' patterns allow custom start times."
             )
 
         # Handle end_time
@@ -826,10 +833,10 @@ def _smart_fix_departure_pattern_constraints(args) -> None:
             raise ValidationError(
                 f"end_time must be {MAX_END_TIME} seconds (24 hours) for '{args.departure_pattern}' "
                 f"departure pattern (got {args.end_time}). "
-                f"Only '{UNIFORM_DEPARTURE_PATTERN}' pattern allows custom durations."
+                f"Only 'uniform' and 'custom:...' patterns allow custom durations."
             )
     else:
-        # For uniform pattern, convert sentinel values to real defaults
+        # For uniform and custom patterns: allow any start time and duration
         if args.start_time_hour == SENTINEL_START_TIME_HOUR:
             args.start_time_hour = DEFAULT_START_TIME_HOUR
         if args.end_time == SENTINEL_END_TIME:
