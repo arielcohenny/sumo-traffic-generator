@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
-Training script for RL traffic signal control.
+DEPRECATED: Legacy training script for RL traffic signal control.
 
-This script provides a command-line interface for training RL models
-with configurable parameters and automatic model versioning.
+This script imports non-existent src.rl.config module and is superseded by:
+  scripts/train_rl_production.py --experiment experiments/baseline.yaml
+
+Use train_rl_production.py with experiment YAML configs instead.
 """
 
 import argparse

@@ -34,6 +34,7 @@ from src.rl.constants import (
     DEFAULT_N_PARALLEL_ENVS, MIN_PARALLEL_ENVS, MAX_PARALLEL_ENVS,
     PARALLEL_WORKSPACE_PREFIX, SINGLE_ENV_THRESHOLD, DEFAULT_CYCLE_LENGTH
 )
+from src.rl.experiment_config import load_experiment, save_experiment, validate_experiment
 
 
 def setup_logging(log_level: str = "INFO", log_file: str = None):
@@ -78,10 +79,16 @@ def create_argument_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
+    # Experiment config (single source of truth)
+    parser.add_argument(
+        '--experiment', type=str, default=None,
+        help="Path to experiment YAML config file (replaces hardcoded constants)"
+    )
+
     # Training scale parameters
     parser.add_argument(
-        '--timesteps', type=int, default=100000,
-        help="Total training timesteps (production scale: 100k-1M)"
+        '--timesteps', type=int, default=None,
+        help="Total training timesteps - overrides experiment YAML if provided"
     )
     parser.add_argument(
         '--parallel-envs', type=int, default=4,
@@ -140,10 +147,11 @@ def create_argument_parser() -> argparse.ArgumentParser:
         help="Save model every N timesteps"
     )
 
-    # Environment parameters (REQUIRED)
+    # Environment parameters (required unless --experiment provides simulation params)
     parser.add_argument(
-        '--env-params', type=str, required=True,
-        help='Environment parameters string (e.g., "--network-seed 42 --grid_dimension 5 --num_vehicles 4500 ...")'
+        '--env-params', type=str, default=None,
+        help='Environment parameters string (e.g., "--network-seed 42 --grid_dimension 5 --num_vehicles 4500 ..."). '
+             'If --experiment is provided, simulation params from YAML are used as defaults.'
     )
 
     # RL cycle parameters
@@ -205,11 +213,59 @@ def main():
     setup_logging(args.log_level, log_file=None)  # Console only
     logger = logging.getLogger(__name__)
 
+    # Load experiment config if provided
+    experiment_config = None
+    if args.experiment:
+        logger.info(f"Loading experiment config: {args.experiment}")
+        experiment_config = load_experiment(args.experiment)
+        warnings = validate_experiment(experiment_config)
+        if warnings:
+            for w in warnings:
+                logger.warning(f"Config warning: {w}")
+        logger.info(f"Experiment: {experiment_config.name} - {experiment_config.description}")
+
+        # Apply CLI overrides to experiment config
+        if args.timesteps is not None:
+            experiment_config.total_timesteps = args.timesteps
+        if args.checkpoint_freq is not None:
+            experiment_config.checkpoint_freq = args.checkpoint_freq
+
+        # Build env-params from experiment config simulation params if not provided
+        if args.env_params is None:
+            args.env_params = (
+                f"--network-seed {experiment_config.network_seed} "
+                f"--grid_dimension {experiment_config.grid_dimension} "
+                f"--num_vehicles {experiment_config.num_vehicles} "
+                f"--end-time {experiment_config.end_time} "
+                f"--routing_strategy '{experiment_config.routing_strategy}' "
+                f"--vehicle_types '{experiment_config.vehicle_types}' "
+                f"--departure_pattern {experiment_config.departure_pattern}"
+            )
+            logger.info(f"Built env-params from experiment config: {args.env_params}")
+
+        # Use experiment values as defaults for timesteps/checkpoint
+        if args.timesteps is None:
+            args.timesteps = experiment_config.total_timesteps
+        if args.cycle_lengths == [DEFAULT_CYCLE_LENGTH]:
+            args.cycle_lengths = experiment_config.cycle_lengths
+
+    # Validate that env-params is available
+    if args.env_params is None:
+        logger.error("--env-params is required when --experiment is not provided")
+        return 1
+
+    # Default timesteps if still None
+    if args.timesteps is None:
+        args.timesteps = 100000
+
     logger.info("=== PRODUCTION RL TRAINING STARTED ===")
     logger.info(f"Training timesteps: {args.timesteps:,}")
     logger.info(f"Parallel environments: {args.parallel_envs}")
     logger.info(f"Cycle lengths: {args.cycle_lengths}")
     logger.info(f"Cycle strategy: {args.cycle_strategy}")
+    if experiment_config:
+        logger.info(f"Experiment: {experiment_config.name}")
+        logger.info(f"Reward function: {experiment_config.reward_function}")
     logger.info("All logs and files will be organized in models/rl_YYYYMMDD_HHMMSS/")
 
     try:
@@ -261,7 +317,8 @@ def main():
                 resume_from_model=args.resume_from,
                 pretrain_from_model=args.pretrain_from,
                 cycle_lengths=args.cycle_lengths,
-                cycle_strategy=args.cycle_strategy
+                cycle_strategy=args.cycle_strategy,
+                experiment_config=experiment_config
             )
         except (BrokenPipeError, ConnectionError, OSError) as e:
             logger.warning(f"SUMO connection error during training: {e}")
@@ -280,7 +337,8 @@ def main():
                     resume_from_model=args.resume_from,
                     pretrain_from_model=args.pretrain_from,
                     cycle_lengths=args.cycle_lengths,
-                    cycle_strategy=args.cycle_strategy
+                    cycle_strategy=args.cycle_strategy,
+                    experiment_config=experiment_config
                 )
             else:
                 raise

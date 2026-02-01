@@ -39,6 +39,16 @@ from .constants import (
     EARLY_STOPPING_ENABLED, EARLY_STOPPING_PATIENCE, EARLY_STOPPING_MIN_DELTA, EARLY_STOPPING_VERBOSE
 )
 # Config module removed - parameters now passed via --env-params
+from .experiment_config import ExperimentConfig
+
+# Activation function registry for config-driven architecture selection
+import torch.nn as nn
+ACTIVATION_REGISTRY = {
+    "relu": nn.ReLU,
+    "tanh": nn.Tanh,
+    "elu": nn.ELU,
+    "leaky_relu": nn.LeakyReLU,
+}
 
 
 class CumulativeCheckpointCallback(CheckpointCallback):
@@ -382,7 +392,8 @@ class TrafficMetricsCallback(BaseCallback):
 
 def make_env(env_params_string: str, env_index: int, base_workspace: str = PARALLEL_WORKSPACE_PREFIX,
              cycle_lengths: list = None, cycle_strategy: str = 'fixed',
-             network_path: str = None, network_dimensions: Tuple[int, int] = None):
+             network_path: str = None, network_dimensions: Tuple[int, int] = None,
+             experiment_config=None):
     """
     Create a single environment for vectorization.
 
@@ -394,6 +405,7 @@ def make_env(env_params_string: str, env_index: int, base_workspace: str = PARAL
         cycle_strategy: Strategy for cycle selection
         network_path: Path to pre-generated network files for reuse
         network_dimensions: Pre-computed (edge_count, junction_count) to avoid regenerating network
+        experiment_config: ExperimentConfig for config-driven reward/features (None = use defaults)
 
     Returns:
         callable: Environment creation function
@@ -412,7 +424,8 @@ def make_env(env_params_string: str, env_index: int, base_workspace: str = PARAL
             cycle_lengths=cycle_lengths,
             cycle_strategy=cycle_strategy,
             network_path=network_path,
-            network_dimensions=network_dimensions
+            network_dimensions=network_dimensions,
+            experiment_config=experiment_config
         )
         return env
 
@@ -421,7 +434,8 @@ def make_env(env_params_string: str, env_index: int, base_workspace: str = PARAL
 
 def create_vectorized_env(env_params_string: str, n_envs: int = None, base_workspace: str = PARALLEL_WORKSPACE_PREFIX,
                          cycle_lengths: list = None, cycle_strategy: str = 'fixed',
-                         network_path: str = None, network_dimensions: Tuple[int, int] = None):
+                         network_path: str = None, network_dimensions: Tuple[int, int] = None,
+                         experiment_config=None):
     """
     Create vectorized environment for parallel training.
 
@@ -433,6 +447,7 @@ def create_vectorized_env(env_params_string: str, n_envs: int = None, base_works
         cycle_strategy: Strategy for cycle selection
         network_path: Path to pre-generated network files for reuse
         network_dimensions: Pre-computed (edge_count, junction_count) to avoid regenerating network
+        experiment_config: ExperimentConfig for config-driven reward/features (None = use defaults)
 
     Returns:
         VecEnv: Vectorized environment for parallel training
@@ -444,7 +459,7 @@ def create_vectorized_env(env_params_string: str, n_envs: int = None, base_works
 
     # Create list of environment creation functions with cycle parameters, network path, and dimensions
     env_fns = [make_env(env_params_string, i, base_workspace, cycle_lengths, cycle_strategy,
-                        network_path, network_dimensions)
+                        network_path, network_dimensions, experiment_config)
                for i in range(n_envs)]
 
     # Use SubprocVecEnv for true parallel execution, DummyVecEnv for single environment
@@ -527,6 +542,87 @@ def _generate_network_once(env_params_string: str, model_directory: str) -> Tupl
     return str(network_path), edge_count, junction_count
 
 
+def _build_policy_kwargs(experiment_config=None):
+    """Build policy_kwargs dict from experiment config or constants."""
+    if experiment_config is not None:
+        return {
+            'net_arch': experiment_config.net_arch,
+            'activation_fn': ACTIVATION_REGISTRY.get(
+                experiment_config.activation, nn.ReLU
+            ),
+            'log_std_init': experiment_config.log_std_init,
+        }
+    return {
+        'net_arch': TRAINING_NETWORK_ARCHITECTURE,
+        'activation_fn': TRAINING_ACTIVATION_FUNCTION,
+        'log_std_init': -1.0,
+    }
+
+
+def _build_learning_rate(experiment_config=None):
+    """Build learning rate (scalar or schedule) from experiment config or constants."""
+    if experiment_config is not None:
+        if experiment_config.lr_schedule in ("exponential", "linear"):
+            return get_learning_rate_schedule(
+                experiment_config.learning_rate,
+                experiment_config.lr_final,
+                experiment_config.lr_decay_rate,
+            )
+        else:  # "constant"
+            return experiment_config.learning_rate
+    # Fallback to constants
+    if LEARNING_RATE_SCHEDULE_ENABLED:
+        return get_learning_rate_schedule(
+            LEARNING_RATE_INITIAL, LEARNING_RATE_FINAL, LEARNING_RATE_DECAY_RATE
+        )
+    return DEFAULT_LEARNING_RATE
+
+
+def _build_entropy_coef(experiment_config=None):
+    """Build entropy coefficient from experiment config or constants."""
+    if experiment_config is not None:
+        if experiment_config.ent_schedule:
+            return experiment_config.ent_initial
+        return experiment_config.ent_coef
+    # Fallback to constants
+    if ENTROPY_COEF_SCHEDULE_ENABLED:
+        return ENTROPY_COEF_INITIAL
+    return 0.01
+
+
+def _build_ppo_kwargs(experiment_config=None):
+    """Build the full dict of PPO constructor kwargs from config or constants.
+
+    Returns a dict suitable for PPO(..., **ppo_kwargs).
+    Does not include env, tensorboard_log, verbose, or device.
+    """
+    if experiment_config is not None:
+        return dict(
+            learning_rate=_build_learning_rate(experiment_config),
+            clip_range=experiment_config.clip_range,
+            batch_size=experiment_config.batch_size,
+            n_steps=experiment_config.n_steps,
+            n_epochs=experiment_config.n_epochs,
+            gamma=experiment_config.gamma,
+            gae_lambda=experiment_config.gae_lambda,
+            ent_coef=_build_entropy_coef(experiment_config),
+            max_grad_norm=experiment_config.max_grad_norm,
+            policy_kwargs=_build_policy_kwargs(experiment_config),
+        )
+    return dict(
+        learning_rate=_build_learning_rate(),
+        clip_range=DEFAULT_CLIP_RANGE,
+        batch_size=DEFAULT_BATCH_SIZE,
+        n_steps=DEFAULT_N_STEPS,
+        n_epochs=DEFAULT_N_EPOCHS,
+        gamma=DEFAULT_GAMMA,
+        gae_lambda=DEFAULT_GAE_LAMBDA,
+        ent_coef=_build_entropy_coef(),
+        max_grad_norm=MAX_GRAD_NORM,
+        policy_kwargs=_build_policy_kwargs(),
+    )
+
+
 def train_rl_policy(env_params_string: str,
                     total_timesteps: int = DEFAULT_TOTAL_TIMESTEPS,
                     model_save_path: str = DEFAULT_MODEL_SAVE_PATH,
@@ -538,7 +634,8 @@ def train_rl_policy(env_params_string: str,
                     pretrain_from_model: str = None,
                     cycle_lengths: list = None,
                     cycle_strategy: str = 'fixed',
-                    network_path: str = None) -> PPO:
+                    network_path: str = None,
+                    experiment_config: ExperimentConfig = None) -> PPO:
     """
     Train PPO policy for traffic signal control.
 
@@ -604,6 +701,13 @@ def train_rl_policy(env_params_string: str,
     logger.info(f"  Checkpoints:  {checkpoint_dir}")
     logger.info(f"  Best model:   {best_model_dir}")
 
+    # Save resolved experiment config for reproducibility
+    if experiment_config is not None:
+        from .experiment_config import save_experiment
+        config_path = os.path.join(model_dir, "experiment.yaml")
+        save_experiment(experiment_config, config_path)
+        logger.info(f"  Experiment:   {config_path}")
+
     # Update base_workspace to model directory
     # The config's update_workspace() will create model_dir/workspace/ automatically
     base_workspace = model_dir
@@ -634,7 +738,8 @@ def train_rl_policy(env_params_string: str,
         env = create_vectorized_env(
             env_params_string, n_envs=n_envs, base_workspace=base_workspace,
             cycle_lengths=cycle_lengths, cycle_strategy=cycle_strategy,
-            network_path=network_path, network_dimensions=network_dimensions)
+            network_path=network_path, network_dimensions=network_dimensions,
+            experiment_config=experiment_config)
         _verify_enhanced_state_space(
             env, env_params_string, is_vectorized=True)
     else:
@@ -646,7 +751,8 @@ def train_rl_policy(env_params_string: str,
             cycle_lengths=cycle_lengths,
             cycle_strategy=cycle_strategy,
             network_path=network_path,
-            network_dimensions=network_dimensions
+            network_dimensions=network_dimensions,
+            experiment_config=experiment_config
         )
         check_env(env)
         _verify_enhanced_state_space(env, env_params_string)
@@ -699,63 +805,27 @@ def train_rl_policy(env_params_string: str,
 
             logger.info("=== CREATING NEW MODEL WITH OPTIMIZED HYPERPARAMETERS ===")
 
-            # Policy network configuration
-            policy_kwargs = {
-                'net_arch': TRAINING_NETWORK_ARCHITECTURE,
-                'activation_fn': TRAINING_ACTIVATION_FUNCTION,
-                # CRITICAL: Reduce exploration noise to prevent model collapse
-                # Default log_std_init=0.0 gives std=1.0, which drowns out logit-scale signals (range ~[-2, -1])
-                # Using log_std_init=-1.0 gives std≈0.37, keeping noise smaller than signal for learning
-                'log_std_init': -1.0
-            }
-
-            # Configure learning rate schedule
-            if LEARNING_RATE_SCHEDULE_ENABLED:
-                learning_rate = get_learning_rate_schedule(
-                    LEARNING_RATE_INITIAL,
-                    LEARNING_RATE_FINAL,
-                    LEARNING_RATE_DECAY_RATE
-                )
-                logger.info(f"Learning rate: SCHEDULED ({LEARNING_RATE_INITIAL} → {LEARNING_RATE_FINAL})")
-            else:
-                learning_rate = DEFAULT_LEARNING_RATE
-                logger.info(f"Learning rate: {DEFAULT_LEARNING_RATE}")
-
-            # Configure entropy coefficient schedule
-            if ENTROPY_COEF_SCHEDULE_ENABLED:
-                ent_coef = ENTROPY_COEF_INITIAL
-                logger.info(f"Entropy coef: SCHEDULED ({ENTROPY_COEF_INITIAL} → {ENTROPY_COEF_FINAL})")
-            else:
-                ent_coef = 0.01
-                logger.info(f"Entropy coef: 0.01")
+            ppo_kwargs = _build_ppo_kwargs(experiment_config)
+            logger.info(f"PPO kwargs from {'experiment config' if experiment_config else 'constants'}")
 
             # Create NEW model with optimized hyperparameters
             model = PPO(
                 TRAINING_POLICY_TYPE,
                 env,
-                learning_rate=learning_rate,
-                clip_range=DEFAULT_CLIP_RANGE,
-                batch_size=DEFAULT_BATCH_SIZE,
-                n_steps=DEFAULT_N_STEPS,
-                n_epochs=DEFAULT_N_EPOCHS,
-                gamma=DEFAULT_GAMMA,
-                gae_lambda=DEFAULT_GAE_LAMBDA,
-                ent_coef=ent_coef,
-                max_grad_norm=MAX_GRAD_NORM,
-                policy_kwargs=policy_kwargs,
+                **ppo_kwargs,
                 tensorboard_log=tensorboard_log,
                 verbose=TRAINING_VERBOSE_LEVEL,
                 device=TRAINING_DEVICE_AUTO
             )
 
-            logger.info(f"✓ New model created with optimized hyperparameters:")
-            logger.info(f"  clip_range: {DEFAULT_CLIP_RANGE} (conservative for pre-training preservation)")
-            logger.info(f"  batch_size: {DEFAULT_BATCH_SIZE} (large for stability)")
-            logger.info(f"  n_steps: {DEFAULT_N_STEPS} (sufficient experience collection)")
-            logger.info(f"  n_epochs: {DEFAULT_N_EPOCHS}")
-            logger.info(f"  gamma: {DEFAULT_GAMMA} (long horizon for traffic cascades)")
-            logger.info(f"  gae_lambda: {DEFAULT_GAE_LAMBDA}")
-            logger.info(f"  max_grad_norm: {MAX_GRAD_NORM}")
+            logger.info(f"✓ New model created with hyperparameters:")
+            logger.info(f"  clip_range: {ppo_kwargs['clip_range']}")
+            logger.info(f"  batch_size: {ppo_kwargs['batch_size']}")
+            logger.info(f"  n_steps: {ppo_kwargs['n_steps']}")
+            logger.info(f"  n_epochs: {ppo_kwargs['n_epochs']}")
+            logger.info(f"  gamma: {ppo_kwargs['gamma']}")
+            logger.info(f"  gae_lambda: {ppo_kwargs['gae_lambda']}")
+            logger.info(f"  max_grad_norm: {ppo_kwargs['max_grad_norm']}")
 
             # Load ONLY policy weights from pre-trained model
             logger.info("=== LOADING PRE-TRAINED POLICY WEIGHTS ===")
@@ -782,45 +852,12 @@ def train_rl_policy(env_params_string: str,
             pretrain_from_model = None
 
     if not resume_from_model and not pretrain_from_model:
-        # Policy network configuration
-        policy_kwargs = {
-            'net_arch': TRAINING_NETWORK_ARCHITECTURE,
-            'activation_fn': TRAINING_ACTIVATION_FUNCTION,
-            # CRITICAL: Reduce exploration noise to prevent model collapse
-            # Default log_std_init=0.0 gives std=1.0, which drowns out logit-scale signals (range ~[-2, -1])
-            # Using log_std_init=-1.0 gives std≈0.37, keeping noise smaller than signal for learning
-            'log_std_init': -1.0
-        }
-
-        # Configure learning rate schedule
-        if LEARNING_RATE_SCHEDULE_ENABLED:
-            learning_rate = get_learning_rate_schedule(
-                LEARNING_RATE_INITIAL,
-                LEARNING_RATE_FINAL,
-                LEARNING_RATE_DECAY_RATE
-            )
-        else:
-            learning_rate = DEFAULT_LEARNING_RATE
-
-        # Configure entropy coefficient
-        if ENTROPY_COEF_SCHEDULE_ENABLED:
-            ent_coef = ENTROPY_COEF_INITIAL
-        else:
-            ent_coef = 0.01  # Small default for exploration
+        ppo_kwargs = _build_ppo_kwargs(experiment_config)
 
         model = PPO(
             TRAINING_POLICY_TYPE,
             env,
-            learning_rate=learning_rate,
-            clip_range=DEFAULT_CLIP_RANGE,
-            batch_size=DEFAULT_BATCH_SIZE,
-            n_steps=DEFAULT_N_STEPS,
-            n_epochs=DEFAULT_N_EPOCHS,
-            gamma=DEFAULT_GAMMA,
-            gae_lambda=DEFAULT_GAE_LAMBDA,
-            ent_coef=ent_coef,
-            max_grad_norm=MAX_GRAD_NORM,
-            policy_kwargs=policy_kwargs,
+            **ppo_kwargs,
             tensorboard_log=tensorboard_log,
             verbose=TRAINING_VERBOSE_LEVEL,
             device=TRAINING_DEVICE_AUTO
@@ -828,9 +865,9 @@ def train_rl_policy(env_params_string: str,
 
         logger.info(f"PPO model initialized with policy: {model.policy}")
         logger.info(f"Training for {total_timesteps} timesteps")
-        logger.info(f"Hyperparameters: gamma={DEFAULT_GAMMA}, clip={DEFAULT_CLIP_RANGE}, "
-                    f"batch={DEFAULT_BATCH_SIZE}, steps={DEFAULT_N_STEPS}, "
-                    f"epochs={DEFAULT_N_EPOCHS}, grad_clip={MAX_GRAD_NORM}")
+        logger.info(f"Hyperparameters: gamma={ppo_kwargs['gamma']}, clip={ppo_kwargs['clip_range']}, "
+                    f"batch={ppo_kwargs['batch_size']}, steps={ppo_kwargs['n_steps']}, "
+                    f"epochs={ppo_kwargs['n_epochs']}, grad_clip={ppo_kwargs['max_grad_norm']}")
 
     # Set up callbacks
     callbacks = []
@@ -1059,18 +1096,16 @@ def _validate_model_compatibility(model, env, config, logger):
                              f"environment expects {total_actions}")
 
         # Check for phase-only vs legacy model
-        from .constants import RL_PHASE_ONLY_MODE, RL_TRAINING_ACTION_VECTOR_SIZE, RL_TRAINING_ACTION_VECTOR_SIZE_LEGACY
+        from .constants import RL_PHASE_ONLY_MODE
         if RL_PHASE_ONLY_MODE:
-            if predicted_action_size == RL_TRAINING_ACTION_VECTOR_SIZE_LEGACY:
-                logger.warning("⚠️  Loading legacy phase+duration model in phase-only mode - "
+            if predicted_action_size != total_actions:
+                logger.warning("⚠️  Model action size mismatch in phase-only mode - "
                                "this may cause compatibility issues")
-            elif predicted_action_size == RL_TRAINING_ACTION_VECTOR_SIZE:
+            else:
                 logger.info(
                     "✓ Phase-only model detected - compatible with current configuration")
         else:
-            if predicted_action_size == RL_TRAINING_ACTION_VECTOR_SIZE:
-                logger.warning("⚠️  Loading phase-only model in legacy mode - "
-                               "this may cause compatibility issues")
+            logger.info(f"✓ Action space size: {predicted_action_size}")
 
         # Test a full step to ensure complete compatibility
         action, _ = model.predict(obs, deterministic=True)

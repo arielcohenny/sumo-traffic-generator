@@ -20,7 +20,7 @@ import gymnasium as gym
 import numpy as np
 import traci
 
-from .reward import RewardCalculator
+from .reward import RewardCalculator, REWARD_REGISTRY, TrafficMetrics
 from .constants import (
     STATE_NORMALIZATION_MIN, STATE_NORMALIZATION_MAX,
     EDGE_FEATURES_COUNT, JUNCTION_FEATURES_COUNT,
@@ -210,7 +210,8 @@ class TrafficControlEnv(gym.Env):
 
     def __init__(self, env_params_string: str, episode_number: int = 0,
                  cycle_lengths: list = None, cycle_strategy: str = 'fixed',
-                 network_path: str = None, network_dimensions: tuple = None):
+                 network_path: str = None, network_dimensions: tuple = None,
+                 experiment_config=None):
         """Initialize the traffic control environment.
 
         Args:
@@ -220,6 +221,7 @@ class TrafficControlEnv(gym.Env):
             cycle_strategy: How to select cycle length ('fixed', 'random', 'sequential', 'adaptive')
             network_path: Path to pre-generated network files for reuse (if None, generates fresh network each episode)
             network_dimensions: Pre-computed (edge_count, junction_count) to skip network generation during init
+            experiment_config: ExperimentConfig for config-driven reward/features (None = use defaults)
         """
         super().__init__()
         from .constants import DEFAULT_CYCLE_LENGTH, MIN_PHASE_DURATION
@@ -269,18 +271,29 @@ class TrafficControlEnv(gym.Env):
         else:
             actual_edge_count, actual_junction_count = self._get_actual_network_dimensions()
 
-        self.state_vector_size = (actual_edge_count * RL_DYNAMIC_EDGE_FEATURES_COUNT +
-                                  actual_junction_count * RL_DYNAMIC_JUNCTION_FEATURES_COUNT +
-                                  RL_DYNAMIC_NETWORK_FEATURES_COUNT +
+        # Feature counts: use experiment config if provided, else constants
+        if experiment_config is not None:
+            edge_feat_count = len(experiment_config.edge_features)
+            junction_feat_count = len(experiment_config.junction_features)
+            network_feat_count = len(experiment_config.network_features)
+        else:
+            edge_feat_count = RL_DYNAMIC_EDGE_FEATURES_COUNT
+            junction_feat_count = RL_DYNAMIC_JUNCTION_FEATURES_COUNT
+            network_feat_count = RL_DYNAMIC_NETWORK_FEATURES_COUNT
+
+        self.state_vector_size = (actual_edge_count * edge_feat_count +
+                                  actual_junction_count * junction_feat_count +
+                                  network_feat_count +
                                   1)  # +1 for normalized cycle_length
 
         # Define observation space: normalized state vector [0, 1]
         # State includes traffic features (edges) + signal features (junctions) + cycle_length
         state_size = self.state_vector_size
+        obs_tolerance = experiment_config.obs_space_tolerance if experiment_config else 0.01
         self.observation_space = gym.spaces.Box(
             low=STATE_NORMALIZATION_MIN,
             # Add tolerance for floating point precision
-            high=STATE_NORMALIZATION_MAX + 0.01,
+            high=STATE_NORMALIZATION_MAX + obs_tolerance,
             shape=(state_size,),
             dtype=np.float32
         )
@@ -288,15 +301,17 @@ class TrafficControlEnv(gym.Env):
         # Define action space based on control mode
         from .constants import RL_USE_CONTINUOUS_ACTIONS, RL_ACTIONS_PER_JUNCTION
 
+        action_low = experiment_config.action_low if experiment_config else -10.0
+        action_high = experiment_config.action_high if experiment_config else 10.0
+
         if RL_USE_CONTINUOUS_ACTIONS:
             # Duration-based control: continuous actions for phase duration proportions
             # Each intersection outputs 4 values (one per phase) that will be converted to durations via softmax
             # Shape: (num_intersections * 4,) - continuous values from neural network
             # Use finite bounds for PPO compatibility
-            # Range of -10 to +10 covers practical spectrum (exp(-10) ≈ 0%, exp(+10) ≈ 100%)
             self.action_space = gym.spaces.Box(
-                low=-10.0,
-                high=10.0,
+                low=action_low,
+                high=action_high,
                 shape=(self.num_intersections * RL_ACTIONS_PER_JUNCTION,),
                 dtype=np.float32
             )
@@ -331,6 +346,13 @@ class TrafficControlEnv(gym.Env):
         # Reward analysis logging
         self.reward_calculator = None
         self.episode_number = episode_number  # Track episode for log filenames
+
+        # Config-driven reward function (None = use legacy RewardCalculator path)
+        self.experiment_config = experiment_config
+        self.reward_fn = None
+        if experiment_config is not None:
+            reward_cls = REWARD_REGISTRY[experiment_config.reward_function]
+            self.reward_fn = reward_cls(**experiment_config.reward_params)
 
     def reset(self, seed=None, options=None):
         """Reset the environment to start a new episode.
@@ -507,7 +529,8 @@ class TrafficControlEnv(gym.Env):
             m = self.cli_args.get('tree_method_m', 0.8)
             l = self.cli_args.get('tree_method_l', 2.8)
             self.traffic_analyzer = RLTrafficAnalyzer(
-                self.edge_ids, m, l, debug=debug_mode)
+                self.edge_ids, m, l, debug=debug_mode,
+                experiment_config=self.experiment_config)
 
         observation = []
 
@@ -637,36 +660,44 @@ class TrafficControlEnv(gym.Env):
         return q_max_u
 
     def _compute_reward(self):
-        """Empirically validated reward based on comparative analysis.
+        """Compute reward using config-driven reward function or legacy path.
 
-        Uses z-score normalization and Cohen's d-based weights from
-        Tree Method vs Fixed timing comparative study.
-
-        Updated 2025-12-07: Removed broken travel time metric, added throughput bonus.
+        When experiment_config is provided, uses the registered reward function
+        with TrafficMetrics. Otherwise falls back to legacy RewardCalculator.
 
         Returns:
-            float: Reward value (higher is better, expected range -1 to +2)
+            float: Reward value (higher is better)
         """
-        if not self.vehicle_tracker or not self.reward_calculator:
+        if not self.vehicle_tracker:
             return DEFAULT_FALLBACK_VALUE
 
-        # Collect the 3 empirically validated metrics (travel time removed - broken)
+        # Collect metrics (shared by both paths)
         avg_waiting_per_vehicle = self._get_avg_waiting_per_vehicle()
         avg_speed_kmh = self._get_avg_speed_kmh()
         avg_queue_length = self._get_avg_queue_length()
-
-        # Get throughput for bonus (vehicles that completed their trips this step)
         vehicles_arrived = len(traci.simulation.getArrivedIDList())
 
-        # Compute empirical reward using validated function
-        reward = self.reward_calculator.compute_empirical_reward(
-            avg_waiting_per_vehicle=avg_waiting_per_vehicle,
-            avg_speed_kmh=avg_speed_kmh,
-            avg_queue_length=avg_queue_length,
-            vehicles_arrived_this_step=vehicles_arrived
-        )
+        # Config-driven reward path
+        if self.reward_fn is not None:
+            metrics = TrafficMetrics(
+                avg_waiting_per_vehicle=avg_waiting_per_vehicle,
+                avg_speed_kmh=avg_speed_kmh,
+                avg_queue_length=avg_queue_length,
+                vehicles_arrived_this_step=vehicles_arrived,
+            )
+            reward = self.reward_fn.compute(metrics)
+        elif self.reward_calculator:
+            # Legacy path: use RewardCalculator.compute_empirical_reward()
+            reward = self.reward_calculator.compute_empirical_reward(
+                avg_waiting_per_vehicle=avg_waiting_per_vehicle,
+                avg_speed_kmh=avg_speed_kmh,
+                avg_queue_length=avg_queue_length,
+                vehicles_arrived_this_step=vehicles_arrived
+            )
+        else:
+            return DEFAULT_FALLBACK_VALUE
 
-        # Logging (every 100 steps) - Optional for analysis
+        # Logging (every 100 steps)
         if self.current_step % 100 == 0:
             logger = logging.getLogger(self.__class__.__name__)
             logger.debug(
@@ -1242,52 +1273,14 @@ class TrafficControlEnv(gym.Env):
         self.vehicle_tracker.record_decision(self.current_step, action_dict)
 
     def _softmax(self, x):
-        """Numerically stable softmax.
-
-        Args:
-            x: Array of raw values
-
-        Returns:
-            Array of probabilities summing to 1.0
-        """
-        # Handle empty array case (should not happen in normal operation)
-        if len(x) == 0:
-            raise ValueError(
-                f"Cannot apply softmax to empty array. "
-                f"Action shape: {len(x)}, Expected: {len(self.junction_ids) * 4}. "
-                f"This indicates an action space dimension mismatch."
-            )
-
-        exp_x = np.exp(x - np.max(x))
-        return exp_x / exp_x.sum()
+        """Numerically stable softmax. Delegates to shared utility."""
+        from .utils import softmax
+        return softmax(x)
 
     def _proportions_to_durations(self, proportions, cycle_length, min_phase_time):
-        """Convert proportions to integer durations with constraints.
-
-        Args:
-            proportions: Array of 4 proportions summing to 1.0 (e.g., [0.25, 0.15, 0.40, 0.20])
-            cycle_length: Total cycle time in seconds (e.g., 90)
-            min_phase_time: Minimum duration per phase in seconds (e.g., 10)
-
-        Returns:
-            List of 4 integer durations summing exactly to cycle_length
-        """
-        num_phases = len(proportions)
-        available_time = cycle_length - (num_phases * min_phase_time)
-
-        # Calculate durations
-        durations = [min_phase_time + (p * available_time) for p in proportions]
-
-        # Round to integers
-        durations = [int(round(d)) for d in durations]
-
-        # Ensure exact sum (adjust largest phase if needed)
-        diff = cycle_length - sum(durations)
-        if diff != 0:
-            max_idx = np.argmax(durations)
-            durations[max_idx] += diff
-
-        return durations
+        """Convert proportions to integer durations. Delegates to shared utility."""
+        from .utils import proportions_to_durations
+        return proportions_to_durations(proportions, cycle_length, min_phase_time)
 
     def _apply_scheduled_phases(self, time_in_cycle):
         """Apply correct phase based on schedule and time within cycle.

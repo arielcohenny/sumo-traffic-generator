@@ -179,10 +179,8 @@ def compare_model_performance(model_paths: List[str],
         Dictionary mapping model names to performance metrics
     """
     from .training import evaluate_rl_policy
-    from .config import get_rl_config
-
     logger = logging.getLogger(__name__)
-    config = get_rl_config()
+    logger.warning("compare_model_performance uses legacy config path - use ExperimentConfig instead")
     results = {}
 
     for model_path in model_paths:
@@ -287,18 +285,14 @@ def validate_training_environment() -> Dict[str, bool]:
         results['tensorboard'] = False
         logger.warning("TensorBoard not available - training logs will be limited")
 
-    # Check RL environment
+    # Check RL environment (basic import check only - full validation requires SUMO)
     try:
         from .environment import TrafficControlEnv
-        from .config import get_rl_config
-        config = get_rl_config()
-        env = TrafficControlEnv(config)
-        env.close()
         results['rl_environment'] = True
-        logger.info("RL environment validation passed")
+        logger.info("RL environment import check passed")
     except Exception as e:
         results['rl_environment'] = False
-        logger.error(f"RL environment validation failed: {e}")
+        logger.error(f"RL environment import failed: {e}")
 
     return results
 

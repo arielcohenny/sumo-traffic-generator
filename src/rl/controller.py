@@ -735,48 +735,14 @@ class RLController(TrafficController):
         return validated_phase, validated_duration_idx
 
     def _softmax(self, x):
-        """Numerically stable softmax.
-
-        Args:
-            x: Array of raw values
-
-        Returns:
-            Array of probabilities summing to 1.0
-        """
-        if len(x) == 0:
-            raise ValueError("Cannot apply softmax to empty array")
-
-        exp_x = np.exp(x - np.max(x))
-        return exp_x / exp_x.sum()
+        """Numerically stable softmax. Delegates to shared utility."""
+        from .utils import softmax
+        return softmax(x)
 
     def _proportions_to_durations(self, proportions, cycle_length, min_phase_time):
-        """Convert proportions to integer durations with constraints.
-
-        Args:
-            proportions: Array of 4 proportions summing to 1.0 (e.g., [0.25, 0.15, 0.40, 0.20])
-            cycle_length: Total cycle time in seconds (e.g., 90)
-            min_phase_time: Minimum duration per phase in seconds (e.g., 10)
-
-        Returns:
-            List of 4 integer durations summing exactly to cycle_length
-        """
-        num_phases = len(proportions)
-        available_time = cycle_length - (num_phases * min_phase_time)
-
-        # Calculate durations
-        durations = [min_phase_time + (p * available_time)
-                     for p in proportions]
-
-        # Round to integers
-        durations = [int(round(d)) for d in durations]
-
-        # Ensure exact sum (adjust largest phase if needed)
-        diff = cycle_length - sum(durations)
-        if diff != 0:
-            max_idx = np.argmax(durations)
-            durations[max_idx] += diff
-
-        return durations
+        """Convert proportions to integer durations. Delegates to shared utility."""
+        from .utils import proportions_to_durations
+        return proportions_to_durations(proportions, cycle_length, min_phase_time)
 
     def _apply_scheduled_phases(self, time_in_cycle):
         """Apply correct phase based on schedule and time within cycle.

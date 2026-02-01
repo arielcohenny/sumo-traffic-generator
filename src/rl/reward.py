@@ -3,9 +3,15 @@
 This module contains the reward calculation logic separated from the environment.
 The RewardCalculator is a pure function that computes rewards based on provided metrics,
 making it testable and maintainable.
+
+It also provides the reward registry system for config-driven experiments:
+- TrafficMetrics: dataclass of metrics collected by the environment
+- BaseReward: abstract interface for reward functions
+- REWARD_REGISTRY: maps reward names (used in YAML) to reward classes
 """
 
-from typing import Optional, List
+from dataclasses import dataclass
+from typing import Optional, List, Dict
 import csv
 
 from src.rl.constants import (
@@ -282,3 +288,155 @@ class RewardCalculator:
                 self.log_file.close()
             except:
                 pass
+
+
+# =============================================================================
+# CONFIG-DRIVEN REWARD SYSTEM
+# =============================================================================
+
+
+@dataclass
+class TrafficMetrics:
+    """Metrics collected by environment.py and passed to reward functions.
+
+    These are the metrics available from the environment's helper methods:
+    - avg_waiting_per_vehicle: from _get_avg_waiting_per_vehicle() (traci.vehicle.getWaitingTime)
+    - avg_speed_kmh: from _get_avg_speed_kmh() (traci.vehicle.getSpeed * 3.6)
+    - avg_queue_length: from _get_avg_queue_length() (traci.lane.getLastStepHaltingNumber)
+    - vehicles_arrived_this_step: from traci.simulation.getArrivedIDList()
+
+    Additional metrics can be added here as new reward functions need them.
+    The environment collects all fields; each reward function uses what it needs.
+    """
+    avg_waiting_per_vehicle: float = 0.0
+    avg_speed_kmh: float = 0.0
+    avg_queue_length: float = 0.0
+    vehicles_arrived_this_step: int = 0
+
+
+class BaseReward:
+    """Base class for config-driven reward functions.
+
+    Subclasses implement compute() with a TrafficMetrics argument.
+    Constructor kwargs come from experiment_config.reward_params.
+    """
+
+    def compute(self, metrics: TrafficMetrics) -> float:
+        raise NotImplementedError
+
+    @staticmethod
+    def required_metrics() -> List[str]:
+        """List of TrafficMetrics field names this reward function needs."""
+        raise NotImplementedError
+
+
+class EmpiricalReward(BaseReward):
+    """Z-score based reward using empirically validated normalization.
+
+    Wraps the logic of RewardCalculator.compute_empirical_reward().
+    Weights are based on Cohen's d effect sizes from Tree Method vs Fixed timing.
+
+    Default norm_stats from evaluation/comparative_analysis/metric_statistics.csv:
+      avg_waiting_per_vehicle: mean=38.01, std=11.12
+      avg_speed_kmh: mean=5.74, std=2.73
+      avg_queue_length: mean=2.38, std=0.71
+    """
+
+    def __init__(
+        self,
+        weights: Optional[Dict[str, float]] = None,
+        norm_stats: Optional[Dict] = None,
+        throughput_bonus: float = 0.1,
+    ):
+        self.weights = weights or {"waiting": -0.45, "speed": 0.35, "queue": -0.20}
+        self.norm_stats = norm_stats or EMPIRICAL_NORM_STATS
+        self.throughput_bonus = throughput_bonus
+
+    def compute(self, metrics: TrafficMetrics) -> float:
+        z_waiting = (
+            (metrics.avg_waiting_per_vehicle - self.norm_stats["avg_waiting_per_vehicle"]["mean"])
+            / self.norm_stats["avg_waiting_per_vehicle"]["std"]
+        )
+        z_speed = (
+            (metrics.avg_speed_kmh - self.norm_stats["avg_speed_kmh"]["mean"])
+            / self.norm_stats["avg_speed_kmh"]["std"]
+        )
+        z_queue = (
+            (metrics.avg_queue_length - self.norm_stats["avg_queue_length"]["mean"])
+            / self.norm_stats["avg_queue_length"]["std"]
+        )
+        return (
+            self.weights["waiting"] * z_waiting
+            + self.weights["speed"] * z_speed
+            + self.weights["queue"] * z_queue
+            + self.throughput_bonus * metrics.vehicles_arrived_this_step
+        )
+
+    @staticmethod
+    def required_metrics() -> List[str]:
+        return [
+            "avg_waiting_per_vehicle",
+            "avg_speed_kmh",
+            "avg_queue_length",
+            "vehicles_arrived_this_step",
+        ]
+
+
+class ThroughputReward(BaseReward):
+    """Throughput-focused reward function."""
+
+    def __init__(self, per_vehicle: float = 50.0, waiting_penalty_weight: float = 0.1):
+        self.per_vehicle = per_vehicle
+        self.waiting_penalty_weight = waiting_penalty_weight
+
+    def compute(self, metrics: TrafficMetrics) -> float:
+        return (
+            self.per_vehicle * metrics.vehicles_arrived_this_step
+            - self.waiting_penalty_weight * metrics.avg_waiting_per_vehicle
+        )
+
+    @staticmethod
+    def required_metrics() -> List[str]:
+        return ["vehicles_arrived_this_step", "avg_waiting_per_vehicle"]
+
+
+class MultiObjectiveReward(BaseReward):
+    """Wraps existing compute_reward() 6-component logic.
+
+    Preserved as an alternative approach for experimentation.
+    Uses the same constants as RewardCalculator.compute_reward().
+    """
+
+    def __init__(
+        self,
+        throughput_per_vehicle: float = REWARD_THROUGHPUT_PER_VEHICLE,
+        waiting_penalty_weight: float = 0.5,
+        speed_factor: float = 10.0,
+        speed_normalization: float = 50.0,
+    ):
+        self.throughput_per_vehicle = throughput_per_vehicle
+        self.waiting_penalty_weight = waiting_penalty_weight
+        self.speed_factor = speed_factor
+        self.speed_normalization = speed_normalization
+
+    def compute(self, metrics: TrafficMetrics) -> float:
+        throughput = self.throughput_per_vehicle * metrics.vehicles_arrived_this_step
+        waiting_penalty = -self.waiting_penalty_weight * metrics.avg_waiting_per_vehicle
+        speed_reward = self.speed_factor * (metrics.avg_speed_kmh / self.speed_normalization)
+        return throughput + waiting_penalty + speed_reward
+
+    @staticmethod
+    def required_metrics() -> List[str]:
+        return [
+            "vehicles_arrived_this_step",
+            "avg_waiting_per_vehicle",
+            "avg_speed_kmh",
+        ]
+
+
+# Registry mapping reward names (used in experiment YAML) to reward classes
+REWARD_REGISTRY: Dict[str, type] = {
+    "empirical": EmpiricalReward,
+    "throughput": ThroughputReward,
+    "multi_objective": MultiObjectiveReward,
+}

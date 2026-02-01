@@ -1,8 +1,11 @@
 """
-Configuration Validation Script for RL Training.
+DEPRECATED: Legacy configuration validation script for RL Training.
 
-This script validates the RL training configuration and ensures it's
-compatible with the existing SUMO pipeline infrastructure.
+This script imports non-existent src.rl.config and rl.config modules.
+Validation is now handled by:
+  src.rl.experiment_config.validate_experiment()
+
+Use experiment_config.validate_experiment() instead.
 """
 
 import logging
