@@ -1,0 +1,86 @@
+# Baseline experiment configuration
+# Matches current hardcoded values in src/rl/constants.py exactly.
+# All other experiments should use base_config to inherit from this.
+
+name: "baseline"
+description: "Default configuration matching current hardcoded values in constants.py"
+config_version: 1
+
+# PPO hyperparameters
+learning_rate: 1.0e-4
+clip_range: 0.2
+batch_size: 2048
+n_steps: 4096
+n_epochs: 5
+gamma: 0.995
+gae_lambda: 0.98
+max_grad_norm: 0.5
+ent_coef: 0.01
+log_std_init: -1.0
+
+# LR schedule
+lr_schedule: "exponential"
+lr_final: 5.0e-6
+lr_decay_rate: 0.99995
+
+# Entropy schedule
+ent_schedule: true
+ent_initial: 0.02
+ent_final: 0.001
+ent_decay_steps: 500000
+
+# Network architecture
+net_arch: [256, 256]
+activation: "relu"
+
+# Reward function
+reward_function: "empirical"
+reward_params: {}
+
+# Observation features (matches ENABLE_* = True toggles in constants.py)
+edge_features:
+  - speed_ratio
+  - congestion_flag
+  - normalized_density
+  - is_bottleneck
+  - normalized_time_loss
+  - speed_trend
+
+junction_features:
+  - phase_normalized
+  - duration_normalized
+
+network_features:
+  - bottleneck_ratio
+  - cost_normalized
+  - vehicles_normalized
+  - avg_speed_normalized
+  - congestion_ratio
+
+# Action space
+action_mode: "continuous"
+phases_per_junction: 4
+action_low: -10.0
+action_high: 10.0
+
+# Training
+total_timesteps: 100000
+checkpoint_freq: 10000
+early_stopping_patience: 10
+early_stopping_min_delta: 70.0
+
+# Simulation
+grid_dimension: 5
+num_vehicles: 4500
+end_time: 7200
+network_seed: 42
+routing_strategy: "shortest 70 realtime 30"
+vehicle_types: "passenger 90 public 10"
+departure_pattern: "six_periods"
+
+# Cycle
+cycle_lengths: [90]
+cycle_strategy: "fixed"
+
+# Observation space
+obs_space_tolerance: 0.01
