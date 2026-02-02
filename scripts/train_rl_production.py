@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 """
-Production RL Training Script for Traffic Signal Control.
+LEGACY: Production RL Training Script for Traffic Signal Control.
 
-This script provides production-scale RL training with proper workspace isolation,
-parallel environment support, and independent execution capabilities.
+Superseded by:
+  - rl/local/train.py   (local development training)
+  - rl/server/train.py  (HPC multi-scenario parallel training)
+
+Both new scripts use modular config files (5 separate YAMLs) instead of
+a single monolithic --experiment YAML. This script remains for backward
+compatibility with existing workflows.
 """
 
 # Fix NumPy + Python 3.13 multiprocessing compatibility issue

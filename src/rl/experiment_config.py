@@ -95,7 +95,7 @@ class ExperimentConfig:
     early_stopping_patience: int = 10
     early_stopping_min_delta: float = 70.0
 
-    # Simulation (passed through to SUMO pipeline)
+    # Simulation — network params (shared across all scenarios)
     grid_dimension: int = 5
     num_vehicles: int = 4500
     end_time: int = 7200
@@ -103,6 +103,18 @@ class ExperimentConfig:
     routing_strategy: str = "shortest 70 realtime 30"
     vehicle_types: str = "passenger 90 public 10"
     departure_pattern: str = "six_periods"
+    junctions_to_remove: int = 0
+    block_size_m: int = 200
+    lane_count: str = "realistic"
+    step_length: float = 1.0
+    land_use_block_size_m: float = 25.0
+    attractiveness: str = "land_use"
+    traffic_light_strategy: str = "partial_opposites"
+    start_time_hour: float = 8.0
+    passenger_routes: str = ""
+
+    # Multi-scenario training (list of per-env traffic parameter dicts)
+    scenarios: List[Dict] = field(default_factory=list)
 
     # Cycle
     cycle_lengths: List[int] = field(default_factory=lambda: [90])
@@ -250,6 +262,151 @@ def validate_experiment(config: ExperimentConfig):
         raise ValueError("junction_features must not be empty")
     if not config.network_features:
         raise ValueError("network_features must not be empty")
+
+
+def load_modular_config(
+    network_path: str = None,
+    scenarios_path: str = None,
+    algorithm_path: str = None,
+    reward_path: str = None,
+    execution_path: str = None,
+) -> ExperimentConfig:
+    """Load experiment config from 5 separate YAML files.
+
+    Each file covers one concern:
+    - network: grid topology params (shared across all scenarios)
+    - scenarios: list of per-env traffic param dicts
+    - algorithm: PPO hyperparameters and architecture
+    - reward: reward function name and params
+    - execution: timesteps, checkpoints, end_time, parallel settings
+
+    Args:
+        network_path: Path to network config YAML
+        scenarios_path: Path to scenarios config YAML
+        algorithm_path: Path to algorithm config YAML
+        reward_path: Path to reward config YAML
+        execution_path: Path to execution config YAML
+
+    Returns:
+        Fully resolved ExperimentConfig with scenarios populated.
+    """
+    merged = {}
+
+    for path in [network_path, algorithm_path, reward_path, execution_path]:
+        if path is not None:
+            with open(path) as f:
+                data = yaml.safe_load(f) or {}
+            merged.update(data)
+
+    # Scenarios file has a special structure: {scenarios: [...]}
+    scenarios_list = []
+    if scenarios_path is not None:
+        with open(scenarios_path) as f:
+            data = yaml.safe_load(f) or {}
+        scenarios_list = data.get("scenarios", [])
+
+    merged["scenarios"] = scenarios_list
+
+    # Filter out keys that aren't ExperimentConfig fields
+    import dataclasses
+    valid_fields = {f.name for f in dataclasses.fields(ExperimentConfig)}
+    filtered = {k: v for k, v in merged.items() if k in valid_fields}
+
+    config = ExperimentConfig(**filtered)
+    validate_experiment(config)
+    return config
+
+
+def build_env_params_for_scenario(config: ExperimentConfig, scenario: Dict) -> str:
+    """Build a complete --env-params string from network config + one scenario dict.
+
+    Network params come from the ExperimentConfig (shared).
+    Traffic params come from the scenario dict (per-env).
+    --traffic_control is always tree_method for RL training.
+    --end-time comes from the ExperimentConfig (execution config).
+
+    Args:
+        config: ExperimentConfig with network and execution params
+        scenario: Dict of per-scenario traffic params
+
+    Returns:
+        Complete env-params string for one environment.
+    """
+    # Network params (shared)
+    parts = [
+        f"--network-seed {config.network_seed}",
+        f"--grid_dimension {config.grid_dimension}",
+        f"--junctions_to_remove {config.junctions_to_remove}",
+        f"--block_size_m {config.block_size_m}",
+        f"--lane_count {config.lane_count}",
+        f"--step-length {config.step_length}",
+        f"--land_use_block_size_m {config.land_use_block_size_m}",
+        f"--attractiveness {config.attractiveness}",
+        f"--traffic_light_strategy {config.traffic_light_strategy}",
+    ]
+
+    # Execution params (shared)
+    parts.append(f"--end-time {config.end_time}")
+
+    # Always tree_method for RL training
+    parts.append("--traffic_control tree_method")
+
+    # Scenario-specific traffic params
+    scenario_param_map = {
+        "num_vehicles": "--num_vehicles",
+        "private_traffic_seed": "--private-traffic-seed",
+        "public_traffic_seed": "--public-traffic-seed",
+        "routing_strategy": "--routing_strategy",
+        "vehicle_types": "--vehicle_types",
+        "passenger_routes": "--passenger-routes",
+        "departure_pattern": "--departure_pattern",
+        "start_time_hour": "--start_time_hour",
+    }
+
+    for key, flag in scenario_param_map.items():
+        if key in scenario:
+            value = scenario[key]
+            # Quote string values that contain spaces
+            if isinstance(value, str) and " " in value:
+                parts.append(f"{flag} '{value}'")
+            else:
+                parts.append(f"{flag} {value}")
+
+    # Fall back to config-level defaults for params not in scenario
+    if "num_vehicles" not in scenario:
+        parts.append(f"--num_vehicles {config.num_vehicles}")
+    if "routing_strategy" not in scenario:
+        parts.append(f"--routing_strategy '{config.routing_strategy}'")
+    if "vehicle_types" not in scenario:
+        parts.append(f"--vehicle_types '{config.vehicle_types}'")
+    if "departure_pattern" not in scenario:
+        parts.append(f"--departure_pattern {config.departure_pattern}")
+    if "start_time_hour" not in scenario:
+        parts.append(f"--start_time_hour {config.start_time_hour}")
+
+    return " ".join(parts)
+
+
+def build_env_params_list(config: ExperimentConfig) -> List[str]:
+    """Build a list of env-params strings, one per scenario.
+
+    If no scenarios are defined, builds a single string from
+    the config's top-level simulation params (backward compatible).
+
+    Args:
+        config: ExperimentConfig with network params and scenarios
+
+    Returns:
+        List of env-params strings, one per environment.
+    """
+    if not config.scenarios:
+        # No scenarios defined — build single env-params from config defaults
+        return [build_env_params_for_scenario(config, {})]
+
+    return [
+        build_env_params_for_scenario(config, scenario)
+        for scenario in config.scenarios
+    ]
 
 
 def save_experiment(config: ExperimentConfig, path: str):

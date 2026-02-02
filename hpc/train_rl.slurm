@@ -1,6 +1,7 @@
 #!/bin/bash
 # =============================================================================
-# SLURM Job Script for RL Training on TAU HPC Power Cluster
+# LEGACY: SLURM Job Script for RL Training on TAU HPC Power Cluster
+# Superseded by: rl/server/train_rl.slurm (multi-scenario parallel training)
 # =============================================================================
 #
 # Usage:

@@ -432,33 +432,55 @@ def make_env(env_params_string: str, env_index: int, base_workspace: str = PARAL
     return _init
 
 
-def create_vectorized_env(env_params_string: str, n_envs: int = None, base_workspace: str = PARALLEL_WORKSPACE_PREFIX,
+def create_vectorized_env(env_params_string: str = None, n_envs: int = None,
+                         base_workspace: str = PARALLEL_WORKSPACE_PREFIX,
                          cycle_lengths: list = None, cycle_strategy: str = 'fixed',
                          network_path: str = None, network_dimensions: Tuple[int, int] = None,
-                         experiment_config=None):
+                         experiment_config=None,
+                         env_params_list: list = None):
     """
     Create vectorized environment for parallel training.
 
+    Supports two modes:
+    - Single env_params_string: replicated across all n_envs (original behavior)
+    - env_params_list: one params string per env (multi-scenario training)
+
     Args:
-        env_params_string: Raw parameter string for environment creation
-        n_envs: Number of parallel environments
+        env_params_string: Raw parameter string for environment creation (replicated for all envs)
+        n_envs: Number of parallel environments (if None, inferred from env_params_list or defaults)
         base_workspace: Base workspace directory name
         cycle_lengths: List of cycle lengths for RL control
         cycle_strategy: Strategy for cycle selection
         network_path: Path to pre-generated network files for reuse
         network_dimensions: Pre-computed (edge_count, junction_count) to avoid regenerating network
         experiment_config: ExperimentConfig for config-driven reward/features (None = use defaults)
+        env_params_list: List of per-env parameter strings (one per scenario). Overrides env_params_string.
 
     Returns:
         VecEnv: Vectorized environment for parallel training
     """
     logger = logging.getLogger(__name__)
 
-    if n_envs is None:
-        n_envs = DEFAULT_N_PARALLEL_ENVS
+    # Build the per-env params list
+    if env_params_list is not None:
+        # Multi-scenario mode: one params string per env
+        if n_envs is None:
+            n_envs = len(env_params_list)
+        elif n_envs != len(env_params_list):
+            logger.warning(
+                f"n_envs ({n_envs}) != len(env_params_list) ({len(env_params_list)}). "
+                f"Using len(env_params_list)."
+            )
+            n_envs = len(env_params_list)
+        params_per_env = env_params_list
+    else:
+        # Single string mode: replicate across all envs (original behavior)
+        if n_envs is None:
+            n_envs = DEFAULT_N_PARALLEL_ENVS
+        params_per_env = [env_params_string] * n_envs
 
-    # Create list of environment creation functions with cycle parameters, network path, and dimensions
-    env_fns = [make_env(env_params_string, i, base_workspace, cycle_lengths, cycle_strategy,
+    # Create list of environment creation functions with per-env params
+    env_fns = [make_env(params_per_env[i], i, base_workspace, cycle_lengths, cycle_strategy,
                         network_path, network_dimensions, experiment_config)
                for i in range(n_envs)]
 
@@ -623,7 +645,7 @@ def _build_ppo_kwargs(experiment_config=None):
     )
 
 
-def train_rl_policy(env_params_string: str,
+def train_rl_policy(env_params_string: str = None,
                     total_timesteps: int = DEFAULT_TOTAL_TIMESTEPS,
                     model_save_path: str = DEFAULT_MODEL_SAVE_PATH,
                     checkpoint_freq: int = DEFAULT_CHECKPOINT_FREQ,
@@ -635,7 +657,9 @@ def train_rl_policy(env_params_string: str,
                     cycle_lengths: list = None,
                     cycle_strategy: str = 'fixed',
                     network_path: str = None,
-                    experiment_config: ExperimentConfig = None) -> PPO:
+                    experiment_config: ExperimentConfig = None,
+                    env_params_list: list = None,
+                    models_dir: str = None) -> PPO:
     """
     Train PPO policy for traffic signal control.
 
@@ -660,16 +684,17 @@ def train_rl_policy(env_params_string: str,
     logger.info("=== RL TRAINING STARTED ===")
 
     # Determine model directory: either extract from resume path or create new unique directory
+    effective_models_dir = models_dir or DEFAULT_MODELS_DIRECTORY
     model_dir = None
     initial_timesteps = 0
 
     if resume_from_model and os.path.exists(resume_from_model):
         # Extract model directory from checkpoint path
-        # Expected format: models/rl_YYYYMMDD_HHMMSS/checkpoint/rl_traffic_model_XXXX_steps.zip
+        # Expected format: <models_dir>/rl_YYYYMMDD_HHMMSS/checkpoint/rl_traffic_model_XXXX_steps.zip
         import re
-        match = re.search(r'models/(rl_\d{8}_\d{6})', resume_from_model)
+        match = re.search(r'(rl_\d{8}_\d{6})', resume_from_model)
         if match:
-            model_dir = os.path.join(DEFAULT_MODELS_DIRECTORY, match.group(1))
+            model_dir = os.path.join(effective_models_dir, match.group(1))
             logger.info(
                 f"Resuming training - using existing model directory: {model_dir}")
         else:
@@ -680,7 +705,7 @@ def train_rl_policy(env_params_string: str,
     if model_dir is None:
         # Create new unique model directory with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        model_dir = os.path.join(DEFAULT_MODELS_DIRECTORY, f"rl_{timestamp}")
+        model_dir = os.path.join(effective_models_dir, f"rl_{timestamp}")
         logger.info(
             f"Starting new training - created model directory: {model_dir}")
 
@@ -714,9 +739,11 @@ def train_rl_policy(env_params_string: str,
 
     # Generate network once for reuse across all episodes (if not provided)
     # Also get dimensions to avoid regenerating network during env init
+    # For network generation, use the first env_params string (all share the same network params)
+    network_gen_params = env_params_list[0] if env_params_list else env_params_string
     network_dimensions = None
     if network_path is None:
-        network_path, edge_count, junction_count = _generate_network_once(env_params_string, model_dir)
+        network_path, edge_count, junction_count = _generate_network_once(network_gen_params, model_dir)
         network_dimensions = (edge_count, junction_count)
     else:
         # Parse dimensions from provided network
@@ -734,17 +761,21 @@ def train_rl_policy(env_params_string: str,
         n_envs = SINGLE_ENV_THRESHOLD
 
     # Create environment (vectorized or single) with network reuse and pre-computed dimensions
+    # Determine the effective single env-params string (first from list, or the single string)
+    effective_env_params = env_params_list[0] if env_params_list else env_params_string
+
     if use_parallel and n_envs > SINGLE_ENV_THRESHOLD:
         env = create_vectorized_env(
-            env_params_string, n_envs=n_envs, base_workspace=base_workspace,
+            env_params_string=env_params_string, n_envs=n_envs, base_workspace=base_workspace,
             cycle_lengths=cycle_lengths, cycle_strategy=cycle_strategy,
             network_path=network_path, network_dimensions=network_dimensions,
-            experiment_config=experiment_config)
+            experiment_config=experiment_config,
+            env_params_list=env_params_list)
         _verify_enhanced_state_space(
-            env, env_params_string, is_vectorized=True)
+            env, effective_env_params, is_vectorized=True)
     else:
         # For single environment, add workspace to params
-        single_env_params = f"{env_params_string} --workspace {base_workspace}"
+        single_env_params = f"{effective_env_params} --workspace {base_workspace}"
         env = TrafficControlEnv(
             env_params_string=single_env_params,
             episode_number=0,
@@ -894,9 +925,16 @@ def train_rl_policy(env_params_string: str,
 
     # Evaluation callback for best model selection
     if use_parallel and n_envs > SINGLE_ENV_THRESHOLD:
-        # Create single environment for evaluation
-        eval_env = TrafficControlEnv(config.get_cli_args_for_env(
-            DEFAULT_INITIAL_STEP, base_workspace, max_envs=n_envs))
+        # Create single environment for evaluation using first scenario's params
+        eval_env_params = f"{effective_env_params} --workspace {base_workspace}/eval"
+        eval_env = TrafficControlEnv(
+            env_params_string=eval_env_params,
+            episode_number=0,
+            cycle_lengths=cycle_lengths,
+            cycle_strategy=cycle_strategy,
+            network_path=network_path,
+            network_dimensions=network_dimensions,
+            experiment_config=experiment_config)
     else:
         eval_env = env
 
