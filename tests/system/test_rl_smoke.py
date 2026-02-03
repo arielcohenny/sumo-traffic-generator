@@ -24,7 +24,6 @@ except ImportError:
     SUMO_AVAILABLE = False
 
 pytestmark = [
-    pytest.mark.smoke,
     pytest.mark.skipif(not SUMO_AVAILABLE, reason="SUMO not available"),
 ]
 
@@ -66,6 +65,7 @@ def env(rl_workspace):
     environment.close()
 
 
+@pytest.mark.smoke
 class TestEnvironmentLifecycle:
     """Test that the RL environment can be created, reset, stepped, and closed."""
 
@@ -131,6 +131,7 @@ class TestEnvironmentLifecycle:
         assert obs2.shape == obs1.shape, "Observation shape changed between episodes"
 
 
+@pytest.mark.smoke
 class TestObservationSpace:
     """Test observation space properties."""
 
@@ -163,6 +164,7 @@ class TestObservationSpace:
         assert non_zero > 0, "Observation is all zeros after a step"
 
 
+@pytest.mark.smoke
 class TestRewardFunction:
     """Test reward computation."""
 
@@ -180,9 +182,11 @@ class TestRewardFunction:
                 break
 
 
+@pytest.mark.integration
 class TestPPOIntegration:
     """Test that PPO can initialize, train, save, and load with this environment."""
 
+    @pytest.mark.timeout(180)
     def test_ppo_training_and_save_load(self, rl_workspace):
         """Full PPO smoke test: init → train → save → load → predict."""
         from stable_baselines3 import PPO
