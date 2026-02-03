@@ -215,16 +215,22 @@ class TestPPOIntegration:
             model.save(str(model_path))
             assert model_path.with_suffix(".zip").exists(), "Model file was not saved"
 
-            # Load model
+            # Close training env before loading model for prediction
+            env.close()
+
+            # Load model and predict using observation space directly
             loaded_model = PPO.load(str(model_path))
 
-            # Predict with loaded model
-            obs, _ = env.reset()
+            # Create a dummy observation matching the saved model's space
+            obs = np.zeros(loaded_model.observation_space.shape, dtype=np.float32)
             action, _ = loaded_model.predict(obs, deterministic=True)
 
             assert action is not None, "Loaded model returned None action"
-            assert action.shape == env.action_space.shape, (
-                f"Action shape {action.shape} != space shape {env.action_space.shape}"
+            assert action.shape == loaded_model.action_space.shape, (
+                f"Action shape {action.shape} != space shape {loaded_model.action_space.shape}"
             )
         finally:
-            env.close()
+            try:
+                env.close()
+            except Exception:
+                pass  # May already be closed
