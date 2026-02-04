@@ -12,7 +12,8 @@ from datetime import datetime
 from typing import Optional, Tuple
 
 
-CHECKPOINT_DIR = Path('.worktrees/rl-training/models/rl_20251215_215030/checkpoint')
+CHECKPOINT_DIR = Path(
+    '.worktrees/rl-training/models/rl_20260105_090955/checkpoint')
 RESULTS_FILE = Path('compare_checkpoints_result')
 
 # Simulation parameters (matching the user's command)
@@ -59,10 +60,29 @@ def get_checkpoints() -> list[Path]:
     return checkpoints
 
 
+def get_completed_checkpoints() -> set[str]:
+    """Read existing results file and return set of already-processed checkpoint names."""
+    completed = set()
+    if RESULTS_FILE.exists():
+        with open(RESULTS_FILE, 'r') as f:
+            for line in f:
+                line = line.strip()
+                # Skip header and empty lines
+                if not line or line.startswith('checkpoint'):
+                    continue
+                # Extract checkpoint name (first column)
+                parts = line.split(',')
+                if parts:
+                    completed.add(parts[0].strip())
+    return completed
+
+
 def parse_statistics(output: str) -> Optional[Tuple[float, float]]:
     """Extract Throughput and Average duration from simulation output."""
-    throughput_match = re.search(r'Throughput:\s*([0-9.]+)\s*veh/h', output, re.IGNORECASE)
-    duration_match = re.search(r'Average\s+duration:\s*([0-9.]+)s', output, re.IGNORECASE)
+    throughput_match = re.search(
+        r'Throughput:\s*([0-9.]+)\s*veh/h', output, re.IGNORECASE)
+    duration_match = re.search(
+        r'Average\s+duration:\s*([0-9.]+)s', output, re.IGNORECASE)
 
     if throughput_match and duration_match:
         return float(throughput_match.group(1)), float(duration_match.group(1))
@@ -94,16 +114,28 @@ def run_simulation(checkpoint_path: Path) -> Optional[Tuple[float, float]]:
 
 def main():
     checkpoints = get_checkpoints()
-    print(f"Found {len(checkpoints)} checkpoints to evaluate")
+    completed = get_completed_checkpoints()
+
+    # Filter out already-completed checkpoints
+    remaining = [cp for cp in checkpoints if cp.name not in completed]
+
+    print(f"Found {len(checkpoints)} total checkpoints")
+    print(f"Already completed: {len(completed)}")
+    print(f"Remaining to evaluate: {len(remaining)}")
     print(f"Results will be written to: {RESULTS_FILE}")
     print(f"{'='*70}")
 
-    # Write header
-    with open(RESULTS_FILE, 'w') as f:
-        f.write("checkpoint, Throughput, Average duration\n")
+    # Write header only if file doesn't exist
+    if not RESULTS_FILE.exists():
+        with open(RESULTS_FILE, 'w') as f:
+            f.write("checkpoint, Throughput, Average duration\n")
 
-    for i, checkpoint in enumerate(checkpoints, 1):
-        print(f"\n[{i}/{len(checkpoints)}] Testing: {checkpoint.name}")
+    if not remaining:
+        print("\nAll checkpoints already evaluated!")
+        return
+
+    for i, checkpoint in enumerate(remaining, 1):
+        print(f"\n[{i}/{len(remaining)}] Testing: {checkpoint.name}")
         print(f"  Running simulation... ", end='', flush=True)
 
         result = run_simulation(checkpoint)
@@ -111,11 +143,13 @@ def main():
         if result:
             throughput, avg_duration = result
             print(f"SUCCESS")
-            print(f"  Throughput: {throughput:.2f} veh/h, Avg Duration: {avg_duration:.2f}s")
+            print(
+                f"  Throughput: {throughput:.2f} veh/h, Avg Duration: {avg_duration:.2f}s")
 
             # Append result
             with open(RESULTS_FILE, 'a') as f:
-                f.write(f"{checkpoint.name}, {throughput:.2f}, {avg_duration:.2f}\n")
+                f.write(
+                    f"{checkpoint.name}, {throughput:.2f}, {avg_duration:.2f}\n")
         else:
             print(f"FAILED (could not parse statistics)")
             # Write failure entry
