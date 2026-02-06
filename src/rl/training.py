@@ -1211,11 +1211,15 @@ def _verify_enhanced_state_space(env, env_params_string, is_vectorized=False):
             f"  - Value range: [{np.min(sample_obs):.3f}, {np.max(sample_obs):.3f}]")
 
         # Verify enhanced features are present (check for Tree Method integration)
-        if hasattr(env, 'traffic_analyzer') or (is_vectorized and hasattr(env.envs[0], 'traffic_analyzer')):
+        # Note: SubprocVecEnv doesn't have .envs attribute (only DummyVecEnv does)
+        has_analyzer = hasattr(env, 'traffic_analyzer')
+        if not has_analyzer and is_vectorized and hasattr(env, 'envs'):
+            has_analyzer = hasattr(env.envs[0], 'traffic_analyzer')
+        if has_analyzer:
             logger.info("✓ Tree Method traffic analyzer detected")
 
             # Enable debug mode for detailed verification
-            if is_vectorized:
+            if is_vectorized and hasattr(env, 'envs'):
                 test_env = env.envs[0]
             else:
                 test_env = env

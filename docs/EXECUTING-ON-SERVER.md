@@ -1,5 +1,66 @@
 # Executing on TAU HPC Power Cluster
 
+## Project Organization
+
+### Folder Structure
+
+```
+rl/
+├── configs/                        # Reusable config building blocks (COMMITTED)
+│   ├── algorithm/
+│   │   └── ppo_default.yaml        # PPO hyperparameters
+│   ├── reward/
+│   │   └── empirical.yaml          # Reward function config
+│   ├── network/
+│   │   └── grid6_realistic.yaml    # Network topology
+│   ├── scenarios/
+│   │   └── heavy_load.yaml         # Traffic scenarios
+│   └── execution/
+│       └── long_run.yaml           # Timesteps, checkpointing
+│
+├── experiments/                    # Experiment folders (COMMITTED)
+│   └── exp_20260105_090955/
+│       ├── config.yaml             # Full resolved config
+│       ├── resume.zip              # Best checkpoint (~20MB)
+│       └── notes.md                # Results, observations
+│
+└── models/                         # Training outputs (GITIGNORED)
+    └── exp_20260105_090955/
+        ├── checkpoint/             # All checkpoints
+        ├── eval_logs/              # evaluations.npz
+        └── tensorboard/
+```
+
+### What Gets Committed vs Gitignored
+
+| Location | Committed? | Contents |
+|----------|------------|----------|
+| `rl/configs/` | Yes | Reusable config building blocks |
+| `rl/experiments/*/config.yaml` | Yes | Experiment configuration |
+| `rl/experiments/*/resume.zip` | Yes | Best checkpoint to resume from (~20MB) |
+| `rl/experiments/*/notes.md` | Yes | Results and observations |
+| `rl/models/` | **No** | All training outputs, full checkpoint history |
+
+### Critical Training Parameters
+
+These parameters were empirically validated. Changing them can collapse training:
+
+| Parameter | Value | Location |
+|-----------|-------|----------|
+| `learning_rate` | `1e-4` | `rl/configs/algorithm/ppo_default.yaml` |
+| `throughput_bonus` | `0.2` | `rl/configs/reward/empirical.yaml` via `reward_params` |
+
+**Example reward config (`rl/configs/reward/empirical.yaml`):**
+```yaml
+reward_function: "empirical"
+reward_params:
+  throughput_bonus: 0.2
+```
+
+**Warning**: Default `throughput_bonus` in code is `0.1`. Training collapses without explicitly setting `0.2`.
+
+---
+
 ## Server Details
 
 - **Host**: `power.tau.ac.il`
@@ -261,3 +322,200 @@ source .venv/bin/activate
 ### Package build failures
 
 Never use `pip install -r requirements.txt` on the server. The server's cmake (2.8) and gcc are too old to compile packages from source. Use the pinned versions in the setup section above, which have pre-built wheels.
+
+---
+
+## Experiment Workflows
+
+### Creating a New Experiment
+
+1. **Create experiment folder locally:**
+   ```bash
+   mkdir -p rl/experiments/exp_YYYYMMDD_description
+   ```
+
+2. **Create config.yaml** (references building blocks):
+   ```yaml
+   # rl/experiments/exp_20260206_grid6_heavy/config.yaml
+   name: "grid6_heavy_traffic"
+   description: "6x6 grid with 22k vehicles, empirical reward"
+
+   # Reference config files
+   network: "../configs/network/grid6_realistic.yaml"
+   scenarios: "../configs/scenarios/heavy_load.yaml"
+   algorithm: "../configs/algorithm/ppo_default.yaml"
+   reward: "../configs/reward/empirical.yaml"
+   execution: "../configs/execution/long_run.yaml"
+   ```
+
+3. **Add resume checkpoint** (if continuing from existing training):
+   ```bash
+   cp <path-to-checkpoint>.zip rl/experiments/exp_YYYYMMDD_description/resume.zip
+   ```
+
+4. **Create notes.md:**
+   ```markdown
+   # Experiment: grid6_heavy_traffic
+
+   ## Goal
+   Train RL agent on 6x6 grid with heavy traffic.
+
+   ## Parameters
+   - Vehicles: 22,000
+   - Grid: 6x6
+   - Reward: empirical with throughput_bonus=0.2
+
+   ## Results
+   - Started: 2026-02-06
+   - Best reward: (pending)
+   ```
+
+5. **Commit and push:**
+   ```bash
+   git add rl/experiments/exp_YYYYMMDD_description/
+   git commit -m "Add experiment: grid6_heavy_traffic"
+   git push
+   ```
+
+6. **On TAU, pull and run:**
+   ```bash
+   git pull
+   sbatch ... --export=ALL,EXPERIMENT=rl/experiments/exp_YYYYMMDD_description ...
+   ```
+
+### Continuing an Existing Experiment
+
+1. **On TAU**: After training produces a better checkpoint, identify the best one by checking results.
+
+2. **Update resume.zip on TAU:**
+   ```bash
+   cp rl/models/exp_YYYYMMDD_description/checkpoint/rl_traffic_model_XXXXX_steps.zip \
+      rl/experiments/exp_YYYYMMDD_description/resume.zip
+   ```
+
+3. **Commit and push from TAU:**
+   ```bash
+   git add rl/experiments/exp_YYYYMMDD_description/resume.zip
+   git commit -m "Update checkpoint: XXXXX steps, reward=YYY"
+   git push
+   ```
+
+4. **Pull locally** to get the updated checkpoint:
+   ```bash
+   git pull
+   ```
+
+### Checking Training Results
+
+Training results are stored in `eval_logs/evaluations.npz`. Check them with:
+
+```bash
+python -c "
+import numpy as np
+data = np.load('rl/models/<experiment>/eval_logs/evaluations.npz')
+timesteps = data['timesteps']
+results = data['results']
+
+print('Last 15 evaluations:')
+for i in range(-15, 0):
+    if abs(i) <= len(timesteps):
+        print(f'  Step {timesteps[i]:>7}: mean={results[i].mean():.1f}, std={results[i].std():.1f}')
+"
+```
+
+**What to look for:**
+
+| Mean Reward | Status |
+|-------------|--------|
+| ~110+ | Good - training is working |
+| ~85 | Bad - training collapsed (check parameters) |
+| Gradually increasing | Excellent - model is learning |
+
+**Quick validation** before long training runs:
+```bash
+# Run 10k steps, check if reward stays ~110
+sbatch ... --export=ALL,...,TIMESTEPS=10000 ...
+# Then check evaluations.npz
+```
+
+### Syncing Between Local and TAU
+
+**Local → TAU** (code changes, new experiments):
+```bash
+# Local
+git add <files>
+git commit -m "description"
+git push
+
+# TAU
+git pull
+```
+
+**TAU → Local** (updated checkpoints):
+```bash
+# TAU (after training)
+git add rl/experiments/*/resume.zip
+git commit -m "Update checkpoint: XXX steps"
+git push
+
+# Local
+git pull
+```
+
+**Large files** (full checkpoint history, not in git):
+```bash
+# Copy from TAU to local
+scp -r efratbl@power.tau.ac.il:~/sumo-traffic-generator/rl/models/exp_XXX ./rl/models/
+
+# Copy from local to TAU
+scp -r ./rl/models/exp_XXX efratbl@power.tau.ac.il:~/sumo-traffic-generator/rl/models/
+```
+
+---
+
+## Quick Reference
+
+### Start New Training
+```bash
+sbatch --account=public-efratbl_v2 \
+  --partition=power-general-public-pool \
+  --export=ALL,\
+NETWORK=rl/configs/network/grid6_realistic.yaml,\
+SCENARIOS=rl/configs/scenarios/heavy_load.yaml,\
+ALGORITHM=rl/configs/algorithm/ppo_default.yaml,\
+REWARD=rl/configs/reward/empirical.yaml,\
+EXECUTION=rl/configs/execution/long_run.yaml,\
+JOB_NAME=my_experiment \
+  rl/server/train_rl.slurm
+```
+
+### Resume Training
+```bash
+sbatch --account=public-efratbl_v2 \
+  --partition=power-general-public-pool \
+  --export=ALL,\
+NETWORK=rl/configs/network/grid6_realistic.yaml,\
+SCENARIOS=rl/configs/scenarios/heavy_load.yaml,\
+ALGORITHM=rl/configs/algorithm/ppo_default.yaml,\
+REWARD=rl/configs/reward/empirical.yaml,\
+EXECUTION=rl/configs/execution/long_run.yaml,\
+RESUME_FROM=rl/experiments/exp_XXX/resume.zip,\
+JOB_NAME=resumed \
+  rl/server/train_rl.slurm
+```
+
+### Check Results
+```bash
+python -c "
+import numpy as np
+d = np.load('rl/models/<exp>/eval_logs/evaluations.npz')
+for s, r in zip(d['timesteps'][-10:], d['results'][-10:]):
+    print(f'{s}: {r.mean():.1f}')
+"
+```
+
+### Monitor Job
+```bash
+squeue -u $USER
+tail -f rl/models/slurm_<job_id>.log
+```
