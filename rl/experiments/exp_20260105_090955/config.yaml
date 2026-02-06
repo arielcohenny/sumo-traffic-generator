@@ -1,0 +1,35 @@
+name: "exp_20260105_090955"
+description: "6x6 grid, 22k vehicles, realistic lanes, empirical reward"
+
+# Network parameters
+network_seed: 24208
+grid_dimension: 6
+junctions_to_remove: 2
+block_size_m: 280
+lane_count: "realistic"
+step_length: 1.0
+land_use_block_size_m: 25.0
+attractiveness: "land_use"
+traffic_light_strategy: "partial_opposites"
+
+# Traffic parameters
+num_vehicles: 22000
+routing_strategy: "realtime 100"
+vehicle_types: "passenger 100"
+passenger_routes: "in 0 out 0 inner 100 pass 0"
+departure_pattern: "uniform"
+private_traffic_seed: 72632
+public_traffic_seed: 27031
+start_time_hour: 8.0
+end_time: 7300
+
+# Algorithm (critical values)
+learning_rate: 1.0e-4
+
+# Reward (critical values)
+reward_function: "empirical"
+reward_params:
+  throughput_bonus: 0.2
+
+# Training
+cycle_lengths: [90]
