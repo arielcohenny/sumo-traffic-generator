@@ -116,6 +116,7 @@ pip install --no-cache-dir \
   pyarrow==12.0.1 \
   geopandas==0.13.2 \
   networkx==3.1 \
+  eclipse-sumo \
   sumolib \
   traci \
   xmltodict \
@@ -126,6 +127,8 @@ pip install --no-cache-dir \
   scipy==1.11.4 \
   gymnasium==0.29.1 \
   stable-baselines3==2.1.0 \
+  tqdm \
+  rich \
   pyyaml \
   streamlit \
   plotly
