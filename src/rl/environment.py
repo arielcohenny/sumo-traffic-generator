@@ -257,6 +257,12 @@ class TrafficControlEnv(gym.Env):
         self.current_schedules = {}  # Store phase schedules for current cycle
         self.cycle_start_step = 0  # Track when current cycle started
 
+        # Episode tracking for SubprocVecEnv compatibility
+        self.episode_rewards = []
+        self.episode_lengths = []
+        self._current_episode_reward = 0.0
+        self._current_episode_length = 0
+
         # Calculate state vector size dynamically
         # This ensures observation space matches actual edge count after edge splitting
         from .constants import (
@@ -485,9 +491,19 @@ class TrafficControlEnv(gym.Env):
         # Compute reward
         reward = self._compute_reward()
 
+        # Track episode reward/length
+        self._current_episode_reward += reward
+        self._current_episode_length += 1
+
         # Check episode termination
         terminated = self._is_terminated()
         truncated = self._is_truncated()
+
+        if terminated or truncated:
+            self.episode_rewards.append(self._current_episode_reward)
+            self.episode_lengths.append(self._current_episode_length)
+            self._current_episode_reward = 0.0
+            self._current_episode_length = 0
 
         info = {
             'episode_step': self.current_step,

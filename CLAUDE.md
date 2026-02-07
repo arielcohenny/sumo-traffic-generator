@@ -16,6 +16,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **STICK TO** exactly what the user asks for - nothing more, nothing less
 - When the user asks a question, answer it directly without implementing unsolicited "improvements"
 
+**TAU SERVER INSTRUCTIONS:**
+
+- When giving instructions for TAU HPC servers, **ALWAYS** follow `docs/EXECUTING-ON-SERVER.md`
+- This includes: connection steps, Python module loading, venv activation, SLURM commands, folder structure, and experiment workflows
+- Do NOT improvise server commands — refer to the doc
+
 **COMMIT BEHAVIOR:**
 
 - **DO NOT** include co-author lines in commit messages
