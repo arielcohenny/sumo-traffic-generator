@@ -14,7 +14,7 @@ rl/
 │   ├── network/
 │   │   └── grid6_realistic.yaml    # Network topology
 │   ├── scenarios/
-│   │   └── heavy_load.yaml         # Traffic scenarios
+│   │   └── exp_090955.yaml         # Traffic scenarios (4 parallel envs)
 │   └── execution/
 │       └── long_run.yaml           # Timesteps, checkpointing
 │
@@ -65,8 +65,8 @@ reward_params:
 
 - **Host**: `power.tau.ac.il`
 - **Account**: `efratbl`
-- **SLURM account**: `public-efratbl_v2`
-- **Partitions**: `power-general-public-pool`, `power-general-shared-pool`
+- **Job scheduler**: PBS (qsub/qstat/qdel)
+- **Queue**: `parallel` (max 80GB mem, 2400h walltime)
 - **VPN required**: Yes (for off-campus access)
 
 ## First-Time Setup
@@ -170,7 +170,7 @@ All code changes go through git. Never edit files directly on the server.
 # On your local machine: commit and push
 git add <files>
 git commit -m "description"
-git push origin develop
+git push origin main
 
 # On the server: pull latest
 cd ~/sumo-traffic-generator
@@ -179,106 +179,62 @@ git pull
 
 ## Running RL Training
 
+Jobs are submitted via **PBS** using `qsub`. The training script is `rl/server/train.py`.
+
 ### Submit a training job
 
-Training jobs are submitted via SLURM using modular config files:
-
 ```bash
-cd ~/sumo-traffic-generator
-source .venv/bin/activate
-
-sbatch --account=public-efratbl_v2 \
-  --partition=power-general-public-pool \
-  --export=ALL,\
-NETWORK=rl/configs/network/grid6_realistic.yaml,\
-SCENARIOS=rl/configs/scenarios/heavy_load.yaml,\
-ALGORITHM=rl/configs/algorithm/ppo_default.yaml,\
-REWARD=rl/configs/reward/empirical.yaml,\
-EXECUTION=rl/configs/execution/long_run.yaml,\
-JOB_NAME=my_experiment \
-  rl/server/train_rl.slurm
-```
-
-### Quick test run
-
-```bash
-sbatch --account=public-efratbl_v2 \
-  --partition=power-general-public-pool \
-  --export=ALL,\
-NETWORK=rl/configs/network/grid6_realistic.yaml,\
-SCENARIOS=rl/configs/scenarios/heavy_load.yaml,\
-ALGORITHM=rl/configs/algorithm/ppo_default.yaml,\
-REWARD=rl/configs/reward/empirical.yaml,\
-EXECUTION=rl/configs/execution/quick_test.yaml,\
-JOB_NAME=quick_test \
-  rl/server/train_rl.slurm
+echo 'cd ~/sumo-traffic-generator && module load Python-3.10.2 && source .venv/bin/activate && python rl/server/train.py --network rl/configs/network/grid6_realistic.yaml --scenarios rl/configs/scenarios/exp_090955.yaml --algorithm rl/configs/algorithm/ppo_default.yaml --reward rl/configs/reward/empirical.yaml --execution rl/configs/execution/long_run.yaml --models-dir rl/models' | qsub -q parallel -l walltime=48:00:00,mem=32gb,ncpus=8 -N exp090955 -o rl/models/pbs_output.log -e rl/models/pbs_error.log
 ```
 
 ### Resume from checkpoint
 
 ```bash
-sbatch --account=public-efratbl_v2 \
-  --partition=power-general-public-pool \
-  --export=ALL,\
-NETWORK=rl/configs/network/grid6_realistic.yaml,\
-SCENARIOS=rl/configs/scenarios/heavy_load.yaml,\
-ALGORITHM=rl/configs/algorithm/ppo_default.yaml,\
-REWARD=rl/configs/reward/empirical.yaml,\
-EXECUTION=rl/configs/execution/long_run.yaml,\
-RESUME_FROM=rl/models/my_model/final_model.zip,\
-JOB_NAME=resumed \
-  rl/server/train_rl.slurm
+echo 'cd ~/sumo-traffic-generator && module load Python-3.10.2 && source .venv/bin/activate && python rl/server/train.py --network rl/configs/network/grid6_realistic.yaml --scenarios rl/configs/scenarios/exp_090955.yaml --algorithm rl/configs/algorithm/ppo_default.yaml --reward rl/configs/reward/empirical.yaml --execution rl/configs/execution/long_run.yaml --resume-from rl/experiments/exp_20260105_090955/resume.zip --models-dir rl/models' | qsub -q parallel -l walltime=48:00:00,mem=32gb,ncpus=8 -N exp090955 -o rl/models/pbs_output.log -e rl/models/pbs_error.log
 ```
 
-### Running multiple experiments in parallel
+### Running multiple experiments
 
-Submit multiple jobs with different configs:
+Submit multiple jobs with different configs — PBS runs them in parallel if resources are available:
 
 ```bash
-# Experiment 1: empirical reward
-sbatch --account=public-efratbl_v2 \
-  --partition=power-general-public-pool \
-  --export=ALL,\
-NETWORK=rl/configs/network/grid6_realistic.yaml,\
-SCENARIOS=rl/configs/scenarios/heavy_load.yaml,\
-ALGORITHM=rl/configs/algorithm/ppo_default.yaml,\
-REWARD=rl/configs/reward/empirical.yaml,\
-EXECUTION=rl/configs/execution/long_run.yaml,\
-JOB_NAME=empirical \
-  rl/server/train_rl.slurm
+# Experiment 1
+echo 'cd ~/sumo-traffic-generator && module load Python-3.10.2 && source .venv/bin/activate && python rl/server/train.py --network rl/configs/network/grid6_realistic.yaml --scenarios rl/configs/scenarios/exp_090955.yaml --algorithm rl/configs/algorithm/ppo_default.yaml --reward rl/configs/reward/empirical.yaml --execution rl/configs/execution/long_run.yaml --models-dir rl/models' | qsub -q parallel -l walltime=48:00:00,mem=32gb,ncpus=8 -N exp1 -o rl/models/pbs_exp1_output.log -e rl/models/pbs_exp1_error.log
 
-# Experiment 2: throughput reward (create the config first)
-sbatch --account=public-efratbl_v2 \
-  --partition=power-general-public-pool \
-  --export=ALL,\
-NETWORK=rl/configs/network/grid6_realistic.yaml,\
-SCENARIOS=rl/configs/scenarios/heavy_load.yaml,\
-ALGORITHM=rl/configs/algorithm/ppo_default.yaml,\
-REWARD=rl/configs/reward/throughput.yaml,\
-EXECUTION=rl/configs/execution/long_run.yaml,\
-JOB_NAME=throughput \
-  rl/server/train_rl.slurm
+# Experiment 2 (different reward config)
+echo 'cd ~/sumo-traffic-generator && module load Python-3.10.2 && source .venv/bin/activate && python rl/server/train.py --network rl/configs/network/grid6_realistic.yaml --scenarios rl/configs/scenarios/exp_090955.yaml --algorithm rl/configs/algorithm/ppo_default.yaml --reward rl/configs/reward/throughput.yaml --execution rl/configs/execution/long_run.yaml --models-dir rl/models' | qsub -q parallel -l walltime=48:00:00,mem=32gb,ncpus=8 -N exp2 -o rl/models/pbs_exp2_output.log -e rl/models/pbs_exp2_error.log
 ```
-
-Each `sbatch` submits an independent job. SLURM runs them in parallel if resources are available.
 
 ## Monitoring Jobs
 
 ```bash
 # Check job status
-squeue -u $USER
+qstat -u $USER
 
 # Watch job output in real-time
-tail -f rl/models/slurm_<job_id>.log
+tail -f rl/models/pbs_output.log
 
 # Check job errors
-cat rl/models/slurm_<job_id>.err
+cat rl/models/pbs_error.log
 
 # Cancel a job
-scancel <job_id>
+qdel <job_id>
 
 # Cancel all your jobs
-scancel -u $USER
+qdel $(qstat -u $USER | awk 'NR>5{print $1}')
+```
+
+## PBS Queue Reference
+
+| Queue | Max Memory | Max Walltime | Max CPUs | Use Case |
+|-------|-----------|-------------|----------|----------|
+| `parallel` | 80GB | 2400h | multiple | RL training (recommended) |
+| `inf` | 1GB | 2400h | 1 | Single-CPU tasks only |
+| `short` | 1.8GB | 60h | 1 | Quick single-CPU tasks |
+
+Check queue limits:
+```bash
+qstat -Qf <queue_name> | grep -i "resources_max"
 ```
 
 ## Config Files
@@ -288,7 +244,7 @@ Experiments are configured through YAML files in `rl/configs/`:
 ```
 rl/configs/
 ├── network/          # Grid size, lanes, block size
-├── scenarios/        # Vehicle count, simulation time, routing
+├── scenarios/        # Vehicle count, seeds, parallel envs (one entry per env)
 ├── algorithm/        # PPO hyperparameters
 ├── reward/           # Reward function selection and weights
 └── execution/        # Timesteps, parallel envs, checkpointing
@@ -345,7 +301,7 @@ Never use `pip install -r requirements.txt` on the server. The server's cmake (2
 
    # Reference config files
    network: "../configs/network/grid6_realistic.yaml"
-   scenarios: "../configs/scenarios/heavy_load.yaml"
+   scenarios: "../configs/scenarios/exp_090955.yaml"
    algorithm: "../configs/algorithm/ppo_default.yaml"
    reward: "../configs/reward/empirical.yaml"
    execution: "../configs/execution/long_run.yaml"
@@ -383,7 +339,7 @@ Never use `pip install -r requirements.txt` on the server. The server's cmake (2
 6. **On TAU, pull and run:**
    ```bash
    git pull
-   sbatch ... --export=ALL,EXPERIMENT=rl/experiments/exp_YYYYMMDD_description ...
+   echo 'cd ~/sumo-traffic-generator && module load Python-3.10.2 && source .venv/bin/activate && python rl/server/train.py --network rl/configs/network/grid6_realistic.yaml --scenarios rl/configs/scenarios/exp_090955.yaml --algorithm rl/configs/algorithm/ppo_default.yaml --reward rl/configs/reward/empirical.yaml --execution rl/configs/execution/long_run.yaml --models-dir rl/models' | qsub -q parallel -l walltime=48:00:00,mem=32gb,ncpus=8 -N exp_name -o rl/models/pbs_output.log -e rl/models/pbs_error.log
    ```
 
 ### Continuing an Existing Experiment
@@ -434,13 +390,6 @@ for i in range(-15, 0):
 | ~85 | Bad - training collapsed (check parameters) |
 | Gradually increasing | Excellent - model is learning |
 
-**Quick validation** before long training runs:
-```bash
-# Run 10k steps, check if reward stays ~110
-sbatch ... --export=ALL,...,TIMESTEPS=10000 ...
-# Then check evaluations.npz
-```
-
 ### Syncing Between Local and TAU
 
 **Local → TAU** (code changes, new experiments):
@@ -478,47 +427,26 @@ scp -r ./rl/models/exp_XXX efratbl@power.tau.ac.il:~/sumo-traffic-generator/rl/m
 
 ## Quick Reference
 
-### Start New Training
+### Connect and Pull
 ```bash
-sbatch --account=public-efratbl_v2 \
-  --partition=power-general-public-pool \
-  --export=ALL,\
-NETWORK=rl/configs/network/grid6_realistic.yaml,\
-SCENARIOS=rl/configs/scenarios/heavy_load.yaml,\
-ALGORITHM=rl/configs/algorithm/ppo_default.yaml,\
-REWARD=rl/configs/reward/empirical.yaml,\
-EXECUTION=rl/configs/execution/long_run.yaml,\
-JOB_NAME=my_experiment \
-  rl/server/train_rl.slurm
+ssh efratbl@power.tau.ac.il && cd ~/sumo-traffic-generator && module load Python-3.10.2 && source .venv/bin/activate && git pull
 ```
 
-### Resume Training
+### Submit exp_090955 Training (4 parallel envs, resume from checkpoint)
 ```bash
-sbatch --account=public-efratbl_v2 \
-  --partition=power-general-public-pool \
-  --export=ALL,\
-NETWORK=rl/configs/network/grid6_realistic.yaml,\
-SCENARIOS=rl/configs/scenarios/heavy_load.yaml,\
-ALGORITHM=rl/configs/algorithm/ppo_default.yaml,\
-REWARD=rl/configs/reward/empirical.yaml,\
-EXECUTION=rl/configs/execution/long_run.yaml,\
-RESUME_FROM=rl/experiments/exp_XXX/resume.zip,\
-JOB_NAME=resumed \
-  rl/server/train_rl.slurm
+echo 'cd ~/sumo-traffic-generator && module load Python-3.10.2 && source .venv/bin/activate && python rl/server/train.py --network rl/configs/network/grid6_realistic.yaml --scenarios rl/configs/scenarios/exp_090955.yaml --algorithm rl/configs/algorithm/ppo_default.yaml --reward rl/configs/reward/empirical.yaml --execution rl/configs/execution/long_run.yaml --resume-from rl/experiments/exp_20260105_090955/resume.zip --models-dir rl/models' | qsub -q parallel -l walltime=48:00:00,mem=32gb,ncpus=8 -N exp090955 -o rl/models/pbs_output.log -e rl/models/pbs_error.log
 ```
 
 ### Check Results
 ```bash
-python -c "
-import numpy as np
-d = np.load('rl/models/<exp>/eval_logs/evaluations.npz')
-for s, r in zip(d['timesteps'][-10:], d['results'][-10:]):
-    print(f'{s}: {r.mean():.1f}')
-"
+python -c "import numpy as np; d=np.load('rl/models/rl_<timestamp>/eval_logs/evaluations.npz'); [print(f'Step {s}: mean={r.mean():.1f}') for s,r in zip(d['timesteps'][-10:],d['results'][-10:])]"
 ```
 
 ### Monitor Job
 ```bash
-squeue -u $USER
-tail -f rl/models/slurm_<job_id>.log
+qstat -u $USER
+
+tail -f rl/models/pbs_output.log
+
+qdel <job_id>
 ```

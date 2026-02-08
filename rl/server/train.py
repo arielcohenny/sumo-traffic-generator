@@ -100,6 +100,8 @@ def create_argument_parser() -> argparse.ArgumentParser:
                         help="Custom name prefix for model directory")
     parser.add_argument('--models-dir', type=str, default='rl/models',
                         help="Directory to save models")
+    parser.add_argument('--initial-timesteps', type=int, default=None,
+                        help="Cumulative timesteps from previous training (overrides filename extraction)")
 
     # Cycle parameters
     parser.add_argument('--cycle-lengths', type=int, nargs='+', default=None,
@@ -184,6 +186,7 @@ def main():
             experiment_config=config,
             env_params_list=env_params_list if use_parallel else None,
             models_dir=args.models_dir,
+            initial_timesteps_override=args.initial_timesteps,
         )
 
         elapsed = time.time() - start_time

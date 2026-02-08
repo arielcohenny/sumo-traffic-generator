@@ -659,7 +659,8 @@ def train_rl_policy(env_params_string: str = None,
                     network_path: str = None,
                     experiment_config: ExperimentConfig = None,
                     env_params_list: list = None,
-                    models_dir: str = None) -> PPO:
+                    models_dir: str = None,
+                    initial_timesteps_override: int = None) -> PPO:
     """
     Train PPO policy for traffic signal control.
 
@@ -798,13 +799,33 @@ def train_rl_policy(env_params_string: str = None,
     if resume_from_model and os.path.exists(resume_from_model):
         logger.info(
             f"Resuming training from existing model: {resume_from_model}")
-        try:
-            model = PPO.load(resume_from_model, env=env,
-                             tensorboard_log=tensorboard_log, device=TRAINING_DEVICE_AUTO)
-            logger.info(f"Successfully loaded model from {resume_from_model}")
-            logger.info(
-                f"Continuing training for {total_timesteps} additional timesteps")
 
+        # Build custom_objects to avoid deserialization errors with lambda schedules.
+        # SB3 pickles learning_rate/clip_range schedule functions, which can fail
+        # across Python/library versions ("code expected at most N arguments, got M").
+        # Rebuilding from config ensures correct schedules regardless of pickle compat.
+        custom_objects = {
+            "learning_rate": _build_learning_rate(experiment_config),
+            "clip_range": experiment_config.clip_range if experiment_config else DEFAULT_CLIP_RANGE,
+        }
+        logger.info(f"Rebuilt schedule objects for resume: lr={type(custom_objects['learning_rate']).__name__}, clip={custom_objects['clip_range']}")
+
+        model = PPO.load(resume_from_model, env=env,
+                         custom_objects=custom_objects,
+                         tensorboard_log=tensorboard_log, device=TRAINING_DEVICE_AUTO)
+        logger.info(f"Successfully loaded model from {resume_from_model}")
+        logger.info(f"Model policy: {model.policy.__class__.__name__}")
+        logger.info(f"Model observation space: {model.observation_space}")
+        logger.info(f"Model action space: {model.action_space}")
+        logger.info(
+            f"Continuing training for {total_timesteps} additional timesteps")
+
+        # Determine cumulative timesteps for checkpoint naming
+        if initial_timesteps_override is not None:
+            initial_timesteps = initial_timesteps_override
+            logger.info(
+                f"Using CLI override for initial timesteps: {initial_timesteps}")
+        else:
             # Extract step count from checkpoint filename if available
             import re
             match = re.search(r'(\d+)_steps\.zip', resume_from_model)
@@ -817,11 +838,6 @@ def train_rl_policy(env_params_string: str = None,
                     f"Could not extract step count from filename: {resume_from_model}")
                 logger.warning(
                     f"Checkpoint naming will restart from 0 (actual training continues normally)")
-
-        except Exception as e:
-            logger.error(f"Failed to load model from {resume_from_model}: {e}")
-            logger.info("Creating new model instead...")
-            resume_from_model = None
 
     # Load pre-trained model from imitation learning (mutually exclusive with resume)
     if not resume_from_model and pretrain_from_model and os.path.exists(pretrain_from_model):
