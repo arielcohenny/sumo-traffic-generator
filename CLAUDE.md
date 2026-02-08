@@ -22,6 +22,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - This includes: connection steps, Python module loading, venv activation, SLURM commands, folder structure, and experiment workflows
 - Do NOT improvise server commands — refer to the doc
 
+**TAU QUICK COMMANDS (copy-paste):**
+
+```bash
+# Connect and setup
+ssh efratbl@power.tau.ac.il && cd ~/sumo-traffic-generator && module load Python-3.10.2 && source .venv/bin/activate && git pull
+
+# Submit exp_090955 parallel training (4 envs, resume from checkpoint)
+echo 'cd ~/sumo-traffic-generator && module load Python-3.10.2 && source .venv/bin/activate && python rl/server/train.py --network rl/configs/network/grid6_realistic.yaml --scenarios rl/configs/scenarios/exp_090955.yaml --algorithm rl/configs/algorithm/ppo_default.yaml --reward rl/configs/reward/empirical.yaml --execution rl/configs/execution/long_run.yaml --resume-from rl/experiments/exp_20260105_090955/resume.zip --initial-timesteps 495616 --models-dir rl/models' | qsub -q parallel -l walltime=48:00:00,mem=32gb,vmem=40gb,ncpus=8 -N exp090955 -o rl/models/pbs_output.log -e rl/models/pbs_error.log
+
+# Monitor
+qstat -u $USER
+
+# Check results
+python -c "import numpy as np; d=np.load('rl/models/rl_<timestamp>/eval_logs/evaluations.npz'); [print(f'Step {s}: mean={r.mean():.1f}') for s,r in zip(d['timesteps'][-10:],d['results'][-10:])]"
+```
+
 **COMMIT BEHAVIOR:**
 
 - **DO NOT** include co-author lines in commit messages
