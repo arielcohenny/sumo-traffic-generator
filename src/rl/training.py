@@ -14,6 +14,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 import numpy as np
+import sys
+
+# numpy 2.x renamed numpy.core -> numpy._core.  Add compatibility alias
+# so checkpoints saved with numpy 2.x can be loaded on numpy 1.x (server).
+if not hasattr(np, '_core'):
+    sys.modules['numpy._core'] = np.core
+    for _sub in ('multiarray', '_methods', 'numeric', 'umath', 'fromnumeric', 'shape_base'):
+        _mod = getattr(np.core, _sub, None)
+        if _mod is not None:
+            sys.modules[f'numpy._core.{_sub}'] = _mod
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
