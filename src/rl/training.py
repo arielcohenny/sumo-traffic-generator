@@ -16,14 +16,25 @@ from typing import Any, Dict, Optional, Tuple
 import numpy as np
 import sys
 
-# numpy 2.x renamed numpy.core -> numpy._core.  Add compatibility alias
-# so checkpoints saved with numpy 2.x can be loaded on numpy 1.x (server).
+# --- numpy 2.x -> 1.x compatibility shims for loading checkpoints ---
+# Checkpoint was saved with numpy 2.x; server runs numpy 1.24.x.
 if not hasattr(np, '_core'):
+    # 1) numpy.core was renamed to numpy._core in 2.0
     sys.modules['numpy._core'] = np.core
     for _sub in ('multiarray', '_methods', 'numeric', 'umath', 'fromnumeric', 'shape_base'):
         _mod = getattr(np.core, _sub, None)
         if _mod is not None:
             sys.modules[f'numpy._core.{_sub}'] = _mod
+
+    # 2) BitGenerator pickle format changed: numpy 2.x passes the class object,
+    #    numpy 1.x expects a string name.  Patch the unpickle constructor.
+    import numpy.random._pickle as _nprp
+    _orig_bg_ctor = _nprp.__bit_generator_ctor
+    def _patched_bg_ctor(bit_generator_name='MT19937'):
+        if isinstance(bit_generator_name, type):
+            bit_generator_name = bit_generator_name.__name__
+        return _orig_bg_ctor(bit_generator_name)
+    _nprp.__bit_generator_ctor = _patched_bg_ctor
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
@@ -884,20 +895,27 @@ def train_rl_policy(env_params_string: str = None,
             logger.info(f"  gae_lambda: {ppo_kwargs['gae_lambda']}")
             logger.info(f"  max_grad_norm: {ppo_kwargs['max_grad_norm']}")
 
-            # Load ONLY policy weights from pre-trained model
-            logger.info("=== LOADING PRE-TRAINED POLICY WEIGHTS ===")
-            pretrained_model = PPO.load(pretrain_from_model, device=TRAINING_DEVICE_AUTO)
+            # Load ONLY policy weights directly from zip file.
+            # Bypasses PPO.load() entirely to avoid numpy 2.x/1.x pickle
+            # incompatibilities in the SB3 metadata (JSON+cloudpickle).
+            # We only need the PyTorch state dict, which is stored as a
+            # plain .pth file inside the zip — no numpy dependency.
+            logger.info("=== LOADING PRE-TRAINED POLICY WEIGHTS (direct zip extraction) ===")
+            import zipfile
+            import torch
+            import io
 
-            # Transfer policy network weights (actor and critic)
-            model.policy.load_state_dict(pretrained_model.policy.state_dict())
+            with zipfile.ZipFile(pretrain_from_model, 'r') as zf:
+                # SB3 stores the policy state dict as "policy.pth"
+                with zf.open('policy.pth') as f:
+                    buffer = io.BytesIO(f.read())
+                    pretrained_state_dict = torch.load(buffer, map_location=TRAINING_DEVICE_AUTO)
+
+            model.policy.load_state_dict(pretrained_state_dict)
 
             logger.info(f"✓ Successfully loaded policy weights from {pretrain_from_model}")
             logger.info(f"Starting RL fine-tuning for {total_timesteps} timesteps")
-            logger.info("Policy network initialized from Tree Method imitation learning")
-            logger.info("Training hyperparameters use optimized values (not pre-trained model's values)")
-
-            # Clean up temporary model
-            del pretrained_model
+            logger.info("Policy weights loaded via direct zip extraction (numpy-version-safe)")
 
         except Exception as e:
             logger.error(
