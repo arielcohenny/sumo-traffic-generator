@@ -862,69 +862,36 @@ def train_rl_policy(env_params_string: str = None,
 
     # Load pre-trained model from imitation learning (mutually exclusive with resume)
     if not resume_from_model and pretrain_from_model and os.path.exists(pretrain_from_model):
-        logger.info("=== LOADING PRE-TRAINED POLICY WEIGHTS FROM IMITATION LEARNING ===")
+        logger.info("=== LOADING PRE-TRAINED POLICY WEIGHTS ===")
         logger.info(f"Pre-trained model path: {pretrain_from_model}")
-        try:
-            # CRITICAL FIX (2025-10-20): Cannot override batch_size/n_steps after PPO.load()
-            # because they're tied to internal buffer sizes. Instead:
-            # 1. Create NEW model with optimized hyperparameters
-            # 2. Load ONLY policy weights from pre-trained model
-            # This preserves pre-trained knowledge while using optimized training config
 
-            logger.info("=== CREATING NEW MODEL WITH OPTIMIZED HYPERPARAMETERS ===")
+        # Create NEW model with optimized hyperparameters, then load only policy weights.
+        # Cannot use PPO.load() because it deserializes numpy-version-specific metadata.
+        ppo_kwargs = _build_ppo_kwargs(experiment_config)
 
-            ppo_kwargs = _build_ppo_kwargs(experiment_config)
-            logger.info(f"PPO kwargs from {'experiment config' if experiment_config else 'constants'}")
+        model = PPO(
+            TRAINING_POLICY_TYPE,
+            env,
+            **ppo_kwargs,
+            tensorboard_log=tensorboard_log,
+            verbose=TRAINING_VERBOSE_LEVEL,
+            device=TRAINING_DEVICE_AUTO
+        )
 
-            # Create NEW model with optimized hyperparameters
-            model = PPO(
-                TRAINING_POLICY_TYPE,
-                env,
-                **ppo_kwargs,
-                tensorboard_log=tensorboard_log,
-                verbose=TRAINING_VERBOSE_LEVEL,
-                device=TRAINING_DEVICE_AUTO
-            )
+        # Extract policy weights directly from zip file (bypasses numpy pickle issues)
+        import zipfile
+        import torch
+        import io
 
-            logger.info(f"✓ New model created with hyperparameters:")
-            logger.info(f"  clip_range: {ppo_kwargs['clip_range']}")
-            logger.info(f"  batch_size: {ppo_kwargs['batch_size']}")
-            logger.info(f"  n_steps: {ppo_kwargs['n_steps']}")
-            logger.info(f"  n_epochs: {ppo_kwargs['n_epochs']}")
-            logger.info(f"  gamma: {ppo_kwargs['gamma']}")
-            logger.info(f"  gae_lambda: {ppo_kwargs['gae_lambda']}")
-            logger.info(f"  max_grad_norm: {ppo_kwargs['max_grad_norm']}")
+        with zipfile.ZipFile(pretrain_from_model, 'r') as zf:
+            with zf.open('policy.pth') as f:
+                buffer = io.BytesIO(f.read())
+                pretrained_state_dict = torch.load(buffer, map_location="cpu")
 
-            # Load ONLY policy weights directly from zip file.
-            # Bypasses PPO.load() entirely to avoid numpy 2.x/1.x pickle
-            # incompatibilities in the SB3 metadata (JSON+cloudpickle).
-            # We only need the PyTorch state dict, which is stored as a
-            # plain .pth file inside the zip — no numpy dependency.
-            logger.info("=== LOADING PRE-TRAINED POLICY WEIGHTS (direct zip extraction) ===")
-            import zipfile
-            import torch
-            import io
+        model.policy.load_state_dict(pretrained_state_dict)
 
-            with zipfile.ZipFile(pretrain_from_model, 'r') as zf:
-                # SB3 stores the policy state dict as "policy.pth"
-                with zf.open('policy.pth') as f:
-                    buffer = io.BytesIO(f.read())
-                    pretrained_state_dict = torch.load(buffer, map_location=TRAINING_DEVICE_AUTO)
-
-            model.policy.load_state_dict(pretrained_state_dict)
-
-            logger.info(f"✓ Successfully loaded policy weights from {pretrain_from_model}")
-            logger.info(f"Starting RL fine-tuning for {total_timesteps} timesteps")
-            logger.info("Policy weights loaded via direct zip extraction (numpy-version-safe)")
-
-        except Exception as e:
-            logger.error(
-                f"Failed to load pre-trained policy weights from {pretrain_from_model}: {e}")
-            logger.error(f"Error details: {type(e).__name__}")
-            import traceback
-            logger.error(traceback.format_exc())
-            logger.info("Creating new model from scratch instead...")
-            pretrain_from_model = None
+        logger.info(f"✓ Successfully loaded policy weights from {pretrain_from_model}")
+        logger.info(f"Starting RL fine-tuning for {total_timesteps} timesteps")
 
     if not resume_from_model and not pretrain_from_model:
         ppo_kwargs = _build_ppo_kwargs(experiment_config)
