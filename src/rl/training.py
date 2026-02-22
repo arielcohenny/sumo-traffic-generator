@@ -821,15 +821,17 @@ def train_rl_policy(env_params_string: str = None,
         logger.info(
             f"Resuming training from existing model: {resume_from_model}")
 
-        # Build custom_objects to avoid deserialization errors with lambda schedules.
-        # SB3 pickles learning_rate/clip_range schedule functions, which can fail
-        # across Python/library versions ("code expected at most N arguments, got M").
-        # Rebuilding from config ensures correct schedules regardless of pickle compat.
+        # Build custom_objects to bypass all numpy 2.x/1.x pickle incompatibilities.
+        # SB3 deserializes these via cloudpickle which breaks across numpy versions.
+        # We rebuild everything from config/env so nothing needs to be unpickled.
         custom_objects = {
             "learning_rate": _build_learning_rate(experiment_config),
+            "lr_schedule": _build_learning_rate(experiment_config),
             "clip_range": experiment_config.clip_range if experiment_config else DEFAULT_CLIP_RANGE,
+            "observation_space": env.observation_space,
+            "action_space": env.action_space,
         }
-        logger.info(f"Rebuilt schedule objects for resume: lr={type(custom_objects['learning_rate']).__name__}, clip={custom_objects['clip_range']}")
+        logger.info(f"Rebuilt custom_objects for resume: lr={type(custom_objects['learning_rate']).__name__}, clip={custom_objects['clip_range']}, obs={env.observation_space.shape}, act={env.action_space}")
 
         model = PPO.load(resume_from_model, env=env,
                          custom_objects=custom_objects,
