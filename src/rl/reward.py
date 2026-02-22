@@ -223,7 +223,7 @@ class RewardCalculator:
 
         # Throughput bonus: positive signal for completing vehicle trips
         # This encourages the agent to actually move vehicles through the network
-        throughput_bonus = vehicles_arrived_this_step * 0.1
+        throughput_bonus = vehicles_arrived_this_step * 0.2
 
         return reward + throughput_bonus
 
@@ -346,7 +346,7 @@ class EmpiricalReward(BaseReward):
         self,
         weights: Optional[Dict[str, float]] = None,
         norm_stats: Optional[Dict] = None,
-        throughput_bonus: float = 0.1,
+        throughput_bonus: float = 0.2,
     ):
         self.weights = weights or {"waiting": -0.45, "speed": 0.35, "queue": -0.20}
         self.norm_stats = norm_stats or EMPIRICAL_NORM_STATS

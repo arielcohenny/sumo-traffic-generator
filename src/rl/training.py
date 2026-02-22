@@ -711,18 +711,18 @@ def train_rl_policy(env_params_string: str = None,
     initial_timesteps = 0
 
     if resume_from_model and os.path.exists(resume_from_model):
-        # Extract model directory from checkpoint path
-        # Expected format: <models_dir>/rl_YYYYMMDD_HHMMSS/checkpoint/rl_traffic_model_XXXX_steps.zip
-        import re
-        match = re.search(r'(rl_\d{8}_\d{6})', resume_from_model)
-        if match:
-            model_dir = os.path.join(effective_models_dir, match.group(1))
+        # Derive model directory from checkpoint path by walking up from the checkpoint file
+        # Expected format: <any_path>/checkpoint/rl_traffic_model_XXXX_steps.zip
+        # The model directory is the parent of the 'checkpoint' directory
+        resume_path = Path(resume_from_model).resolve()
+        if resume_path.parent.name == "checkpoint":
+            model_dir = str(resume_path.parent.parent)
             logger.info(
                 f"Resuming training - using existing model directory: {model_dir}")
         else:
             logger.warning(
-                f"Could not extract model directory from resume path: {resume_from_model}")
-            logger.warning(f"Creating new model directory instead")
+                f"Could not derive model directory from resume path: {resume_from_model}")
+            logger.warning(f"Expected .../checkpoint/<model>.zip structure. Creating new model directory instead")
 
     if model_dir is None:
         # Create new unique model directory with timestamp
