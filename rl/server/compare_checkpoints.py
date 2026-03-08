@@ -141,7 +141,17 @@ def run_simulation(
         )
 
         output = result.stdout + result.stderr
-        return parse_statistics(output)
+        stats = parse_statistics(output)
+
+        if stats is None:
+            # Log the output so we can debug why parsing failed
+            print(f"\n  [DEBUG] Return code: {result.returncode}")
+            # Print last 20 lines of output for debugging
+            lines = output.strip().split('\n')
+            for line in lines[-20:]:
+                print(f"  [DEBUG] {line}")
+
+        return stats
 
     except subprocess.TimeoutExpired:
         print("TIMEOUT")
