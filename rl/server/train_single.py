@@ -116,6 +116,7 @@ def main():
             env_params_list=None,
             models_dir=experiment_dir,
             initial_timesteps_override=None,
+            flat_output=True,
         )
 
         elapsed = time.time() - start_time

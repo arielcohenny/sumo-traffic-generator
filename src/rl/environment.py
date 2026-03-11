@@ -199,6 +199,10 @@ class TrafficControlEnv(gym.Env):
         # Tree Method traffic analyzer
         instance.traffic_analyzer = None
 
+        # Experiment config (None = use constants-based feature toggles)
+        instance.experiment_config = None
+        instance.reward_fn = None
+
         # For minimal inference mode, don't run pipeline - controller will handle TraCI
         # if minimal:
         #     import logging
