@@ -63,7 +63,7 @@ def verify_split_edges_with_flow_based_lanes(
 
     # Report results
     if validation_errors:
-        print(f"\n❌ VALIDATION FAILED: {len(validation_errors)} errors found:")
+        print(f"\n[FAIL] VALIDATION FAILED: {len(validation_errors)} errors found:")
         for error in validation_errors:
             print(f"  - {error}")
         raise ValueError(

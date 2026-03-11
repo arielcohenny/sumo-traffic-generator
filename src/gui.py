@@ -57,12 +57,12 @@ def launch_chrome_app_mode(url):
 
 def wait_for_streamlit_ready(url, max_attempts=30, delay=1):
     """Wait for Streamlit server to be ready."""
-    print("🔄 Waiting for DBPS server to be ready...")
+    print("[...] Waiting for DBPS server to be ready...")
     for attempt in range(max_attempts):
         try:
             response = requests.get(url, timeout=2)
             if response.status_code == 200:
-                print("✅ DBPS server is ready!")
+                print("[OK] DBPS server is ready!")
                 return True
         except requests.exceptions.RequestException:
             pass
@@ -70,7 +70,7 @@ def wait_for_streamlit_ready(url, max_attempts=30, delay=1):
         if attempt < max_attempts - 1:
             time.sleep(delay)
             print(
-                f"🔄 Checking server readiness... ({attempt + 1}/{max_attempts})")
+                f"[...] Checking server readiness... ({attempt + 1}/{max_attempts})")
 
     return False
 
@@ -83,14 +83,14 @@ def wait_for_streamlit_ready(url, max_attempts=30, delay=1):
 
 def main():
     """Launch the DBPS GUI as a desktop application."""
-    print("🚀 Starting DBPS - Decentralised Bottleneck Prioritization Simulation...")
+    print("Starting DBPS - Decentralised Bottleneck Prioritization Simulation...")
 
     app_path = Path(__file__).parent / "ui" / "streamlit_app.py"
     streamlit_process = None
 
     try:
         # Start Streamlit server in background
-        print("🔄 Starting DBPS server...")
+        print("[...] Starting DBPS server...")
         streamlit_process = subprocess.Popen([
             "streamlit",
             "run",
@@ -103,41 +103,41 @@ def main():
         # Wait for Streamlit to be ready
         url = "http://localhost:8501"
         if not wait_for_streamlit_ready(url):
-            print("❌ DBPS server failed to start within 30 seconds")
+            print("[ERROR] DBPS server failed to start within 30 seconds")
             if streamlit_process:
                 streamlit_process.terminate()
             return
 
         # Launch Chrome in app mode
-        print("🖥️  Launching DBPS application...")
+        print("Launching DBPS application...")
         browser_process = launch_chrome_app_mode(url)
 
         if browser_process:
-            print("✅ DBPS GUI launched successfully!")
-            print("💡 Use Ctrl+C to stop DBPS")
+            print("[OK] DBPS GUI launched successfully!")
+            print("Use Ctrl+C to stop DBPS")
 
             # Keep the process running indefinitely
             # User will use Ctrl+C to stop the server
             try:
                 streamlit_process.wait()
             except KeyboardInterrupt:
-                print("\n🛑 DBPS stopped")
+                print("\nDBPS stopped")
                 if streamlit_process:
                     streamlit_process.terminate()
                     
         else:
-            print("❌ Could not launch Chrome app mode")
+            print("[ERROR] Could not launch Chrome app mode")
             if streamlit_process:
                 streamlit_process.terminate()
 
     except FileNotFoundError:
-        print("❌ Streamlit is not installed.")
+        print("[ERROR] Streamlit is not installed.")
         print("Please install it with: pip install streamlit")
         if streamlit_process:
             streamlit_process.terminate()
         sys.exit(1)
     except Exception as e:
-        print(f"❌ Error launching DBPS: {e}")
+        print(f"[ERROR] Error launching DBPS: {e}")
         if streamlit_process:
             streamlit_process.terminate()
         sys.exit(1)

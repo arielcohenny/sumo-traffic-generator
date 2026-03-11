@@ -1056,7 +1056,7 @@ class TrafficControlEnv(gym.Env):
             print(f"[SUMO FILES] dir_exists={dir_exists}, file_exists={file_exists}", flush=True)
 
             if file_exists:
-                print(f"[SUMO FILES] ✅ Reusing network from: {self.network_path}", flush=True)
+                print(f"[SUMO FILES] [OK] Reusing network from: {self.network_path}", flush=True)
                 self._generate_with_network_reuse(args)
                 return
             else:
@@ -1068,7 +1068,7 @@ class TrafficControlEnv(gym.Env):
                 raise RuntimeError(f"Network path set but grid.net.xml missing: {net_file}")
 
         # Only run full pipeline if no network_path (shouldn't happen in normal RL training)
-        print(f"[SUMO FILES] ⚠️ No network_path, running FULL pipeline (Steps 1-7)...", flush=True)
+        print(f"[SUMO FILES] [WARNING] No network_path, running FULL pipeline (Steps 1-7)...", flush=True)
         pipeline = PipelineFactory.create_pipeline(args)
         if hasattr(pipeline, 'execute_file_generation_only'):
             pipeline.execute_file_generation_only()
@@ -1112,14 +1112,14 @@ class TrafficControlEnv(gym.Env):
                 network_files_copied += 1
                 logger.debug(f"Copied {filename} to workspace")
 
-        logger.info(f"📁 Copied {network_files_copied} network files to workspace")
+        logger.info(f"Copied {network_files_copied} network files to workspace")
 
         # Step 6: Generate vehicle routes with episode-specific seeds
-        logger.info("🚗 Generating vehicle routes (Step 6)")
+        logger.info("Generating vehicle routes (Step 6)")
         execute_route_generation(args)
 
         # Step 7: Generate SUMO configuration
-        logger.info("⚙️ Generating SUMO configuration (Step 7)")
+        logger.info("Generating SUMO configuration (Step 7)")
         execute_config_generation(args)
 
     def _start_sumo_simulation(self):
@@ -1492,7 +1492,7 @@ class TrafficControlEnv(gym.Env):
 
             except Exception as e:
                 logger.error(
-                    f"✗ CRITICAL ERROR processing junction {junction_id}: {e}")
+                    f"[FAIL] CRITICAL ERROR processing junction {junction_id}: {e}")
                 raise RuntimeError(
                     f"Failed to get phase data for junction {junction_id}: {e}. NO FALLBACKS ALLOWED - SYSTEM MUST HAVE ACCURATE TRAFFIC LIGHT DATA")
 
@@ -1511,10 +1511,10 @@ class TrafficControlEnv(gym.Env):
         unique_counts = set(actual_phase_counts)
         if len(unique_counts) == 1 and list(unique_counts)[0] == 4:
             logger.warning(
-                f"⚠️  ALL JUNCTIONS HAVE EXACTLY 4 PHASES - This may indicate a systematic issue")
+                f"[WARNING] ALL JUNCTIONS HAVE EXACTLY 4 PHASES - This may indicate a systematic issue")
         else:
             logger.info(
-                f"✓ Action space has variation: unique phase counts = {sorted(unique_counts)}")
+                f"[OK] Action space has variation: unique phase counts = {sorted(unique_counts)}")
 
     def _update_observation_space_from_sumo(self):
         """Update observation space based on actual network dimensions from SUMO."""
@@ -1621,7 +1621,7 @@ class TrafficControlEnv(gym.Env):
             print(f"[DIM CHECK] dir_exists={dir_exists}, file_exists={file_exists}", flush=True)
 
             if file_exists:
-                print(f"[DIM CHECK] ✅ Using pre-generated network: {net_file}", flush=True)
+                print(f"[DIM CHECK] [OK] Using pre-generated network: {net_file}", flush=True)
                 try:
                     return self._parse_network_dimensions_from_file(net_file)
                 except Exception as e:
@@ -1645,7 +1645,7 @@ class TrafficControlEnv(gym.Env):
                 logger.warning(f"Failed to parse existing network XML, will regenerate: {e}")
 
         # Network doesn't exist yet - need to generate temporarily
-        print(f"[DIM CHECK] ⚠️ No network found, generating temporarily...", flush=True)
+        print(f"[DIM CHECK] [WARNING] No network found, generating temporarily...", flush=True)
         logger.info("Generating network temporarily for dimension check")
         temp_dir = tempfile.mkdtemp(prefix="rl_network_count_")
 

@@ -164,7 +164,7 @@ class RLTrafficAnalyzer:
 
                 if self.debug and initialized_count <= 3:  # Log first few for debugging
                     self.logger.info(
-                        f"✓ Initialized Tree Method link: {edge_id}")
+                        f"[OK] Initialized Tree Method link: {edge_id}")
                     self.logger.info(
                         f"  - Length: {length:.1f}m, Lanes: {lanes}, Max speed: {max_speed:.1f}m/s")
                     self.logger.info(
@@ -177,12 +177,12 @@ class RLTrafficAnalyzer:
                 # Always log the first few failures to understand the issue
                 if failed_count <= 3:
                     self.logger.error(
-                        f"✗ Failed to initialize link {edge_id}: {e}")
+                        f"[FAIL] Failed to initialize link {edge_id}: {e}")
                     import traceback
                     self.logger.error(f"Traceback: {traceback.format_exc()}")
                 elif self.debug:
                     self.logger.warning(
-                        f"✗ Failed to initialize link {edge_id}: {e}")
+                        f"[FAIL] Failed to initialize link {edge_id}: {e}")
 
         if initialized_count == 0:
             self.logger.error(
@@ -596,9 +596,9 @@ class RLTrafficAnalyzer:
 
         if inspection['non_zero_features'] == 0:
             self.logger.warning(
-                "⚠️  All features are zero - this may indicate an issue with data collection!")
+                "[WARNING] All features are zero - this may indicate an issue with data collection!")
         elif inspection['non_zero_features'] < inspection['total_features'] * 0.1:
             self.logger.warning(
-                f"⚠️  Very few non-zero features ({inspection['non_zero_features']}) - check if simulation has enough activity")
+                f"[WARNING] Very few non-zero features ({inspection['non_zero_features']}) - check if simulation has enough activity")
         else:
-            self.logger.info("✓ State vector contains meaningful data")
+            self.logger.info("[OK] State vector contains meaningful data")

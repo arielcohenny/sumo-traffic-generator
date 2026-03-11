@@ -461,7 +461,7 @@ class SumoController:
             if not current_route:
                 # This shouldn't happen with trips, but handle gracefully
                 print(
-                    f"⚠️  Warning: Realtime vehicle {vehicle_id} has no route, skipping rerouting")
+                    f"[WARNING] Realtime vehicle {vehicle_id} has no route, skipping rerouting")
                 return
 
             # Get current position and destination

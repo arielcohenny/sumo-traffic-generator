@@ -1106,5 +1106,5 @@ def fix_traffic_lights_for_rl_control() -> None:
         # print("   - Changed durations: hardcoded → 1s (RL takes control immediately)")
 
     except Exception as e:
-        print(f"❌ Error fixing traffic lights for RL control: {e}")
+        print(f"[ERROR] Error fixing traffic lights for RL control: {e}")
         raise

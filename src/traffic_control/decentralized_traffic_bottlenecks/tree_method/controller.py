@@ -38,7 +38,7 @@ class TreeMethodController(TrafficController):
 
         # DEBUG: Log controller creation with unique ID
         logger = logging.getLogger(__name__)
-        logger.debug(f"🏗️  TreeMethodController created: {id(self)}")
+        logger.debug(f"TreeMethodController created: {id(self)}")
 
     def initialize(self) -> None:
         """Initialize Tree Method objects and data structures."""
@@ -134,7 +134,7 @@ class TreeMethodController(TrafficController):
             # DEBUG: Log calculation trigger
             if step <= 300:  # Only log first 5 minutes to avoid spam
                 self.logger.debug(
-                    f"🔧 CALC_TIME: step={step}, iteration={iteration}, will_calc={iteration > 0}")
+                    f"[DEBUG] CALC_TIME: step={step}, iteration={iteration}, will_calc={iteration > 0}")
 
             if iteration >= 0:  # Skip first iteration
                 try:

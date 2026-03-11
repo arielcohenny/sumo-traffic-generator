@@ -259,7 +259,7 @@ class PersistentBestEvalCallback(EvalCallback):
 
             if self.verbose > 0:
                 print(f"\n{'='*60}")
-                print(f"✓ NEW BEST MODEL FOUND AND SAVED")
+                print(f"[OK] NEW BEST MODEL FOUND AND SAVED")
                 print(f"  Reward: {metadata['best_mean_reward']:.2f}")
                 print(f"  Timestep: {metadata['timestep']}")
                 print(f"  Saved to: {metadata['model_path']}")
@@ -550,12 +550,12 @@ def _generate_network_once(env_params_string: str, model_directory: str) -> Tupl
 
     # Check if network already exists
     if network_path.exists() and net_file.exists():
-        logger.info(f"🔄 Reusing existing network from: {network_path}")
+        logger.info(f"[...] Reusing existing network from: {network_path}")
         edge_count, junction_count = _parse_network_dimensions(str(net_file))
         print(f"[NETWORK] Dimensions: {edge_count} edges, {junction_count} junctions", flush=True)
         return str(network_path), edge_count, junction_count
 
-    logger.info(f"🏗️ Generating network files once for reuse...")
+    logger.info(f"Generating network files once for reuse...")
     logger.info(f"   Network will be saved to: {network_path}")
 
     # Parse environment params to get network configuration
@@ -579,9 +579,9 @@ def _generate_network_once(env_params_string: str, model_directory: str) -> Tupl
 
     # Parse dimensions from generated network
     edge_count, junction_count = _parse_network_dimensions(str(net_file))
-    print(f"[NETWORK] ✅ Verified: {net_file}", flush=True)
+    print(f"[NETWORK] [OK] Verified: {net_file}", flush=True)
     print(f"[NETWORK] Dimensions: {edge_count} edges, {junction_count} junctions", flush=True)
-    logger.info(f"✅ Network generated and saved to: {network_path}")
+    logger.info(f"[DONE] Network generated and saved to: {network_path}")
     return str(network_path), edge_count, junction_count
 
 
@@ -899,7 +899,7 @@ def train_rl_policy(env_params_string: str = None,
 
         model.policy.load_state_dict(pretrained_state_dict)
 
-        logger.info(f"✓ Successfully loaded policy weights from {pretrain_from_model}")
+        logger.info(f"[OK] Successfully loaded policy weights from {pretrain_from_model}")
         logger.info(f"Starting RL fine-tuning for {total_timesteps} timesteps")
 
     if not resume_from_model and not pretrain_from_model:
@@ -1157,19 +1157,19 @@ def _validate_model_compatibility(model, env, config, logger):
         from .constants import RL_PHASE_ONLY_MODE
         if RL_PHASE_ONLY_MODE:
             if predicted_action_size != total_actions:
-                logger.warning("⚠️  Model action size mismatch in phase-only mode - "
+                logger.warning("[WARNING] Model action size mismatch in phase-only mode - "
                                "this may cause compatibility issues")
             else:
                 logger.info(
-                    "✓ Phase-only model detected - compatible with current configuration")
+                    "[OK] Phase-only model detected - compatible with current configuration")
         else:
-            logger.info(f"✓ Action space size: {predicted_action_size}")
+            logger.info(f"[OK] Action space size: {predicted_action_size}")
 
         # Test a full step to ensure complete compatibility
         action, _ = model.predict(obs, deterministic=True)
         obs_new, reward, terminated, truncated, info = env.step(action)
 
-        logger.info("✓ Model compatibility validation passed")
+        logger.info("[OK] Model compatibility validation passed")
         logger.info(f"  State space: {current_state_size} features")
         logger.info(f"  Action space: {predicted_action_size} actions")
         logger.info(
@@ -1236,7 +1236,7 @@ def _verify_enhanced_state_space(env, env_params_string, is_vectorized=False):
         if not has_analyzer and is_vectorized and hasattr(env, 'envs'):
             has_analyzer = hasattr(env.envs[0], 'traffic_analyzer')
         if has_analyzer:
-            logger.info("✓ Tree Method traffic analyzer detected")
+            logger.info("[OK] Tree Method traffic analyzer detected")
 
             # Enable debug mode for detailed verification
             if is_vectorized and hasattr(env, 'envs'):
@@ -1259,7 +1259,7 @@ def _verify_enhanced_state_space(env, env_params_string, is_vectorized=False):
                     "Debug mode enabled - detailed state logging should appear above")
         else:
             logger.warning(
-                "⚠️  Tree Method traffic analyzer not found - may not be properly initialized")
+                "[WARNING] Tree Method traffic analyzer not found - may not be properly initialized")
 
         # Log state vector size (no expected size comparison since we removed config)
         logger.info(f"State vector size: {actual_state_size} features")
@@ -1267,17 +1267,17 @@ def _verify_enhanced_state_space(env, env_params_string, is_vectorized=False):
         # Check for proper normalization [0, 1]
         if np.all(sample_obs >= 0.0) and np.all(sample_obs <= 1.0):
             logger.info(
-                "✓ All state values properly normalized to [0, 1] range")
+                "[OK] All state values properly normalized to [0, 1] range")
         else:
             out_of_range = np.sum((sample_obs < 0.0) | (sample_obs > 1.0))
-            logger.warning(f"⚠️  {out_of_range} features outside [0, 1] range")
+            logger.warning(f"[WARNING] {out_of_range} features outside [0, 1] range")
 
         # Verify non-trivial state (not all zeros)
         if non_zero_ratio > 0.1:  # At least 10% non-zero
-            logger.info("✓ State vector contains meaningful traffic data")
+            logger.info("[OK] State vector contains meaningful traffic data")
         else:
             logger.warning(
-                f"⚠️  Very few non-zero features ({non_zero_ratio:.1%}) - check simulation activity")
+                f"[WARNING] Very few non-zero features ({non_zero_ratio:.1%}) - check simulation activity")
 
         logger.info("=== STATE SPACE VERIFICATION COMPLETE ===")
 

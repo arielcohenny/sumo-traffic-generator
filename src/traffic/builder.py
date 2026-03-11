@@ -639,11 +639,11 @@ def _generate_passenger_vehicles(passenger_count: int, private_rng: random.Rando
                 break
         else:
             print(
-                f"⚠️  Could not find a path for passenger vehicle {vid} using {assigned_strategy} strategy; skipping.")
+                f"[WARNING] Could not find a path for passenger vehicle {vid} using {assigned_strategy} strategy; skipping.")
             continue
 
         if not route_edges:
-            print(f"⚠️  Empty route for passenger vehicle {vid}; skipping.")
+            print(f"[WARNING] Empty route for passenger vehicle {vid}; skipping.")
             continue
 
         vehicles.append({
@@ -767,12 +767,12 @@ def _generate_public_vehicles(public_count: int, public_rng: random.Random, net,
                     break
             else:
                 print(
-                    f"⚠️  Could not find a path for public route {route_id} with pattern {pattern}; skipping.")
+                    f"[WARNING] Could not find a path for public route {route_id} with pattern {pattern}; skipping.")
                 continue
 
             if not route_edges:
                 print(
-                    f"⚠️  Empty route for public route {route_id}; skipping.")
+                    f"[WARNING] Empty route for public route {route_id}; skipping.")
                 continue
 
             # Generate vehicles for this route - distribute extra vehicles among first routes

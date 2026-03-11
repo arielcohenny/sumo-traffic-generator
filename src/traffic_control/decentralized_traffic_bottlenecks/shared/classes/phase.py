@@ -33,7 +33,7 @@ class Phase:
         if iteration == 0 and duration > 0:
             import logging
             logger = logging.getLogger(__name__)
-            logger.debug(f"🔧 PHASE {self.phase_id} (obj={self._object_id}): duration {self.duration} → {duration}")
+            logger.debug(f"[DEBUG] PHASE {self.phase_id} (obj={self._object_id}): duration {self.duration} -> {duration}")
 
         if duration > 0:
             self.duration = duration
