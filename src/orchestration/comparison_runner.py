@@ -80,6 +80,9 @@ class ComparisonRunner:
         modified_args = deepcopy(args)
         modified_args.workspace = str(temp_workspace)
 
+        # SAVE original CONFIG state before updating
+        original_output_dir = CONFIG._output_dir
+
         # Update CONFIG to use temp workspace
         CONFIG.update_workspace(str(temp_workspace))
 
@@ -90,12 +93,36 @@ class ComparisonRunner:
 
             # Copy network files to network directory
             temp_output = temp_workspace / "workspace"
+
+            # Debug: List what files were actually generated
+            print(f"[NETWORK GEN] Files in {temp_output}:", flush=True)
+            if temp_output.exists():
+                for f in temp_output.iterdir():
+                    print(f"  - {f.name}", flush=True)
+            else:
+                print(f"  ERROR: temp_output directory does not exist!", flush=True)
+
             all_network_files = list(COMPARISON_NETWORK_FILES) + OPTIONAL_NETWORK_FILES
+            copied_count = 0
             for filename in all_network_files:
                 src_file = temp_output / filename
                 if src_file.exists():
                     shutil.copy2(src_file, self.network_path / filename)
                     self.logger.debug(f"Copied {filename} to network directory")
+                    copied_count += 1
+
+            # Verify critical files were copied
+            net_file = self.network_path / "grid.net.xml"
+            if not net_file.exists():
+                print(f"ERROR: Network file not copied!", flush=True)
+                print(f"  Source location: {temp_output}", flush=True)
+                print(f"  Source exists: {temp_output.exists()}", flush=True)
+                print(f"  Dest location: {self.network_path}", flush=True)
+                if temp_output.exists():
+                    print(f"  Source contents: {list(temp_output.iterdir())}", flush=True)
+                raise RuntimeError(f"Failed to copy network file to {net_file}")
+
+            print(f"[NETWORK GEN] ✅ Copied {copied_count} files to {self.network_path}", flush=True)
 
             # Save network configuration
             self._save_network_config(args, get_network_seed(args))
@@ -103,6 +130,10 @@ class ComparisonRunner:
             self.logger.info(f"Network files saved to: {self.network_path}")
 
         finally:
+            # RESTORE original CONFIG state BEFORE cleanup
+            CONFIG._output_dir = original_output_dir
+            CONFIG._update_paths()
+
             # Cleanup temp directory
             if temp_workspace.exists():
                 shutil.rmtree(temp_workspace)

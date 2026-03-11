@@ -63,8 +63,9 @@ def setup_logging(log_level: str = "INFO", log_file: str = None):
     # Suppress verbose RL logging for cleaner production output
     # Set RL modules to WARNING level (only show important messages)
     logging.getLogger('src.rl.controller').setLevel(logging.WARNING)
-    logging.getLogger('src.rl.environment').setLevel(logging.WARNING)
-    logging.getLogger('TrafficControlEnv').setLevel(logging.WARNING)
+    # NOTE: Temporarily set to INFO to debug network reuse issue
+    logging.getLogger('src.rl.environment').setLevel(logging.INFO)
+    logging.getLogger('TrafficControlEnv').setLevel(logging.INFO)
 
     # Keep training.py at INFO level for progress monitoring
     logging.getLogger('src.rl.training').setLevel(logging.INFO)
@@ -130,6 +131,10 @@ def create_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         '--pretrain-from', type=str,
         help="Path to pre-trained model (from imitation learning) to initialize from"
+    )
+    parser.add_argument(
+        '--network-path', type=str,
+        help="Path to pre-generated network directory for reuse (if None, auto-generates once per training run)"
     )
 
     # Logging and monitoring
@@ -323,6 +328,7 @@ def main():
                 pretrain_from_model=args.pretrain_from,
                 cycle_lengths=args.cycle_lengths,
                 cycle_strategy=args.cycle_strategy,
+                network_path=args.network_path,
                 experiment_config=experiment_config
             )
         except (BrokenPipeError, ConnectionError, OSError) as e:
@@ -343,6 +349,7 @@ def main():
                     pretrain_from_model=args.pretrain_from,
                     cycle_lengths=args.cycle_lengths,
                     cycle_strategy=args.cycle_strategy,
+                    network_path=args.network_path,
                     experiment_config=experiment_config
                 )
             else:
