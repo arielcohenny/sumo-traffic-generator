@@ -681,7 +681,8 @@ def train_rl_policy(env_params_string: str = None,
                     experiment_config: ExperimentConfig = None,
                     env_params_list: list = None,
                     models_dir: str = None,
-                    initial_timesteps_override: int = None) -> PPO:
+                    initial_timesteps_override: int = None,
+                    flat_output: bool = False) -> PPO:
     """
     Train PPO policy for traffic signal control.
 
@@ -725,11 +726,17 @@ def train_rl_policy(env_params_string: str = None,
             logger.warning(f"Expected .../checkpoint/<model>.zip structure. Creating new model directory instead")
 
     if model_dir is None:
-        # Create new unique model directory with timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        model_dir = os.path.join(effective_models_dir, f"rl_{timestamp}")
-        logger.info(
-            f"Starting new training - created model directory: {model_dir}")
+        if flat_output and models_dir:
+            # Self-contained experiment folder: use models_dir directly
+            model_dir = models_dir
+            logger.info(
+                f"Starting new training - using experiment directory: {model_dir}")
+        else:
+            # Shared models directory: create timestamped subdirectory
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            model_dir = os.path.join(effective_models_dir, f"rl_{timestamp}")
+            logger.info(
+                f"Starting new training - created model directory: {model_dir}")
 
     # Create model directory structure
     workspace_dir = os.path.join(model_dir, "workspace")
