@@ -71,6 +71,13 @@ env PYTHONUNBUFFERED=1 python -m src.cli \
   --gui
 ```
 
+### Reinforcement Learning Training
+
+The project includes an RL training pipeline for learning traffic signal control
+policies using the SUMO simulator as a Gymnasium environment.
+
+See [docs/specification/command-line-interface.md](docs/specification/command-line-interface.md) for `--traffic_control rl` usage.
+
 ## GUI Interfaces
 
 DBPS provides two complementary GUI interfaces for different use cases:
@@ -100,7 +107,7 @@ dbps
 - **Traffic Parameters**: Vehicle count, routing strategies, vehicle types, departure patterns
 - **Simulation Control**: Duration, step length, random seed, GUI options
 - **Zone & Attractiveness**: Land use modeling, temporal patterns, attractiveness methods
-- **Traffic Control**: Algorithm selection (Tree Method, ATLCS, Actuated, Fixed) with parameters
+- **Traffic Control**: Algorithm selection (Tree Method, Actuated, Fixed) with parameters
 
 ### 2. SUMO GUI Integration (`--gui` flag)
 
@@ -121,7 +128,7 @@ env PYTHONUNBUFFERED=1 python -m src.cli --num_vehicles 500 --gui
 - **Network Topology**: Visual representation of roads, intersections, and lane configurations
 - **Signal State Monitoring**: Traffic light phases and timing with algorithm interventions
 - **Performance Analysis**: Visual identification of bottlenecks and traffic patterns
-- **Algorithm Visualization**: Tree Method and ATLCS decision displays
+- **Algorithm Visualization**: Tree Method decision displays
 
 **Use Cases**:
 
@@ -155,21 +162,19 @@ dbps
 
 ```
 ├── src/                    # Core application code
-│   ├── network/           # Network generation and processing
-│   ├── traffic/           # Vehicle routing and generation
-│   ├── orchestration/     # High-level simulation coordination
-│   └── sumo_integration/  # SUMO/TraCI interface layer
+├── rl/                     # RL training infrastructure
 ├── evaluation/            # Research validation framework
-│   ├── benchmarks/        # Performance comparison studies
-│   └── datasets/          # Research networks
-├── tests/                 # Software testing framework
-├── tools/                 # Development utilities
-└── workspace/             # Default simulation output directory (configurable)
+├── scripts/               # Utility scripts for data collection and method comparison
+├── experiments/           # Experiment YAML configurations
+├── technical-reports/     # Written research reports and analysis documents
+├── tests/                 # Software testing (unit, integration, system)
+├── docs/                  # Documentation and technical specification
+└── workspace/             # Default simulation output (gitignored)
 ```
 
 ## Documentation
 
-- **Technical Specification**: See [SPECIFICATION.md](SPECIFICATION.md) for complete technical details, parameters, and implementation documentation
+- **Technical Specification**: See [docs/SPECIFICATION.md](docs/SPECIFICATION.md) for complete technical details, parameters, and implementation documentation
 - **Research & Benchmarks**: See [evaluation/](evaluation/) for performance studies, datasets, and experimental framework
 
 ## License
