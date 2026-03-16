@@ -251,17 +251,14 @@ def collect_demonstrations(
         logger.info(f"✓ Saved to: {output_file}")
 
         # Clean up temporary demonstration workspace
-        # DISABLED FOR DEBUGGING - Check if route files differ
         demo_temp_dir = "demonstration_temp"
         if os.path.exists(demo_temp_dir):
-            logger.info(
-                f"⚠️  KEEPING demonstration_temp for debugging - check route files!")
-            # try:
-            #     shutil.rmtree(demo_temp_dir)
-            #     logger.info(
-            #         f"✓ Cleaned up temporary workspace: {demo_temp_dir}/")
-            # except Exception as e:
-            #     logger.warning(f"Could not clean up {demo_temp_dir}/: {e}")
+            try:
+                shutil.rmtree(demo_temp_dir)
+                logger.info(
+                    f"✓ Cleaned up temporary workspace: {demo_temp_dir}/")
+            except Exception as e:
+                logger.warning(f"Could not clean up {demo_temp_dir}/: {e}")
 
         # Move CSV reward analysis files to output directory
         output_dir = os.path.dirname(output_file)
