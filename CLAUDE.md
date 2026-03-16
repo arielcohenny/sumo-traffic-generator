@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **CRITICAL RULES FOR CLAUDE CODE ASSISTANCE:**
 
+- **NEVER FABRICATE OR GUESS** information you don't know. If you are unsure about something (e.g., whether a job is running, what caused an error, how something was done previously), say "I don't know" and suggest how to find out. Do NOT make up plausible-sounding answers.
 - **DO NOT** implement features, changes, or solutions that the user did not explicitly request
 - **DO NOT** implement features, changes, or solutions that are not in the SPECIFICATION.md. If asked to do something not in the specification, do not do it and inform the user
 - **DO NOT** add fallback solutions, error handling, or "helpful" additions without explicit user approval

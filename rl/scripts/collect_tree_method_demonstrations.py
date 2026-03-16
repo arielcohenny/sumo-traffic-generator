@@ -20,6 +20,13 @@ Usage:
     python scripts/collect_tree_method_demonstrations.py --scenarios 100 --output models/my_demos.npz
 """
 
+import os
+import sys
+from pathlib import Path
+
+# Add project root to path (must be before src.* imports)
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 # IMPORTANT: Do NOT import TrafficControllerFactory or TreeMethodDemonstrationAdapter at module level!
 # They must be imported INSIDE _collect_single_scenario so they get fresh instances after module reload
 from src.rl.environment import TrafficControlEnv
@@ -29,20 +36,14 @@ from src.rl.constants import (
     DEMONSTRATION_DECISION_INTERVAL_SECONDS,
     DEFAULT_CYCLE_LENGTH
 )
-import os
-import sys
 import argparse
 import logging
 import numpy as np
 import json
 import random
 import shutil
-from pathlib import Path
 from datetime import datetime
 from typing import List, Tuple, Dict
-
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 def load_variation_config(config_path: str) -> Dict:
