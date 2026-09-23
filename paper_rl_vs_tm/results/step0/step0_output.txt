@@ -1,0 +1,74 @@
+
+=== Run-level statistics (sumo_statistics.xml) ===
+             metric      TM      RL
+             loaded   22000   22000
+           inserted   19452   19726
+     running_at_end    2837    2165
+     never_inserted    2548    2274
+            arrived   16615   17561
+       avg_duration  726.97  577.54
+    avg_departDelay  102.51   97.25
+          teleports     270     257
+      teleports_jam      29      24
+    teleports_yield     229     218
+teleports_wrongLane      12      14
+         collisions       0       1
+
+=== Average-duration gap decomposition (TM - RL, seconds) ===
+                               term     value  share
+    mean duration TM (all arrivals)     727.0       
+    mean duration RL (all arrivals)     577.5       
+                          total gap     149.4   100%
+       speed-up on matched vehicles     136.0  91.0%
+                 composition effect      13.4   9.0%
+check: speed-up + composition - gap  0.00e+00       
+
+=== Arrival sets (depart/route/duration taken from the run where the vehicle arrived) ===
+            set  count  mean sched. depart (s)  mean routeLength (m)  mean duration (s)
+arrived in both  16132                    2903                  1613              702.2
+        only TM    483                    4154                  2474             1554.3
+        only RL   1429                    5510                  1546              705.9
+
+=== Matched vehicles (n=16132): means ===
+      field      TM      RL  TM - RL
+   duration   702.2   566.2    136.0
+waitingTime   465.6   371.4     94.2
+   timeLoss   577.9   452.0    125.9
+routeLength  1613.3  1478.0    135.3
+departDelay    96.5    78.8     17.7
+  rerouteNo     4.7     3.6      1.0
+
+=== Per-vehicle duration delta (TM - RL; positive = faster under RL) ===
+                          stat                        value
+ faster under RL (delta >= 1s)                        67.2%
+slower under RL (delta <= -1s)                        32.3%
+                     within 1s                         0.5%
+    p5 / p25 / p50 / p75 / p95  -468 / -41 / 95 / 310 / 893
+    sum of positive deltas (s)                      3663566
+    sum of negative deltas (s)                     -1469075
+
+=== By scheduled departure bin ===
+  bin (s)  arrived TM  arrived RL  matched  matched dur TM  matched dur RL  mean delta  total delta (s)
+    0-900        2713        2712     2712           471.6           450.5        21.1            57256
+ 900-1800        2707        2685     2682           769.5           677.0        92.6           248234
+1800-2700        2677        2641     2610           885.0           783.5       101.5           264848
+2700-3600        2446        2460     2344           777.1           612.8       164.3           385120
+3600-4500        2160        2249     2077           743.7           532.0       211.7           439758
+4500-5400        1893        2025     1812           717.8           479.1       238.7           432612
+5400-6300        1435        1756     1350           593.8           365.9       227.9           307693
+6300-7200         584        1031      545           379.0           270.7       108.2            58970
+7200-7300           0           2        0             nan             nan         nan                0
+
+=== Network state over time (summary.xml) ===
+time  running TM  running RL  waiting-to-insert TM  waiting-to-insert RL  arrived TM  arrived RL
+ 900        1234        1172                    22                    29        1460        1515
+1800        1786        1538                   179                   156        3463        3734
+2700        2157        1740                   337                   373        5646        6027
+3600        2215        1827                   676                   707        7962        8319
+4500        2326        1863                  1122                  1128       10117       10574
+5400        2372        1945                  1545                  1549       12360       12783
+6300        2695        1934                  1996                  1953       14299       15103
+7200        2734        2093                  2578                  2264       16390       17345
+7299        2837        2165                  2548                  2274       16615       17561
+
+Per-vehicle matched data written to paper_rl_vs_tm/results/step0/matched_TM_vs_RL.csv
