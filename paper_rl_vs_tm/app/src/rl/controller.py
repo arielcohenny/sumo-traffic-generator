@@ -62,6 +62,9 @@ class RLController(TrafficController):
         # Use first cycle length as decision interval
         self.decision_interval = self.cycle_lengths[0]
 
+        # PAPER_RL_VS_TM: optional timing plan replacing the model's durations
+        self.plan = self._load_plan(getattr(args, 'rl_plan_file', None))
+
         # RL Environment
         self.rl_env = None
         self.current_observation = None
@@ -467,6 +470,27 @@ class RLController(TrafficController):
             self.logger.error(f"Falling back to default action")
             return self._get_default_action()
 
+    def _load_plan(self, plan_file: Optional[str]) -> Optional[Dict]:
+        """PAPER_RL_VS_TM: load a timing plan: {(time or None, tls): [d0, d1, d2, d3]}."""
+        if not plan_file:
+            return None
+        import csv
+        plan = {}
+        with open(plan_file, newline="") as f:
+            for row in csv.DictReader(f):
+                durations = [int(row[f"d{k}"]) for k in range(4)]
+                if sum(durations) != self.decision_interval:
+                    raise ValueError(f"Plan row {row} does not sum to the cycle length {self.decision_interval}")
+                time_key = int(row["time"]) if "time" in row else None
+                plan[(time_key, row["tls"])] = durations
+        self.logger.info(f"PAPER_RL_VS_TM: loaded timing plan {plan_file} ({len(plan)} rows)")
+        return plan
+
+    def _plan_durations(self, junction_id: str, step: int) -> List[int]:
+        """PAPER_RL_VS_TM: plan durations for this junction at this decision (KeyError if missing)."""
+        key = (step, junction_id) if (step, junction_id) in self.plan else (None, junction_id)
+        return list(self.plan[key])
+
     def _log_all_actions(self, action: np.ndarray) -> None:
         """PAPER_RL_VS_TM: append one row per decision to <workspace>/rl_actions.csv.
 
@@ -576,6 +600,10 @@ class RLController(TrafficController):
                         self.decision_interval,  # Use decision_interval as cycle_length
                         MIN_PHASE_DURATION
                     )
+
+                    # PAPER_RL_VS_TM: replace the model's durations with the plan's
+                    if self.plan is not None:
+                        durations = self._plan_durations(junction_id, step)
 
                     junction_schedules[junction_id] = durations
 

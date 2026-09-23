@@ -280,6 +280,14 @@ def _add_traffic_control_arguments(parser: argparse.ArgumentParser) -> None:
         nargs='+',
         help="List of cycle lengths in seconds for RL control (e.g., 90 for fixed, or 60 90 120 for variable). Default: [90]"
     )
+    # PAPER_RL_VS_TM: play a timing plan through the RL controller instead of the model's durations
+    parser.add_argument(
+        "--rl-plan-file",
+        type=str,
+        help="CSV of phase durations (columns: [time,] tls, d0, d1, d2, d3). With a 'time' column the row for each "
+             "decision time is used; without it the same durations are used at every decision. The model still "
+             "runs (its outputs are logged) but its durations are replaced by the plan's."
+    )
     parser.add_argument(
         "--rl-cycle-strategy",
         type=str,
