@@ -102,6 +102,18 @@ paper_rl_vs_tm/scripts/verify.sh rl rl_replay
 paper_rl_vs_tm/scripts/run.sh rl rl_fixed results/plans/rl_modal.csv     # the fixed-plan test
 ```
 
+### SUMO-seed stability runs
+
+The outcome is very sensitive to small decision changes, so each controller is also run
+with different SUMO random seeds (driver behaviour noise only; network, demand, routes and
+departure times are unchanged):
+
+```bash
+SUMO_SEED=1 paper_rl_vs_tm/scripts/run.sh tm tm_s01
+SUMO_SEED=1 paper_rl_vs_tm/scripts/run.sh rl rl_s01
+SUMO_SEED=1 paper_rl_vs_tm/scripts/run.sh rl fixed_s01 results/plans/rl_modal.csv
+```
+
 `run.sh` stops if Python imports `src` from anywhere other than `app/src`, and
 records Python, SUMO and package versions plus the model md5 at the top of `run.log`.
 When the simulation ends it runs `pack_outputs.sh`, which writes the files below to
@@ -116,7 +128,8 @@ this experiment is marked with a `PAPER_RL_VS_TM` comment:
 |------|--------|
 | `sumo_integration/sumo_utils.py` | adds SUMO-native logging outputs (below) to the generated `grid.sumocfg` |
 | `rl/controller.py` | writes all 136 policy outputs per decision to `rl_actions.csv` (RL runs only); with `--rl-plan-file`, replaces the model's durations by a timing plan's (the model still runs and its outputs are logged) |
-| `args/parser.py` | adds the `--rl-plan-file` argument |
+| `args/parser.py` | adds the `--rl-plan-file` and `--sumo-seed` arguments |
+| `orchestration/simulator.py` | passes `--sumo-seed` to SUMO as `--seed` (not passed by default: SUMO's default seed 23423) |
 
 The logging outputs are passive and do not change the simulation (runs with
 logging reproduce the numbers above exactly):

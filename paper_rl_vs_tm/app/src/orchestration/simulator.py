@@ -67,8 +67,11 @@ class TrafficSimulator:
 
         # Start TraCI FIRST
         # self.logger.info("Starting SUMO simulation with TraCI...")
-        traci.start(
-            [sumo_binary, '-c', str(CONFIG.config_file), '--no-step-log', '--no-warnings'])
+        sumo_cmd = [sumo_binary, '-c', str(CONFIG.config_file), '--no-step-log', '--no-warnings']
+        # PAPER_RL_VS_TM: optional SUMO random seed (driver behaviour noise); SUMO's default is 23423
+        if getattr(self.args, 'sumo_seed', None) is not None:
+            sumo_cmd += ['--seed', str(self.args.sumo_seed)]
+        traci.start(sumo_cmd)
 
         # Initialize traffic controller AFTER TraCI is connected
         self.traffic_controller.initialize()

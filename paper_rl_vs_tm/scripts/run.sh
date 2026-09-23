@@ -4,6 +4,8 @@
 # Usage:  scripts/run.sh <tm|rl> <run_name> [plan_csv]
 #         plan_csv (rl only): timing plan played through the RL controller instead of the
 #         model's durations, e.g. results/plans/rl_modal.csv (path relative to paper_rl_vs_tm/)
+#         SUMO_SEED=<int> (environment variable, optional): SUMO's random seed (driver behaviour
+#         noise); network and demand are unchanged. Not set: SUMO's default seed (23423).
 # Output: results/runs/<run_name>/run.log      (full console log)
 #         results/runs/<run_name>/outputs/     (compressed SUMO outputs, kept in git)
 #         results/runs/<run_name>/workspace/   (all SUMO files, not kept in git)
@@ -43,6 +45,10 @@ if [ -n "$PLAN" ]; then
   CONTROL+=(--rl-plan-file "$PLAN_ABS")
 fi
 
+if [ -n "${SUMO_SEED:-}" ]; then
+  CONTROL+=(--sumo-seed "$SUMO_SEED")
+fi
+
 mkdir -p "$RUN_DIR"
 cd "$APP"
 
@@ -60,6 +66,7 @@ esac
   echo "sumo: $(sumo --version 2>&1 | head -1)"
   python -c "import numpy, torch, stable_baselines3 as s; print('numpy', numpy.__version__, 'torch', torch.__version__, 'sb3', s.__version__)" 2>/dev/null
   if [ "$CONTROLLER" = rl ]; then echo "model md5: $(python -c "import hashlib,sys; print(hashlib.md5(open(sys.argv[1],'rb').read()).hexdigest())" "$MODEL")"; fi
+  echo "sumo seed: ${SUMO_SEED:-default (23423)}"
   if [ -n "$PLAN" ]; then echo "plan: $PLAN  md5: $(python -c "import hashlib,sys; print(hashlib.md5(open(sys.argv[1],'rb').read()).hexdigest())" "$PLAN_ABS")"; fi
 } > "$RUN_DIR/run.log"
 

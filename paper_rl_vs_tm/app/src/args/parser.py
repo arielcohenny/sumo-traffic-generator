@@ -280,6 +280,12 @@ def _add_traffic_control_arguments(parser: argparse.ArgumentParser) -> None:
         nargs='+',
         help="List of cycle lengths in seconds for RL control (e.g., 90 for fixed, or 60 90 120 for variable). Default: [90]"
     )
+    # PAPER_RL_VS_TM: SUMO's own random seed (driver behaviour noise); network and demand are unchanged
+    parser.add_argument(
+        "--sumo-seed",
+        type=int,
+        help="Seed passed to SUMO as --seed. Default: not passed (SUMO's default seed 23423)."
+    )
     # PAPER_RL_VS_TM: play a timing plan through the RL controller instead of the model's durations
     parser.add_argument(
         "--rl-plan-file",
