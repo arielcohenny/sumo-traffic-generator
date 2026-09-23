@@ -2,8 +2,9 @@
 # Run one simulation of the paper scenario with the frozen app copy in ../app.
 #
 # Usage:  scripts/run.sh <tm|rl> <run_name>
-# Output: results/runs/<run_name>/workspace/   (SUMO outputs)
-#         results/runs/<run_name>/run.log      (full console log)
+# Output: results/runs/<run_name>/run.log      (full console log)
+#         results/runs/<run_name>/outputs/     (compressed SUMO outputs, kept in git)
+#         results/runs/<run_name>/workspace/   (all SUMO files, not kept in git)
 #
 # Run from anywhere; paths are resolved relative to this script.
 
@@ -55,3 +56,5 @@ esac
 env PYTHONUNBUFFERED=1 python -m src.cli "${SCENARIO[@]}" "${CONTROL[@]}" --workspace "$RUN_DIR" >> "$RUN_DIR/run.log" 2>&1
 
 grep -E "Throughput:|Average duration:" "$RUN_DIR/run.log"
+
+"$ROOT/scripts/pack_outputs.sh" "$RUN_NAME"

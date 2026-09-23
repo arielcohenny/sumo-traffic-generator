@@ -1,8 +1,8 @@
 """
 Step 0: decompose the average-trip-duration gap between two runs of the same scenario.
 
-Reads only SUMO outputs (tripinfo.xml, summary.xml, sumo_statistics.xml) from two
-run directories, e.g. tm_a (Tree Method) and rl_a (RL checkpoint 1945600).
+Reads only SUMO outputs (tripinfo, summary, sumo_statistics) from the compressed
+outputs/ folder of two run directories, e.g. tm_ref (Tree Method) and rl_ref (RL).
 
 SUMO's "Average duration" is the mean over ARRIVED vehicles only. Both runs use the
 same demand (same vehicle IDs, OD pairs, scheduled departures), so the gap splits
@@ -15,13 +15,15 @@ exactly into:
 where M = vehicles that arrived in both runs.
 
 Usage (from repo root):
-    python evaluation/decision_comparison/step0_decompose.py \
-        --run-a evaluation/decision_comparison/tm_a --label-a TM \
-        --run-b evaluation/decision_comparison/rl_a --label-b RL
+    python paper_rl_vs_tm/scripts/step0_decompose.py \
+        --run-a paper_rl_vs_tm/results/runs/tm_ref --label-a TM \
+        --run-b paper_rl_vs_tm/results/runs/rl_ref --label-b RL \
+        --out-dir paper_rl_vs_tm/results/step0
 """
 
 import argparse
 import csv
+import gzip
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -33,10 +35,15 @@ BIN_SECONDS = 900
 END_TIME = 7300
 
 
+def output_file(run_dir: Path, name: str):
+    """Open a compressed SUMO output written by scripts/pack_outputs.sh."""
+    return gzip.open(run_dir / "outputs" / f"{name}.xml.gz", "rb")
+
+
 def load_tripinfo(run_dir: Path) -> dict:
     """Return {vehicle_id: {field: float}} for every arrived vehicle."""
     trips = {}
-    for _, elem in ET.iterparse(run_dir / "workspace" / "tripinfo.xml", events=("end",)):
+    for _, elem in ET.iterparse(output_file(run_dir, "tripinfo"), events=("end",)):
         if elem.tag == "tripinfo":
             rec = {f: float(elem.get(f)) for f in TRIP_FIELDS}
             # Scheduled departure is identical across runs; actual depart includes insertion delay
@@ -49,7 +56,7 @@ def load_tripinfo(run_dir: Path) -> dict:
 def load_summary(run_dir: Path) -> dict:
     """Return {time: {running, waiting, arrived}} from summary.xml."""
     steps = {}
-    for _, elem in ET.iterparse(run_dir / "workspace" / "summary.xml", events=("end",)):
+    for _, elem in ET.iterparse(output_file(run_dir, "summary"), events=("end",)):
         if elem.tag == "step":
             steps[int(float(elem.get("time")))] = {
                 k: int(elem.get(k)) for k in ("running", "waiting", "arrived")}
@@ -58,7 +65,7 @@ def load_summary(run_dir: Path) -> dict:
 
 
 def load_statistics(run_dir: Path) -> dict:
-    root = ET.parse(run_dir / "workspace" / "sumo_statistics.xml").getroot()
+    root = ET.parse(output_file(run_dir, "sumo_statistics")).getroot()
     veh = root.find("vehicles")
     tel = root.find("teleports")
     saf = root.find("safety")
