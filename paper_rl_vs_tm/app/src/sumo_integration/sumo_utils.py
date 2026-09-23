@@ -1,0 +1,239 @@
+import logging
+import subprocess
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from typing import List, Optional
+
+from src.config import CONFIG
+from src.validate.validate_network import verify_rebuild_network, verify_generate_sumo_conf_file
+from src.validate.errors import ValidationError
+
+# Convert the generated network files to the final .net.xml format
+# Rebuild with fresh internals + connections
+
+
+def rebuild_network() -> None:
+    # Convert network with connections and traffic light logic files to preserve manual lane assignments
+    # This ensures netconvert uses our geometric angle-based lane assignments instead of generating its own
+    basic_cmd = [
+        "netconvert",
+        "--node-files",       str(CONFIG.network_nod_file),
+        "--edge-files",       str(CONFIG.network_edg_file),
+        "--connection-files", str(CONFIG.network_con_file),
+        "--tllogic-files",    str(CONFIG.network_tll_file),
+        "--output-file",      str(CONFIG.network_file)
+    ]
+
+    try:
+        result = subprocess.run(basic_cmd, check=True,
+                                capture_output=True, text=True)
+        # print("Network conversion completed successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Network conversion failed: {e.stderr}")
+        raise
+
+
+def build_sumo_command(
+    config_file: str,
+    step_length: float,
+    additional_args: List[str] = None,
+    sumo_binary: str = "sumo-gui"
+) -> List[str]:
+    """
+    Build the SUMO command-line arguments for TraCI or batch runs.
+    """
+    cmd = [sumo_binary, "-c", config_file, "--step-length", str(step_length)]
+    if additional_args:
+        cmd.extend(additional_args)
+    return cmd
+
+
+# PAPER_RL_VS_TM: SUMO-native logging for the RL vs Tree Method decision comparison.
+# - tls_switches.xml: every signal state switch of every traffic light (what was actually displayed)
+# - lanedata.xml: per-lane aggregates per 90s cycle (waiting time, time loss, occupancy, speed, entered/left)
+DECISION_LOGGING_ADD_FILE = "decision_logging.add.xml"
+DECISION_LOGGING_ADD_CONTENT = """<additional>
+    <timedEvent type="SaveTLSSwitchStates" dest="tls_switches.xml"/>
+    <laneData id="lanes90" file="lanedata.xml" period="90" excludeEmpty="true"/>
+</additional>
+"""
+
+
+def generate_sumo_conf_file(
+    config_file,
+    network_file,
+    route_file: Optional[str] = None,
+    zones_file: Optional[str] = None,
+    end_time: int = 3600,
+    step_length: float = 1.0,
+) -> str:
+    """
+    Create a SUMO configuration file (.sumocfg).
+
+    :param config_file: File path to write the configuration
+    :param network_file: Path to the network .net.xml file
+    :param route_file: Optional path to the route .xml file
+    :param zones_file: Optional path to the zones .xml file
+    :param end_time: Simulation end time in seconds (default: 3600)
+    :param step_length: Simulation step length in seconds (default: 1.0)
+    """
+    # print("Creating SUMO configuration file.")
+    try:
+        net_name = Path(network_file).name
+        route_name = Path(route_file).name if route_file else None
+        zones_name = Path(zones_file).name if zones_file else None
+
+        # Build the configuration content step by step to avoid f-string backslash issues
+        config_content = f"<configuration>\n    <input>\n        <net-file value=\"{net_name}\"/>\n"
+
+        if route_name:
+            config_content += f"        <route-files value=\"{route_name}\"/>\n"
+
+        # PAPER_RL_VS_TM: decision/traffic logging via SUMO-native outputs (passive, does not affect the simulation)
+        logging_add = Path(config_file).parent / DECISION_LOGGING_ADD_FILE
+        with open(logging_add, "w") as f:
+            f.write(DECISION_LOGGING_ADD_CONTENT)
+        additional_files = [zones_name, DECISION_LOGGING_ADD_FILE] if zones_name else [DECISION_LOGGING_ADD_FILE]
+        config_content += f"        <additional-files value=\"{','.join(additional_files)}\"/>\n"
+
+        config_content += f"    </input>\n    <time>\n        <begin value=\"0\"/>\n        <end value=\"{end_time}\"/>\n        <step-length value=\"{step_length}\"/>\n    </time>\n    <output>\n        <tripinfo-output value=\"tripinfo.xml\"/>\n        <summary-output value=\"summary.xml\"/>\n        <statistics-output value=\"sumo_statistics.xml\"/>\n        <vehroute-output value=\"vehroutes.xml\"/>\n        <vehroute-output.exit-times value=\"true\"/>\n        <log value=\"simulation.log\"/>\n    </output>\n</configuration>"
+
+        with open(config_file, "w") as f:
+            f.write(config_content)
+        # print("SUMO configuration file created successfully.")
+        return str(config_file)
+    except Exception as e:
+        print(f"Error creating SUMO configuration file: {e}")
+        exit(1)
+
+
+def execute_network_rebuild(args) -> None:
+    """Execute network rebuild."""
+    logger = logging.getLogger(__name__)
+
+    rebuild_network()
+    try:
+        verify_rebuild_network()
+    except ValidationError as ve:
+        logger.error(f"Failed to rebuild the network: {ve}")
+        raise
+
+
+def execute_config_generation(args) -> None:
+    """Execute SUMO configuration generation."""
+    logger = logging.getLogger(__name__)
+
+    # Hide zones from SUMO GUI if requested (zones are still computed and used)
+    zones_file = None if getattr(args, 'hide_zones', False) else CONFIG.zones_file
+
+    sumo_cfg_path = generate_sumo_conf_file(
+        CONFIG.config_file,
+        CONFIG.network_file,
+        route_file=CONFIG.routes_file,
+        zones_file=zones_file,
+        end_time=args.end_time,
+        step_length=args.step_length,
+    )
+    try:
+        verify_generate_sumo_conf_file()
+    except ValidationError as ve:
+        logger.error(f"SUMO configuration validation failed: {ve}")
+        raise
+
+
+def update_sumo_config_paths() -> None:
+    """Update SUMO config file to reference our file naming convention."""
+    logger = logging.getLogger(__name__)
+
+    tree = ET.parse(CONFIG.config_file)
+    root = tree.getroot()
+
+    # Update file paths to match our naming
+    for input_elem in root.findall('.//input'):
+        net_file = input_elem.find('net-file')
+        if net_file is not None:
+            net_file.set('value', 'grid.net.xml')
+
+        route_files = input_elem.find('route-files')
+        if route_files is not None:
+            route_files.set('value', 'vehicles.rou.xml')
+
+    # Save updated config
+    tree.write(CONFIG.config_file, encoding='utf-8', xml_declaration=True)
+    logger.info("Updated SUMO config file paths")
+
+
+def ensure_output_configuration() -> None:
+    """Ensure SUMO config file has proper output section for statistics generation."""
+    logger = logging.getLogger(__name__)
+
+    tree = ET.parse(CONFIG.config_file)
+    root = tree.getroot()
+
+    # Check if output section exists
+    output_elem = root.find('output')
+
+    if output_elem is None:
+        # Create new output section
+        output_elem = ET.SubElement(root, 'output')
+        logger.info("Created new <output> section in SUMO config")
+
+    # Define required output files
+    required_outputs = {
+        'tripinfo-output': 'tripinfo.xml',
+        'summary-output': 'summary.xml',
+        'statistics-output': 'sumo_statistics.xml',
+        'log': 'simulation.log'
+    }
+
+    # Add or update each output element
+    for output_type, output_file in required_outputs.items():
+        output_child = output_elem.find(output_type)
+        if output_child is None:
+            output_child = ET.SubElement(output_elem, output_type)
+            output_child.set('value', output_file)
+            logger.info(f"Added {output_type}={output_file} to SUMO config")
+        else:
+            # Update existing value if different
+            current_value = output_child.get('value')
+            if current_value != output_file:
+                output_child.set('value', output_file)
+                logger.info(f"Updated {output_type} from {current_value} to {output_file}")
+
+    # Save updated config
+    tree.write(CONFIG.config_file, encoding='utf-8', xml_declaration=True)
+    logger.info("Ensured SUMO config has proper output configuration")
+
+
+def override_end_time_from_config(args) -> None:
+    """Extract end time from SUMO config and override CLI argument."""
+    logger = logging.getLogger(__name__)
+
+    try:
+        tree = ET.parse(CONFIG.config_file)
+        root = tree.getroot()
+
+        # Find the end time in the config
+        for time_elem in root.findall('.//time'):
+            end_elem = time_elem.find('end')
+            if end_elem is not None:
+                config_end_time = int(end_elem.get('value'))
+
+                logger.info(
+                    f"Found SUMO config end time: {config_end_time} seconds")
+                logger.info(f"CLI end time was: {args.end_time} seconds")
+
+                # Override the CLI argument with the config value
+                args.end_time = config_end_time
+
+                logger.info(
+                    f"Overriding end time to match SUMO config: {config_end_time} seconds")
+                return
+
+        # If no end time found in config, warn but continue with CLI value
+        logger.warning(
+            f"No end time found in SUMO config, using CLI value: {args.end_time}")
+
+    except (ET.ParseError, ValueError, AttributeError) as e:
+        logger.warning(f"Error parsing end time from SUMO config: {e}")
+        logger.warning(f"Continuing with CLI end time: {args.end_time}")

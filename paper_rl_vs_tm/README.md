@@ -1,0 +1,102 @@
+# RL vs Tree Method: decision comparison (paper experiment)
+
+Self-contained experiment folder for the paper on RL traffic signal control
+(experiment `exp_20260105_090955`). It explains why the trained RL controller
+outperforms Tree Method on one fixed scenario, by comparing the decisions the
+two controllers make.
+
+This folder is independent of the main application in the repository root:
+it runs its own frozen copy of the app (`app/src`), so changes to the main app
+do not affect these results, and nothing here changes the main app.
+
+## Scenario
+
+| Parameter | Value |
+|-----------|-------|
+| Network | 6x6 grid, 2 junctions removed (34 signalized), block 280 m, realistic lanes, `partial_opposites` |
+| Demand | 22,000 passenger vehicles, inner routes, uniform departures, `realtime 100` routing |
+| Duration | 7,300 s, start 08:00 |
+| Seeds | network 24208, private traffic 72632, public traffic 27031 |
+| Controllers | Tree Method (90 s cycle) vs RL checkpoint 1,945,600 steps (90 s cycle) |
+
+Both controllers decide the same quantity: the green duration of each of the
+junction's phases (fixed order, min 10 s, sum 90 s) for every 90 s cycle.
+
+## Reference environment
+
+Results are reproducible **only** with SUMO 1.25.0. The same code and model on
+SUMO 1.22.0 give different numbers (Tree Method 8507 veh/h / 708.7 s,
+RL 8504 veh/h / 618.4 s).
+
+- Python 3.10
+- SUMO 1.25.0 (`eclipse-sumo==1.25.0`)
+- Python packages: `requirements.txt`
+
+The reference runs were made on the TAU `power` cluster.
+
+## Expected results
+
+| Controller | Throughput (veh/h) | Average trip duration (s) |
+|------------|-------------------:|--------------------------:|
+| Tree Method | 8194 | 727.0 |
+| RL checkpoint 1945600 | 8660 | 577.5 |
+
+Runs are deterministic: repeating a run gives identical numbers.
+
+## Layout
+
+```
+paper_rl_vs_tm/
+├── README.md
+├── requirements.txt
+├── app/src/        frozen copy of the app (see "App copy" below)
+├── model/
+│   ├── rl_traffic_model_1945600_steps.zip   the RL model used in the paper
+│   ├── config.yaml                          experiment configuration
+│   └── compare_checkpoints_result.csv       all checkpoints on this scenario (selection of 1945600)
+├── scripts/
+│   ├── run.sh               run one simulation (tm | rl)
+│   ├── verify.sh            check a run reproduces the expected numbers
+│   └── step0_decompose.py   split the average-duration gap into speed-up vs composition
+└── results/
+    └── runs/<run_name>/     run.log + workspace/ (SUMO outputs)
+```
+
+## How to reproduce
+
+```bash
+python3.10 -m venv .venv && source .venv/bin/activate
+pip install -r paper_rl_vs_tm/requirements.txt
+
+paper_rl_vs_tm/scripts/run.sh tm tm_ref
+paper_rl_vs_tm/scripts/run.sh rl rl_ref
+paper_rl_vs_tm/scripts/verify.sh tm tm_ref
+paper_rl_vs_tm/scripts/verify.sh rl rl_ref
+
+python paper_rl_vs_tm/scripts/step0_decompose.py \
+  --run-a paper_rl_vs_tm/results/runs/tm_ref --label-a TM \
+  --run-b paper_rl_vs_tm/results/runs/rl_ref --label-b RL \
+  --out-dir paper_rl_vs_tm/results/step0
+```
+
+`run.sh` stops if Python imports `src` from anywhere other than `app/src`, and
+records Python, SUMO and package versions plus the model md5 at the top of `run.log`.
+
+## App copy
+
+`app/src` is a copy of `src/` at commit `45762cc`. Every change made to it for
+this experiment is marked with a `PAPER_RL_VS_TM` comment:
+
+| File | Change |
+|------|--------|
+| `sumo_integration/sumo_utils.py` | adds SUMO-native logging outputs (below) to the generated `grid.sumocfg` |
+
+The logging outputs are passive and do not change the simulation (runs with
+logging reproduce the numbers above exactly):
+
+| File | Content |
+|------|---------|
+| `tls_switches.xml` | every signal state switch of every traffic light (what was actually displayed) |
+| `lanedata.xml` | per lane, per 90 s interval: waiting time, time loss, occupancy, speed, vehicles entered/left |
+| `vehroutes.xml` | final route of every arrived vehicle, with the exit time of each edge |
+| `tripinfo.xml`, `summary.xml`, `sumo_statistics.xml` | standard outputs (unchanged) |
