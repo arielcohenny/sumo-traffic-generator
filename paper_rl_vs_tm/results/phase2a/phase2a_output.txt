@@ -1,0 +1,119 @@
+
+=== Phase labels of 4-phase junctions (count of junctions per phase index/label) ===
+ phase label  junctions
+     0 NS-SR         28
+     1 NS-LU         28
+     2 EW-SR         28
+     3 EW-LU         28
+
+=== 3-phase junctions (phase labels) ===
+tls  phase label green
+ A0      0 NS-LU    SL
+ A0      1 EW-SR    WR
+ A0      2 EW-LU    WL
+ A2      0 NS-SR    NR
+ A2      1 NS-LU    NL
+ A2      2 EW-LU    WL
+ A4      0 NS-LU    SL
+ A4      1 EW-SR    WR
+ A4      2 EW-LU    WL
+ A5      0 NS-SR    NR
+ A5      1 NS-LU    NL
+ A5      2 EW-LU    WL
+ F0      0 NS-SR    SR
+ F0      1 NS-LU    SL
+ F0      2 EW-LU    EL
+ F5      0 NS-LU    NL
+ F5      1 EW-SR    ER
+ F5      2 EW-LU    EL
+
+=== Sanity checks ===
+                               check        value
+              cycles per tls and run         [81]
+          cycle green sum (min, max) [90.0, 90.0]
+(run,tls,cycle) with a phase missing            0
+
+=== A1. Green per phase type, 4-phase junctions (all cycles) ===
+label run  mean green (s)  median (s)  % cycles at 10s min  % cycles >= 40s  % cycles >= 60s
+EW-LU  RL            17.1        21.0                 26.1              0.1              0.0
+EW-LU  TM            18.4        16.0                 11.9              2.9              0.0
+EW-SR  RL            22.6        22.0                 22.4             11.2              3.6
+EW-SR  TM            25.6        22.0                  4.6             16.0              0.6
+NS-LU  RL            17.3        22.0                 22.5              0.2              0.0
+NS-LU  TM            18.9        17.0                  8.7              4.4              0.2
+NS-SR  RL            33.0        24.0                  3.6             32.1             18.7
+NS-SR  TM            27.1        24.0                  8.4             19.9              0.3
+
+=== A1b. Share of green time by axis and by movement type (4-phase junctions) ===
+run group  share %
+ RL    EW     44.1
+ RL    NS     55.9
+ TM    EW     48.9
+ TM    NS     51.1
+ RL    LU     38.1
+ RL    SR     61.9
+ TM    LU     41.4
+ TM    SR     58.6
+
+=== A2. Cycle-to-cycle change of a phase's green (4-phase junctions) ===
+run  mean |change| (s)  median  p95  max  % unchanged  % change >= 20s
+ RL                0.3     0.0  2.0 24.0         85.7              0.0
+ TM                2.0     1.0  7.0 33.0         35.1              0.0
+
+=== A3. Per junction: mean green reallocated per cycle, and mean (RL - TM) green per phase label (s) ===
+tls  mean green reallocated per cycle (s)  EW-LU  EW-SR  NS-LU  NS-SR
+ C4                                  26.3  -10.4   -5.9   -9.8   26.1
+ B0                                  25.4    8.8    1.0  -21.9   12.1
+ A5                                  24.7   24.2    NaN   -5.6  -18.6
+ F3                                  23.7   -5.6  -14.6   -3.6   23.7
+ B4                                  22.1    6.8   -2.2  -15.5   11.0
+ E3                                  21.1   -6.3   -9.6   -5.2   21.1
+ C2                                  21.1   -5.3   -8.0   -7.8   21.1
+ D0                                  20.2   -3.3  -15.2    8.6    9.9
+ C3                                  20.0   -5.3   -3.1  -11.6   20.0
+ A4                                  19.5   -6.5  -12.8   19.4    NaN
+ A1                                  18.7   -8.3    7.5   -2.5    3.3
+ A0                                  17.9    8.6   -4.0   -4.6    NaN
+ C0                                  17.4    3.6  -12.0    0.8    7.7
+ B2                                  17.3   -2.3   -7.6    6.7    3.1
+ E0                                  17.1   -9.6   -4.5    6.2    8.0
+ C5                                  17.0   -4.0   -6.6   -5.8   16.4
+ F4                                  16.9    5.1  -10.1    7.9   -2.9
+ B5                                  16.5   -4.2   -7.3   -4.9   16.5
+ D2                                  16.4   -3.1   -9.7   -2.2   15.1
+ F5                                  16.0    2.6    8.7  -11.3    NaN
+ E4                                  15.8   -4.3   15.5   -4.6   -6.6
+ F1                                  15.7    5.3    5.6    4.3  -15.2
+ E2                                  15.4    3.6    2.9    6.6  -13.1
+ E1                                  15.0   -7.9    5.4    5.8   -3.3
+ E5                                  14.4   -3.3   14.4   -5.9   -5.3
+ D3                                  13.9    5.6   -0.7    5.0   -9.9
+ F0                                  13.9   13.9    NaN   -7.9   -6.0
+ A2                                  13.9   13.0    NaN   -6.7   -6.3
+ F2                                  13.4   -4.5   -4.2   -4.7   13.4
+ D4                                  13.2    6.0   -8.2    2.2   -0.0
+ C1                                  13.2    5.8   -2.1   -1.0   -2.6
+ B1                                  12.5    1.0   -7.0    4.3    1.8
+ D1                                  12.2   -0.2   -2.8    4.8   -1.8
+ D5                                  10.7   -0.1    5.5   -2.9   -2.5
+
+=== A3 map: mean green reallocated per cycle (s); '-' = removed junction ===
+row       A      B      C      D      E      F
+  5    24.7   16.5   17.0   10.7   14.4   16.0
+  4    19.5   22.1   26.3   13.2   15.8   16.9
+  3       -      -   20.0   13.9   21.1   23.7
+  2    13.9   17.3   21.1   16.4   15.4   13.4
+  1    18.7   12.5   13.2   12.2   15.0   15.7
+  0    17.9   25.4   17.4   20.2   17.1   13.9
+
+=== A4. Divergence between runs over time ===
+period (s)  mean green reallocated per cycle (s), all junctions
+     0-900                                                 20.6
+  900-1800                                                 20.0
+ 1800-2700                                                 17.0
+ 2700-3600                                                 15.9
+ 3600-4500                                                 15.7
+ 4500-5400                                                 15.6
+ 5400-6300                                                 17.0
+ 6300-7200                                                 16.6
+ 7200-7290                                                 17.2

@@ -17,4 +17,8 @@ mkdir -p "$RUN_DIR/outputs"
 for name in "${OUTPUTS[@]}"; do
   gzip -9 -c "$WS/$name.xml" > "$RUN_DIR/outputs/$name.xml.gz"
 done
+# RL runs only: all policy outputs per decision (written by the app copy's RL controller)
+if [ -f "$WS/rl_actions.csv" ]; then
+  gzip -9 -c "$WS/rl_actions.csv" > "$RUN_DIR/outputs/rl_actions.csv.gz"
+fi
 ls -l "$RUN_DIR/outputs"

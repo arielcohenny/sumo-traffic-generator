@@ -431,6 +431,9 @@ class RLController(TrafficController):
             # self.logger.info(f"Model prediction successful - action type: {type(action)}, shape: {action.shape}")
             # self.logger.info(f"Predicted action values: {action}")
 
+            # PAPER_RL_VS_TM: log all policy outputs, before and after clipping to the action bounds
+            self._log_all_actions(action)
+
             # DIAGNOSTIC: Log raw model outputs to detect if actions are frozen
             action_hash = hash(action.tobytes())
             self.logger.info(f"DIAGNOSTIC - Raw model action output:")
@@ -463,6 +466,32 @@ class RLController(TrafficController):
             self.logger.error(f"Traceback: {traceback.format_exc()}")
             self.logger.error(f"Falling back to default action")
             return self._get_default_action()
+
+    def _log_all_actions(self, action: np.ndarray) -> None:
+        """PAPER_RL_VS_TM: append one row per decision to <workspace>/rl_actions.csv.
+
+        raw     = policy output before clipping (mean of the action distribution, i.e. the
+                  deterministic action SB3 computes before clipping it to the action bounds)
+        clipped = the action actually used (returned by model.predict(deterministic=True))
+        Column <tls>_<k> is the value for phase k of traffic light <tls>, in the order used
+        to apply the actions (list(self.traffic_lights)).
+        """
+        import torch
+        from src.config import CONFIG
+        from .constants import RL_ACTIONS_PER_JUNCTION
+
+        obs_tensor, _ = self.model.policy.obs_to_tensor(self.current_observation)
+        with torch.no_grad():
+            raw = self.model.policy.get_distribution(obs_tensor).distribution.mean.cpu().numpy().reshape(-1)
+
+        path = CONFIG.output_dir / "rl_actions.csv"
+        if not path.exists():
+            names = [f"{tl}_{k}" for tl in self.traffic_lights for k in range(RL_ACTIONS_PER_JUNCTION)]
+            header = ["time"] + [f"raw_{n}" for n in names] + [f"clipped_{n}" for n in names]
+            path.write_text(",".join(header) + "\n")
+        row = [f"{traci.simulation.getTime():.0f}"] + [repr(float(v)) for v in raw] + [repr(float(v)) for v in action]
+        with open(path, "a") as f:
+            f.write(",".join(row) + "\n")
 
     def _get_default_action(self) -> np.ndarray:
         """Get default action when model is not available."""

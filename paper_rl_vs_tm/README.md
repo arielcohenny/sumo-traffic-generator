@@ -97,6 +97,7 @@ this experiment is marked with a `PAPER_RL_VS_TM` comment:
 | File | Change |
 |------|--------|
 | `sumo_integration/sumo_utils.py` | adds SUMO-native logging outputs (below) to the generated `grid.sumocfg` |
+| `rl/controller.py` | writes all 136 policy outputs per decision to `rl_actions.csv` (RL runs only) |
 
 The logging outputs are passive and do not change the simulation (runs with
 logging reproduce the numbers above exactly):
@@ -108,3 +109,4 @@ logging reproduce the numbers above exactly):
 | `vehroutes.xml` | final route of every arrived vehicle, with the exit time of each edge |
 | `tripinfo.xml`, `summary.xml`, `sumo_statistics.xml` | standard outputs (unchanged) |
 | `grid.net.xml` | the network (lane → junction / phase mapping for the analysis) |
+| `rl_actions.csv` | RL runs only: per decision (every 90 s), the 136 policy outputs before (`raw_<tls>_<k>`) and after (`clipped_<tls>_<k>`) clipping to the action bounds [-10, 10] |
