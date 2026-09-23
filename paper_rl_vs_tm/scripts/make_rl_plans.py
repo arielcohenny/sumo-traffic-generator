@@ -77,6 +77,17 @@ def main():
     share = pd.DataFrame(share_rows)
     share.to_csv(args.out_dir / "rl_modal_share.csv", index=False)
 
+    # Start-up then fixed: RL's own durations before the settle time, the modal plan after it
+    settle_time = int(a.time.iloc[args.settle])
+    modal = pd.DataFrame(modal_rows)
+    startup = replay[replay.time < settle_time]
+    after = pd.DataFrame([{"time": t, **m} for t in replay.time.unique() if t >= settle_time
+                          for m in modal_rows])
+    startup_then_modal = pd.concat([startup, after[startup.columns]]).sort_values(["time", "tls"], kind="stable")
+    startup_then_modal.to_csv(args.out_dir / "rl_startup_then_modal.csv", index=False)
+    print(f"rl_startup_then_modal.csv: {len(startup_then_modal)} rows (RL durations for t < {settle_time}, "
+          f"modal plan from t >= {settle_time})")
+
     print(f"rl_replay.csv: {len(replay)} rows ({len(a)} decisions x {len(tls_ids)} junctions)")
     print(f"rl_modal.csv: {len(modal_rows)} junctions; modal plan share of decisions from t >= "
           f"{int(a.time.iloc[args.settle])}: median {share.modal_share.median():.2f}, min {share.modal_share.min():.2f}")
