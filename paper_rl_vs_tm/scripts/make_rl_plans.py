@@ -41,6 +41,8 @@ def main():
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--settle", type=int, default=3,
                         help="first decision index used for the modal plan (default 3: t >= 270)")
+    parser.add_argument("--switching-threshold", type=float, default=0.9,
+                        help="junctions whose modal plan share is below this are 'switching' (default 0.9)")
     args = parser.parse_args()
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -87,6 +89,17 @@ def main():
     startup_then_modal.to_csv(args.out_dir / "rl_startup_then_modal.csv", index=False)
     print(f"rl_startup_then_modal.csv: {len(startup_then_modal)} rows (RL durations for t < {settle_time}, "
           f"modal plan from t >= {settle_time})")
+
+    # Switching junctions replayed, the rest fixed: RL's durations at every decision for junctions
+    # whose modal plan share (from the settle time) is below --switching-threshold, modal plan elsewhere
+    switching = set(share[share.modal_share < args.switching_threshold].tls)
+    fixed_rows = pd.DataFrame([{"time": t, **m} for t in replay.time.unique() for m in modal_rows])
+    mixed = pd.concat([replay[replay.tls.isin(switching)],
+                       fixed_rows[~fixed_rows.tls.isin(switching)][replay.columns]]).sort_values(["time", "tls"], kind="stable")
+    mixed.to_csv(args.out_dir / "rl_switching_replay_rest_modal.csv", index=False)
+    print(f"rl_switching_replay_rest_modal.csv: {len(mixed)} rows; RL durations at {len(switching)} junctions with "
+          f"modal share < {args.switching_threshold} ({', '.join(sorted(switching))}), modal plan at the other "
+          f"{len(tls_ids) - len(switching)}")
 
     print(f"rl_replay.csv: {len(replay)} rows ({len(a)} decisions x {len(tls_ids)} junctions)")
     print(f"rl_modal.csv: {len(modal_rows)} junctions; modal plan share of decisions from t >= "
