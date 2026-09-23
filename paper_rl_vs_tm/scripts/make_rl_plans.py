@@ -97,6 +97,16 @@ def main():
     mixed = pd.concat([replay[replay.tls.isin(switching)],
                        fixed_rows[~fixed_rows.tls.isin(switching)][replay.columns]]).sort_values(["time", "tls"], kind="stable")
     mixed.to_csv(args.out_dir / "rl_switching_replay_rest_modal.csv", index=False)
+    # Start-up and switching junctions replayed, the rest fixed: RL's durations for t < settle time at
+    # every junction and at every decision at the switching junctions, modal plan elsewhere
+    replayed = replay.tls.isin(switching) | (replay.time < settle_time)
+    startup_switching = pd.concat([replay[replayed],
+                                   fixed_rows.merge(replay[~replayed][["time", "tls"]], on=["time", "tls"])[replay.columns]]
+                                  ).sort_values(["time", "tls"], kind="stable")
+    startup_switching.to_csv(args.out_dir / "rl_startup_switching_replay_rest_modal.csv", index=False)
+    print(f"rl_startup_switching_replay_rest_modal.csv: {len(startup_switching)} rows; RL durations for t < "
+          f"{settle_time} at all junctions and always at the switching junctions, modal plan elsewhere")
+
     print(f"rl_switching_replay_rest_modal.csv: {len(mixed)} rows; RL durations at {len(switching)} junctions with "
           f"modal share < {args.switching_threshold} ({', '.join(sorted(switching))}), modal plan at the other "
           f"{len(tls_ids) - len(switching)}")
