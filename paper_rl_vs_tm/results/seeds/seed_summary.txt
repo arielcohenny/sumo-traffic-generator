@@ -1,0 +1,25 @@
+Runs: 10 SUMO seeds (1, 2, 3, 4, 5, 6, 7, 8, 9, 10) per controller; all metrics match run.log
+
+=== Per controller over the seeds (default seed 23423 shown separately) ===
+Tree Method    avg duration mean  775.4 s (sd  54.7, range 687.4-839.0) | throughput mean   7865 (sd  382) | default seed: 8194 / 727.0 s (rank 3 of 11 by duration, 1 = best)
+RL             avg duration mean  637.8 s (sd  30.9, range 581.3-683.8) | throughput mean   8378 (sd  137) | default seed: 8660 / 577.5 s (rank 1 of 11 by duration, 1 = best)
+RL fixed plan  avg duration mean  626.8 s (sd  18.7, range 592.8-663.1) | throughput mean   8418 (sd   91) | default seed: 8402 / 629.6 s (rank 8 of 11 by duration, 1 = best)
+
+=== Paired differences over the 10 seeds (95% CI from the t distribution) ===
+Tree Method - RL: avg duration +137.6 s (95% CI +88.3 to +187.0; 17.8% of Tree Method), RL shorter on 10/10 seeds | throughput RL - Tree Method: +513 veh/h (95% CI +217 to +809), higher on 9/10
+Tree Method - RL fixed plan: avg duration +148.6 s (95% CI +117.4 to +179.8; 19.2% of Tree Method), RL fixed plan shorter on 10/10 seeds | throughput RL fixed plan - Tree Method: +553 veh/h (95% CI +307 to +798), higher on 10/10
+RL - RL fixed plan: avg duration +10.9 s (95% CI -14.8 to +36.6; 1.7% of RL), RL fixed plan shorter on 6/10 seeds | throughput RL fixed plan - RL: +39 veh/h (95% CI -76 to +154), higher on 6/10
+
+=== Per seed: throughput / avg duration ===
+       Tree Method            RL RL fixed plan
+seed                                          
+1     7339 / 839.0  8599 / 581.3  8301 / 636.5
+2     7511 / 808.8  8099 / 683.8  8309 / 663.1
+3     7605 / 824.8  8456 / 625.0  8416 / 623.9
+4     7979 / 771.2  8304 / 669.0  8304 / 623.9
+5     7794 / 799.6  8367 / 625.7  8412 / 629.5
+6     8493 / 687.4  8389 / 646.1  8541 / 592.8
+7     7540 / 835.2  8461 / 626.4  8474 / 641.6
+8     8103 / 741.4  8289 / 667.3  8499 / 609.4
+9     8380 / 703.3  8491 / 608.0  8402 / 625.9
+10    7909 / 743.4  8329 / 645.0  8520 / 621.6
