@@ -6,9 +6,12 @@
 #         model's durations, e.g. results/plans/rl_modal.csv (path relative to paper_rl_vs_tm/)
 #         SUMO_SEED=<int> (environment variable, optional): SUMO's random seed (driver behaviour
 #         noise); network and demand are unchanged. Not set: SUMO's default seed (23423).
+#         KEEP_WORKSPACE=1 (environment variable, optional): keep workspace/ after packing
+#         (by default it is deleted once outputs/ is written, to save disk space).
 # Output: results/runs/<run_name>/run.log      (full console log)
 #         results/runs/<run_name>/outputs/     (compressed SUMO outputs, kept in git)
-#         results/runs/<run_name>/workspace/   (all SUMO files, not kept in git)
+#         results/runs/<run_name>/workspace/   (all SUMO files, not kept in git; deleted after
+#                                              packing unless KEEP_WORKSPACE=1)
 #
 # Run from anywhere; paths are resolved relative to this script.
 
@@ -76,3 +79,8 @@ grep -E "Throughput:|Average duration:" "$RUN_DIR/run.log"
 echo "ERROR lines in run.log: $(grep -c ' - ERROR - ' "$RUN_DIR/run.log" || true)"
 
 "$ROOT/scripts/pack_outputs.sh" "$RUN_NAME"
+
+# workspace/ is regenerated exactly by rerunning; outputs/ holds everything the analysis reads
+if [ "${KEEP_WORKSPACE:-0}" != 1 ]; then
+  rm -rf "$RUN_DIR/workspace"
+fi
