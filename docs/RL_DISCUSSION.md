@@ -555,8 +555,10 @@ Early stopping: 10 evaluations patience
 
 | Metric | RL Agent | Tree Method | Comparison |
 |--------|----------|-------------|------------|
-| Throughput (vehicles) | 8,349 | 8,507 | -1.9% |
+| Throughput (veh/h) | 8,349 | 8,507 | -1.9% |
 | Average Duration (s) | 602.5 | 708.7 | **+15.0% better** |
+
+*Note (added 2026-09): the Tree Method baseline (8,507 veh/h, 708.7 s) was produced locally with SUMO 1.22.0 (`evaluation/comparative_analysis/episode_1_tree_method_run.log`). The environment in which the RL result was produced is not recorded. Results differ between SUMO versions (see Phase 8), so these two numbers may not be directly comparable.*
 
 The RL agent achieved nearly identical throughput while significantly reducing average travel duration. This indicated the model learned effective signal coordination.
 
@@ -623,6 +625,34 @@ This 4x increase was intended to make throughput the dominant reward signal, enc
 - Try intermediate coefficient (0.2) with current learning rate
 - Revert to 0.1 coefficient and explore other optimization approaches
 
+#### Phase 8: Continued Training with the Intermediate Coefficient (exp_20260105_090955)
+
+**Experiment**: `rl/experiments/exp_20260105_090955` (started 2026-01-05), trained on the TAU cluster.
+
+Following Phase 7, the intermediate throughput coefficient was used. The experiment notes (`notes.md`) record two settings found critical:
+
+| Parameter | Value | Note |
+|-----------|-------|------|
+| `throughput_bonus` | 0.2 | Training collapsed with the default 0.1 |
+| Learning rate | 1e-4 | 3e-4 did not match the original training |
+
+The policy was pretrained by behavioral cloning on Tree Method demonstrations and then trained with PPO to about 2.47M steps, with a checkpoint every 4,096 steps.
+
+**Checkpoint selection**: every checkpoint from 524,288 to 2,473,984 steps (475 checkpoints, one failed run) was run once through the full scenario (`compare_checkpoints_result.csv`). Checkpoint **1,945,600** gave the highest throughput (8,660 veh/h) and the second-lowest average duration (577.5 s; the lowest was 573.2 s, at checkpoint 2,260,992 with 8,567 veh/h). It is the model used from here on.
+
+**Results vs Tree Method** (same scenario, TAU cluster, SUMO 1.25.0, default SUMO seed):
+
+| Metric | RL (1,945,600) | Tree Method | Comparison |
+|--------|----------------|-------------|------------|
+| Throughput (veh/h) | 8,660 | 8,194 | +5.7% |
+| Average Duration (s) | 577.5 | 727.0 | **−20.6%** |
+
+**Simulator version**: the same code and model give different results on SUMO 1.22.0 (Tree Method 8,507 / 708.7 s, RL 8,504 / 618.4 s). Both controllers must therefore be compared on the same SUMO version. The reference environment is SUMO 1.25.0.
+
+**Stability over SUMO seeds**: SUMO's random seed changes only driver behavior; network, demand, routes and departure times stay identical. Over 10 seeds, RL's average duration was 637.8 s (sd 30.9) against Tree Method's 775.4 s (sd 54.7). RL was shorter on all 10 seeds, by 137.6 s (−17.8%, 95% CI 88.3–187.0 s). The default-seed run above is RL's best of 11 seeds.
+
+The analysis of why this model outperforms Tree Method is in Chapter 6.
+
 ### 5.6 Key Lessons Learned
 
 1. **Training instability** → Reduce learning rate, reduce epochs, use standard clip range (0.2)
@@ -631,6 +661,9 @@ This 4x increase was intended to make throughput the dominant reward signal, enc
 4. **Expensive simulations** → Larger batch sizes for stability, but fewer epochs per batch
 5. **Tree Method alignment** → Use identical traffic metrics for fair comparison
 6. **Imitation learning** → Pre-training from Tree Method demonstrations saves significant training time
+7. **Clipped continuous actions stop the policy from reacting** → In the final model, most of the 136 outputs lie far below the action bound (−10) and are clipped to it (median 115 of 136 per decision). Exploration noise (std ≈ 1.25) rarely reaches back inside the bound, so training gets no signal for those outputs, and the policy acts as a fixed plan per junction (Chapter 6). Bounding outputs smoothly (e.g. tanh squashing) or narrowing the range may avoid this (not tested).
+8. **Pin the simulator version** → SUMO 1.22.0 and 1.25.0 give different results for the same code and model; compare controllers only on the same version.
+9. **Report over several SUMO seeds** → Single runs are very sensitive to small decision changes. Run each controller over several SUMO seeds (driver-behavior noise, same demand) before comparing.
 
 ### 5.7 Additional Features
 
@@ -673,3 +706,36 @@ python scripts/train_rl_production.py \
   --env-params "--network-seed 24208 --grid_dimension 6 --junctions_to_remove 2 --block_size_m 280 --lane_count realistic --traffic_light_strategy partial_opposites --routing_strategy 'realtime 100' --vehicle_types 'passenger 100' --passenger-routes 'in 0 out 0 inner 100 pass 0' --departure_pattern uniform --start_time_hour 8.0 --num_vehicles 22000 --end-time 7300" \
   --timesteps 100000
 ```
+
+## 6. Decision Comparison with Tree Method
+
+This chapter explains why the Phase 8 model (checkpoint 1,945,600) outperforms Tree Method on its scenario. The full analysis, with every number traced to its data file, is in `paper_rl_vs_tm/FINDINGS.md`. The experiment, including a frozen copy of the application, the model, scripts and all results, is self-contained in `paper_rl_vs_tm/`. All runs use the TAU cluster with SUMO 1.25.0.
+
+**Same decision space**: both controllers decide the green duration of each phase of each junction for every 90 s cycle (fixed phase order, minimum 10 s). The model outputs 4 values per junction; a softmax turns them into shares of the 50 s left after the minima.
+
+**The gain is real speed-up**: of the 149.4 s gap in average duration, 136.0 s (91%) is the same vehicles (arrived in both runs) travelling faster, mostly by waiting less (−94 s). Only 13.4 s (9%) is due to a different set of vehicles finishing. The gain grows as congestion builds: 21 s for vehicles departing in the first 15 min, 212–239 s for departures between 3,600 and 5,400 s.
+
+**The model acts as a fixed plan per junction**: after the first 2–3 cycles, each junction repeats almost the same durations. A phase's green is unchanged from the previous cycle 85.7% of the time, against 35.1% for Tree Method. The plans fall into two types:
+- **one phase dominant** (45–60 s, the others near the 10 s minimum): NS straight+right at B5, C2, C3, C4, C5, D2, E3, F2, F3, and EW straight+right at D5, E4, E5
+- **a near-equal split** (24/22/22/22) at most other junctions
+
+**Why it does not react to traffic**: in a typical decision, 115 of the 136 outputs are below the action bound (−10) and are clipped to it. Their values hardly change over the run (median std 0.58), so the clipped durations stay constant whatever the traffic state. 19 outputs are never clipped; 16 of them are the dominant phases of the one-phase-dominant plans (see lesson 7 in Section 5.6).
+
+**The plan alone reproduces the model's performance**:
+- **Exact replay**: RL's exact durations, played without its decisions, reproduce the run exactly.
+- **Default seed**: the most common plan, played every cycle, gives 8,402 veh/h / 629.6 s, against Tree Method's 8,194 / 727.0 s.
+- **10 SUMO seeds**: the fixed plan is shorter than Tree Method on all 10 (−148.6 s, 95% CI 117.4–179.8 s) and not significantly different from the model itself (+10.9 s, CI −14.8 to +36.6).
+- **Conclusion**: the model's advantage is its junction-specific timing plan, taken as a whole.
+
+**Where the time is saved (descriptive, 11 SUMO seeds)**:
+- **Less waiting**: network waiting is 2,362 veh-h under the plan against 2,878 under Tree Method, lower on 11/11 runs.
+- **When**: the two are equal for the first 15 min; from about 45 min congestion builds faster under Tree Method.
+- **Where**: gains are in the centre and east of the grid (the eight largest, D4, C3, D3, C2, D2, E4, E3, C1, carry 56% of the junction gains). Losses are at B4, B2, B5, A4, A2 and A1 (120.2 veh-h in total), several of which border the removed junctions A3 and B3.
+- **NS-dominant junctions**: 92% of the time saved is on their NS approaches.
+- **Equal-split junctions**: they carry 42.6% of the net saving. Whether this comes from not adapting or from less congestion arriving from neighbouring junctions was not isolated.
+
+**Limitations**:
+- one scenario
+- results depend on the SUMO version
+- single runs are very sensitive: changing 19 decisions by 2–3 s moved the average duration by 64.6 s
+- the per-junction results are descriptive; only the plan as a whole was tested causally
