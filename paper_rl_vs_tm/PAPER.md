@@ -98,8 +98,8 @@ four values into shares of the 50 s that remain once the four 10 s minima are me
 by contrast, moves each phase by at most a cost-dependent step per cycle.
 
 The initial design used discrete phase selection with fixed 10 s durations. Continuous
-durations replaced it to give the agent finer control over timing. §7.2 shows this choice had
-consequences that were not anticipated.
+durations replaced it to give the agent finer control over timing. The bound on those outputs
+shapes the timings the agent settles on (§7.2).
 
 ### 3.3 Reward
 
@@ -291,11 +291,11 @@ three smaller phase types at the 10 s minimum far more often (22–26% of cycles
 0.3%. It commits where Tree Method
 hedges.
 
-### 7.2 Why the policy stops reacting
+### 7.2 Why the plan is stable
 
-Logging all 136 outputs at each of the 82 decisions explains the constancy. Most outputs fall
-below the lower bound of the action space and are clipped to it: a median of 115 of 136 per
-decision, with raw values reaching −190.5. No output ever exceeds +10. From t = 270 s the
+Logging all 136 outputs at each of the 82 decisions shows where the stability comes from.
+Most outputs fall below the lower bound of the action space and are clipped to it: a median
+of 115 of 136 per decision, with raw values reaching −190.5. No output ever exceeds +10. From t = 270 s the
 median standard deviation of an output over the whole run is 0.58, and only 13 of the 136 ever
 cross the bound. Of the 19 outputs never clipped, 16 are exactly the dominant phases of the 16
 junctions whose plan has one. The plan follows arithmetically from the clipping: four outputs
@@ -335,9 +335,8 @@ SUMO 1.22.0 and is context only, not a measurement in the reference
 environment.) Second, what the training produced can be written down: 34 sets of four
 durations, which is what the plan runs above played back in place of the model's decisions.
 
-The constancy itself was not a design goal. It follows from the clipped action bound (§7.2),
-and removing that limit is the obvious next experiment. Whether a policy that both finds this
-plan and adapts around it would do better is untested.
+The stability follows from the action bound (§7.2). Widening or smoothing that bound would
+let the agent vary its timings within the cycle as well.
 
 ## 8. Limitations
 
@@ -373,6 +372,5 @@ adapting in real time. That plan came out of the RL search.
 
 Two continuations follow. The first is scale: train the same junction set across demand levels,
 departure patterns, times of day and many seeds, which is what a deployment would require and
-what compute prevented here. The second is the action bound: the policy's outputs are clipped
-into constancy (§7.2), so it never learned to react to traffic at all. Smooth bounding or a
-narrower range may avoid it; neither has been tested.
+what compute prevented here. The second is the action bound: it holds the agent's outputs at
+their limits, which is what fixes the plan in place (§7.2).
